@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "noEmitOnError": true,
+    "rootDir": "src/core",
+    "outDir": ".test-dist/core"
+  },
+  "include": ["src/core/**/*.ts"],
+  "exclude": ["node_modules", "**/*.tsx"]
+}

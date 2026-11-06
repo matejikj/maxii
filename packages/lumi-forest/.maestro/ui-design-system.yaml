@@ -1,0 +1,23 @@
+appId: com.example.lumiforestlab
+---
+- launchApp
+- tapOn:
+    id: scene-selector-ui
+- assertVisible:
+    id: lumi-ui-lab
+- tapOn:
+    id: mode-light
+- takeScreenshot: tests/ui-native/actual/ui-kit-light
+- tapOn:
+    id: mode-dark
+- takeScreenshot: tests/ui-native/actual/ui-kit-dark
+- tapOn:
+    id: mode-system
+- tapOn:
+    id: ui-primary-button
+- assertVisible:
+    id: ui-bottom-sheet
+- tapOn:
+    id: ui-close-sheet
+- assertVisible:
+    id: ui-name-input

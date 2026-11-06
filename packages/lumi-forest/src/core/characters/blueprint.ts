@@ -1,0 +1,138 @@
+import type { LumiAnimal } from '../types';
+import type { VectorNode } from '../vector/types';
+import { CHARACTER_ANATOMY } from './anatomy';
+
+/** Painter-stable, named anatomy. IDs are authoring identifiers, not SVG IDs. */
+export type CharacterPartRole =
+  | 'shadow' | 'tail' | 'body' | 'belly' | 'paw' | 'head' | 'ear'
+  | 'eye' | 'nose' | 'mouth' | 'cheek' | 'muzzle' | 'spines'
+  | 'face' | 'mark' | 'accessory'; // `face` remains for v1 consumers.
+export type CharacterPose = 'default' | 'sitting' | 'standing' | 'sleeping';
+export type CharacterExpression = 'neutral' | 'happy' | 'curious' | 'sleepy';
+export type CharacterAccessory = 'bow' | 'flower' | 'scarf' | 'star';
+export type ProportionChannel = 'body' | 'head' | 'ears' | 'paws';
+export type CharacterProportions = Readonly<Partial<Record<ProportionChannel, number>>>;
+export interface Point { readonly x: number; readonly y: number }
+
+export interface CharacterPart {
+  readonly id: string;
+  readonly role: CharacterPartRole;
+  /** Lower numbers paint first; ties preserve authored order. */
+  readonly order: number;
+  readonly geometry: VectorNode;
+  readonly transform?: string;
+  readonly opacity?: number;
+}
+
+export type CharacterComposition =
+  | { readonly kind: 'legacy'; readonly geometry: VectorNode }
+  | { readonly kind: 'parts'; readonly parts: readonly CharacterPart[] };
+
+export interface CharacterVariant {
+  readonly pose: CharacterPose;
+  readonly expression: CharacterExpression;
+  readonly composition: CharacterComposition;
+}
+
+/** v0.2.1 blueprints remain accepted, with their exact old semantics. */
+export interface CharacterBlueprintV1 {
+  readonly schemaVersion: 1;
+  readonly species: LumiAnimal;
+  readonly displayName: string;
+  readonly base: CharacterComposition;
+  readonly variants?: readonly CharacterVariant[];
+  readonly anchor?: Point;
+}
+
+/** Anchors and colors are authored semantic metadata, not screen positions. */
+export interface CharacterRig {
+  readonly leftEye: Point;
+  readonly rightEye: Point;
+  readonly mouth: Point;
+  readonly pivots: Readonly<{ body: Point; head: Point; paws: Point; leftEar: Point; rightEar: Point }>;
+  readonly accessoryAnchors: Readonly<{ head: Point; neck: Point; hand: Point }>;
+  readonly ink: string;
+  readonly blush: string;
+  readonly soft: string;
+}
+
+/**
+ * v0.3 blueprint schema. Anatomy is the single source of vectors. Expression,
+ * pose and proportion changes are applied by generic pure compilation passes.
+ * No full variant artwork is required for each combination.
+ */
+export interface CharacterBlueprintV2 {
+  readonly schemaVersion: 2;
+  readonly species: LumiAnimal;
+  readonly displayName: string;
+  readonly base: { readonly kind: 'parts'; readonly parts: readonly CharacterPart[] };
+  readonly rig: CharacterRig;
+  readonly supportedPoses: readonly ('sitting' | 'standing' | 'sleeping')[];
+  readonly supportedExpressions: readonly CharacterExpression[];
+  readonly supportedAccessories: readonly CharacterAccessory[];
+}
+
+export type CharacterBlueprint = CharacterBlueprintV1 | CharacterBlueprintV2;
+export interface CharacterCompileOptions {
+  readonly pose?: CharacterPose;
+  readonly expression?: CharacterExpression;
+  readonly accessories?: readonly CharacterAccessory[];
+  readonly proportions?: CharacterProportions;
+}
+
+const P = (x: number, y: number): Point => ({ x, y });
+const COMMON = {
+  supportedPoses: ['sitting', 'standing', 'sleeping'],
+  supportedExpressions: ['neutral', 'happy', 'curious', 'sleepy'],
+  supportedAccessories: ['bow', 'flower', 'scarf', 'star'],
+} as const;
+const pivots = (leftEarX: number, rightEarX: number, earY: number) => ({
+  body: P(0, 78), head: P(0, -3), paws: P(0, 98),
+  leftEar: P(leftEarX, earY), rightEar: P(rightEarX, earY),
+});
+
+export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprintV2>> = {
+  rabbit: {
+    schemaVersion: 2, species: 'rabbit', displayName: 'Lumi',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.rabbit }, ...COMMON,
+    rig: { leftEye: P(-30, 8), rightEye: P(30, 8), mouth: P(0, 25),
+      pivots: pivots(-44, 32, -50), accessoryAnchors: { head: P(52, -103), neck: P(0, 55), hand: P(84, 92) },
+      ink: '#5A5550', blush: '#EAB8B0', soft: '#F1E5DA' },
+  },
+  bear: {
+    schemaVersion: 2, species: 'bear', displayName: 'Momo',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.bear }, ...COMMON,
+    rig: { leftEye: P(-31, 2), rightEye: P(31, 2), mouth: P(0, 32),
+      pivots: pivots(-68, 68, -49), accessoryAnchors: { head: P(63, -66), neck: P(0, 53), hand: P(85, 97) },
+      ink: '#66544B', blush: '#ECAFA0', soft: '#E1C19B' },
+  },
+  fox: {
+    schemaVersion: 2, species: 'fox', displayName: 'Nori',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.fox }, ...COMMON,
+    rig: { leftEye: P(-31, 4), rightEye: P(31, 4), mouth: P(0, 39),
+      pivots: pivots(-70, 70, -60), accessoryAnchors: { head: P(69, -96), neck: P(0, 68), hand: P(87, 94) },
+      ink: '#705B58', blush: '#E8B0A2', soft: '#EBAF89' },
+  },
+  otter: {
+    schemaVersion: 2, species: 'otter', displayName: 'Kiko',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.otter }, ...COMMON,
+    rig: { leftEye: P(-31, 0), rightEye: P(31, 0), mouth: P(0, 30),
+      pivots: pivots(-74, 74, -51), accessoryAnchors: { head: P(63, -58), neck: P(0, 58), hand: P(88, 104) },
+      ink: '#594D4A', blush: '#E8ADA2', soft: '#D3AD96' },
+  },
+  hedgehog: {
+    schemaVersion: 2, species: 'hedgehog', displayName: 'Piko',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.hedgehog }, ...COMMON,
+    rig: { leftEye: P(-28, 2), rightEye: P(28, 2), mouth: P(0, 36),
+      pivots: pivots(-68, 68, -51), accessoryAnchors: { head: P(49, -54), neck: P(0, 60), hand: P(80, 98) },
+      ink: '#5D514D', blush: '#E8B1A8', soft: '#F0D5BF' },
+  },
+};
+
+const VALID_ROLES: readonly string[] = [
+  'shadow', 'tail', 'body', 'belly', 'paw', 'head', 'ear', 'eye',
+  'nose', 'mouth', 'cheek', 'muzzle', 'spines', 'face', 'mark', 'accessory',
+];
+export function isCharacterRole(value: string): value is CharacterPartRole {
+  return VALID_ROLES.includes(value);
+}

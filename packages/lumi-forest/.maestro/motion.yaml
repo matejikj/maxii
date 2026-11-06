@@ -1,0 +1,38 @@
+appId: com.example.lumiforestlab
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: scene-selector-motion
+- assertVisible:
+    id: animation-lab
+- assertVisible:
+    id: motion-character-stage
+- assertVisible:
+    id: animated-character
+- tapOn:
+    id: motion-celebrate
+- tapOn:
+    id: motion-mode-sleeping
+- assertVisible:
+    id: animated-character
+- tapOn:
+    id: motion-animal-fox
+- tapOn:
+    id: motion-reduce-override
+- assertVisible:
+    text: 'Animace: vypnuté*'
+- takeScreenshot: captures/motion-reduced-fox
+- tapOn:
+    id: motion-mode-idle
+- tapOn:
+    id: motion-animal-bear
+- takeScreenshot: captures/motion-reduced-bear
+- tapOn:
+    id: motion-pause
+- tapOn:
+    id: motion-reduce-override
+- assertVisible:
+    text: 'Animace: vypnuté*'
+- assertVisible:
+    id: motion-procedural-stage

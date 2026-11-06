@@ -1,0 +1,30 @@
+import type { LumiScene, SceneDefinition } from '../types';
+
+/** Declarative scene recipes; never put React / platform code in catalog definitions. */
+export const SCENE_CATALOG: Readonly<Record<LumiScene, SceneDefinition>> = {
+  home: {
+    id: 'home', defaultAnimal: 'rabbit', sky: 'sun',
+    palette: { bg: '#FAF7F1', mid: '#EFF2E9', hill: '#DDE9DB', hill2: '#CADCC8',
+      sun: '#F6DFAE', accent: '#92B3A1', accentText: '#506F60', ink: '#354A47' },
+  },
+  growth: {
+    id: 'growth', defaultAnimal: 'bear', sky: 'sun', showGrowthRuler: true,
+    palette: { bg: '#FCF9F2', mid: '#F3F0E5', hill: '#DCE8D8', hill2: '#C7D8BF',
+      sun: '#F7DDB3', accent: '#91AF8F', accentText: '#506D51', ink: '#354A47' },
+  },
+  sleep: {
+    id: 'sleep', defaultAnimal: 'fox', sky: 'moon',
+    palette: { bg: '#F7F5FB', mid: '#EDE8F4', hill: '#E0DFF1', hill2: '#CFCDE8',
+      sun: '#EEE1BF', accent: '#A29AC6', accentText: '#625B87', ink: '#44415F' },
+  },
+  feeding: {
+    id: 'feeding', defaultAnimal: 'otter', sky: 'sun',
+    palette: { bg: '#FAF8F1', mid: '#F6EEE5', hill: '#E8E6D8', hill2: '#D5DFC9',
+      sun: '#F9DDA9', accent: '#C5A78A', accentText: '#795C44', ink: '#354A47' },
+  },
+  milestones: {
+    id: 'milestones', defaultAnimal: 'hedgehog', sky: 'celebration',
+    palette: { bg: '#FDF8F4', mid: '#F3EDE7', hill: '#F0DCCF', hill2: '#E5CBB7',
+      sun: '#F6DDAA', accent: '#CEA89A', accentText: '#8A625B', ink: '#4B4744' },
+  },
+};

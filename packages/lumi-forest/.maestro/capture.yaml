@@ -1,0 +1,27 @@
+appId: com.example.lumiforestlab
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: screen-home
+- takeScreenshot: captures/home
+- tapOn:
+    id: scene-selector-growth
+- assertVisible:
+    id: screen-growth
+- takeScreenshot: captures/growth
+- tapOn:
+    id: scene-selector-sleep
+- assertVisible:
+    id: screen-sleep
+- takeScreenshot: captures/sleep
+- tapOn:
+    id: scene-selector-feeding
+- assertVisible:
+    id: screen-feeding
+- takeScreenshot: captures/feeding
+- tapOn:
+    id: scene-selector-milestones
+- assertVisible:
+    id: screen-milestones
+- takeScreenshot: captures/milestones

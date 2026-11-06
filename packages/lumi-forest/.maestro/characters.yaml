@@ -1,0 +1,32 @@
+appId: com.example.lumiforestlab
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: scene-selector-characters
+- assertVisible:
+    id: character-lab
+- assertVisible:
+    id: character-variant-rabbit-sitting-neutral
+- takeScreenshot: captures/characters-rabbit
+- tapOn:
+    id: character-species-bear
+- takeScreenshot: captures/characters-bear
+- tapOn:
+    id: character-species-fox
+- takeScreenshot: captures/characters-fox
+- tapOn:
+    id: character-species-otter
+- takeScreenshot: captures/characters-otter
+- tapOn:
+    id: character-species-hedgehog
+- takeScreenshot: captures/characters-hedgehog
+- tapOn:
+    id: character-accessory-star
+- scrollUntilVisible:
+    element:
+      id: character-variant-hedgehog-standing-happy
+    direction: DOWN
+- assertVisible:
+    id: character-variant-hedgehog-standing-happy
+- takeScreenshot: captures/characters-accessory

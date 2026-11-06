@@ -1,0 +1,27 @@
+node_modules/
+.expo/
+.expo-export/
+.test-dist/
+.DS_Store
+*.tsbuildinfo
+*.log
+coverage/
+**/__pycache__/
+tests/visual/actual/
+tools/device/runs/
+.maestro/captures/
+.maestro/screenshots/
+apps/expo-showcase/dist-android/
+apps/expo-showcase/dist-ios/
+
+tests/ui-native/actual/
+lib/
+*.tgz
+release-evidence/*.local.json
+
+# Generated assets and local validation output (keep test baselines versioned)
+/exports/
+/previews/
+/reports/
+/tests/*/actual/
+/apps/expo-showcase/.rnstorybook/storybook.requires.ts

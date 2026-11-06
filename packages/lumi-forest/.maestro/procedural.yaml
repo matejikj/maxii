@@ -1,0 +1,20 @@
+appId: com.example.lumiforestlab
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: scene-selector-procedural
+- assertVisible:
+    id: procedural-scene-lab
+- assertVisible:
+    id: procedural-preview
+- takeScreenshot: captures/procedural-home-regular
+- tapOn:
+    id: procedural-variation
+- takeScreenshot: captures/procedural-home-seed2
+- tapOn:
+    id: procedural-scene-sleep
+- takeScreenshot: captures/procedural-sleep
+- tapOn:
+    id: procedural-density-playful
+- takeScreenshot: captures/procedural-sleep-playful

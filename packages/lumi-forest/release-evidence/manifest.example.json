@@ -1,0 +1,23 @@
+{
+  "_EXAMPLE_ONLY_DO_NOT_USE_AS_EVIDENCE": "Replace all placeholders and remove this key. Physical device results required.",
+  "schemaVersion": 1,
+  "release": "1.0.0",
+  "gitCommit": "REPLACE_WITH_40_CHAR_RELEASE_SHA",
+  "devices": [
+    {
+      "platform": "android",
+      "physical": true,
+      "buildType": "release",
+      "model": "REPLACE_ACTUAL_MODEL",
+      "osVersion": "REPLACE_ACTUAL_OS",
+      "refreshHz": 60,
+      "scenarios": [
+        {"name":"scene-scroll","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
+        {"name":"motion-idle","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
+        {"name":"milestone-celebration","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
+        {"name":"scene-transition","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"}
+      ]
+    },
+    {"platform":"ios","physical":true,"buildType":"release","model":"REPLACE_ACTUAL_MODEL","osVersion":"REPLACE_ACTUAL_OS","refreshHz":60,"scenarios":[]}
+  ]
+}

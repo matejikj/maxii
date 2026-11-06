@@ -1,0 +1,15 @@
+appId: com.example.lumiforestlab
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: scene-selector-perf
+- assertVisible:
+    id: perf-lab
+- tapOn:
+    id: run-js-benchmark
+- extendedWaitUntil:
+    visible:
+      id: perf-results
+    timeout: 20000
+- takeScreenshot: captures/perf-results

@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "LUMI Forest Lab",
+    "slug": "lumi-forest-lab",
+    "scheme": "lumiforestlab",
+    "version": "0.6.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.example.lumiforestlab",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.lumiforestlab",
+      "edgeToEdgeEnabled": true
+    },
+    "newArchEnabled": true,
+    "experiments": {
+      "tsconfigPaths": true
+    }
+  }
+}

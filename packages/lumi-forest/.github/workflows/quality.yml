@@ -1,0 +1,60 @@
+name: LUMI CI (not a device certification)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      # Commit package-lock.json once internet is available. Until then this
+      # check is not reproducible and CANNOT qualify a release.
+      - name: Install JS dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit; else
+            echo '::warning::No package-lock.json: using non-reproducible install; publication is blocked'
+            npm install --no-audit --no-fund
+          fi
+      - name: Install image-regression dependencies
+        run: python -m pip install -r tools/requirements-visual.txt
+      - name: Build distributable package before consumer typecheck
+        run: npm run build
+      - name: Public API, TypeScript, contract and source tests
+        run: |
+          npm run typecheck:all
+          npm run api:check
+          npm test
+          npm run check:tsx
+          npm run test:device-parser
+      - name: Offline SVG regression across viewport, character, procedural and motion
+        run: |
+          npm run test:visual
+          npm run test:characters:visual
+          npm run test:procedural:visual
+          npm run test:motion:visual
+      - name: Validate contents of publication tarball
+        run: npm run release:verify-package && npm run release:smoke-core && npm pack --dry-run --ignore-scripts
+      - name: Expo dependency alignment and both mobile Metro exports
+        run: |
+          npm run expo:doctor
+          npm run expo:bundle:android
+          npm run expo:bundle:ios
+          npm run expo:storybook:bundle:android
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumi-regression-diagnostics
+          path: |
+            tests/**/actual/
+            reports/
+          if-no-files-found: ignore
