@@ -29,15 +29,18 @@ jobs:
           npm run test:all
       - name: Validate contents of publication tarball
         run: npm run release:verify-package --workspace @lumi/forest-design && npm run release:smoke-core --workspace @lumi/forest-design && npm pack --workspace @lumi/forest-design --dry-run --ignore-scripts
-      - name: Expo dependency alignment and both mobile Metro exports
+      - name: Expo dependency alignment and mobile/web Metro exports
         run: |
           npm run expo:doctor
           npm run expo:bundle:android
           npm run expo:bundle:ios
+          npm run expo:bundle:web
           npm run expo:storybook:bundle:android
+          npm run expo:storybook:bundle:web
           npm run baby:doctor
           npm run baby:bundle:android
           npm run baby:bundle:ios
+          npm run baby:bundle:web
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

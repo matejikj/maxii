@@ -10,6 +10,6 @@ test('story catalog covers all key components and uses dedicated bundle entry', 
   }
   const metro = fs.readFileSync(path.join(root, 'metro.config.js'), 'utf8');
   assert.match(metro, /withStorybook/);
-  assert.match(fs.readFileSync(path.join(root, '.rnstorybook/index.tsx'), 'utf8'), /AppRegistry\.registerComponent/);
+  assert.match(fs.readFileSync(path.join(root, '.rnstorybook/index.tsx'), 'utf8'), /registerRootComponent\(StorybookRoot\)/);
   assert.doesNotMatch(fs.readFileSync(path.join(root, 'App.tsx'), 'utf8'), /\.rnstorybook/);
 });

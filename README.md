@@ -19,8 +19,11 @@ Node.js >= 22.13. Všechny následující příkazy spouštěj z kořene repozit
 ```sh
 npm ci
 npm run baby:start       # aplikace pro rodiče (také npm start)
+npm run baby:web         # aplikace pro rodiče v prohlížeči
 npm run showcase:start   # všechny vývojové laby včetně Motion Labu
+npm run showcase:web     # vývojová galerie v prohlížeči
 npm run storybook        # samostatný Storybook vstup galerie
+npm run storybook:web    # stejný katalog komponent v prohlížeči
 ```
 
 Instalace a společný `package-lock.json` patří do kořene. Při změně závislostí použij `npm install` a commitni i upravený lockfile; běžné instalace a CI používají `npm ci`. Nepřidávej lockfily do jednotlivých workspace adresářů.
@@ -39,9 +42,12 @@ npm run expo:doctor
 npm run baby:doctor
 npm run expo:bundle:android
 npm run expo:bundle:ios
+npm run expo:bundle:web
 npm run expo:storybook:bundle:android
+npm run expo:storybook:bundle:web
 npm run baby:bundle:android
 npm run baby:bundle:ios
+npm run baby:bundle:web
 ```
 
 Obrazové regrese vyžadují Python a `python3 -m pip install -r packages/lumi-forest/tools/requirements-visual.txt`. Referenční snímky patří do Gitu, exporty, náhledy, zachycené snímky a lokální reporty se ignorují. Maestro scénáře pro galerii jsou v `apps/lumi-showcase/.maestro`.

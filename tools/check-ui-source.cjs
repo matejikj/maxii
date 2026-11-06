@@ -8,7 +8,7 @@ let errors = 0;
 function scan(dir) {
   for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
     const pathName = path.join(dir, item.name);
-    if (item.isDirectory() && !['node_modules', '.expo', '.expo-export', 'dist-android', 'dist-ios', 'dist-storybook-android'].includes(item.name)) scan(pathName);
+    if (item.isDirectory() && !['node_modules', '.expo', '.expo-export'].includes(item.name) && !item.name.startsWith('dist-')) scan(pathName);
     else if (/\.tsx?$/.test(item.name) && !item.name.endsWith('.d.ts')) {
       count++;
       const r = ts.transpileModule(fs.readFileSync(pathName, 'utf8'), {

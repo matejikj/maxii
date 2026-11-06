@@ -15,17 +15,23 @@
     "baby:start": "npm run start --workspace @maxii/baby-tracker",
     "baby:android": "npm run android --workspace @maxii/baby-tracker",
     "baby:ios": "npm run ios --workspace @maxii/baby-tracker",
+    "baby:web": "npm run web --workspace @maxii/baby-tracker",
     "baby:doctor": "npm run doctor --workspace @maxii/baby-tracker",
     "baby:bundle:android": "npm run export:android --workspace @maxii/baby-tracker",
     "baby:bundle:ios": "npm run export:ios --workspace @maxii/baby-tracker",
+    "baby:bundle:web": "npm run export:web --workspace @maxii/baby-tracker",
     "showcase:start": "npm run start --workspace @lumi/showcase",
+    "showcase:web": "npm run web --workspace @lumi/showcase",
     "storybook": "npm run storybook --workspace @lumi/showcase",
+    "storybook:web": "npm run storybook:web --workspace @lumi/showcase",
     "expo:start": "npm run showcase:start",
     "expo:doctor": "npm run doctor --workspace @lumi/showcase",
     "expo:bundle:android": "npm run export:android --workspace @lumi/showcase",
     "expo:bundle:ios": "npm run export:ios --workspace @lumi/showcase",
+    "expo:bundle:web": "npm run export:web --workspace @lumi/showcase",
     "expo:storybook": "npm run storybook",
     "expo:storybook:bundle:android": "npm run storybook:export:android --workspace @lumi/showcase",
+    "expo:storybook:bundle:web": "npm run storybook:export:web --workspace @lumi/showcase",
     "build": "npm run build --workspace @lumi/forest-design",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "typecheck:all": "npm run typecheck",
@@ -35,7 +41,7 @@
     "test:all": "npm run test:all --workspace @lumi/forest-design && npm run test:apps && npm run check:tsx"
   },
   "devDependencies": {
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.3"
   },
   "overrides": {
     "react-native-worklets": "0.13.0"

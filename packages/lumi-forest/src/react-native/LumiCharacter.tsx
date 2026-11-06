@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 import Svg from 'react-native-svg';
 import type { LumiAnimal } from '../core/types';
 import { CHARACTER_BLUEPRINTS } from '../core/characters/blueprint';
@@ -30,8 +30,10 @@ export const LumiCharacter = React.memo(function LumiCharacter({
     ...(proportions === undefined ? {} : { proportions }),
   }), [species, pose, expression, accessories, proportions]);
   const nodes = useMemo(() => [geometry], [geometry]);
+  // react-native-svg forwards native accessibility props to the DOM on web.
   return (
-    <Svg accessible={false} pointerEvents="none" style={style}
+    <Svg {...(Platform.OS === 'web' ? { 'aria-hidden': true, focusable: false } : { accessible: false })}
+      pointerEvents="none" style={style}
       width={width} height={height}
       viewBox="-176 -178 352 360" preserveAspectRatio="xMidYMid meet">
       <VectorNodeView nodes={nodes} />

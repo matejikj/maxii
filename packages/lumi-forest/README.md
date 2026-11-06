@@ -74,6 +74,8 @@ A `LumiBackground` is absolute-positioned decorative SVG; arrange the app's real
 
 Only these entrypoints and `package.json` are public. Do not deep-import source files. `contracts/public-api.json` freezes exported symbol names. An intentional change requires `npm run api:approve` and a SemVer review.
 
+Native and browser consumers use the shipped TypeScript sources through the `react-native` and `browser` export conditions. Expo transpiles these sources for the selected platform, so workspace web development does not depend on a previously generated `lib/`. Default Node/ESM consumers continue to use the Bob build outputs.
+
 ## Versions, migrations and compatibility
 
 - Stored Scene Recipe v1 → v2 via `migrateSceneRecipe()`; `compileSceneRecipe()` targets SceneDocument v1 IR to preserve old SVG art.

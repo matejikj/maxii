@@ -20,7 +20,9 @@ __pycache__/
 .expo-export/
 dist-android/
 dist-ios/
+dist-web/
 dist-storybook-android/
+dist-storybook-web/
 coverage/
 *.tgz
 **/.maestro/captures/

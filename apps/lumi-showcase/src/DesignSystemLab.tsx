@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Platform, ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Circle } from 'react-native-svg';
 import {
   LumiThemeProvider, useLumiTheme, LumiText, LumiButton, LumiCard, LumiInput, LumiChip,
@@ -15,7 +15,8 @@ const events = [
 
 function MiniChart() {
   const { colors } = useLumiTheme();
-  return <Svg viewBox="0 0 300 125" height={125} width="100%" accessible={false}>
+  return <Svg viewBox="0 0 300 125" height={125} width="100%"
+    {...(Platform.OS === 'web' ? { 'aria-hidden': true, focusable: false } : { accessible: false })}>
     {[25, 60, 95].map(y => <Line key={y} x1={12} x2={290} y1={y} y2={y} stroke={colors.border} strokeWidth={1} />)}
     {[58, 63, 77, 81, 95, 108, 113].map((value, index) =>
       <Rect key={index} x={18 + index * 40} y={120 - value} width={23} height={value} rx={8} fill={index === 6 ? colors.primary : colors.sceneAccentSoft} />)}
