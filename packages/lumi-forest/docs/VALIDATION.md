@@ -16,7 +16,7 @@ Check terminal output or CI for the latest numerical test counts; the values abo
 
 - `npm run typecheck:all`: full React Native and Expo typecheck, because registry-installed dependencies are unavailable.
 - Expo start, Expo SDK dependency doctor, Android/iOS Metro production exports, native release builds.
-- Real-device Android/iOS screenshot capture (`.maestro/capture.yaml`, `.maestro/characters.yaml`).
+- Real-device Android/iOS screenshot capture (`apps/lumi-showcase/.maestro/capture.yaml`, `apps/lumi-showcase/.maestro/characters.yaml`).
 - Real-device frame pacing, GPU timing, memory and screen-switch latency. Budgets in `PERFORMANCE.md` remain targets, not measured results.
 
 The source archive intentionally contains no unverified `package-lock.json`. On a network-enabled workstation, run `npm install`, validate Expo peer versions, commit the resulting lock and change the CI installation step to `npm ci`.

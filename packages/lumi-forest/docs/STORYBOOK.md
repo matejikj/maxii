@@ -1,6 +1,6 @@
 # LUMI v0.5 on-device Storybook
 
-The Storybook configuration follows React Native Storybook 10.4+ guidance: `withStorybook` from `@storybook/react-native/withStorybook`, a dedicated `.rnstorybook/index.tsx` that registers the root, stories in `apps/expo-showcase/stories`, and `STORYBOOK_ENABLED=true` for entry-point replacement. Ordinary release builds do **not** include Storybook UI modules by this route.
+The Storybook configuration follows React Native Storybook 10.4+ guidance: `withStorybook` from `@storybook/react-native/withStorybook`, a dedicated `.rnstorybook/index.tsx` that registers the root, stories in `apps/lumi-showcase/stories`, and `STORYBOOK_ENABLED=true` for entry-point replacement. Ordinary release builds do **not** include Storybook UI modules by this route.
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ npm run expo:doctor
 npm run expo:start       # Original Expo scene/character labs + new UI Kit tab
 npm run expo:storybook   # Separate Storybook app entry point
 # or
-npm run storybook:android --workspace @lumi/expo-showcase
-npm run storybook:ios --workspace @lumi/expo-showcase
+npm run storybook:android --workspace @lumi/showcase
+npm run storybook:ios --workspace @lumi/showcase
 ```
 
 `npm run expo:storybook:bundle:android` checks the Storybook JS entry in CI. If Storybook version or Expo bundler behavior changes, recheck the `withStorybook` config and generated `storybook.requires.ts`; do not hand-edit generated code.
@@ -44,10 +44,10 @@ The `DesignSystemLab` in the ordinary showcase additionally tests actual state c
 After building/installing the app on a fixed simulator/device profile, use:
 
 ```bash
-maestro test .maestro/ui-design-system.yaml
-python3 tools/ui-visual-regression.py verify
+maestro test apps/lumi-showcase/.maestro/ui-design-system.yaml
+python3 packages/lumi-forest/tools/ui-visual-regression.py verify
 # Only after human approval of changes:
-python3 tools/ui-visual-regression.py approve
+python3 packages/lumi-forest/tools/ui-visual-regression.py approve
 ```
 
 Keep Android and iOS, font scaling and screen sizes as **separate** screenshot baseline directories. No native screenshots have been captured in this offline workspace; `tests/ui-native/baselines` is intentionally empty. CI must not claim screenshot success without a real device/emulator and reviewed baselines.

@@ -20,20 +20,20 @@ OS coverage still needed: low- and mid-range Android hardware (including 60/120H
 ```bash
 npm install
 npm run typecheck:all
-cd apps/expo-showcase
+cd apps/lumi-showcase
 npx expo run:android --variant release  # USB connected, adb recognized
 # On macOS with a configured iOS real device:
 # npx expo run:ios --configuration Release --device
 cd ../..
 
 # Maestro CLI installed and device attached; from repository root:
-maestro test .maestro/capture.yaml
-# Screenshots saved under .maestro/captures/*.png by the flow.
-python3 tools/device/compare-screenshots.py \
+maestro test apps/lumi-showcase/.maestro/capture.yaml
+# Screenshots saved under apps/lumi-showcase/.maestro/captures/*.png by the flow.
+python3 packages/lumi-forest/tools/device/compare-screenshots.py \
   --platform android --profile pixel7-1080x2400-3x --approve
-# Inspect and commit the newly approved baselines to tests/native/baselines/.
+# Inspect and commit the newly approved baselines to packages/lumi-forest/tests/native/baselines/.
 # Then later RUN WITHOUT --approve to verify real device regression:
-python3 tools/device/compare-screenshots.py \
+python3 packages/lumi-forest/tools/device/compare-screenshots.py \
   --platform android --profile pixel7-1080x2400-3x
 ```
 
@@ -43,7 +43,7 @@ For iOS choose `--platform ios` and an exact device/OS/render-scale profile. Do 
 
 ```bash
 # On physical device, install RELEASE build first. Start app, then:
-bash tools/device/measure-android.sh com.example.lumiforestlab 60 ./device-perf-output
+bash packages/lumi-forest/tools/device/measure-android.sh com.example.lumiforestlab 60 ./device-perf-output
 # Reset gfxinfo, then manually switch LUMI scenes many times as instructed.
 # Results: device-perf-output/device.txt, framestats.txt, summary.json
 ```
@@ -62,7 +62,7 @@ In Expo Showcase open `perf` tab → `Změřit na zařízení`. 300 `composeScen
 
 ```bash
 # After installing a release build and Maestro CLI on an actual device:
-maestro test .maestro/characters.yaml
+maestro test apps/lumi-showcase/.maestro/characters.yaml
 # Captures are made for rabbit/bear/fox/otter/hedgehog and one accessory variant.
 ```
 

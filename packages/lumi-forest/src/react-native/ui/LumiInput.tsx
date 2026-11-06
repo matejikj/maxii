@@ -11,7 +11,9 @@ export interface LumiInputProps extends TextInputProps {
   containerStyle?: StyleProp<ViewStyle>;
 }
 /** Caller owns value and validation; hint/error never compete for vertical real estate. */
-export const LumiInput = React.forwardRef<React.ComponentRef<typeof TextInput>, LumiInputProps>(function LumiInput({
+export const LumiInput: React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<LumiInputProps> & React.RefAttributes<React.ComponentRef<typeof TextInput>>
+> = React.forwardRef<React.ComponentRef<typeof TextInput>, LumiInputProps>(function LumiInput({
   label, hint, error, required = false, editable = true, containerStyle, style,
   accessibilityLabel, accessibilityHint, onFocus, onBlur, ...rest
 }, ref) {

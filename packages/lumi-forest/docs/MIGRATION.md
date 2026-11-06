@@ -30,7 +30,7 @@ Starý exporter mohl být používán jako runtime generátor. To již není dop
 
 ## v0.2.0 → v0.2.1
 
-No breaking change to `composeScene`, `SceneDocument`, or existing scene SVG output. New exports: `CHARACTER_BLUEPRINTS`, `compileCharacter`, character contracts, `resolveAspectMode`, `computeViewportLayout`, viewport fixtures, performance budgets, node count helper. `CHARACTER_CATALOG` remains available as a compatibility facade. `LumiVectorDocument` adds `mode="auto"` for measured-container responsive display; default is still `cover`. New Expo showcase under `apps/expo-showcase/`; `npm install` from repository root resolves its local `file:../..` framework dependency.
+No breaking change to `composeScene`, `SceneDocument`, or existing scene SVG output. New exports: `CHARACTER_BLUEPRINTS`, `compileCharacter`, character contracts, `resolveAspectMode`, `computeViewportLayout`, viewport fixtures, performance budgets, node count helper. `CHARACTER_CATALOG` remains available as a compatibility facade. `LumiVectorDocument` adds `mode="auto"` for measured-container responsive display; default is still `cover`. New Expo showcase under `apps/lumi-showcase/`; `npm install` from repository root links its declared `@lumi/forest-design` workspace dependency. The repository now has a root workspace manifest, a separate `apps/baby-tracker` product app, and no apps nested inside the library.
 
 ## v0.2.1 → v0.3.0 (Character Engine)
 

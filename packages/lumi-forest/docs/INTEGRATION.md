@@ -24,4 +24,4 @@
 - If you need editable vector data, use `readSceneDocument` at any trust boundary; don't inject raw XML into `SvgXml`.
 - Keep Storybook excluded from production entry and confirm via Metro bundle.
 
-Refer to `apps/expo-showcase/App.tsx` for the actual showcase.
+Refer to `apps/lumi-showcase/App.tsx` for the actual showcase.

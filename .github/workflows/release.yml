@@ -28,15 +28,18 @@ jobs:
         run: |
           test -s package-lock.json || { echo 'package-lock.json missing: release denied'; exit 1; }
       - run: npm ci --no-audit
-      - run: python -m pip install -r tools/requirements-visual.txt
+      - run: python -m pip install -r packages/lumi-forest/tools/requirements-visual.txt
       - name: Gate all quality checks and export builds
         run: |
           npm run build
-          npm run typecheck:all
-          npm run test:all
+          npm run typecheck --workspace @lumi/forest-design
+          npm run typecheck --workspace @lumi/showcase
+          npm run test:all --workspace @lumi/forest-design
+          npm run test:apps
           npm run expo:bundle:android
           npm run expo:bundle:ios
       - name: Require actual Android and iOS evidence for this exact commit
+        working-directory: packages/lumi-forest
         run: |
           test -s release-evidence/manifest.json || { echo 'Physical device release evidence missing'; exit 1; }
           npm run release:verify-device
@@ -45,9 +48,9 @@ jobs:
         env:
           TAG: ${{ inputs.release_tag }}
         run: |
-          node -e "const p=require('./package.json');if(process.env.TAG!=='v'+p.version)throw Error('Tag/package version mismatch')"
+          node -e "const p=require('./packages/lumi-forest/package.json');if(process.env.TAG!=='v'+p.version)throw Error('Tag/package version mismatch')"
       - name: Pack audited npm tarball (DO NOT publish to npm)
-        run: npm run release:verify-package && npm run release:smoke-core && npm pack --ignore-scripts --pack-destination .
+        run: npm run release:verify-package --workspace @lumi/forest-design && npm run release:smoke-core --workspace @lumi/forest-design && npm pack --workspace @lumi/forest-design --ignore-scripts --pack-destination .
       - name: Create GitHub release candidate artifact
         env:
           GH_TOKEN: ${{ github.token }}

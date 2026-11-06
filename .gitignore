@@ -14,3 +14,15 @@ __pycache__/
 .env.*
 !.env.example
 !.env.*.example
+
+# Expo app output and device captures
+.expo/
+.expo-export/
+dist-android/
+dist-ios/
+dist-storybook-android/
+coverage/
+*.tgz
+**/.maestro/captures/
+**/.maestro/screenshots/
+**/.rnstorybook/storybook.requires.ts

@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "LUMI Baby Tracker",
+    "slug": "lumi-baby-tracker",
+    "scheme": "lumibaby",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.example.lumibabytracker",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.lumibabytracker"
+    }
+  }
+}

@@ -44,12 +44,12 @@ const AnimatedPart = React.memo(function AnimatedPart({ part, blink, ear, active
   const x = part.pivot?.x ?? 0;
   const y = part.pivot?.y ?? 0;
   const channel = part.channel;
-  const animatedProps = useAnimatedProps(() => {
+  const animatedProps = useAnimatedProps<{ scaleY: number; rotation: number }>(() => {
     if (channel === 'leftEye' || channel === 'rightEye') {
-      return { scaleY: blink.value };
+      return { scaleY: blink.value, rotation: 0 };
     }
     const direction = channel === 'rightEar' ? -1 : 1;
-    return { rotation: ear.value * direction };
+    return { rotation: ear.value * direction, scaleY: 1 };
   }, [channel]);
   const node = useMemo(() => [part.node], [part.node]);
   if (!active || channel === 'static') return <VectorNodeView nodes={node}/>;

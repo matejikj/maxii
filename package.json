@@ -1,0 +1,43 @@
+{
+  "name": "maxii",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/lumi-forest",
+    "apps/lumi-showcase",
+    "apps/baby-tracker"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "npm run baby:start",
+    "baby:start": "npm run start --workspace @maxii/baby-tracker",
+    "baby:android": "npm run android --workspace @maxii/baby-tracker",
+    "baby:ios": "npm run ios --workspace @maxii/baby-tracker",
+    "baby:doctor": "npm run doctor --workspace @maxii/baby-tracker",
+    "baby:bundle:android": "npm run export:android --workspace @maxii/baby-tracker",
+    "baby:bundle:ios": "npm run export:ios --workspace @maxii/baby-tracker",
+    "showcase:start": "npm run start --workspace @lumi/showcase",
+    "storybook": "npm run storybook --workspace @lumi/showcase",
+    "expo:start": "npm run showcase:start",
+    "expo:doctor": "npm run doctor --workspace @lumi/showcase",
+    "expo:bundle:android": "npm run export:android --workspace @lumi/showcase",
+    "expo:bundle:ios": "npm run export:ios --workspace @lumi/showcase",
+    "expo:storybook": "npm run storybook",
+    "expo:storybook:bundle:android": "npm run storybook:export:android --workspace @lumi/showcase",
+    "build": "npm run build --workspace @lumi/forest-design",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck:all": "npm run typecheck",
+    "check:tsx": "node tools/check-ui-source.cjs",
+    "test:apps": "node --test tests/*.test.cjs apps/lumi-showcase/tests/*.test.cjs",
+    "test": "npm test --workspace @lumi/forest-design && npm run test:apps",
+    "test:all": "npm run test:all --workspace @lumi/forest-design && npm run test:apps && npm run check:tsx"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "react-native-worklets": "0.13.0"
+  }
+}

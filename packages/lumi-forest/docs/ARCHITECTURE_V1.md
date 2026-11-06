@@ -42,7 +42,7 @@ App Data (child's records)  [NOT in LUMI library]
 - `src/core/scenes`, `characters`, `procedural`, `motion`, `ui`: platform-independent compilers.
 - `src/core/versioning`: persistent recipes, blueprint migration and untrusted-document validation.
 - `src/react-native`: SVG adapters, animated components and accessible UI.
-- `apps/expo-showcase`: demo, labs and isolated Storybook.
+- `apps/lumi-showcase`: demo, labs and isolated Storybook.
 - `tests`: contract and regression tests; `contracts/public-api.json` freezes names.
 - `tools/device`: parsers and release-evidence verifier, not automatically authenticated device tests.
 - `docs`: public API, versioning, integration, performance and release operations.

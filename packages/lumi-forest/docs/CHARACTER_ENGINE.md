@@ -96,4 +96,4 @@ At most 3 simultaneously, no duplicates in the same slot (bow + flower is invali
 - `npm test`: finite geometry, required anatomical roles, no mutations, variant uniqueness and determinism, accessories/ranges, v1 backward compatibility, scene integration and original scene SHA-256 hashes.
 - `npm run test:characters:visual`: 40 character PNG snapshots. To approve intentional design changes, run `npm run characters:visual:approve` and review every changed cell in `previews/lumi-v0.3-character-matrix.png`.
 - `npm run test:visual`: 30 prior screen/viewport raster snapshots must remain unchanged.
-- `.maestro/characters.yaml`: capture actual Expo Character Lab across the five species on physical devices after building.
+- `apps/lumi-showcase/.maestro/characters.yaml`: capture actual Expo Character Lab across the five species on physical devices after building.

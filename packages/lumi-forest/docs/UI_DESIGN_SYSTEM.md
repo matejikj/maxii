@@ -27,9 +27,9 @@ src/react-native/
     LumiProgress.tsx
     LumiSectionHeader.tsx
     LumiEmptyState.tsx
-apps/expo-showcase/src/DesignSystemLab.tsx
-apps/expo-showcase/stories/*.stories.tsx
-apps/expo-showcase/.rnstorybook/*
+apps/lumi-showcase/src/DesignSystemLab.tsx
+apps/lumi-showcase/stories/*.stories.tsx
+apps/lumi-showcase/.rnstorybook/*
 ```
 
 No `src/core/` file imports React, React Native, Storybook or native modules. Themes are **pure data**. The theme provider only chooses an already-frozen object; when `(scene, mode)` is unchanged, context reference stays stable. UI components subscribe to theme, not to unrelated app data.

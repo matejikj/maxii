@@ -27,18 +27,19 @@ jobs:
           TAG: ${{ inputs.release_tag }}
         run: |
           test -s package-lock.json || exit 1
-          node -e "let p=require('./package.json');if(p.license==='UNLICENSED')throw Error('Set a reviewed license before public npm publication');if('v'+p.version!==process.env.TAG)throw Error('Incorrect release tag')"
+          node -e "let p=require('./packages/lumi-forest/package.json');if(p.license==='UNLICENSED')throw Error('Set a reviewed license before public npm publication');if('v'+p.version!==process.env.TAG)throw Error('Incorrect release tag')"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
       - run: npm ci --no-audit
-      - run: python -m pip install -r tools/requirements-visual.txt
-      - run: npm run build && npm run typecheck:all && npm run test:all && npm run release:verify-package && npm run release:smoke-core && npm run expo:bundle:android && npm run expo:bundle:ios
+      - run: python -m pip install -r packages/lumi-forest/tools/requirements-visual.txt
+      - run: npm run build && npm run typecheck --workspace @lumi/forest-design && npm run typecheck --workspace @lumi/showcase && npm run test:all --workspace @lumi/forest-design && npm run test:apps && npm run release:verify-package --workspace @lumi/forest-design && npm run release:smoke-core --workspace @lumi/forest-design && npm run expo:bundle:android && npm run expo:bundle:ios
       - name: Require physical-device release evidence
+        working-directory: packages/lumi-forest
         run: |
           npm run release:verify-device
           node -e "const e=require('./release-evidence/manifest.json');const head=require('child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();if(e.gitCommit!==head)throw Error('Device evidence commit mismatch')"
       - name: Enable OIDC npm CLI (npm trusted publisher must be configured first)
         run: npm install -g npm@^11.5.1
       - name: Publish explicitly, using npm trusted publishing and provenance
-        run: npm publish --access public --ignore-scripts
+        run: npm publish --workspace @lumi/forest-design --access public --ignore-scripts

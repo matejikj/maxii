@@ -9,10 +9,6 @@ coverage/
 **/__pycache__/
 tests/visual/actual/
 tools/device/runs/
-.maestro/captures/
-.maestro/screenshots/
-apps/expo-showcase/dist-android/
-apps/expo-showcase/dist-ios/
 
 tests/ui-native/actual/
 lib/
@@ -24,4 +20,3 @@ release-evidence/*.local.json
 /previews/
 /reports/
 /tests/*/actual/
-/apps/expo-showcase/.rnstorybook/storybook.requires.ts

@@ -69,8 +69,12 @@ export const LumiAnimatedProceduralBackground = React.memo(function LumiAnimated
       {base && <LumiVectorDocument document={base} mode="contain"/>}
       {placement && (
         <LumiAnimatedCharacter species={animal ?? SCENE_CATALOG[scene].defaultAnimal}
-          pose={pose} expression={expression} accessories={accessories} proportions={proportions}
-          motion={motion} playing={playing} celebrationKey={celebrationKey} frame="procedural"
+          pose={pose}
+          {...(expression === undefined ? {} : { expression })}
+          {...(accessories === undefined ? {} : { accessories })}
+          {...(proportions === undefined ? {} : { proportions })}
+          motion={motion} playing={playing}
+          {...(celebrationKey === undefined ? {} : { celebrationKey })} frame="procedural"
           width={placement.bounds.width} height={placement.bounds.height}
           style={{ position: 'absolute', left: placement.bounds.x, top: placement.bounds.y }}/>
       )}

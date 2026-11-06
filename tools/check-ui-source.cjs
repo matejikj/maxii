@@ -8,7 +8,7 @@ let errors = 0;
 function scan(dir) {
   for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
     const pathName = path.join(dir, item.name);
-    if (item.isDirectory()) scan(pathName);
+    if (item.isDirectory() && !['node_modules', '.expo', '.expo-export', 'dist-android', 'dist-ios', 'dist-storybook-android'].includes(item.name)) scan(pathName);
     else if (/\.tsx?$/.test(item.name) && !item.name.endsWith('.d.ts')) {
       count++;
       const r = ts.transpileModule(fs.readFileSync(pathName, 'utf8'), {
@@ -22,6 +22,6 @@ function scan(dir) {
     }
   }
 }
-for (const rel of ['src/react-native', 'apps/expo-showcase/src', 'apps/expo-showcase/stories', 'apps/expo-showcase/.rnstorybook']) scan(path.join(project, rel));
+for (const rel of ['packages/lumi-forest/src', 'packages/lumi-forest/examples', 'apps/lumi-showcase', 'apps/baby-tracker']) scan(path.join(project, rel));
 console.log(`${count} RN/Storybook TypeScript files checked for syntax; errors: ${errors}. Full native typecheck requires npm dependencies.`);
 process.exitCode = errors ? 1 : 0;

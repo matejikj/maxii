@@ -4,7 +4,8 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "noEmit": true
+    "noEmit": true,
+    "customConditions": ["react-native"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }

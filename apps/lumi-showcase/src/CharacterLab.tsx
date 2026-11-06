@@ -67,7 +67,7 @@ export function CharacterLab() {
           <View key={`${pose}-${expression}`} testID={`character-variant-${species}-${pose}-${expression}`}
             style={[styles.tile, { width: cardWidth }]}>
             <LumiCharacter species={species} pose={pose} expression={expression}
-              accessories={selectedAccessories} proportions={proportions}
+              accessories={selectedAccessories} {...(proportions === undefined ? {} : { proportions })}
               width={cardWidth - 18} height={140}/>
             <Text style={styles.variantLabel}>{expression}</Text>
             <Text style={styles.poseLabel}>{pose}</Text>

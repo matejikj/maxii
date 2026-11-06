@@ -26,7 +26,7 @@ This document separates tests run in the artifact environment from checks that r
 
 1. Restore `npm install` on a machine with network, then run `npm run typecheck:all` and `npm run expo:doctor`; commit the lockfile and switch CI to `npm ci`.
 2. Build and boot Expo SDK 58 showcase on a real iPhone and mid-range Android with Hermes / Fabric and Reanimated 4.7 + Worklets 0.13. Verify SVG group numeric `rotation/scaleY` animated props and star offsets.
-3. Run `.maestro/motion.yaml` and test OS Reduce Motion while actively blinking / celebrating, AppState background/foreground, 30 rapid scene swaps, switch from idle to sleep.
+3. Run `apps/lumi-showcase/.maestro/motion.yaml` and test OS Reduce Motion while actively blinking / celebrating, AppState background/foreground, 30 rapid scene swaps, switch from idle to sleep.
 4. Measure P50/P95 GPU/UI frame completion, dropped frames, JS & native memory, frame scheduler, and thermal effects on at least two devices. Log device model, OS, refresh rate, and release commit SHA.
 5. Compare static frame with v0.5 artwork, verify no UI overlaps under animation; ensure a screen with no space to reserve safely omits the animal.
 6. Conduct VoiceOver/TalkBack review: decorative characters must remain hidden to screen readers, milestone success must be expressed through accessible UI text / announcement separately.

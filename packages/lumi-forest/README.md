@@ -3,7 +3,7 @@
 **Declarative, deterministic vector design system for React Native / Expo.**
 The library contains Character Engine (5 animals; expressions, poses and accessories), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
 
-**Certification status:** Pure TypeScript core, offline image regressions and API contracts have been tested. Full React Native typecheck, production mobile bundling and physical-device frame/memory metrics have **NOT** been independently verified in this environment. The release and npm publication workflows deliberately fail closed until these checks and real device evidence are provided. Do not claim a production-certified v1.0.0 yet.
+**Certification status:** Core tests, offline image regressions, API contracts, full workspace TypeScript checks, the Bob ESM/declaration build, and Android/iOS Metro exports have been verified during the monorepo migration. Physical-device rendering, frame/memory metrics, signed native builds and store distribution remain **NOT verified**. The release and npm publication workflows deliberately fail closed until real device evidence and the remaining release requirements are provided. Do not claim a production-certified v1.0.0 yet. Older validation documents describe the original offline environment.
 
 ## Supported environment
 
@@ -14,11 +14,13 @@ The library contains Character Engine (5 animals; expressions, poses and accesso
 
 ## Install / run the showcase
 
+Run these commands from the **repository root**. The framework is a publishable workspace at `packages/lumi-forest`; the Scene, Character, UI, Performance and Motion labs plus Storybook live in `apps/lumi-showcase`. The separate parent-facing app lives in `apps/baby-tracker` and starts with `npm run baby:start`. See the [repository guide](../../README.md).
+
 ```sh
-npm install                    # Requires npm network access; generate and commit package-lock.json once
+npm ci                        # Install from the shared repository-root lockfile
 npm run build                 # Bob ESM modules + TypeScript declarations
-npm run typecheck:all         # Source library + Expo showcase
-npm run test:all              # 129 pure tests, 120 image regressions, parser and API checks
+npm run typecheck:all         # Framework + both applications
+npm run test:all              # Framework, workspace boundaries and image regression checks
 npm run expo:doctor
 npm run expo:start            # Expo showcase (including Scene, Character, UI, Motion labs)
 ```
@@ -82,6 +84,8 @@ Only these entrypoints and `package.json` are public. Do not deep-import source 
 See [docs/VERSIONING.md](docs/VERSIONING.md), [docs/API_STABILITY.md](docs/API_STABILITY.md) and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
 ## Quality and performance
+
+Run framework-only commands from `packages/lumi-forest`:
 
 ```sh
 npm run typecheck:core

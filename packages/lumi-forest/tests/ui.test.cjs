@@ -66,17 +66,6 @@ test('native ui components source visual color only from theme tokens, not local
     assert.doesNotMatch(code, /#[0-9A-Fa-f]{3,8}\b/, `${file} uses a hardcoded color`);
   }
 });
-test('story catalog covers all key components and uses dedicated bundle entry', () => {
-  const root = path.join(__dirname, '../apps/expo-showcase');
-  const entries = fs.readdirSync(path.join(root, 'stories')).filter(n => n.endsWith('.stories.tsx'));
-  for (const required of ['Buttons', 'Input', 'Card', 'Typography', 'Timeline', 'Chart', 'BottomSheet', 'Controls', 'EmptyState']) {
-    assert.ok(entries.includes(required + '.stories.tsx'));
-  }
-  const metro = fs.readFileSync(path.join(root, 'metro.config.js'), 'utf8');
-  assert.match(metro, /withStorybook/);
-  assert.match(fs.readFileSync(path.join(root, '.rnstorybook/index.tsx'), 'utf8'), /AppRegistry\.registerComponent/);
-  assert.doesNotMatch(fs.readFileSync(path.join(root, 'App.tsx'), 'utf8'), /\.rnstorybook/);
-});
 test('screen reader semantics are present for progress, chart, buttons, and modal', () => {
   const root = path.join(__dirname, '../src/react-native/ui');
   for (const [file, marker] of [['LumiButton.tsx', 'accessibilityRole="button"'],

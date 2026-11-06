@@ -27,7 +27,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description='Compare device screenshots against explicitly approved captures')
     parser.add_argument('--platform', required=True, choices=['android', 'ios'])
     parser.add_argument('--profile', required=True, help='e.g. pixel7-1080x2400-3x')
-    parser.add_argument('--capture-dir', default=str(ROOT / '.maestro' / 'captures'))
+    parser.add_argument('--capture-dir', default=str(ROOT.parents[1] / 'apps' / 'lumi-showcase' / '.maestro' / 'captures'))
     parser.add_argument('--approve', action='store_true', help='Replace baselines; review diffs before committing')
     args = parser.parse_args()
     if not all(c.isalnum() or c in '-_' for c in args.profile):
