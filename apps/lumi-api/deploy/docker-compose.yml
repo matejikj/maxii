@@ -15,6 +15,7 @@ services:
     volumes:
       - lumi_pg_data:/var/lib/postgresql/data
       - ../migrations/001_family_identity.sql:/docker-entrypoint-initdb.d/001_family_identity.sql:ro
+      - ../migrations/002_worker_jobs.sql:/docker-entrypoint-initdb.d/002_worker_jobs.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d lumi_app']
       interval: 3s

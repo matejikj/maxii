@@ -1,0 +1,14 @@
+# TLS terminator for a single-VPS family stack. Database and Keycloak admin
+# stay on the internal Docker network — never published here.
+
+{$LUMI_PUBLIC_HOST:localhost} {
+	encode gzip
+	reverse_proxy api:8787
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+}

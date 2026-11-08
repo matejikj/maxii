@@ -20,6 +20,12 @@ export type ApiConfig = {
   readonly corsOrigins: readonly string[];
   readonly csrfCookieName: string;
   readonly sessionCookieName: string;
+  readonly rateLimitPerWindow: number;
+  readonly rateLimitWindowMs: number;
+  readonly requestTimeoutMs: number;
+  readonly workerId: string;
+  readonly workerLeaseMs: number;
+  readonly workerPollMs: number;
 };
 
 function readList(value: string | undefined): readonly string[] {
@@ -33,6 +39,11 @@ export function loadApiConfig(
   const role = env.LUMI_PROCESS_ROLE === 'worker' ? 'worker' : 'api';
   const port = Number(env.LUMI_API_PORT ?? '8787');
   const issuer = env.LUMI_OIDC_ISSUER?.trim() || 'http://127.0.0.1:8080/realms/lumi';
+  const rateLimitPerWindow = Number(env.LUMI_RATE_LIMIT_PER_WINDOW ?? '120');
+  const rateLimitWindowMs = Number(env.LUMI_RATE_LIMIT_WINDOW_MS ?? '60000');
+  const requestTimeoutMs = Number(env.LUMI_REQUEST_TIMEOUT_MS ?? '15000');
+  const workerLeaseMs = Number(env.LUMI_WORKER_LEASE_MS ?? '15000');
+  const workerPollMs = Number(env.LUMI_WORKER_POLL_MS ?? '1000');
   return {
     role,
     host: env.LUMI_API_HOST?.trim() || '127.0.0.1',
@@ -56,5 +67,11 @@ export function loadApiConfig(
     corsOrigins: readList(env.LUMI_CORS_ORIGINS),
     csrfCookieName: env.LUMI_CSRF_COOKIE_NAME?.trim() || 'lumi_csrf',
     sessionCookieName: env.LUMI_SESSION_COOKIE_NAME?.trim() || 'lumi_session',
+    rateLimitPerWindow: Number.isFinite(rateLimitPerWindow) ? rateLimitPerWindow : 120,
+    rateLimitWindowMs: Number.isFinite(rateLimitWindowMs) ? rateLimitWindowMs : 60_000,
+    requestTimeoutMs: Number.isFinite(requestTimeoutMs) ? requestTimeoutMs : 15_000,
+    workerId: env.LUMI_WORKER_ID?.trim() || `worker-${process.pid}`,
+    workerLeaseMs: Number.isFinite(workerLeaseMs) ? workerLeaseMs : 15_000,
+    workerPollMs: Number.isFinite(workerPollMs) ? workerPollMs : 1_000,
   };
 }

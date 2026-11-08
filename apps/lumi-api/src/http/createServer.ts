@@ -18,6 +18,7 @@ import { registerAuthRoutes } from '../auth/loginRoutes.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
 import { apiError } from './errors.ts';
+import { createFixedWindowRateLimiter } from './rateLimit.ts';
 
 export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
@@ -32,16 +33,34 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const tokens = new AccessTokenVerifier(config, store);
   const sessions = new AuthSessionStore();
   const oidc = new OidcTokenExchanger(config);
+  const rateLimiter = createFixedWindowRateLimiter({
+    limit: config.rateLimitPerWindow,
+    windowMs: config.rateLimitWindowMs,
+  });
   const app = Fastify({
     logger: false,
     bodyLimit: LUMI_API_LIMITS.maxJsonBodyBytes,
     requestIdHeader: 'x-request-id',
     genReqId: () => randomUUID(),
+    connectionTimeout: config.requestTimeoutMs,
+    requestTimeout: config.requestTimeoutMs,
   });
 
   registerAuthRoutes(app, { config, store, sessions, oidc });
 
   app.addHook('onRequest', async (request, reply) => {
+    const clientKey = request.ip || 'unknown';
+    if (!request.url.startsWith('/health') && !request.url.startsWith('/ready')) {
+      const limited = rateLimiter.check(clientKey);
+      if (!limited.allowed) {
+        reply.header('retry-after', String(limited.retryAfterSec));
+        const err = apiError('rate_limited', 'Too many requests', String(request.id), {
+          retryAfterSec: limited.retryAfterSec,
+        });
+        return reply.code(err.status).send(err.body);
+      }
+    }
+
     const origin = request.headers.origin;
     if (typeof origin === 'string' && config.corsOrigins.length > 0) {
       if (!config.corsOrigins.includes(origin)) {

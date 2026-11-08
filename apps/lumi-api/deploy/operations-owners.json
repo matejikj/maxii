@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "e2eeClaim": false,
+  "e2eeNote": "Family service processes domain changes server-side; TLS and disk encryption are not end-to-end encryption of diary content.",
+  "hostingProfile": "adr-0005-single-vps",
+  "defaultCandidate": {
+    "provider": "FORPSI",
+    "alternative": "Hetzner",
+    "minRamGb": 4,
+    "budgetNoteKcMonthly": "170-300 after promo, infrastructure only"
+  },
+  "roles": {
+    "composeOwner": "tech-lead",
+    "identityOwner": "tech-lead",
+    "backupOwner": "task-31",
+    "observabilityOwner": "task-39.2",
+    "familyReleaseGate": "task-32"
+  },
+  "handoff": {
+    "toTask31": [
+      "off-server encrypted restic/R2 copies",
+      "erasure registry outside the VPS",
+      "family restore preview path"
+    ],
+    "toTask392": [
+      "monitoring outside a failing VPS",
+      "named on-call owner",
+      "update/alarm/restore/rollback drills",
+      "verified LUKS unlock after reboot on the live host"
+    ],
+    "toTask32": [
+      "two-phone offline sync acceptance",
+      "permission and recovery evidence pack"
+    ]
+  },
+  "adapterTargetsWithoutSecrets": {
+    "oidc": ["keycloak_self_hosted", "future_supabase_otp"],
+    "database": ["postgres_self_hosted", "future_supabase_postgres"],
+    "apiRuntime": ["compose_on_vps", "future_render"]
+  }
+}

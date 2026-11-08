@@ -1,0 +1,120 @@
+# Overlay for a single cheap VPS (ADR 0005). Postgres is not published.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.vps.yml --profile api --profile worker up -d
+# Secrets come from a host-local env file outside Git.
+
+name: lumi-family
+
+services:
+  postgres:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    networks:
+      - lumi_internal
+
+  api:
+    profiles: ['api']
+    environment:
+      LUMI_PROCESS_ROLE: api
+      LUMI_API_HOST: 0.0.0.0
+      LUMI_API_PORT: '8787'
+      LUMI_DATABASE_URL: postgres://lumi_app:${LUMI_APP_DB_PASSWORD:-lumi_app_dev_only}@postgres:5432/lumi_app
+      LUMI_OIDC_ISSUER: ${LUMI_OIDC_ISSUER}
+      LUMI_OIDC_AUDIENCE: lumi-api
+      LUMI_OIDC_JWKS_URL: ${LUMI_OIDC_JWKS_URL}
+      LUMI_OIDC_CLIENT_ID: ${LUMI_OIDC_CLIENT_ID:-lumi-api}
+      LUMI_OIDC_CLIENT_SECRET: ${LUMI_OIDC_CLIENT_SECRET}
+      LUMI_CORS_ORIGINS: ${LUMI_CORS_ORIGINS}
+      LUMI_RATE_LIMIT_PER_WINDOW: ${LUMI_RATE_LIMIT_PER_WINDOW:-120}
+      LUMI_REQUEST_TIMEOUT_MS: ${LUMI_REQUEST_TIMEOUT_MS:-15000}
+      # Never enable mock IdP or HS256 test secrets on a shared host.
+      LUMI_OIDC_MOCK: '0'
+      LUMI_TEST_HS256_SECRET: ''
+    ports: !reset []
+    expose:
+      - '8787'
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - lumi_internal
+      - lumi_edge
+
+  worker-a:
+    image: node:22.15.0-bookworm-slim
+    working_dir: /workspace/apps/lumi-api
+    command: ['node', '--experimental-strip-types', 'src/main.ts']
+    profiles: ['worker']
+    environment:
+      LUMI_PROCESS_ROLE: worker
+      LUMI_WORKER_ID: worker-a
+      LUMI_DATABASE_URL: postgres://lumi_app:${LUMI_APP_DB_PASSWORD:-lumi_app_dev_only}@postgres:5432/lumi_app
+      LUMI_WORKER_LEASE_MS: '15000'
+      LUMI_WORKER_POLL_MS: '1000'
+    volumes:
+      - ../../..:/workspace:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - lumi_internal
+
+  worker-b:
+    image: node:22.15.0-bookworm-slim
+    working_dir: /workspace/apps/lumi-api
+    command: ['node', '--experimental-strip-types', 'src/main.ts']
+    profiles: ['worker']
+    environment:
+      LUMI_PROCESS_ROLE: worker
+      LUMI_WORKER_ID: worker-b
+      LUMI_DATABASE_URL: postgres://lumi_app:${LUMI_APP_DB_PASSWORD:-lumi_app_dev_only}@postgres:5432/lumi_app
+      LUMI_WORKER_LEASE_MS: '15000'
+      LUMI_WORKER_POLL_MS: '1000'
+    volumes:
+      - ../../..:/workspace:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - lumi_internal
+
+  caddy:
+    image: caddy:2.9.1-alpine
+    profiles: ['edge']
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      LUMI_PUBLIC_HOST: ${LUMI_PUBLIC_HOST:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - lumi_edge
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  lumi_edge:
+    driver: bridge
