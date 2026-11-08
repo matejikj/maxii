@@ -45,4 +45,10 @@ export {
   type HistoryDayQuery,
   type HistoryPageQuery,
 } from './historyQueries';
+export {
+  createCareOverviewCache,
+  loadDailyCareOverview,
+  loadWeeklyCareOverview,
+  type CareOverviewCache,
+} from './careOverviewQueries';
 

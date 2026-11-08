@@ -10,6 +10,7 @@ export type {
   ZonedInstant,
 } from './types';
 export {
+  addCalendarDays,
   calendarDateFromParts,
   calendarDateInZone,
   compareCalendarDates,

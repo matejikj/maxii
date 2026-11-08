@@ -17,7 +17,12 @@ import {
   updatePersonalProfile,
   type PersonalBootstrapResult,
 } from '../../application/personalBootstrap';
-import type { CommandDispatcher, ReadModelInvalidator } from '../../application';
+import type {
+  CareOverviewCache,
+  CommandDispatcher,
+  ReadModelInvalidator,
+} from '../../application';
+import { createCareOverviewCache } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
 import type { ChildProfile, UnitOfWorkFactory } from '../../domain';
 import { wirePersonalCommands } from '../openPersonalUnitOfWork';
@@ -27,6 +32,8 @@ export type PersonalRuntime = {
   unitOfWork: UnitOfWorkFactory;
   commands: CommandDispatcher;
   readModels: ReadModelInvalidator;
+  /** Derived day/week totals; cleared on care commits without touching diary rows. */
+  overviewCache: CareOverviewCache;
 };
 
 export type BootstrapContextValue = {
@@ -66,10 +73,22 @@ export function BootstrapProvider({
     if (cached.current) return cached.current;
     const unitOfWork = await openUnitOfWork();
     const wired = wirePersonalCommands(services, unitOfWork);
+    const overviewCache = createCareOverviewCache();
+    const readModels = wired.readModels!;
+    readModels.subscribe((topics) => {
+      if (
+        topics.includes('care') ||
+        topics.includes('sessions') ||
+        topics.includes('revisions')
+      ) {
+        overviewCache.invalidate();
+      }
+    });
     const next: PersonalRuntime = {
       unitOfWork,
       commands: wired.commands!,
-      readModels: wired.readModels!,
+      readModels,
+      overviewCache,
     };
     cached.current = next;
     return next;

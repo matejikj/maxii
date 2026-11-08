@@ -61,6 +61,17 @@ export {
   type TimelineCursor,
 } from './projections/historyQuery';
 export {
+  buildDailyCareOverview,
+  buildWeeklyCareOverview,
+  careEventTouchesLocalDay,
+  type CareOverviewPeriod,
+  type DailyCareOverview,
+  type IndicatorMeta,
+  type RunningCareIndicator,
+  type TracedSummary,
+  type WeeklyCareOverview,
+} from './projections/careOverview';
+export {
   cmToDisplay,
   displayToCm,
   displayToKg,

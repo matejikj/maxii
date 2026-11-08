@@ -72,3 +72,17 @@ export function endOfCalendarDayExclusive(date: CalendarDate, timeZone: TimeZone
   }
   return { epochMs: next.toMillis() };
 }
+
+/** Shift a civil date by whole days without inventing a wall-clock duration. */
+export function addCalendarDays(date: CalendarDate, deltaDays: number): CalendarDate {
+  const shifted = DateTime.fromObject(
+    { year: date.year, month: date.month, day: date.day },
+    { zone: 'UTC' },
+  ).plus({ days: deltaDays });
+  if (!shifted.isValid) {
+    throw new AppError('VALIDATION', 'Shifted calendar date is invalid', {
+      details: { date: formatCalendarDate(date), deltaDays },
+    });
+  }
+  return { year: shifted.year, month: shifted.month, day: shifted.day };
+}

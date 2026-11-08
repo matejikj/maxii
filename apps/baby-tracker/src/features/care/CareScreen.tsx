@@ -34,6 +34,7 @@ import {
   mintFeedingIds,
   sideLabel,
 } from '../today/recordFeedingIntent';
+import { CareOverviewPanel } from './CareOverviewPanel';
 import { GrowthChart } from './GrowthChart';
 import { GrowthRecorder } from './GrowthRecorder';
 import {
@@ -308,12 +309,13 @@ export function CareScreen() {
           Péče
         </LumiText>
         <LumiText tone="muted">
-          Růst a minulý spánek či kojení. Probíhající měření zůstává na Dnes.
+          Růst, popisné souhrny a minulý spánek či kojení. Probíhající měření zůstává na Dnes.
         </LumiText>
         <SaveFeedback
           state={feedback}
           {...(feedbackMessage !== undefined ? { message: feedbackMessage } : {})}
         />
+        <CareOverviewPanel overviewCache={runtime.overviewCache} />
         <LumiText variant="h2">Růst</LumiText>
         <GrowthChart
           series={buildGrowthSeries(growthEvents)}
