@@ -40,8 +40,19 @@ export function WelcomeScreen({
           Můžete hned zapisovat péči. Profil, narozeniny i účet doplníte později — nic z toho teď
           neblokuje deník.
         </LumiText>
-        <LumiButton title="Pokračovat na Dnes" onPress={onContinue} fullWidth />
-        <LumiButton title="Přeskočit úvod" variant="ghost" onPress={onSkip} fullWidth />
+        <LumiButton
+          title="Pokračovat na Dnes"
+          onPress={onContinue}
+          fullWidth
+          testID="welcome-continue"
+        />
+        <LumiButton
+          title="Přeskočit úvod"
+          variant="ghost"
+          onPress={onSkip}
+          fullWidth
+          testID="welcome-skip"
+        />
         <LumiButton
           title="Nastavit profil (volitelné)"
           variant="outline"

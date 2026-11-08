@@ -1,7 +1,26 @@
-# Personal client smoke: launch and see the Today shell. Requires a running
-# development build on a device/emulator; not a Metro-export substitute.
+# Personal client smoke against a running development/release build.
+# Not a Metro-export substitute: install com.matejikj first.
 appId: com.matejikj
 ---
 - launchApp
-- assertVisible: "Deník miminka"
-- assertVisible: "Každý den spolu"
+- extendedWaitUntil:
+    visible: "LUMI"
+    timeout: 30000
+# Welcome is skippable and must never gate care.
+- tapOn:
+    text: "Přeskočit úvod"
+    optional: true
+- assertVisible: "Dnes"
+- tapOn:
+    id: "quick-diaper"
+- assertVisible: "Zapsat mokrou"
+- tapOn:
+    id: "direct-wet"
+- assertVisible: "Přebalení uloženo."
+- tapOn: "Historie"
+- assertVisible: "Historie"
+- tapOn: "Rozvoj"
+- assertVisible:
+    id: "development-screen"
+- tapOn: "Dnes"
+- assertVisible: "Dnes"

@@ -37,7 +37,7 @@ const CANARY_DOB = '2099-04-01';
 const zone = asTimeZoneId('Europe/Prague');
 const childId = asChildId('child_ops_1');
 
-test('release evidence pins app, schema, catalog and art versions', () => {
+test('release evidence pins app, schema, catalog, pack and art versions', () => {
   const manifest = buildReleaseEvidenceManifest({
     nowMs: 1_700_000_000_000,
     environment: 'staging',
@@ -45,11 +45,16 @@ test('release evidence pins app, schema, catalog and art versions', () => {
   });
   assert.equal(manifest.format, 'lumi.release-evidence.v1');
   assert.equal(manifest.app.version, '0.1.0');
+  assert.equal(manifest.app.applicationId, 'com.matejikj');
   assert.equal(manifest.storage.nativeSchemaCompatibility, NATIVE_SCHEMA_COMPATIBILITY);
   assert.equal(manifest.storage.webSchemaCompatibility, WEB_SCHEMA_COMPATIBILITY);
-  assert.ok(manifest.content.catalogVersion.length > 0);
+  assert.equal(manifest.content.catalogVersion, 'first-year.v1');
+  assert.equal(manifest.content.publishedRevisionCount, 60);
   assert.ok(manifest.content.recommendationRulesVersion.length > 0);
-  assert.ok(manifest.art.collectionVersion.length > 0);
+  assert.equal(manifest.pack.packId, 'lumi.first-year.base');
+  assert.equal(manifest.pack.generation, 1);
+  assert.equal(manifest.pack.keyId, 'lumi-content-ed25519-v1');
+  assert.equal(manifest.art.collectionVersion, 'lumi.characters.collection.v1');
   assert.equal(manifest.signing.keysInRepository, false);
 });
 

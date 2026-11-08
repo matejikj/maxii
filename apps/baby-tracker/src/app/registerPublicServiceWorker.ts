@@ -8,7 +8,14 @@ import { Platform } from 'react-native';
 export function registerPublicServiceWorker(): void {
   if (Platform.OS !== 'web') return;
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
-  void navigator.serviceWorker.register('/sw.js').catch(() => {
-    // Offline-first still works from the native install path; web SW is best-effort.
-  });
+  void navigator.serviceWorker
+    .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+    .then((registration) => {
+      // Expose registration outcome for offline readiness probes in tests.
+      (globalThis as { __lumiPublicSw?: ServiceWorkerRegistration }).__lumiPublicSw =
+        registration;
+    })
+    .catch(() => {
+      // Offline-first still works from the native install path; web SW is best-effort.
+    });
 }

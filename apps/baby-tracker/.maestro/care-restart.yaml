@@ -1,0 +1,22 @@
+# Save a diaper, background/kill is simulated by relaunch; the record must remain.
+appId: com.matejikj
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "LUMI"
+    timeout: 30000
+- tapOn:
+    text: "Přeskočit úvod"
+    optional: true
+- tapOn:
+    id: "quick-diaper"
+- tapOn:
+    id: "direct-wet"
+- assertVisible: "Přebalení uloženo."
+- stopApp
+- launchApp
+- tapOn:
+    text: "Přeskočit úvod"
+    optional: true
+- tapOn: "Historie"
+- assertVisible: "Plenka"

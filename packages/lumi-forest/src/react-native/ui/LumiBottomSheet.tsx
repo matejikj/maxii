@@ -77,6 +77,12 @@ export function LumiBottomSheet({
   }, [visible, onClose]);
 
   useEffect(() => {
+    // findNodeHandle is native-only; calling it on web throws and would tear down
+    // the open sheet before caregivers can confirm a care write.
+    if (Platform.OS === 'web') {
+      wasVisible.current = visible;
+      return;
+    }
     if (visible) {
       wasVisible.current = true;
       const handle = findNodeHandle(titleRef.current);

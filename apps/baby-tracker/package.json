@@ -24,7 +24,11 @@
     "ops:evidence": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/print-release-evidence.mts",
     "test:e2e": "playwright test",
     "test:e2e:native": "maestro test .maestro/smoke.yaml",
+    "test:e2e:native:restart": "maestro test .maestro/care-restart.yaml",
     "prebuild:native": "expo prebuild --clean",
+    "release:evidence": "npm run ops:evidence",
+    "release:web": "npm run export:web && npm run test:e2e -- --grep \"service worker|diaper|welcome\"",
+
     "run:android:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:android",
     "run:ios:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:ios",
     "doctor": "expo install --check"

@@ -1,18 +1,39 @@
 /* LUMI personal web shell: cache versioned public assets only — never auth, diaries, or diagnostics. */
 const CACHE = 'lumi-public-v1';
-const PRECACHE = ['./', './index.html', './manifest.json'];
+/** Only URLs that exist in the static export — a missing path would fail install. */
+const PRECACHE = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
-  // Do not skipWaiting here — a calm client moment must activate the worker so
-  // an open care form is never force-reloaded mid-edit.
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(
+        PRECACHE.map(async (url) => {
+          try {
+            await cache.add(url);
+          } catch {
+            // Skip optional shell files so one missing asset cannot block offline start.
+          }
+        }),
+      );
+      // First install may activate immediately. Later updates stay waiting until
+      // the client sends LUMI_ACTIVATE_SW so an open care form is not reloaded.
+      if (!self.registration.active) {
+        await self.skipWaiting();
+      }
+    })(),
+  );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))),
-    ),
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)));
+      // Take control of already-open tabs on first activation so offline restart
+      // works without forcing a mid-form reload via skipWaiting during install.
+      await self.clients.claim();
+    })(),
   );
 });
 

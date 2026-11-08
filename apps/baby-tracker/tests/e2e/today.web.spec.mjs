@@ -9,13 +9,82 @@ const distWeb = path.join(here, '../../dist-web');
 test.beforeAll(() => {
   test.skip(
     !fs.existsSync(distWeb),
-    'dist-web missing — run npm run export:web in apps/baby-tracker first (device/web CI job).',
+    'dist-web missing — run npm run export:web in apps/baby-tracker first.',
   );
 });
 
-test('Today shell renders brand and empty state on the prepared web export', async ({ page }) => {
+async function skipWelcomeIfPresent(page) {
+  const skip = page.getByRole('button', { name: 'Přeskočit úvod' });
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click();
+  }
+}
+
+test('welcome can be skipped and Today shows without an account', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('LUMI')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Deník miminka' })).toBeVisible();
-  await expect(page.getByText('Každý den spolu')).toBeVisible();
+  await expect(page.getByText('LUMI').first()).toBeVisible();
+  await skipWelcomeIfPresent(page);
+  await expect(page.getByRole('heading', { name: /Dnes s / })).toBeVisible();
+  await expect(
+    page.getByText('Místní deník bez účtu').or(page.getByText(/\d{4}-\d{2}-\d{2}/)),
+  ).toBeVisible();
+});
+
+test('diaper direct action persists after reload on the prepared web export', async ({ page }) => {
+  await page.goto('/');
+  await skipWelcomeIfPresent(page);
+  await expect(page.getByTestId('today-screen')).toBeVisible();
+  await page.getByTestId('quick-diaper').click();
+  await expect(page.getByText('Zapsat plenku nyní')).toBeVisible({ timeout: 15_000 });
+  await page.getByText('Zapsat mokrou', { exact: true }).click();
+  await expect(page.getByText('Přebalení uloženo.')).toBeVisible({ timeout: 15_000 });
+  // Last-care card updates without leaving Today.
+  await expect(page.getByText(/Plenka/i).first()).toBeVisible({ timeout: 15_000 });
+  // Fresh navigation (not reload) avoids racing an just-activated service worker cache.
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await skipWelcomeIfPresent(page);
+  await expect(page.getByRole('heading', { name: /Dnes s / })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/Plenka|mokrá|Přebalení/i).first()).toBeVisible({
+    timeout: 15_000,
+  });
+});
+
+test('service worker registers and serves the shell offline after first visit', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await expect(page.getByText('LUMI').first()).toBeVisible();
+
+  const registration = await page.evaluate(async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none',
+      });
+      await navigator.serviceWorker.ready;
+      return {
+        ok: true,
+        state: reg.active?.state ?? null,
+        controlling: Boolean(navigator.serviceWorker.controller),
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+  expect(registration.ok, JSON.stringify(registration)).toBeTruthy();
+
+  // Reload while online so the active worker can cache hashed shell assets.
+  await page.reload({ waitUntil: 'networkidle' });
+  await expect(page.getByText('LUMI').first()).toBeVisible();
+
+  await context.setOffline(true);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('LUMI').first()).toBeVisible({ timeout: 15_000 });
+  await context.setOffline(false);
 });

@@ -122,7 +122,11 @@ export function TodayScreen({
   const hasActiveMeasurement = Boolean(model.activeSleep || model.activeNursing);
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      edges={['top']}
+      testID="today-screen"
+    >
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.heading}>
