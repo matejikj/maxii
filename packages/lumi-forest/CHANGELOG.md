@@ -2,6 +2,10 @@
 
 ## 1.0.0 — source release candidate (unreleased)
 
+- `LumiInput` links error/hint text to the field, supports multiline notes, and keeps the system keyboard (optional dictation) without a custom microphone control.
+- `LumiBottomSheet` closes on Escape (web), moves accessibility focus into the sheet, and can restore focus to the opener via `returnFocusRef`.
+- `LumiChartContainer` accepts an optional `table` of label/value rows so charts always expose a non-visual alternative.
+- `LumiButton` compact size uses a 48 logical-unit minimum touch target for primary care actions.
 - Stable public entrypoints (`.`, `./core`, `./native`) with public-name snapshot/compatibility gate.
 - Versioned, strict, serializable Scene Recipe v2 and pure v1→v2 migration; exact SVG preservation.
 - Blueprint v1/v2 validation with fail-closed, lossless-only conversion of matching legacy artwork.

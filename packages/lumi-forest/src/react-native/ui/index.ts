@@ -11,9 +11,10 @@ export type { LumiChipProps } from './LumiChip';
 export { LumiTimeline } from './LumiTimeline';
 export type { LumiTimelineProps, LumiTimelineItem } from './LumiTimeline';
 export { LumiChartContainer } from './LumiChartContainer';
-export type { LumiChartContainerProps } from './LumiChartContainer';
+export type { LumiChartContainerProps, LumiChartTableRow } from './LumiChartContainer';
 export { LumiBottomSheet } from './LumiBottomSheet';
 export type { LumiBottomSheetProps } from './LumiBottomSheet';
+
 export { LumiSwitchRow } from './LumiSwitchRow';
 export type { LumiSwitchRowProps } from './LumiSwitchRow';
 export { LumiProgress } from './LumiProgress';

@@ -15,7 +15,8 @@ export interface LumiButtonProps extends Omit<PressableProps, 'children' | 'styl
   rightAdornment?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
-const heights: Record<LumiButtonSize, number> = { compact: 44, regular: 48, large: 56 };
+/** Primary touch targets stay at least 48 logical units for comfortable care taps. */
+const heights: Record<LumiButtonSize, number> = { compact: 48, regular: 48, large: 56 };
 export const LumiButton = React.memo(function LumiButton({ title, variant = 'primary', size = 'regular', loading = false,
   disabled = false, fullWidth = false, leftAdornment, rightAdornment, style, accessibilityLabel, onFocus, onBlur, ...rest }: LumiButtonProps) {
   const { colors, ui } = useLumiTheme();

@@ -20,4 +20,4 @@ export const LumiChip = React.memo(function LumiChip({ label, selected = false, 
     <LumiText variant="label" style={{ color: selected ? colors.onPrimary : colors.text }}>{label}</LumiText>
   </Pressable>;
 });
-const styles = StyleSheet.create({ chip: { minHeight: 44, paddingHorizontal: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' } });
+const styles = StyleSheet.create({ chip: { minHeight: 48, paddingHorizontal: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' } });

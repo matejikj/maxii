@@ -72,6 +72,8 @@ Zápisy jdou přes `createCommandDispatcher`: entita, revize a receipt v jedné 
 
 Osobní start založí jeden místní profil „Miminko“ bez účtu a API. Navigace má záložky Dnes / Péče / Rozvoj / Historie; profil je v hlavičce. Chybějící backend není chybový stav.
 
+Produktové UI skládá veřejné Lumi komponenty (`features/ui`): přímé akce vs „Uložit“, poznámka se systémovou klávesnicí, undo feedback a aktivní měření bez sekundového hlášení čtečce. Kanonické texty jsou v `productCopy.ts`.
+
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
 Sonda development buildu:
