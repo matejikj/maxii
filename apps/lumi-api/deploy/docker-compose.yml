@@ -23,10 +23,15 @@ services:
     networks:
       - lumi_internal
 
-  # Self-hosted OIDC candidate (Keycloak). Start separately when exercising login UI.
+  # Self-hosted OIDC candidate (Keycloak). Start with: --profile oidc
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
-    command: ['start-dev', '--http-port=8080']
+    command:
+      [
+        'start-dev',
+        '--http-port=8080',
+        '--import-realm',
+      ]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin_dev_only
@@ -34,6 +39,8 @@ services:
       KC_HEALTH_ENABLED: 'true'
     ports:
       - '8080:8080'
+    volumes:
+      - ./keycloak/realm-lumi.json:/opt/keycloak/data/import/realm-lumi.json:ro
     depends_on:
       postgres:
         condition: service_healthy

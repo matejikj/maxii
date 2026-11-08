@@ -11,6 +11,7 @@ import {
 import { createChildProfile } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { usePersonalPreferences } from '../../app/session/PreferencesContext';
+import { FamilyAccountPanel } from './FamilyAccountPanel';
 
 const GUIDE_LABELS: Record<GuideSpecies, string> = {
   rabbit: 'Lumi (králík)',
@@ -79,6 +80,8 @@ export function SettingsPanel() {
       <LumiText tone="muted">
         Osobní deník funguje bez účtu. Základní péče zůstává dostupná i bez notifikací.
       </LumiText>
+
+      <FamilyAccountPanel />
 
       <LumiCard>
         <LumiText variant="h3">Jednotky a pásmo</LumiText>

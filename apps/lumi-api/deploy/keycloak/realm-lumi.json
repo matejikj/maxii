@@ -1,0 +1,44 @@
+{
+  "realm": "lumi",
+  "enabled": true,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "sslRequired": "external",
+  "clients": [
+    {
+      "clientId": "lumi-api",
+      "name": "LUMI API BFF",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "lumi_api_dev_only",
+      "redirectUris": [
+        "com.matejikj://oidc/callback",
+        "http://127.0.0.1:8081/oidc/callback",
+        "http://127.0.0.1:8787/v1/auth/mock/authorize"
+      ],
+      "webOrigins": ["http://127.0.0.1:8081"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "lumi-native",
+      "name": "LUMI native public client",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": ["com.matejikj://oidc/callback"],
+      "webOrigins": [],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocol": "openid-connect"
+    }
+  ]
+}

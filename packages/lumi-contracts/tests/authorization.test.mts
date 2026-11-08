@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   authorizeFamilyAccess,
   resolveActiveBinding,
+  resolveAuthModeOrHold,
+  LUMI_AUTH_MODE_VERSION,
   type AppUserId,
   type FamilyId,
   type FamilyMembership,
@@ -117,4 +119,21 @@ test('external identity binding ignores e-mail collisions and revoked links', ()
     }),
     null,
   );
+});
+
+test('unknown auth mode holds local data instead of merging accounts', () => {
+  assert.deepEqual(resolveAuthModeOrHold({ mode: 'oidc_keycloak_v1', version: LUMI_AUTH_MODE_VERSION }), {
+    ok: true,
+    mode: 'oidc_keycloak_v1',
+  });
+  assert.deepEqual(resolveAuthModeOrHold({ mode: 'future_otp', version: LUMI_AUTH_MODE_VERSION }), {
+    ok: false,
+    holdLocalData: true,
+    reason: 'unknown_mode',
+  });
+  assert.deepEqual(resolveAuthModeOrHold({ mode: 'oidc_keycloak_v1', version: 99 }), {
+    ok: false,
+    holdLocalData: true,
+    reason: 'unsupported_version',
+  });
 });

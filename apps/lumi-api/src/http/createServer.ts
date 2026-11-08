@@ -12,6 +12,9 @@ import {
 } from '@lumi/contracts';
 import type { ApiConfig } from '../config/env.ts';
 import { AccessTokenVerifier } from '../auth/tokenVerifier.ts';
+import { AuthSessionStore, readCookie } from '../auth/authSessions.ts';
+import { OidcTokenExchanger } from '../auth/oidcExchange.ts';
+import { registerAuthRoutes } from '../auth/loginRoutes.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
 import { apiError } from './errors.ts';
@@ -20,17 +23,23 @@ export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
   readonly store: MemoryFamilyStore;
   readonly tokens: AccessTokenVerifier;
+  readonly sessions: AuthSessionStore;
+  readonly oidc: OidcTokenExchanger;
 };
 
 export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
   const tokens = new AccessTokenVerifier(config, store);
+  const sessions = new AuthSessionStore();
+  const oidc = new OidcTokenExchanger(config);
   const app = Fastify({
     logger: false,
     bodyLimit: LUMI_API_LIMITS.maxJsonBodyBytes,
     requestIdHeader: 'x-request-id',
     genReqId: () => randomUUID(),
   });
+
+  registerAuthRoutes(app, { config, store, sessions, oidc });
 
   app.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
@@ -91,10 +100,9 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     const usesBearer = typeof request.headers.authorization === 'string'
       && request.headers.authorization.startsWith('Bearer ');
     const cookieHeader = request.headers.cookie ?? '';
-    const cookieMatch = cookieHeader.match(new RegExp(`${config.csrfCookieName}=([^;]+)`));
     if (!verifyCsrfDoubleSubmit({
       method: request.method,
-      cookieToken: cookieMatch?.[1],
+      cookieToken: readCookie(cookieHeader, config.csrfCookieName),
       headerToken: typeof request.headers['x-csrf-token'] === 'string'
         ? request.headers['x-csrf-token']
         : undefined,
@@ -104,19 +112,26 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
       return reply.code(err.status).send(err.body);
     }
 
-    const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
-    if (!auth.ok) {
-      const err = apiError('unauthorized', 'Authentication required', String(request.id));
-      return reply.code(err.status).send(err.body);
+    let appUserId: AppUserId | null = null;
+    if (usesBearer) {
+      const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
+      if (!auth.ok) {
+        const err = apiError('unauthorized', 'Authentication required', String(request.id));
+        return reply.code(err.status).send(err.body);
+      }
+      appUserId = auth.principal.appUserId;
+    } else {
+      const session = sessions.getSession(readCookie(cookieHeader, config.sessionCookieName));
+      if (!session) {
+        const err = apiError('unauthorized', 'Authentication required', String(request.id));
+        return reply.code(err.status).send(err.body);
+      }
+      appUserId = session.appUserId;
     }
 
     const body = request.body as CreateFamilyRequest;
     try {
-      const created = store.createFamily(
-        auth.principal.appUserId,
-        body,
-        new Date().toISOString(),
-      );
+      const created = store.createFamily(appUserId, body, new Date().toISOString());
       return reply.code(created.created ? 201 : 200).send(created);
     } catch (error) {
       const code = (error as { code?: string }).code;
@@ -187,5 +202,5 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     return { ok: true };
   });
 
-  return { app, store, tokens };
+  return { app, store, tokens, sessions, oidc };
 }

@@ -33,3 +33,10 @@ export {
   resolveActiveBinding,
 } from './authorization.ts';
 export type { AuthorizationDecision } from './authorization.ts';
+export {
+  LUMI_AUTH_MODES,
+  LUMI_AUTH_MODE_VERSION,
+  isKnownAuthMode,
+  resolveAuthModeOrHold,
+} from './authMode.ts';
+export type { AuthModeDescriptor, LumiAuthMode } from './authMode.ts';
