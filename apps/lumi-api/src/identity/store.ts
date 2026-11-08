@@ -437,7 +437,23 @@ export class MemoryFamilyStore {
     return { transferred: true };
   }
 
-  eraseFamily(actorId: AppUserId, familyId: FamilyId, now: string): { erased: boolean } {
+  /**
+   * Soft-erase after the durable off-host registry write already succeeded.
+   * Physical rotation of restic copies stays a retention job, not this call.
+   */
+  eraseFamily(
+    actorId: AppUserId,
+    familyId: FamilyId,
+    now: string,
+    proof: { readonly eraseGeneration: number; readonly registryPersisted: true },
+  ): {
+    familyId: FamilyId;
+    erased: boolean;
+    eraseGeneration: number;
+    registryPersisted: true;
+    physicalCopiesPendingRetention: true;
+  } {
+    void proof;
     const admin = authorizeFamilyAdminAction({
       memberships: this.memberships,
       appUserId: actorId,
@@ -447,7 +463,15 @@ export class MemoryFamilyStore {
     if (!admin.allow) throw codedError('forbidden', admin.reason);
     const family = this.families.get(familyId);
     if (!family) throw codedError('not_found', 'family_not_found');
-    if (family.erasedAt) return { erased: false };
+    if (family.erasedAt) {
+      return {
+        familyId,
+        erased: false,
+        eraseGeneration: proof.eraseGeneration,
+        registryPersisted: true,
+        physicalCopiesPendingRetention: true,
+      };
+    }
     this.families.set(familyId, { ...family, erasedAt: now });
     for (let i = 0; i < this.memberships.length; i += 1) {
       const item = this.memberships[i]!;
@@ -460,7 +484,13 @@ export class MemoryFamilyStore {
         invite.status = 'revoked';
       }
     }
-    return { erased: true };
+    return {
+      familyId,
+      erased: true,
+      eraseGeneration: proof.eraseGeneration,
+      registryPersisted: true,
+      physicalCopiesPendingRetention: true,
+    };
   }
 
   addObject(familyId: FamilyId, kind: string, label: string, now: string): FamilyObjectRecord {

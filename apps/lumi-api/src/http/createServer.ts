@@ -22,6 +22,10 @@ import { apiError } from './errors.ts';
 import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
 import { registerSyncRoutes } from './syncRoutes.ts';
+import { registerBackupRoutes } from './backupRoutes.ts';
+import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
+import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
+import type { RemoteBackupStatusResponse } from '@lumi/contracts';
 
 export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
@@ -30,6 +34,8 @@ export type CreatedApi = {
   readonly tokens: AccessTokenVerifier;
   readonly sessions: AuthSessionStore;
   readonly oidc: OidcTokenExchanger;
+  readonly backups: ReturnType<typeof createMemoryBackupRepository>;
+  readonly erasureRegistry: ReturnType<typeof createMemoryErasureRegistry>;
 };
 
 export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
@@ -38,6 +44,17 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const tokens = new AccessTokenVerifier(config, store);
   const sessions = new AuthSessionStore();
   const oidc = new OidcTokenExchanger(config);
+  const backups = createMemoryBackupRepository();
+  const erasureRegistry = createMemoryErasureRegistry();
+  const backupStatusByFamily = new Map<
+    string,
+    {
+      lastCompletedAt: string | null;
+      lastAttemptAt: string | null;
+      lastAttemptStatus: RemoteBackupStatusResponse['lastAttemptStatus'];
+      scope: RemoteBackupStatusResponse['scope'];
+    }
+  >();
   const rateLimiter = createFixedWindowRateLimiter({
     limit: config.rateLimitPerWindow,
     windowMs: config.rateLimitWindowMs,
@@ -54,6 +71,15 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   registerAuthRoutes(app, { config, store, sessions, oidc });
   registerFamilyRoutes(app, { config, store, tokens, sessions });
   registerSyncRoutes(app, { config, store, sync, tokens, sessions });
+  registerBackupRoutes(app, {
+    config,
+    store,
+    tokens,
+    sessions,
+    backups,
+    erasureRegistry,
+    backupStatusByFamily,
+  });
 
   app.addHook('onRequest', async (request, reply) => {
     const clientKey = request.ip || 'unknown';
@@ -228,5 +254,5 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     return { ok: true };
   });
 
-  return { app, store, sync, tokens, sessions, oidc };
+  return { app, store, sync, tokens, sessions, oidc, backups, erasureRegistry };
 }

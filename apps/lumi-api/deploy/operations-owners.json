@@ -12,25 +12,40 @@
   "roles": {
     "composeOwner": "tech-lead",
     "identityOwner": "tech-lead",
-    "backupOwner": "task-31",
+    "backupOwner": "tech-lead",
     "observabilityOwner": "task-39.2",
     "familyReleaseGate": "task-32"
   },
+  "backup": {
+    "tool": "restic",
+    "offServerTarget": "cloudflare_r2_eu_jurisdiction",
+    "retentionDays": 30,
+    "rpoHoursWorkingTarget": 24,
+    "rtoHoursWorkingTarget": 8,
+    "livePgDataCopyForbidden": true,
+    "erasureRegistryMustPrecedeServerConfirm": true,
+    "archiveKeyRecoverableOffHost": true,
+    "sseKmsDoesNotReplaceArchiveKey": true
+  },
   "handoff": {
-    "toTask31": [
-      "off-server encrypted restic/R2 copies",
-      "erasure registry outside the VPS",
-      "family restore preview path"
+    "toTask31": [],
+    "fromTask31Done": [
+      "manifest + restic/R2 script",
+      "durable erasure registry gate",
+      "recovery preview + cross-family archive denial",
+      "daily/retention job handlers"
     ],
     "toTask392": [
       "monitoring outside a failing VPS",
       "named on-call owner",
       "update/alarm/restore/rollback drills",
-      "verified LUKS unlock after reboot on the live host"
+      "verified LUKS unlock after reboot on the live host",
+      "live restore drill alarm when daily backup missing"
     ],
     "toTask32": [
       "two-phone offline sync acceptance",
-      "permission and recovery evidence pack"
+      "permission and recovery evidence pack",
+      "measured RPO/RTO disaster drill on staging"
     ]
   },
   "adapterTargetsWithoutSecrets": {

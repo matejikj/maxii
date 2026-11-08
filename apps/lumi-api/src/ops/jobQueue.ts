@@ -1,7 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { AppDbPool } from '../db/pool.ts';
 
-export type WorkerJobKind = 'health.ping' | 'ops.noop';
+export type WorkerJobKind =
+  | 'health.ping'
+  | 'ops.noop'
+  | 'backup.daily'
+  | 'backup.retention.prune'
+  | 'erasure.registry.sync';
 
 export type WorkerJob = {
   readonly jobId: string;

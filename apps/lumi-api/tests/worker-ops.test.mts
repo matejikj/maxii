@@ -93,12 +93,16 @@ test('operations owners handoff denies E2EE claims and names next gates', () => 
   const owners = JSON.parse(raw) as {
     e2eeClaim: boolean;
     roles: Record<string, string>;
+    backup?: { retentionDays: number; livePgDataCopyForbidden: boolean };
     handoff: Record<string, string[]>;
   };
   assert.equal(owners.e2eeClaim, false);
   assert.ok(owners.roles.composeOwner);
-  const to31 = owners.handoff.toTask31 ?? [];
+  assert.equal(owners.roles.backupOwner, 'tech-lead');
+  assert.equal(owners.backup?.retentionDays, 30);
+  assert.equal(owners.backup?.livePgDataCopyForbidden, true);
+  const done31 = owners.handoff.fromTask31Done ?? [];
   const to392 = owners.handoff.toTask392 ?? [];
-  assert.ok(to31.length > 0);
+  assert.ok(done31.length > 0);
   assert.ok(to392.some((item) => /LUKS/i.test(item)));
 });

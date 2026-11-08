@@ -96,3 +96,24 @@ export {
   createEmptyEntityGraph,
   materializeTombstone,
 } from './causality.ts';
+export {
+  BACKUP_RETENTION_DAYS,
+  ERASURE_REGISTRY_VERSION,
+  REMOTE_BACKUP_MANIFEST_VERSION,
+  isCompleteRemoteBackup,
+  pruneBackupIdsOlderThan,
+  validateRemoteBackupManifest,
+} from './backup.ts';
+export type {
+  ArchiveKeyRef,
+  BackupProviderKind,
+  BackupProviderLocator,
+  ErasureRegistryDocument,
+  ErasureRegistryEntry,
+  FamilyErasureReceipt,
+  ObjectStoreEncryptionRef,
+  RecoveryPreviewResponse,
+  RemoteBackupManifest,
+  RemoteBackupStatusResponse,
+  RemoteBackupTopology,
+} from './backup.ts';

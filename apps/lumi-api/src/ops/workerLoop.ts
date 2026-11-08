@@ -22,9 +22,16 @@ export async function runWorkerLoop(options: WorkerLoopOptions): Promise<{
   const handle =
     options.handle ??
     (async (job: WorkerJob) => {
-      if (job.kind !== 'health.ping' && job.kind !== 'ops.noop') {
+      const known =
+        job.kind === 'health.ping' ||
+        job.kind === 'ops.noop' ||
+        job.kind === 'backup.daily' ||
+        job.kind === 'backup.retention.prune' ||
+        job.kind === 'erasure.registry.sync';
+      if (!known) {
         throw new Error(`unsupported_job:${job.kind}`);
       }
+      // Default loop only acknowledges job kinds; production wires backup handlers.
     });
 
   let processed = 0;

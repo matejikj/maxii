@@ -203,6 +203,15 @@ export {
   type ResolutionDraft,
 } from './family/resolutionDraft';
 export {
+  describeCopiesAfterLogout,
+  planIsolatedArchiveRestore,
+  type IsolatedRestorePlan,
+} from './family/isolatedRestore';
+export {
+  presentRemoteBackupStatus,
+  type RemoteBackupPresentation,
+} from './family/remoteBackupPresentation';
+export {
   applyPushReceipts,
   commitPullPage,
   createEmptySyncState,

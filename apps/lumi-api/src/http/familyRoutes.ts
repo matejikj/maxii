@@ -225,21 +225,7 @@ export function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRouteDeps
     }
   });
 
-  app.post('/v1/families/:familyId/erasure', async (request, reply) => {
-    const appUserId = await requireAppUser(request, reply);
-    if (!appUserId) return;
-    const params = request.params as { familyId: string };
-    try {
-      const result = store.eraseFamily(
-        appUserId,
-        params.familyId as FamilyId,
-        new Date().toISOString(),
-      );
-      return reply.code(result.erased ? 200 : 200).send(result);
-    } catch (error) {
-      return sendStoreError(error, String(request.id), reply);
-    }
-  });
+  // Family erasure lives in backupRoutes so the durable registry write happens first.
 
   app.post('/v1/me/identities/link', async (request, reply) => {
     const appUserId = await requireAppUser(request, reply);

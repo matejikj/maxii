@@ -1,0 +1,31 @@
+# Family ops restore runbook (ADR 0005)
+
+Working targets for a small beta drill: **RPO 24h**, **RTO 8h**. These are exercise goals, not an SLA.
+
+## Distinct paths
+
+| Path | Who | Scope |
+| --- | --- | --- |
+| Ops host restore | Operator | Whole VPS: app DB, identity DB, config versions, erasure registry |
+| Family archive restore | Family admin | One family's voluntary archive after re-auth |
+
+## Mandatory order after total VPS loss
+
+1. Provision a new host; place restic password + registry credentials from the **off-host vault**.
+2. `restic restore` into a protected staging directory (never overwrite a live volume blindly).
+3. Load the **current erasure registry** (not only the copy inside an old dump).
+4. Restore PostgreSQL logical dumps; **apply erasure entries** before opening `/ready`.
+5. Re-bind identity recovery according to the supported OIDC export; family archives never contain passwords/tokens.
+6. Measure actual RPO/RTO for the build and record them for the family release gate.
+
+## Failures
+
+- Upload or restore failure must leave the previous live directory unchanged.
+- A caregiver must never receive another family's snapshot or signed URL.
+- Deleted families must stay deleted after ops restore when the registry is current.
+
+## Jobs
+
+- `backup.daily` — verified off-server copy (completion ≠ started upload)
+- `backup.retention.prune` — drop copies older than 30 days
+- `erasure.registry.sync` — keep the off-host ledger readable

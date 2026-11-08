@@ -27,6 +27,8 @@ Family membership: `POST /v1/families`, `GET /v1/families/:id/members`, invitati
 
 Sync transport: `POST /v1/families/:id/sync/push` and `GET /v1/families/:id/sync/pull`. Receipts are idempotent on `(familyId, operationId, payloadHash)`; an opaque cursor advances only with applied changelog pages. Invalid epoch cursors return `resync_required` without clearing client outboxes.
 
+Remote backup / recovery: `GET /v1/families/:id/backup-status`, admin `POST /v1/families/:id/recovery/preview`, tenant-scoped archive read, and admin erasure that persists the off-host erasure registry **before** soft-delete. Ops path uses logical `pg_dump` + restic (`deploy/backup-restic.sh`); never copy live PGDATA. Restore order is in `deploy/restore-runbook.txt`.
+
 ## Single-VPS overlay
 
 ```bash

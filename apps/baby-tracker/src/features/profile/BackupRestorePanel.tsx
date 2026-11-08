@@ -24,6 +24,7 @@ import {
   writeLastPortableBackupSidecar,
 } from '../../infrastructure/files/portableBackupAppFiles';
 import { useBootstrap } from '../../app/session/BootstrapContext';
+import { RemoteBackupStatusCard } from '../family/RemoteBackupStatusCard';
 
 /**
  * Profile backup surface. Keeps local recovery, portable sealed export, and
@@ -77,8 +78,10 @@ export function BackupRestorePanel() {
       </LumiText>
       <LumiText tone="muted">
         Osobní deník funguje bez účtu. Rozlišujte místní bod na tomto zařízení, přenosný
-        šifrovaný soubor a vzdálenou zálohu (zatím nedostupnou).
+        šifrovaný soubor a volitelnou vzdálenou zálohu (jen v rodinném režimu).
       </LumiText>
+
+      <RemoteBackupStatusCard />
 
       <LumiCard>
         <LumiText variant="h3">Obnova v tomto zařízení</LumiText>
