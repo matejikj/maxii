@@ -90,3 +90,13 @@ npm run run:android:cipher --workspace @maxii/baby-tracker
 Expo Go SQLCipher neobsahuje.
 
 Identifikátor aplikace pro iOS i Android je `com.matejikj`. Vygenerované nativní projekty musí převzít aktuální Expo konfiguraci před dalším buildem. Instalace dřívější vývojové aplikace pod jiným ID má samostatná data; před jejím odstraněním použij přenosnou zálohu a ověř obnovu.
+
+Osobní release kontroly bez obchodního účtu:
+
+```sh
+EXPO_PUBLIC_LUMI_ENV=production EXPO_PUBLIC_LUMI_STORAGE_PROBE=0 npm run release:gate --workspace @maxii/baby-tracker
+npm run release:android --workspace @maxii/baby-tracker
+npm run release:android:care-smoke --workspace @maxii/baby-tracker
+```
+
+`release:gate` ověří studenou rodinnou hranici, absenci tajemství v `EXPO_PUBLIC_*`, nativní ID a balíček APK. Care smoke na headless emulátoru uloží plenku, ukončí proces a zkontroluje Historii.

@@ -26,3 +26,10 @@ export {
   type LocalOperationMetrics,
   type LocalOperationMetricsSnapshot,
 } from './localOperationMetrics';
+export {
+  evaluatePersonalReleaseGate,
+  formatPersonalReleaseGateReport,
+  type PersonalReleaseGateFinding,
+  type PersonalReleaseGateInput,
+  type PersonalReleaseGateResult,
+} from './personalReleaseGate';

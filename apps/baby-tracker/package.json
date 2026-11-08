@@ -28,9 +28,11 @@
     "prebuild:native": "expo prebuild --clean",
     "release:evidence": "npm run ops:evidence",
     "release:verify-native": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/verify-native-application-id.mts",
+    "release:gate": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/verify-personal-release-gate.mts",
     "release:android": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/build-personal-android-apk.mts",
+    "release:android:care-smoke": "bash ./scripts/emulator-care-smoke.sh",
     "release:web": "npm run export:web && npm run test:e2e -- --grep \"service worker|diaper|welcome|accessibility\"",
-    "release:candidate": "npm run content:validate && npm run release:evidence && npm run prebuild:native && npm run release:verify-native && npm run release:web",
+    "release:candidate": "npm run content:validate && npm run release:evidence && npm run release:gate && npm run prebuild:native && npm run release:verify-native && npm run release:web",
 
     "run:android:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:android",
     "run:ios:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:ios",
