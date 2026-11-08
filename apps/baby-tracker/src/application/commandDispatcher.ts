@@ -8,15 +8,25 @@ import {
   fingerprintAdjustSleepStart,
   fingerprintCareWrite,
   fingerprintDraft,
+  fingerprintEndNursing,
   fingerprintEndSleep,
+  fingerprintPauseNursing,
   fingerprintRestore,
+  fingerprintResumeNursing,
   fingerprintSoftDelete,
+  fingerprintStartNursing,
   fingerprintStartSleep,
+  fingerprintSwitchNursingSide,
+  fingerprintUndoEndNursing,
   fingerprintUndoEndSleep,
   isAppError,
+  nursingOccurrenceFromInterval,
+  pauseNursingSession,
+  resumeNursingSession,
   savedLocally,
   sleepOccurrenceFromInterval,
   startSession,
+  switchNursingSide,
   zonedInstant,
   type AdjustSleepSessionStartCommand,
   type ApplicationCommand,
@@ -27,6 +37,7 @@ import {
   type CommandResult,
   type DiscardDraftCommand,
   type DraftRevisionState,
+  type EndNursingSessionCommand,
   type EndSleepSessionCommand,
   type EntityId,
   type FaultInjection,
@@ -34,9 +45,11 @@ import {
   type OperationId,
   type OperationReceipt,
   type OutboxPort,
+  type PauseNursingSessionCommand,
   type PurgeExpiredTrashCommand,
   type RestoreCareCommand,
   type RestoreRevisionState,
+  type ResumeNursingSessionCommand,
   type Revision,
   type RevisionId,
   type SaveDraftCommand,
@@ -44,9 +57,12 @@ import {
   type SoftDeleteCareCommand,
   type SoftDeleteRevisionState,
   type SoftDeletedCarePayload,
+  type StartNursingSessionCommand,
   type StartSleepSessionCommand,
+  type SwitchNursingSideCommand,
   type TimeZoneId,
   type UndoCreateCareCommand,
+  type UndoEndNursingSessionCommand,
   type UndoEndSleepSessionCommand,
   type UndoSoftDeleteCommand,
   type UnitOfWork,
@@ -58,7 +74,7 @@ import type { ReadModelTopic } from './readModelInvalidation';
 
 export type UndoHandle = {
   availableUntil: Instant;
-  kind: 'undoCreateCare' | 'undoSoftDelete' | 'undoEndSleep';
+  kind: 'undoCreateCare' | 'undoSoftDelete' | 'undoEndSleep' | 'undoEndNursing';
   eventId: EntityId;
   basisOperationId: OperationId;
   sessionId?: EntityId;
@@ -104,6 +120,8 @@ export function createCommandDispatcher(deps: {
             case 'recordDiaper':
             case 'recordSleep':
             case 'recordBottle':
+            case 'recordNursing':
+            case 'recordFood':
             case 'recordGrowth':
               return writeCare(uow, command, deps, faults, defaultZone);
             case 'startSleepSession':
@@ -114,6 +132,18 @@ export function createCommandDispatcher(deps: {
               return adjustSleepSessionStart(uow, command, deps, faults);
             case 'undoEndSleepSession':
               return undoEndSleepSession(uow, command, deps, faults);
+            case 'startNursingSession':
+              return startNursingSession(uow, command, deps, faults);
+            case 'endNursingSession':
+              return endNursingSession(uow, command, deps, faults, defaultZone);
+            case 'pauseNursingSession':
+              return pauseNursing(uow, command, deps, faults);
+            case 'resumeNursingSession':
+              return resumeNursing(uow, command, deps, faults);
+            case 'switchNursingSide':
+              return switchNursing(uow, command, deps, faults);
+            case 'undoEndNursingSession':
+              return undoEndNursingSession(uow, command, deps, faults);
             case 'softDeleteCare':
               return softDeleteCare(uow, command, deps, faults);
             case 'restoreCare':
@@ -368,6 +398,297 @@ async function undoEndSleepSession(
     kind: 'sleep',
     startedAt: command.restoreStartedAt,
     monotonicStartMs: command.monotonicStartMs,
+  });
+  await uow.sessions.save(restored);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'undoEnd',
+    careEventId: command.eventId,
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  await uow.revisions.saveDeletion({
+    deletionId: command.deletionId,
+    entityId: command.eventId,
+    entityType: event.type,
+    deletedAt: completedAt,
+    revisionId: command.revisionId,
+    retainUntil: { epochMs: completedAt.epochMs + TRASH_RETENTION_MS },
+    payload: { kind: 'careEvent', event } satisfies SoftDeletedCarePayload,
+    payloadPurged: false,
+  });
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(
+    command,
+    completedAt,
+    [command.sessionId, command.eventId],
+    [command.revisionId],
+  );
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['care', 'sessions', 'revisions'], null);
+}
+
+async function startNursingSession(
+  uow: UnitOfWork,
+  command: StartNursingSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const existing = await uow.sessions.getActive(command.childId, 'nursing');
+  if (existing) {
+    throw new AppError('CONFLICT', 'A local nursing session is already running', {
+      details: {
+        reason: 'active_session_exists',
+        sessionId: existing.sessionId,
+        kind: 'nursing',
+      },
+    });
+  }
+
+  const fingerprint = fingerprintStartNursing(command);
+  const completedAt = deps.clock.now();
+  const session = startSession({
+    sessionId: command.sessionId,
+    childId: command.childId,
+    kind: 'nursing',
+    startedAt: command.startedAt,
+    monotonicStartMs: command.monotonicStartMs,
+    ...(command.side !== undefined ? { side: command.side } : {}),
+  });
+  await uow.sessions.save(session);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'start',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function endNursingSession(
+  uow: UnitOfWork,
+  command: EndNursingSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+  defaultZone: TimeZoneId,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'nursing');
+  if (!active || active.sessionId !== command.sessionId) {
+    throw new AppError('NOT_FOUND', 'Nursing session to end was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  if (active.kind !== 'nursing') {
+    throw new AppError('VALIDATION', 'Only nursing sessions use this end command', {
+      details: { reason: 'session_kind' },
+    });
+  }
+
+  // Intended end is frozen on the command — never replace with clock.now() here.
+  const completed = completeSessionWithDuration(active, command.intendedEndedAt);
+  const occurrence = nursingOccurrenceFromInterval(completed.startedAt, completed.endedAt);
+  const careCommand = {
+    type: 'recordNursing' as const,
+    operationId: command.operationId,
+    intentCapturedAt: command.intentCapturedAt,
+    eventId: command.eventId,
+    revisionId: command.careRevisionId,
+    childId: command.childId,
+    occurrence,
+    side: completed.side,
+    activeSegments: completed.activeSegments,
+    ...(command.note !== undefined ? { note: command.note } : {}),
+  };
+  const fingerprint = fingerprintEndNursing(command);
+  const completedAt = deps.clock.now();
+  const createdAt = zonedInstant(completedAt, completed.startedAt.timeZone ?? defaultZone);
+  const event = buildCareEventFromCommand(careCommand, createdAt);
+
+  await uow.care.save(event);
+  await uow.sessions.save(completed);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'end',
+    careEventId: command.eventId,
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(
+    command,
+    completedAt,
+    [command.sessionId, command.eventId],
+    [command.revisionId, command.careRevisionId],
+  );
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['care', 'sessions', 'revisions'], {
+    availableUntil: { epochMs: completedAt.epochMs + UNDO_WINDOW_MS },
+    kind: 'undoEndNursing',
+    eventId: command.eventId,
+    basisOperationId: command.operationId,
+    sessionId: command.sessionId,
+  });
+}
+
+async function pauseNursing(
+  uow: UnitOfWork,
+  command: PauseNursingSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'nursing');
+  if (!active || active.sessionId !== command.sessionId || active.status !== 'running') {
+    throw new AppError('NOT_FOUND', 'Running nursing session to pause was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  const fingerprint = fingerprintPauseNursing(command);
+  const completedAt = deps.clock.now();
+  const next = pauseNursingSession(active, command.pausedAt);
+  await uow.sessions.save(next);
+  maybeFault(faults, 'storage_after_entity');
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'pause',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function resumeNursing(
+  uow: UnitOfWork,
+  command: ResumeNursingSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'nursing');
+  if (!active || active.sessionId !== command.sessionId || active.status !== 'paused') {
+    throw new AppError('NOT_FOUND', 'Paused nursing session to resume was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  const fingerprint = fingerprintResumeNursing(command);
+  const completedAt = deps.clock.now();
+  const next = resumeNursingSession(active, command.resumedAt);
+  await uow.sessions.save(next);
+  maybeFault(faults, 'storage_after_entity');
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'resume',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function switchNursing(
+  uow: UnitOfWork,
+  command: SwitchNursingSideCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'nursing');
+  if (!active || active.sessionId !== command.sessionId || active.status !== 'running') {
+    throw new AppError('NOT_FOUND', 'Running nursing session to switch side was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  const fingerprint = fingerprintSwitchNursingSide(command);
+  const completedAt = deps.clock.now();
+  const next = switchNursingSide(active, command.switchedAt, command.side);
+  await uow.sessions.save(next);
+  maybeFault(faults, 'storage_after_entity');
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'switchSide',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function undoEndNursingSession(
+  uow: UnitOfWork,
+  command: UndoEndNursingSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const clash = await uow.sessions.getActive(command.childId, 'nursing');
+  if (clash && clash.sessionId !== command.sessionId) {
+    throw new AppError('CONFLICT', 'Another local nursing session is already running', {
+      details: {
+        reason: 'active_session_exists',
+        sessionId: clash.sessionId,
+        kind: 'nursing',
+      },
+    });
+  }
+
+  const event = await uow.care.getById(command.eventId);
+  if (!event) {
+    throw new AppError('NOT_FOUND', 'Completed nursing event to undo was not found', {
+      details: { reason: 'care_missing' },
+    });
+  }
+  if (event.revisionId !== command.expectedCareRevisionId) {
+    throw new AppError('CONFLICT', 'Nursing event changed since the end was recorded', {
+      details: { reason: 'revision_conflict' },
+    });
+  }
+  const existingTrash = await uow.revisions.findDeletionByEntityId(command.eventId);
+  if (existingTrash) {
+    throw new AppError('CONFLICT', 'Nursing event is already in trash', {
+      details: { reason: 'already_deleted' },
+    });
+  }
+
+  const fingerprint = fingerprintUndoEndNursing(command);
+  const completedAt = deps.clock.now();
+  await uow.care.delete(command.eventId);
+  const restored = startSession({
+    sessionId: command.sessionId,
+    childId: command.childId,
+    kind: 'nursing',
+    startedAt: command.restoreStartedAt,
+    monotonicStartMs: command.monotonicStartMs,
+    ...(command.restoreSide !== undefined ? { side: command.restoreSide } : {}),
   });
   await uow.sessions.save(restored);
   maybeFault(faults, 'storage_after_entity');
@@ -725,6 +1046,8 @@ function expectedFingerprint(command: ApplicationCommand): string | null {
     case 'recordDiaper':
     case 'recordSleep':
     case 'recordBottle':
+    case 'recordNursing':
+    case 'recordFood':
     case 'recordGrowth':
       return fingerprintCareWrite(command);
     case 'startSleepSession':
@@ -735,6 +1058,18 @@ function expectedFingerprint(command: ApplicationCommand): string | null {
       return fingerprintAdjustSleepStart(command);
     case 'undoEndSleepSession':
       return fingerprintUndoEndSleep(command);
+    case 'startNursingSession':
+      return fingerprintStartNursing(command);
+    case 'endNursingSession':
+      return fingerprintEndNursing(command);
+    case 'pauseNursingSession':
+      return fingerprintPauseNursing(command);
+    case 'resumeNursingSession':
+      return fingerprintResumeNursing(command);
+    case 'switchNursingSide':
+      return fingerprintSwitchNursingSide(command);
+    case 'undoEndNursingSession':
+      return fingerprintUndoEndNursing(command);
     case 'softDeleteCare':
       return fingerprintSoftDelete(command);
     case 'undoCreateCare':
@@ -846,8 +1181,10 @@ function eventZone(command: CareMutationCommand, fallback: TimeZoneId): TimeZone
   switch (command.type) {
     case 'recordDiaper':
     case 'recordBottle':
+    case 'recordFood':
       return command.occurredAt.timeZone;
     case 'recordSleep':
+    case 'recordNursing':
       return command.occurrence.kind === 'known'
         ? command.occurrence.start.timeZone
         : command.occurrence.observedAt.timeZone;

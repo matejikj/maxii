@@ -1,9 +1,16 @@
-import type { BottleCareEvent, DiaperCareEvent, SleepCareEvent } from '../entities/careEvent';
+import type {
+  BottleCareEvent,
+  DiaperCareEvent,
+  FoodCareEvent,
+  NursingCareEvent,
+  SleepCareEvent,
+} from '../entities/careEvent';
 import { diaperCountContribution } from '../entities/careEvent';
 import type { CalendarDate, TimeZoneId } from '../time';
 import {
   durationMs,
   intersectWithLocalDay,
+  nursingActiveDurationMs,
   totalUnionDurationMs,
   toEpochInterval,
 } from '../time';
@@ -12,6 +19,19 @@ export type BottleDaySummary = {
   recordedMl: number;
   feedingsWithAmount: number;
   feedingsMissingAmount: number;
+};
+
+export type NursingDaySummary = {
+  /** Sum of active nursing segments only — pauses never contribute. */
+  recordedActiveMs: number;
+  eventsWithKnownDuration: number;
+  eventsMissingDuration: number;
+};
+
+export type FoodDaySummary = {
+  events: number;
+  eventsWithAmount: number;
+  eventsMissingAmount: number;
 };
 
 export type SleepDaySummary = {
@@ -84,7 +104,46 @@ export function summarizeDiapers(events: readonly DiaperCareEvent[]): DiaperDayS
   return { diapers, wet, dirty };
 }
 
+/**
+ * Nursing minutes stay separate from bottle ml and food counts — never merge into
+ * a single “intake” total.
+ */
+export function summarizeNursing(events: readonly NursingCareEvent[]): NursingDaySummary {
+  let recordedActiveMs = 0;
+  let eventsWithKnownDuration = 0;
+  let eventsMissingDuration = 0;
+  for (const event of events) {
+    if (event.occurrence.kind === 'unknownDuration' || event.activeSegments == null) {
+      eventsMissingDuration += 1;
+      continue;
+    }
+    eventsWithKnownDuration += 1;
+    recordedActiveMs += nursingActiveDurationMs(event.activeSegments);
+  }
+  return { recordedActiveMs, eventsWithKnownDuration, eventsMissingDuration };
+}
+
+/** Food amounts keep their recorded units; this tally never converts them to ml. */
+export function summarizeFood(events: readonly FoodCareEvent[]): FoodDaySummary {
+  let eventsWithAmount = 0;
+  let eventsMissingAmount = 0;
+  for (const event of events) {
+    if (event.amount == null) eventsMissingAmount += 1;
+    else eventsWithAmount += 1;
+  }
+  return {
+    events: events.length,
+    eventsWithAmount,
+    eventsMissingAmount,
+  };
+}
+
 export function knownSleepDurationMs(event: SleepCareEvent): number | null {
   if (event.occurrence.kind === 'unknownDuration') return null;
   return durationMs(toEpochInterval(event.occurrence));
+}
+
+export function knownNursingActiveMs(event: NursingCareEvent): number | null {
+  if (event.occurrence.kind === 'unknownDuration' || event.activeSegments == null) return null;
+  return nursingActiveDurationMs(event.activeSegments);
 }

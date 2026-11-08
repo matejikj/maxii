@@ -15,7 +15,9 @@ import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
 import { CareActionSheet, PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
+import { FeedingRecorder } from './FeedingRecorder';
 import { type QuickActionId } from './quickActions';
+import { NursingSessionController } from './NursingSessionController';
 import { SleepSessionController, useSleepStarter } from './SleepSessionController';
 import { useTodayCareModel } from './useTodayCareModel';
 
@@ -44,16 +46,17 @@ export function TodayScreen({
   const model = useTodayCareModel(childId, profile?.settings.summaryTimeZone);
   const sleepStarter = useSleepStarter(childId, zone, model.activeSleep);
   const [diaperOpen, setDiaperOpen] = useState(false);
+  const [feedingOpen, setFeedingOpen] = useState(false);
   const [editingActions, setEditingActions] = useState(false);
-  const [infoSheet, setInfoSheet] = useState<'feeding' | 'experience' | null>(null);
+  const [infoSheet, setInfoSheet] = useState<'experience' | null>(null);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
   const diaperOpenerRef = useRef(null);
 
   React.useEffect(() => {
-    if (!model.activeSleep) return;
+    if (!model.activeSleep && !model.activeNursing) return;
     const timer = setInterval(() => setNowMs(services.clock.now().epochMs), 1000);
     return () => clearInterval(timer);
-  }, [model.activeSleep, services.clock]);
+  }, [model.activeNursing, model.activeSleep, services.clock]);
 
   function openHistoryToday() {
     const today = formatIsoCalendarDate(services.clock.now().epochMs, zone);
@@ -64,7 +67,9 @@ export function TodayScreen({
   function actionTitle(id: QuickActionId): string {
     switch (id) {
       case 'feeding':
-        return PRODUCT_COPY.actions.feeding;
+        return model.activeNursing
+          ? PRODUCT_COPY.actions.nursingRunning
+          : PRODUCT_COPY.actions.feeding;
       case 'sleep':
         return model.activeSleep
           ? PRODUCT_COPY.actions.sleepRunning
@@ -85,6 +90,10 @@ export function TodayScreen({
       setDiaperOpen(true);
       return;
     }
+    if (id === 'feeding') {
+      setFeedingOpen(true);
+      return;
+    }
     if (id === 'sleep') {
       const result = await sleepStarter.start();
       if (result.alreadyRunning) {
@@ -93,23 +102,12 @@ export function TodayScreen({
       }
       return;
     }
-    if (id === 'feeding' || id === 'experience') {
+    if (id === 'experience') {
       setInfoSheet(id);
     }
   }
 
-  const infoCopy =
-    infoSheet === 'feeding'
-      ? {
-          title: PRODUCT_COPY.sheets.unavailableFeeding,
-          body: PRODUCT_COPY.empty.feedingSoon,
-        }
-      : infoSheet === 'experience'
-        ? {
-            title: PRODUCT_COPY.sheets.unavailableExperience,
-            body: PRODUCT_COPY.empty.experienceSoon,
-          }
-        : null;
+  const hasActiveMeasurement = Boolean(model.activeSleep || model.activeNursing);
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -140,14 +138,22 @@ export function TodayScreen({
         </View>
 
         {childId ? (
-          <SleepSessionController
-            childId={childId}
-            timeZone={zone}
-            activeSleep={model.activeSleep}
-            nowEpochMs={nowMs}
-          />
+          <>
+            <SleepSessionController
+              childId={childId}
+              timeZone={zone}
+              activeSleep={model.activeSleep}
+              nowEpochMs={nowMs}
+            />
+            <NursingSessionController
+              childId={childId}
+              timeZone={zone}
+              activeNursing={model.activeNursing}
+              nowEpochMs={nowMs}
+            />
+          </>
         ) : null}
-        {!model.activeSleep ? (
+        {!hasActiveMeasurement ? (
           <LumiCard>
             <LumiText variant="caption" tone="muted">
               {PRODUCT_COPY.measurement.none}
@@ -180,7 +186,13 @@ export function TodayScreen({
               const button = (
                 <LumiButton
                   title={actionTitle(id)}
-                  variant={id === 'diaper' || (id === 'sleep' && !model.activeSleep) ? 'primary' : 'secondary'}
+                  variant={
+                    id === 'diaper' ||
+                    id === 'feeding' ||
+                    (id === 'sleep' && !model.activeSleep)
+                      ? 'primary'
+                      : 'secondary'
+                  }
                   fullWidth
                   loading={id === 'sleep' && sleepStarter.pending}
                   onPress={() => void onQuickAction(id)}
@@ -204,14 +216,24 @@ export function TodayScreen({
         </View>
 
         {childId ? (
-          <DiaperRecorder
-            childId={childId}
-            timeZone={zone}
-            open={diaperOpen}
-            onClose={() => setDiaperOpen(false)}
-            returnFocusRef={diaperOpenerRef}
-            {...(onOpenEvent ? { onOpenEvent } : {})}
-          />
+          <>
+            <DiaperRecorder
+              childId={childId}
+              timeZone={zone}
+              open={diaperOpen}
+              onClose={() => setDiaperOpen(false)}
+              returnFocusRef={diaperOpenerRef}
+              {...(onOpenEvent ? { onOpenEvent } : {})}
+            />
+            <FeedingRecorder
+              childId={childId}
+              timeZone={zone}
+              open={feedingOpen}
+              onClose={() => setFeedingOpen(false)}
+              activeNursing={model.activeNursing}
+              {...(onOpenEvent ? { onOpenEvent } : {})}
+            />
+          </>
         ) : null}
 
         <LumiCard>
@@ -245,11 +267,11 @@ export function TodayScreen({
       </ScrollView>
 
       <CareActionSheet
-        visible={infoCopy != null}
-        title={infoCopy?.title ?? ''}
+        visible={infoSheet != null}
+        title={PRODUCT_COPY.sheets.unavailableExperience}
         onClose={() => setInfoSheet(null)}
       >
-        <LumiText>{infoCopy?.body}</LumiText>
+        <LumiText>{PRODUCT_COPY.empty.experienceSoon}</LumiText>
         <LumiButton title={PRODUCT_COPY.actions.close} onPress={() => setInfoSheet(null)} fullWidth />
       </CareActionSheet>
     </SafeAreaView>

@@ -7,8 +7,14 @@ import type {
 } from './lifecycleCommands';
 import type {
   AdjustSleepSessionStartCommand,
+  EndNursingSessionCommand,
   EndSleepSessionCommand,
+  PauseNursingSessionCommand,
+  ResumeNursingSessionCommand,
+  StartNursingSessionCommand,
   StartSleepSessionCommand,
+  SwitchNursingSideCommand,
+  UndoEndNursingSessionCommand,
   UndoEndSleepSessionCommand,
 } from './sessionCommands';
 
@@ -100,6 +106,71 @@ export function fingerprintUndoEndSleep(command: UndoEndSleepSessionCommand): st
   });
 }
 
+export function fingerprintStartNursing(command: StartNursingSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    startedAtMs: command.startedAt.instant.epochMs,
+    timeZone: command.startedAt.timeZone,
+    monotonicStartMs: command.monotonicStartMs,
+    side: command.side ?? 'unspecified',
+  });
+}
+
+export function fingerprintEndNursing(command: EndNursingSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    intendedEndedAtMs: command.intendedEndedAt.instant.epochMs,
+    eventId: command.eventId,
+    careRevisionId: command.careRevisionId,
+    note: command.note ?? null,
+    approximateEnd: command.approximateEnd ?? false,
+  });
+}
+
+export function fingerprintPauseNursing(command: PauseNursingSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    pausedAtMs: command.pausedAt.instant.epochMs,
+  });
+}
+
+export function fingerprintResumeNursing(command: ResumeNursingSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    resumedAtMs: command.resumedAt.instant.epochMs,
+  });
+}
+
+export function fingerprintSwitchNursingSide(command: SwitchNursingSideCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    switchedAtMs: command.switchedAt.instant.epochMs,
+    side: command.side,
+  });
+}
+
+export function fingerprintUndoEndNursing(command: UndoEndNursingSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    eventId: command.eventId,
+    expectedCareRevisionId: command.expectedCareRevisionId,
+    deletionId: command.deletionId,
+    restoreSide: command.restoreSide,
+  });
+}
+
 function careBody(command: CareWriteCommand): unknown {
   switch (command.type) {
     case 'recordDiaper':
@@ -117,6 +188,20 @@ function careBody(command: CareWriteCommand): unknown {
       return {
         occurredAtMs: command.occurredAt.instant.epochMs,
         contents: command.contents,
+        amount: command.amount ?? null,
+        note: command.note ?? null,
+      };
+    case 'recordNursing':
+      return {
+        occurrence: command.occurrence,
+        side: command.side ?? null,
+        activeSegments: command.activeSegments ?? null,
+        note: command.note ?? null,
+      };
+    case 'recordFood':
+      return {
+        occurredAtMs: command.occurredAt.instant.epochMs,
+        description: command.description,
         amount: command.amount ?? null,
         note: command.note ?? null,
       };

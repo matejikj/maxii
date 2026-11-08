@@ -22,6 +22,8 @@ import {
   diaperCountContribution,
   knownSleepDurationMs,
   nursingActiveDurationMs,
+  createFoodEvent,
+  createNursingEvent,
   pauseNursingSession,
   recordDiaperInputSchema,
   resumeNursingSession,
@@ -29,7 +31,10 @@ import {
   startSession,
   summarizeBottles,
   summarizeDiapers,
+  summarizeFood,
+  summarizeNursing,
   summarizeSleepForDay,
+  switchNursingSide,
   zonedInstant,
 } from '../../src/domain/index.ts';
 
@@ -82,6 +87,51 @@ test('invalid session transition and unknown duration stay distinct states', () 
       zonedInstant({ epochMs: 1_700_000_001_000 }, zone),
     ),
   );
+});
+
+test('switchNursingSide closes the open segment atomically', () => {
+  const running = startSession({
+    sessionId: asEntityId('session_side'),
+    childId,
+    kind: 'nursing',
+    startedAt: zonedInstant({ epochMs: 1_700_000_000_000 }, zone),
+    side: 'left',
+  });
+  const switched = switchNursingSide(
+    running,
+    zonedInstant({ epochMs: 1_700_000_030_000 }, zone),
+    'right',
+  );
+  assert.equal(switched.side, 'right');
+  assert.equal(switched.activeSegments.length, 1);
+  assert.equal(switched.activeSegments[0]?.endMs, 1_700_000_030_000);
+  assert.equal(switched.currentSegmentStartedAtMs, 1_700_000_030_000);
+});
+
+test('nursing and food summaries stay separated from bottle ml', () => {
+  const nursing = createNursingEvent({
+    eventId: asEntityId('nursing_1'),
+    childId,
+    revisionId: asRevisionId('rev_n1'),
+    occurrence: {
+      kind: 'known',
+      start: zonedInstant({ epochMs: 1_700_000_000_000 }, zone),
+      end: zonedInstant({ epochMs: 1_700_000_600_000 }, zone),
+    },
+    activeSegments: [{ startMs: 1_700_000_000_000, endMs: 1_700_000_300_000 }],
+    createdAt: now,
+  });
+  const food = createFoodEvent({
+    eventId: asEntityId('food_1'),
+    childId,
+    revisionId: asRevisionId('rev_f1'),
+    occurredAt: now,
+    description: 'banán',
+    amount: { value: 20, unit: 'g' },
+    createdAt: now,
+  });
+  assert.equal(summarizeNursing([nursing]).recordedActiveMs, 300_000);
+  assert.equal(summarizeFood([food]).eventsWithAmount, 1);
 });
 
 test('unknown bottle amount never becomes zero care in projections', () => {

@@ -156,6 +156,45 @@ export function resumeNursingSession(
   };
 }
 
+/**
+ * Close the open nursing segment and open a new one on the chosen side in one
+ * transition — never leave two overlapping active spans.
+ */
+export function switchNursingSide(
+  session: RunningSession,
+  switchedAt: ZonedInstant,
+  side: FeedingSide,
+): RunningSession {
+  if (session.kind !== 'nursing') {
+    throw new AppError('VALIDATION', 'Only nursing sessions can switch side', {
+      details: { reason: 'side_kind' },
+    });
+  }
+  assertChronological(session.startedAt.instant, switchedAt.instant);
+  if (switchedAt.instant.epochMs < session.currentSegmentStartedAtMs) {
+    throw new AppError('VALIDATION', 'Side switch cannot precede the open nursing segment', {
+      details: { reason: 'side_order' },
+    });
+  }
+  return {
+    status: 'running',
+    sessionId: session.sessionId,
+    childId: session.childId,
+    kind: 'nursing',
+    startedAt: session.startedAt,
+    monotonicStartMs: session.monotonicStartMs,
+    side,
+    activeSegments: [
+      ...session.activeSegments,
+      {
+        startMs: session.currentSegmentStartedAtMs,
+        endMs: switchedAt.instant.epochMs,
+      },
+    ],
+    currentSegmentStartedAtMs: switchedAt.instant.epochMs,
+  };
+}
+
 export function completeSessionWithDuration(
   session: ActiveSession,
   endedAt: ZonedInstant,

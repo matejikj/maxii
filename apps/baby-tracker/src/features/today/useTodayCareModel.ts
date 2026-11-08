@@ -23,6 +23,7 @@ export type TodayCareModel = {
   lastCare: LastCarePresentation | null;
   todayEvents: CareEvent[];
   activeSleep: ActiveSession | null;
+  activeNursing: ActiveSession | null;
   quickActions: QuickActionId[];
   calendarDate: string;
   refresh: () => Promise<void>;
@@ -39,6 +40,7 @@ export function useTodayCareModel(
   const [lastCare, setLastCare] = useState<LastCarePresentation | null>(null);
   const [todayEvents, setTodayEvents] = useState<CareEvent[]>([]);
   const [activeSleep, setActiveSleep] = useState<ActiveSession | null>(null);
+  const [activeNursing, setActiveNursing] = useState<ActiveSession | null>(null);
   const [quickActions, setQuickActions] = useState<QuickActionId[]>([...DEFAULT_QUICK_ACTIONS]);
   const [calendarDate, setCalendarDate] = useState('');
 
@@ -48,6 +50,7 @@ export function useTodayCareModel(
       setLastCare(null);
       setTodayEvents([]);
       setActiveSleep(null);
+      setActiveNursing(null);
       return;
     }
     const zone = asTimeZoneId(summaryTimeZone ?? 'Europe/Prague');
@@ -55,15 +58,17 @@ export function useTodayCareModel(
     const today = todayInZone(now, zone);
     const fromMs = startOfCalendarDay(today, zone).epochMs;
     const toMs = endOfCalendarDayExclusive(today, zone).epochMs;
-    const [recent, dayEvents, sleep, order] = await Promise.all([
+    const [recent, dayEvents, sleep, nursing, order] = await Promise.all([
       runtime.unitOfWork.run((uow) => uow.care.listRecent(childId, 20)),
       runtime.unitOfWork.run((uow) => uow.care.listInSortRange(childId, fromMs, toMs)),
       runtime.unitOfWork.run((uow) => uow.sessions.getActive(childId, 'sleep')),
+      runtime.unitOfWork.run((uow) => uow.sessions.getActive(childId, 'nursing')),
       loadQuickActionOrder(runtime.unitOfWork),
     ]);
     setLastCare(presentLastCare(recent, zone));
     setTodayEvents(dayEvents);
     setActiveSleep(sleep);
+    setActiveNursing(nursing);
     setQuickActions(order);
     setCalendarDate(formatCalendarDate(today));
     setLoading(false);
@@ -101,6 +106,7 @@ export function useTodayCareModel(
     lastCare,
     todayEvents,
     activeSleep,
+    activeNursing,
     quickActions,
     calendarDate,
     refresh,

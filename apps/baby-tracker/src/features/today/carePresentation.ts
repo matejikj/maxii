@@ -63,20 +63,30 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
         detail: `v ${clock}`,
         sortAtMs,
       };
-    case 'bottle':
+    case 'bottle': {
+      const amountLabel =
+        event.amount == null
+          ? 'množství neuvedeno'
+          : `${event.amount.value} ${event.amount.unit}`;
       return {
         eventId: event.eventId,
         title: 'Lahvička',
-        detail: `v ${clock}`,
+        detail: `v ${clock} · ${amountLabel}`,
         sortAtMs,
       };
-    case 'food':
+    }
+    case 'food': {
+      const amountLabel =
+        event.amount == null
+          ? event.description
+          : `${event.description} · ${event.amount.value} ${event.amount.unit}`;
       return {
         eventId: event.eventId,
         title: 'Jídlo',
-        detail: `v ${clock}`,
+        detail: `v ${clock} · ${amountLabel}`,
         sortAtMs,
       };
+    }
     case 'growth':
       return {
         eventId: event.eventId,
@@ -101,21 +111,24 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
         detail: `začátek ${formatClock(event.occurrence.observedAt.instant.epochMs, timeZone)} · bez známého konce`,
         sortAtMs,
       };
-    case 'nursing':
+    case 'nursing': {
+      const side =
+        event.side === 'left' ? 'levá' : event.side === 'right' ? 'pravá' : 'bez strany';
       if (event.occurrence.kind === 'known') {
         return {
           eventId: event.eventId,
           title: 'Kojení',
-          detail: `od ${formatClock(event.occurrence.start.instant.epochMs, timeZone)}`,
+          detail: `od ${formatClock(event.occurrence.start.instant.epochMs, timeZone)} · ${side}`,
           sortAtMs,
         };
       }
       return {
         eventId: event.eventId,
         title: 'Kojení',
-        detail: `pozorováno ${formatClock(event.occurrence.observedAt.instant.epochMs, timeZone)} · bez známého konce`,
+        detail: `pozorováno ${formatClock(event.occurrence.observedAt.instant.epochMs, timeZone)} · bez známé délky · ${side}`,
         sortAtMs,
       };
+    }
   }
 }
 

@@ -163,6 +163,67 @@ export function createBottleEvent(input: {
   };
 }
 
+export function createNursingEvent(input: {
+  eventId: EntityId;
+  childId: ChildId;
+  revisionId: RevisionId;
+  occurrence: CareOccurrence;
+  side?: FeedingSide | null;
+  activeSegments?: EpochInterval[] | null;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+  createdAt: ZonedInstant;
+}): NursingCareEvent {
+  if (input.occurrence.kind === 'known') {
+    knownInterval(input.occurrence.start, input.occurrence.end);
+  }
+  const activeSegments =
+    input.occurrence.kind === 'unknownDuration' ? null : (input.activeSegments ?? null);
+  return {
+    type: 'nursing',
+    eventId: input.eventId,
+    childId: input.childId,
+    revisionId: input.revisionId,
+    occurrence: input.occurrence,
+    side: input.side ?? 'unspecified',
+    activeSegments,
+    note: input.note ?? null,
+    recordedBy: input.recordedBy ?? null,
+    createdAt: input.createdAt,
+  };
+}
+
+export function createFoodEvent(input: {
+  eventId: EntityId;
+  childId: ChildId;
+  revisionId: RevisionId;
+  occurredAt: ZonedInstant;
+  description: string;
+  amount?: MeasuredQuantity;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+  createdAt: ZonedInstant;
+}): FoodCareEvent {
+  const description = input.description.trim();
+  if (!description) {
+    throw new AppError('VALIDATION', 'Food description is required', {
+      details: { reason: 'food_description' },
+    });
+  }
+  return {
+    type: 'food',
+    eventId: input.eventId,
+    childId: input.childId,
+    revisionId: input.revisionId,
+    occurredAt: input.occurredAt,
+    description,
+    amount: assertMeasuredQuantity(input.amount ?? null, 'Food amount'),
+    note: input.note ?? null,
+    recordedBy: input.recordedBy ?? null,
+    createdAt: input.createdAt,
+  };
+}
+
 export function createGrowthEvent(input: {
   eventId: EntityId;
   childId: ChildId;

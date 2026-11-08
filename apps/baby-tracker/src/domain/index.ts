@@ -24,12 +24,17 @@ export {
   type DomainVocabularyKey,
 } from './vocabulary';
 export {
+  knownNursingActiveMs,
   knownSleepDurationMs,
   summarizeBottles,
   summarizeDiapers,
+  summarizeFood,
+  summarizeNursing,
   summarizeSleepForDay,
   type BottleDaySummary,
   type DiaperDaySummary,
+  type FoodDaySummary,
+  type NursingDaySummary,
   type SleepDaySummary,
 } from './projections/careSummaries';
 export type {
