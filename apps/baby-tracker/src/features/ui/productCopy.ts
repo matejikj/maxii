@@ -168,6 +168,15 @@ export const PRODUCT_COPY = {
     favorites: 'Oblíbené',
     weeklyGlance: 'Týdenní ohlédnutí',
     library: 'Procházet aktivity',
+    draftBadge: 'Návrh — zatím nevydáno',
+    draftPreviewNote:
+      'Pracovní náhled. Do denní nabídky vstupují jen vydané aktivity po odborné kontrole.',
+    readinessTitle: 'Potřebná připravenost',
+    readinessHint:
+      'Potvrďte jen to, co jste u dítěte sami viděli. Neznámé znamená přeskočit tuto podmínku.',
+    readinessYes: 'Ano',
+    readinessNo: 'Zatím ne',
+    readinessUnknown: 'Nevím',
     howTo: 'Jak na to',
     materials: 'Co budete potřebovat',
     noMaterials: 'Bez pomůcek',

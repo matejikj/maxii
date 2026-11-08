@@ -2,7 +2,7 @@ import type { DevelopmentArea } from '../entities/development';
 import type { ContentDurationLike, ContentEnvironmentLike } from './candidate';
 
 /** Versioned ranking/eligibility rules. Same inputs + version ⇒ same offers. */
-export const RECOMMENDATION_RULES_VERSION = 'lumi.recommendation.rules.v1';
+export const RECOMMENDATION_RULES_VERSION = 'lumi.recommendation.rules.v2';
 
 /**
  * Machine-readable exclusion/selection reasons. Never include child names,
@@ -25,6 +25,8 @@ export type RecommendationReasonCode =
   | 'revision_not_recommendable'
   | 'user_excluded'
   | 'unknown_required_condition'
+  | 'readiness_unknown'
+  | 'readiness_not_confirmed'
   | 'empty_catalog'
   | 'profile_changed'
   | 'revision_withdrawn'
@@ -55,6 +57,11 @@ export type ParentRecommendationContext = {
   /** Active sleep session changes presentation, not eligibility. */
   sleepRunning: boolean;
   durationPreference: ContentDurationLike['kind'] | null;
+  /**
+   * Explicit readiness observations. Missing keys are treated as unknown —
+   * never as yes.
+   */
+  readinessByKey: Partial<Record<string, 'yes' | 'no' | 'unknown'>>;
 };
 
 export type EligibilityDecision = {

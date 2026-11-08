@@ -20,8 +20,11 @@ export type {
   EditorialEvent,
   EditorialStage,
   FieldValidationError,
+  ReadinessKey,
+  ReadinessState,
   SuitabilityCondition,
 } from './model/types';
+export { READINESS_KEYS, READINESS_LABELS_CS } from './model/types';
 export { validateActivityRevision } from './validation/validateActivity';
 export {
   buildContentManifest,
@@ -40,3 +43,7 @@ export {
   LOCAL_LIBRARY_CONTENT_VERSION,
   LOCAL_LIBRARY_REVISIONS,
 } from './localLibrary';
+export {
+  FIRST_YEAR_DRAFT_CONTENT_VERSION,
+  FIRST_YEAR_DRAFT_REVISIONS,
+} from './drafts/firstYearDrafts';

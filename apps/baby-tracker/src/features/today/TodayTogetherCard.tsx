@@ -8,6 +8,7 @@ import {
   buildParentRecommendationContext,
   candidatesFromRevisions,
   ensureDailyRecommendationSet,
+  loadReadinessByKey,
 } from '../../application';
 import {
   LOCAL_LIBRARY_CONTENT_VERSION,
@@ -38,11 +39,14 @@ export function TodayTogetherCard({
     let cancelled = false;
     queueMicrotask(() => {
       void (async () => {
+        if (!runtime.unitOfWork) return;
         const zone = asTimeZoneId(profile.settings.summaryTimeZone);
         const localDay = todayInZone(services.clock.now(), zone);
+        const readinessByKey = await loadReadinessByKey(runtime.unitOfWork, profile.childId);
         const context = buildParentRecommendationContext(profile, localDay, {
           sleepRunning,
           withoutMaterialsOnly: false,
+          readinessByKey,
         });
         const next = await ensureDailyRecommendationSet(runtime.unitOfWork, {
           childId: profile.childId,

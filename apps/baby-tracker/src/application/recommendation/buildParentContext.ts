@@ -18,6 +18,7 @@ export type RecommendationFilterInput = {
   lastPrimaryArea?: DevelopmentArea | null;
   sleepRunning?: boolean;
   durationPreference?: ContentDurationLike['kind'] | null;
+  readinessByKey?: Partial<Record<string, 'yes' | 'no' | 'unknown'>>;
 };
 
 /**
@@ -45,6 +46,7 @@ export function buildParentRecommendationContext(
       lastPrimaryArea: filters.lastPrimaryArea ?? null,
       sleepRunning: filters.sleepRunning ?? false,
       durationPreference: filters.durationPreference ?? null,
+      readinessByKey: filters.readinessByKey ?? {},
     };
   }
 
@@ -63,5 +65,6 @@ export function buildParentRecommendationContext(
     lastPrimaryArea: filters.lastPrimaryArea ?? null,
     sleepRunning: filters.sleepRunning ?? false,
     durationPreference: filters.durationPreference ?? null,
+    readinessByKey: filters.readinessByKey ?? {},
   };
 }

@@ -39,6 +39,7 @@ function baseContext(
     lastPrimaryArea: null,
     sleepRunning: false,
     durationPreference: null,
+    readinessByKey: {},
     ...overrides,
   };
 }
@@ -250,4 +251,41 @@ test('reason copy stays free of PII-shaped placeholders', () => {
   const copy = reasonCopyCs('missing_birth_date');
   assert.match(copy, /datum narození/i);
   assert.doesNotMatch(copy, /\{name\}|childId|CANARY/i);
+});
+
+test('readiness-gated activity stays out until caregiver confirms yes', () => {
+  const candidate = productCandidate({
+    activityId: 'act.grasp-ring',
+    revisionId: 'act.grasp-ring.r1',
+    materials: ['kroužek'],
+    suitability: [
+      { kind: 'age_months', fromInclusive: 3, toInclusive: 11 },
+      { kind: 'requires_birth_date' },
+      { kind: 'readiness_confirmed', key: 'grasp' },
+    ],
+    ageMonths: { fromInclusive: 3, toInclusive: 11 },
+  });
+
+  const unknown = evaluateEligibility(candidate, baseContext({ ageMonths: 4 }));
+  assert.equal(unknown.eligible, false);
+  assert.ok(unknown.reasonCodes.includes('readiness_unknown'));
+
+  const denied = evaluateEligibility(
+    candidate,
+    baseContext({ ageMonths: 4, readinessByKey: { grasp: 'no' } }),
+  );
+  assert.equal(denied.eligible, false);
+  assert.ok(denied.reasonCodes.includes('readiness_not_confirmed'));
+
+  const confirmed = evaluateEligibility(
+    candidate,
+    baseContext({ ageMonths: 4, readinessByKey: { grasp: 'yes' } }),
+  );
+  assert.equal(confirmed.eligible, true);
+
+  const selectedUnknown = selectDailyOffers(
+    [candidate],
+    baseContext({ ageMonths: 4, availableMaterials: ['kroužek'] }),
+  );
+  assert.equal(selectedUnknown.offers.length, 0);
 });

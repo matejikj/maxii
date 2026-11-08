@@ -5,14 +5,17 @@
  */
 import {
   DEV_FIXTURE_REVISIONS,
+  FIRST_YEAR_DRAFT_REVISIONS,
   LOCAL_LIBRARY_REVISIONS,
   STARTER_TOPICS,
   buildCoverageReport,
   buildPublishedCatalog,
+  isRecommendable,
   validateActivityRevision,
 } from '../src/content/index.ts';
 
-const all = [...DEV_FIXTURE_REVISIONS, ...LOCAL_LIBRARY_REVISIONS];
+const drafts = [...FIRST_YEAR_DRAFT_REVISIONS];
+const all = [...DEV_FIXTURE_REVISIONS, ...LOCAL_LIBRARY_REVISIONS, ...drafts];
 let failed = 0;
 
 for (const [index, revision] of all.entries()) {
@@ -35,18 +38,45 @@ for (const item of rejected) {
   }
 }
 
-const coverage = buildCoverageReport(catalog.recommendable, {
+const draftInCatalog = catalog.recommendable.filter((revision) =>
+  drafts.some((draft) => draft.revisionId === revision.revisionId),
+);
+if (draftInCatalog.length > 0) {
+  failed += 1;
+  console.error(`drafts leaked into recommendable catalog: ${draftInCatalog.length}`);
+}
+
+const draftCoverage = buildCoverageReport([...drafts], {
+  supportedAgeFrom: 0,
+  supportedAgeTo: 11,
+});
+const publishedCoverage = buildCoverageReport(catalog.recommendable, {
   supportedAgeFrom: 0,
   supportedAgeTo: 12,
 });
+
+const readinessGated = drafts.filter((revision) =>
+  revision.suitability.some((item) => item.kind === 'readiness_confirmed'),
+).length;
+const unpublishedReviewGaps = drafts.filter((revision) => !isRecommendable(revision)).length;
+const birthdayLeak = drafts.filter((revision) => revision.ageMonths.toInclusive >= 12).length;
+if (birthdayLeak > 0) {
+  failed += 1;
+  console.error(`first-birthday age leak in drafts: ${birthdayLeak}`);
+}
 
 console.log(
   JSON.stringify(
     {
       topics: STARTER_TOPICS.length,
       validated: all.length,
+      drafts: drafts.length,
+      readinessGated,
+      unpublishedReviewGaps,
       recommendable: catalog.recommendable.length,
-      coverageGaps: coverage.gaps.map((gap) => gap.code),
+      draftCoverageGaps: draftCoverage.gaps.map((gap) => gap.code),
+      draftByAgeMonth: draftCoverage.byAgeMonth,
+      publishedCoverageGaps: publishedCoverage.gaps.map((gap) => gap.code),
       failed,
     },
     null,

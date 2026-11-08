@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   DEV_FIXTURE_REVISIONS,
+  FIRST_YEAR_DRAFT_REVISIONS,
   STARTER_TOPICS,
   buildContentManifest,
   buildCoverageReport,
@@ -160,4 +161,38 @@ test('content manifest lists digests for referential integrity', () => {
   assert.equal(manifest.format, 'lumi.content-manifest.v1');
   assert.equal(manifest.revisionIds.includes(revision.revisionId), true);
   assert.equal(manifest.digests[revision.revisionId], digestRevision(revision));
+});
+
+test('first-year draft pack validates as sixty unpublished moment activities', () => {
+  assert.equal(FIRST_YEAR_DRAFT_REVISIONS.length, 60);
+  const activityIds = new Set(FIRST_YEAR_DRAFT_REVISIONS.map((item) => item.activityId));
+  const revisionIds = new Set(FIRST_YEAR_DRAFT_REVISIONS.map((item) => item.revisionId));
+  assert.equal(activityIds.size, 60);
+  assert.equal(revisionIds.size, 60);
+
+  for (const revision of FIRST_YEAR_DRAFT_REVISIONS) {
+    const result = validateActivityRevision(revision);
+    assert.equal(result.ok, true, revision.revisionId);
+    assert.equal(revision.editorial.stage, 'draft');
+    assert.equal(revision.editorial.history.length, 0);
+    assert.equal(revision.duration.kind, 'moment');
+    assert.equal(revision.ageMonths.toInclusive <= 11, true);
+    assert.equal(isRecommendable(revision), false);
+    assert.ok(revision.sources.every((source) => typeof source.url === 'string' && source.url.length > 0));
+  }
+
+  const readinessGated = FIRST_YEAR_DRAFT_REVISIONS.filter((revision) =>
+    revision.suitability.some((item) => item.kind === 'readiness_confirmed'),
+  );
+  assert.equal(readinessGated.length, 16);
+
+  const { catalog } = buildPublishedCatalog([...FIRST_YEAR_DRAFT_REVISIONS], 'draft-check');
+  assert.equal(catalog.recommendable.length, 0);
+
+  const coverage = buildCoverageReport([...FIRST_YEAR_DRAFT_REVISIONS], {
+    supportedAgeFrom: 0,
+    supportedAgeTo: 11,
+  });
+  assert.equal(coverage.activityCount, 60);
+  assert.ok(!coverage.gaps.some((gap) => gap.code === 'age_gap'));
 });

@@ -7,6 +7,14 @@ export type ContentDurationLike =
   | { kind: 'moment' }
   | { kind: 'minutes'; minutes: 5 | 10 | 15 };
 
+export type ReadinessKeyLike =
+  | 'grasp'
+  | 'release'
+  | 'rollAttempt'
+  | 'floorSit'
+  | 'floorMove'
+  | 'gesture';
+
 export type SuitabilityConditionLike =
   | {
       kind: 'age_months';
@@ -16,7 +24,8 @@ export type SuitabilityConditionLike =
   | { kind: 'environment_one_of'; environments: ContentEnvironmentLike[] }
   | { kind: 'materials_none' }
   | { kind: 'materials_all_of'; materials: string[] }
-  | { kind: 'requires_birth_date' };
+  | { kind: 'requires_birth_date' }
+  | { kind: 'readiness_confirmed'; key: ReadinessKeyLike };
 
 /**
  * Minimal snapshot the selector needs. Keeps domain free of editorial package

@@ -8,8 +8,10 @@ import type {
   ContentSource,
   EditorialEvent,
   FieldValidationError,
+  ReadinessKey,
   SuitabilityCondition,
 } from '../model/types';
+import { READINESS_KEYS } from '../model/types';
 
 const AREAS: readonly DevelopmentArea[] = [
   'relationship',
@@ -362,7 +364,37 @@ function parseSources(value: unknown, errors: FieldValidationError[]): ContentSo
     }
     if (!label || !checkedOn) return [];
     const kind: ContentSource['kind'] = record.kind;
-    return [{ label, checkedOn, kind }];
+    const url =
+      record.url == null
+        ? null
+        : typeof record.url === 'string'
+          ? record.url
+          : (errors.push({
+              path: `sources[${index}].url`,
+              code: 'source_url',
+              message: 'url must be a string when present.',
+            }),
+            null);
+    const supportsPrinciple =
+      record.supportsPrinciple == null
+        ? null
+        : typeof record.supportsPrinciple === 'string'
+          ? record.supportsPrinciple
+          : (errors.push({
+              path: `sources[${index}].supportsPrinciple`,
+              code: 'source_supports',
+              message: 'supportsPrinciple must be a string when present.',
+            }),
+            null);
+    return [
+      {
+        label,
+        checkedOn,
+        kind,
+        ...(url ? { url } : {}),
+        ...(supportsPrinciple ? { supportsPrinciple } : {}),
+      },
+    ];
   });
 }
 
@@ -423,6 +455,21 @@ function parseSuitability(value: unknown, errors: FieldValidationError[]): Suita
       case 'requires_birth_date':
         out.push({ kind: 'requires_birth_date' });
         break;
+      case 'readiness_confirmed': {
+        if (
+          typeof record.key !== 'string' ||
+          !(READINESS_KEYS as readonly string[]).includes(record.key)
+        ) {
+          errors.push({
+            path: `suitability[${i}].key`,
+            code: 'suitability_readiness',
+            message: 'readiness_confirmed needs a known readiness key.',
+          });
+          break;
+        }
+        out.push({ kind: 'readiness_confirmed', key: record.key as ReadinessKey });
+        break;
+      }
       default:
         errors.push({
           path: `suitability[${i}].kind`,

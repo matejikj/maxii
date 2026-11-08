@@ -155,6 +155,16 @@ function evaluateCondition(
       }
       return { ok: true, reasonCodes: [] };
     }
+    case 'readiness_confirmed': {
+      const state = context.readinessByKey[condition.key] ?? 'unknown';
+      if (state === 'yes') {
+        return { ok: true, reasonCodes: [] };
+      }
+      if (state === 'no') {
+        return { ok: false, reasonCodes: ['readiness_not_confirmed'] };
+      }
+      return { ok: false, reasonCodes: ['readiness_unknown'] };
+    }
     default: {
       // Exhaustiveness: unknown condition kinds must fail closed.
       const _exhaustive: never = condition;

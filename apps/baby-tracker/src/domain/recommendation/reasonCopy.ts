@@ -21,6 +21,8 @@ export const RECOMMENDATION_REASON_COPY_CS: Record<RecommendationReasonCode, str
   revision_not_recommendable: 'Obsah není v doporučovacím katalogu.',
   user_excluded: 'Tuto aktivitu jste skryli.',
   unknown_required_condition: 'Nelze ověřit požadovanou podmínku.',
+  readiness_unknown: 'Nejdřív potvrďte, zda už dítě tuto připravenost zvládá.',
+  readiness_not_confirmed: 'Podle vašeho pozorování zatím tato aktivita není vhodná.',
   empty_catalog: 'Lokální katalog je prázdný.',
   profile_changed: 'Podmínky se změnily, proto nabídku obnovíme.',
   revision_withdrawn: 'Tato verze aktivity už není v katalogu.',

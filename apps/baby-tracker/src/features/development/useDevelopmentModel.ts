@@ -14,16 +14,20 @@ import {
   addFavorite,
   buildParentRecommendationContext,
   candidatesFromRevisions,
+  clearReadinessObservation,
   ensureDailyRecommendationSet,
   findTodaysExperienceForActivity,
   hideDailyRecommendationForCare,
   listFavorites,
+  loadReadinessByKey,
   loadWeeklyDevelopmentGlance,
   removeFavorite,
   replaceDailyRecommendationSet,
+  setReadinessObservation,
 } from '../../application';
-import type { ActivityRevision } from '../../content';
+import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../content';
 import {
+  FIRST_YEAR_DRAFT_REVISIONS,
   LOCAL_LIBRARY_CONTENT_VERSION,
   LOCAL_LIBRARY_REVISIONS,
 } from '../../content';
@@ -55,16 +59,22 @@ export function useDevelopmentModel() {
   const [todayByActivity, setTodayByActivity] = useState<Record<string, ExperienceCareEvent | null>>(
     {},
   );
+  const [readinessByKey, setReadinessByKey] = useState<Partial<Record<string, ReadinessState>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const library = useMemo(() => LOCAL_LIBRARY_REVISIONS, []);
+  // Recommendations stay on published interim library only; drafts are browse/preview.
+  const publishedLibrary = useMemo(() => LOCAL_LIBRARY_REVISIONS, []);
+  const library = useMemo(
+    () => [...LOCAL_LIBRARY_REVISIONS, ...FIRST_YEAR_DRAFT_REVISIONS],
+    [],
+  );
   const catalog = useMemo(
     () => ({
       contentVersion: LOCAL_LIBRARY_CONTENT_VERSION,
-      candidates: candidatesFromRevisions(library),
+      candidates: candidatesFromRevisions(publishedLibrary),
     }),
-    [library],
+    [publishedLibrary],
   );
 
   const localDay = useMemo(() => todayInZone(services.clock.now(), zone), [services.clock, zone]);
@@ -90,13 +100,18 @@ export function useDevelopmentModel() {
     setBusy(true);
     setError(null);
     try {
-      const existingFavorites = await listFavorites(runtime.unitOfWork, childId);
+      const [existingFavorites, readiness] = await Promise.all([
+        listFavorites(runtime.unitOfWork, childId),
+        loadReadinessByKey(runtime.unitOfWork, childId),
+      ]);
+      setReadinessByKey(readiness);
       const context = buildParentRecommendationContext(profile, localDay, {
         environments: filters.environments,
         withoutMaterialsOnly: filters.withoutMaterialsOnly,
         durationPreference: filters.duration,
         favoriteActivityIds: existingFavorites.map((favorite) => favorite.activityId),
         sleepRunning: false,
+        readinessByKey: readiness,
       });
       const [rec, week] = await Promise.all([
         ensureDailyRecommendationSet(runtime.unitOfWork, {
@@ -148,11 +163,14 @@ export function useDevelopmentModel() {
 
   async function replaceOffer() {
     if (!childId || !profile || !runtime.unitOfWork) return;
+    const readiness = await loadReadinessByKey(runtime.unitOfWork, childId);
+    setReadinessByKey(readiness);
     const context = buildParentRecommendationContext(profile, localDay, {
       environments: filters.environments,
       withoutMaterialsOnly: filters.withoutMaterialsOnly,
       durationPreference: filters.duration,
       favoriteActivityIds: favorites.map((favorite) => favorite.activityId),
+      readinessByKey: readiness,
     });
     const next = await replaceDailyRecommendationSet(runtime.unitOfWork, {
       childId,
@@ -186,6 +204,20 @@ export function useDevelopmentModel() {
     setFavorites(next);
   }
 
+  async function confirmReadiness(key: ReadinessKey, state: 'yes' | 'no') {
+    if (!childId || !runtime.unitOfWork) return;
+    const next = await setReadinessObservation(runtime.unitOfWork, { childId, key, state });
+    setReadinessByKey(next);
+    await reload();
+  }
+
+  async function clearReadiness(key: ReadinessKey) {
+    if (!childId || !runtime.unitOfWork) return;
+    const next = await clearReadinessObservation(runtime.unitOfWork, { childId, key });
+    setReadinessByKey(next);
+    await reload();
+  }
+
   function clearFilters() {
     setFilters(EMPTY_FILTERS);
   }
@@ -206,12 +238,15 @@ export function useDevelopmentModel() {
     revisionById,
     activityById,
     library,
+    readinessByKey,
     busy,
     error,
     reload,
     replaceOffer,
     hideForCare,
     toggleFavorite,
+    confirmReadiness,
+    clearReadiness,
   };
 }
 

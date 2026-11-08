@@ -44,6 +44,9 @@ export function DevelopmentScreen({ onOpenEvent }: DevelopmentScreenProps) {
         timeZone={model.zone}
         isFavorite={model.favorites.some((favorite) => favorite.activityId === detailRevision.activityId)}
         onToggleFavorite={() => void model.toggleFavorite(detailRevision.activityId)}
+        readinessByKey={model.readinessByKey}
+        onConfirmReadiness={(key, state) => void model.confirmReadiness(key, state)}
+        onClearReadiness={(key) => void model.clearReadiness(key)}
         onClose={() => {
           setDetailRevision(null);
           void model.reload();
@@ -190,6 +193,9 @@ export function DevelopmentScreen({ onOpenEvent }: DevelopmentScreenProps) {
                 <LumiText>{revision.title}</LumiText>
                 <LumiText tone="muted">
                   {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
+                  {revision.editorial.stage === 'draft'
+                    ? ` · ${PRODUCT_COPY.development.draftBadge}`
+                    : ''}
                 </LumiText>
               </Pressable>
             ))

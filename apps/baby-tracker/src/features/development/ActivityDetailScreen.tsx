@@ -3,8 +3,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LumiButton, LumiChip, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { ChildId, ExperienceCareEvent, TimeZoneId } from '../../domain';
-import type { ActivityRevision } from '../../content';
-import { DEVELOPMENT_AREA_LABELS_CS } from '../../content';
+import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../content';
+import { DEVELOPMENT_AREA_LABELS_CS, READINESS_LABELS_CS } from '../../content';
 import {
   findTodaysExperienceForActivity,
   openDailyRecommendation,
@@ -28,6 +28,9 @@ export type ActivityDetailScreenProps = {
   onToggleFavorite: () => void;
   onClose: () => void;
   onOpenEvent?: (eventId: string) => void;
+  readinessByKey?: Partial<Record<string, ReadinessState>>;
+  onConfirmReadiness?: (key: ReadinessKey, state: 'yes' | 'no') => void;
+  onClearReadiness?: (key: ReadinessKey) => void;
 };
 
 /**
@@ -42,6 +45,9 @@ export function ActivityDetailScreen({
   onToggleFavorite,
   onClose,
   onOpenEvent,
+  readinessByKey = {},
+  onConfirmReadiness,
+  onClearReadiness,
 }: ActivityDetailScreenProps) {
   const { colors, ui } = useLumiTheme();
   const { services } = useCompositionRoot();
@@ -52,6 +58,8 @@ export function ActivityDetailScreen({
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<SaveFeedbackState>('idle');
   const inFlightRef = useRef(false);
+  const isDraft = revision.editorial.stage === 'draft';
+  const readinessKeys = requiredReadinessKeys(revision);
 
   const localDay = todayInZone(services.clock.now(), timeZone);
 
@@ -150,6 +158,44 @@ export function ActivityDetailScreen({
           {' · '}
           {durationLabel(revision)}
         </LumiText>
+        {isDraft ? (
+          <View style={{ gap: ui.space.xs }}>
+            <LumiText>{PRODUCT_COPY.development.draftBadge}</LumiText>
+            <LumiText tone="muted">{PRODUCT_COPY.development.draftPreviewNote}</LumiText>
+          </View>
+        ) : null}
+
+        {readinessKeys.length > 0 ? (
+          <View style={{ gap: ui.space.sm }} testID="activity-readiness">
+            <LumiText variant="h2">{PRODUCT_COPY.development.readinessTitle}</LumiText>
+            <LumiText tone="muted">{PRODUCT_COPY.development.readinessHint}</LumiText>
+            {readinessKeys.map((key) => {
+              const state = readinessByKey[key] ?? 'unknown';
+              return (
+                <View key={key} style={{ gap: ui.space.xs }}>
+                  <LumiText>{READINESS_LABELS_CS[key]}</LumiText>
+                  <View style={styles.row}>
+                    <LumiChip
+                      label={PRODUCT_COPY.development.readinessYes}
+                      selected={state === 'yes'}
+                      onPress={() => onConfirmReadiness?.(key, 'yes')}
+                    />
+                    <LumiChip
+                      label={PRODUCT_COPY.development.readinessNo}
+                      selected={state === 'no'}
+                      onPress={() => onConfirmReadiness?.(key, 'no')}
+                    />
+                    <LumiChip
+                      label={PRODUCT_COPY.development.readinessUnknown}
+                      selected={state === 'unknown'}
+                      onPress={() => onClearReadiness?.(key)}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        ) : null}
 
         <View style={{ gap: ui.space.xs }}>
           <LumiText variant="h2">{PRODUCT_COPY.development.materials}</LumiText>
@@ -203,7 +249,11 @@ export function ActivityDetailScreen({
             <LumiText tone="muted">Verze obsahu: {revision.revisionId}</LumiText>
             {revision.sources.map((source) => (
               <LumiText key={`${source.label}-${source.checkedOn}`} tone="muted">
-                {source.label} · kontrola {source.checkedOn}
+                {source.label}
+                {source.url ? ` · ${source.url}` : ''}
+                {source.supportsPrinciple ? ` — ${source.supportsPrinciple}` : ''}
+                {' · '}
+                návštěva {source.checkedOn}
               </LumiText>
             ))}
           </View>
@@ -260,6 +310,16 @@ export function ActivityDetailScreen({
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function requiredReadinessKeys(revision: ActivityRevision): ReadinessKey[] {
+  const keys: ReadinessKey[] = [];
+  for (const condition of revision.suitability) {
+    if (condition.kind === 'readiness_confirmed' && !keys.includes(condition.key)) {
+      keys.push(condition.key);
+    }
+  }
+  return keys;
 }
 
 function durationLabel(revision: ActivityRevision): string {

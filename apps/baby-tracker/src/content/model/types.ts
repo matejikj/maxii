@@ -16,6 +16,31 @@ export type ContentDuration =
   | { kind: 'minutes'; minutes: 5 | 10 | 15 };
 
 /**
+ * Caregiver-confirmed readiness observations. Missing/unknown is never treated
+ * as consent for motor activities that require the skill.
+ */
+export const READINESS_KEYS = [
+  'grasp',
+  'release',
+  'rollAttempt',
+  'floorSit',
+  'floorMove',
+  'gesture',
+] as const;
+export type ReadinessKey = (typeof READINESS_KEYS)[number];
+export type ReadinessState = 'yes' | 'no' | 'unknown';
+
+/** Caregiver-facing labels for readiness confirmation prompts. */
+export const READINESS_LABELS_CS: Record<ReadinessKey, string> = {
+  grasp: 'Stabilní úchop',
+  release: 'Vědomé puštění',
+  rollAttempt: 'Vlastní pokus o otočení',
+  floorSit: 'Stabilní sed na zemi',
+  floorMove: 'Vlastní pohyb po zemi',
+  gesture: 'Vlastní ukazovací gesto',
+};
+
+/**
  * Suitability is data only — never an embedded script or generative paraphrase
  * that invents a new environment at packaging time.
  */
@@ -29,13 +54,18 @@ export type SuitabilityCondition =
   | { kind: 'environment_one_of'; environments: ContentEnvironment[] }
   | { kind: 'materials_none' }
   | { kind: 'materials_all_of'; materials: string[] }
-  | { kind: 'requires_birth_date' };
+  | { kind: 'requires_birth_date' }
+  | { kind: 'readiness_confirmed'; key: ReadinessKey };
 
 export type ContentSource = {
   label: string;
-  /** ISO calendar date of the last expert check for this source note. */
+  /** ISO calendar date of the last editorial visit for this source note. */
   checkedOn: string;
   kind: 'expert' | 'parent' | 'internal';
+  /** Optional exact URL visited during editorial research. */
+  url?: string | null;
+  /** What principle the source actually supports — not a claim of product approval. */
+  supportsPrinciple?: string | null;
 };
 
 export type EditorialEvent = {
