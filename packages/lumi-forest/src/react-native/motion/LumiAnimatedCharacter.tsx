@@ -93,7 +93,7 @@ function CelebrationStars({ progress, active }: { progress: SharedValue<number>;
  * App / screen visibility or Reduce Motion cancel every infinite animation.
  */
 export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
-  species, pose = 'sitting', expression, accessories, proportions, motion = 'idle',
+  species, pose = 'sitting', expression, accessories, proportions, prop, motion = 'idle',
   playing = true, celebrationKey, width = 150, height = 162, style, testID, frame = 'standalone',
 }: LumiAnimatedCharacterProps) {
   const blueprint = CHARACTER_BLUEPRINTS[species];
@@ -102,7 +102,8 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
     ...(expression === undefined ? {} : { expression }),
     ...(accessories === undefined ? {} : { accessories }),
     ...(proportions === undefined ? {} : { proportions }),
-  }), [blueprint, pose, expression, accessories, proportions]);
+    ...(prop == null ? {} : { prop }),
+  }), [blueprint, pose, expression, accessories, proportions, prop]);
   const { canAnimate } = useLumiMotion();
   const active = canAnimate && playing && motion !== 'still';
   const blinkEnabled = active && shouldBlink(motion, expression ?? 'neutral', pose);

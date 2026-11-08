@@ -30,7 +30,7 @@ export function HomeScreen({ probeReport = null, probeError = null }: HomeScreen
         </View>
         <LumiCard>
           <LumiEmptyState
-            illustration={<GuideCompanion species="rabbit" expression="happy" />}
+            illustration={<GuideCompanion species="rabbit" semantic="gentleJoy" visible={false} />}
             title="Každý den spolu"
             description="Tady bude místo pro přehled krmení, spánku a péče o vaše miminko. Zatím tu nejsou žádné záznamy."
           />

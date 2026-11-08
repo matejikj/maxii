@@ -52,6 +52,8 @@ export type FeedingRecorderProps = {
   onClose: () => void;
   activeNursing: ActiveSession | null;
   onOpenEvent?: (eventId: string) => void;
+  /** Fired only after a confirmed local commit — never for pending or failed writes. */
+  onSavedLocally?: () => void;
 };
 
 type BottleContentsOption = { id: BottleContents; label: string };
@@ -74,6 +76,7 @@ export function FeedingRecorder({
   onClose,
   activeNursing,
   onOpenEvent,
+  onSavedLocally,
 }: FeedingRecorderProps) {
   const { ui } = useLumiTheme();
   const { services } = useCompositionRoot();
@@ -226,9 +229,16 @@ export function FeedingRecorder({
 
   async function startNursingNow() {
     const result = await nursingStarter.start('unspecified');
-    if (result.ok || result.alreadyRunning) {
+    if (result.ok) {
+      onSavedLocally?.();
       onClose();
-    } else if (nursingStarter.message) {
+      return;
+    }
+    if (result.alreadyRunning) {
+      onClose();
+      return;
+    }
+    if (nursingStarter.message) {
       setFeedback('error');
       setFeedbackMessage(nursingStarter.message);
     }
@@ -277,6 +287,7 @@ export function FeedingRecorder({
     setSavedRevisionId(result.revisionIds[0] ?? ids.revisionId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(
       parsedAmount.amount == null
         ? PRODUCT_COPY.feedback.bottleSavedUnknownAmount
@@ -331,6 +342,7 @@ export function FeedingRecorder({
     setSavedRevisionId(result.revisionIds[0] ?? ids.revisionId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.foodSaved);
   }
 
@@ -374,6 +386,7 @@ export function FeedingRecorder({
     setSavedEventId(ids.eventId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.nursingEnded);
   }
 
@@ -407,6 +420,7 @@ export function FeedingRecorder({
     setSavedEventId(ids.eventId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.savedLocally);
   }
 

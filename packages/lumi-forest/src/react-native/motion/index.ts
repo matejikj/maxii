@@ -1,4 +1,4 @@
-export { LumiMotionProvider, useLumiMotion } from './LumiMotionProvider';
+export { LumiMotionProvider, useCompanionPlaying, useLumiMotion } from './LumiMotionProvider';
 export type { LumiMotionContextValue, LumiMotionProviderProps } from './LumiMotionProvider';
 export { LumiAnimatedCharacter } from './LumiAnimatedCharacter';
 export type { LumiAnimatedCharacterProps } from './LumiAnimatedCharacter';

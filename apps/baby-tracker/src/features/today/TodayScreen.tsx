@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -57,7 +57,11 @@ export function TodayScreen({
   const [experienceOpen, setExperienceOpen] = useState(false);
   const [editingActions, setEditingActions] = useState(false);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
+  const [celebrationKey, setCelebrationKey] = useState(0);
   const diaperOpenerRef = useRef(null);
+  const celebrateLocalSave = useCallback(() => {
+    setCelebrationKey((value) => value + 1);
+  }, []);
 
   React.useEffect(() => {
     if (!model.activeSleep && !model.activeNursing) return;
@@ -107,6 +111,7 @@ export function TodayScreen({
         // Opening the existing session is intentional — never start a second sleep.
         return;
       }
+      if (result.ok) celebrateLocalSave();
       return;
     }
     if (id === 'experience') {
@@ -141,8 +146,8 @@ export function TodayScreen({
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <GuideCompanion
                 species={preferences.guideSpecies}
-                expression="happy"
-                recognition="headTilt"
+                semantic="listening"
+                celebrationKey={celebrationKey}
                 width={72}
                 height={78}
                 testID="today-guide"
@@ -160,12 +165,14 @@ export function TodayScreen({
               timeZone={zone}
               activeSleep={model.activeSleep}
               nowEpochMs={nowMs}
+              onSavedLocally={celebrateLocalSave}
             />
             <NursingSessionController
               childId={childId}
               timeZone={zone}
               activeNursing={model.activeNursing}
               nowEpochMs={nowMs}
+              onSavedLocally={celebrateLocalSave}
             />
           </>
         ) : null}
@@ -239,6 +246,7 @@ export function TodayScreen({
               open={diaperOpen}
               onClose={() => setDiaperOpen(false)}
               returnFocusRef={diaperOpenerRef}
+              onSavedLocally={celebrateLocalSave}
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
             <FeedingRecorder
@@ -247,6 +255,7 @@ export function TodayScreen({
               open={feedingOpen}
               onClose={() => setFeedingOpen(false)}
               activeNursing={model.activeNursing}
+              onSavedLocally={celebrateLocalSave}
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
             <ExperienceRecorder
@@ -254,6 +263,7 @@ export function TodayScreen({
               timeZone={zone}
               open={experienceOpen}
               onClose={() => setExperienceOpen(false)}
+              onSavedLocally={celebrateLocalSave}
             />
           </>
         ) : null}

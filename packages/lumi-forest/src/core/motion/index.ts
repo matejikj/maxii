@@ -5,6 +5,14 @@ export {
   recognitionPresentation,
   resolveRecognitionCompileOptions,
 } from './recognition';
+export {
+  listSignatureActionIds,
+  resolveCompanionPresentation,
+} from './companionPresentation';
 export type { CharacterMotion, AnimationChannel, MotionProfile, MotionState, MotionTiming, MotionAmplitude } from './types';
 export type { MotionPart, AnimatedPartChannel, PreparedMotionCharacter } from './prepare';
 export type { RecognitionAction, RecognitionPresentation } from './recognition';
+export type {
+  CompanionPresentation,
+  CompanionPresentationInput,
+} from './companionPresentation';

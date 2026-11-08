@@ -49,6 +49,8 @@ export type SleepSessionControllerProps = {
   nowEpochMs: number;
   compact?: boolean;
   hideExpanded?: boolean;
+  /** Fired only after a confirmed local commit — never for pending or failed writes. */
+  onSavedLocally?: () => void;
 };
 
 /**
@@ -62,6 +64,7 @@ export function SleepSessionController({
   nowEpochMs,
   compact = false,
   hideExpanded = false,
+  onSavedLocally,
 }: SleepSessionControllerProps) {
   const { ui } = useLumiTheme();
   const { services } = useCompositionRoot();
@@ -143,13 +146,14 @@ export function SleepSessionController({
       });
       setUndoAvailable(result.undo?.kind === 'undoEndSleep');
       setFeedback('saved');
+      onSavedLocally?.();
       setFeedbackMessage(PRODUCT_COPY.feedback.sleepEnded);
       setPanel('none');
       setRetryAvailable(false);
       intendedEndMs.current = null;
       endIds.current = null;
     },
-    [activeSleep, approximate, childId, note, runtime.commands, services.ids],
+    [activeSleep, approximate, childId, note, onSavedLocally, runtime.commands, services.ids],
   );
 
   React.useEffect(() => {
@@ -206,6 +210,7 @@ export function SleepSessionController({
     }
     setPanel('none');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.savedLocally);
   }
 

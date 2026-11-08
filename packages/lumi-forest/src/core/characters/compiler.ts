@@ -7,8 +7,11 @@ import type {
   CharacterPose,
 } from './blueprint';
 import { isCharacterRole } from './blueprint';
+import type { CharacterPropId } from './collection';
+import { CHARACTER_PROP_IDS } from './collection';
 import { expressionEye, expressionMouth } from './expressions';
 import { poseTransform, wholePoseTransform } from './poses';
+import { compileCharacterProp } from './props';
 import { proportionTransform, validateProportions } from './proportions';
 
 /** Safe retained default render: the source blueprints are treated as immutable. */
@@ -89,7 +92,10 @@ function compileV1(composition: CharacterComposition): VectorNode {
 }
 
 function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): {
-  pose: CharacterPose; expression: CharacterExpression; accessories: readonly CharacterAccessory[];
+  pose: CharacterPose;
+  expression: CharacterExpression;
+  accessories: readonly CharacterAccessory[];
+  prop: CharacterPropId | null;
 } {
   const pose = options.pose === undefined || options.pose === 'default' ? 'sitting' : options.pose;
   const expression = options.expression ?? (pose === 'sleeping' ? 'sleepy' : 'neutral');
@@ -112,22 +118,32 @@ function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOp
     if (usedSlots.has(slot)) throw new RangeError(`Accessory slot already occupied: ${slot}`);
     usedSlots.add(slot);
   }
+  const prop = options.prop ?? null;
+  if (prop != null && !(CHARACTER_PROP_IDS as readonly string[]).includes(prop)) {
+    throw new RangeError(`Unsupported character prop: ${String(prop)}`);
+  }
   validateProportions(options.proportions, preparedParts(blueprint));
-  return { pose, expression, accessories };
+  return { pose, expression, accessories, prop };
 }
 
 function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): VectorNode {
-  const { pose, expression, accessories } = validateV2(blueprint, options);
+  const { pose, expression, accessories, prop } = validateV2(blueprint, options);
   const proportional = options.proportions !== undefined &&
     Object.values(options.proportions).some(value => value !== undefined && value !== 1);
-  const pristine = pose === 'sitting' && expression === 'neutral' && accessories.length === 0 && !proportional;
+  const pristine =
+    pose === 'sitting' &&
+    expression === 'neutral' &&
+    accessories.length === 0 &&
+    prop == null &&
+    !proportional;
   if (pristine) {
     const previous = defaultCache.get(blueprint);
     if (previous) return previous;
   }
   // Cache only low-cardinality, immutable presets, never arbitrary proportions.
   const cacheKey = !proportional && accessories.length <= 1
-    ? `${pose}/${expression}/${accessories[0] ?? 'none'}` : undefined;
+    ? `${pose}/${expression}/${accessories[0] ?? 'none'}/${prop ?? 'none'}`
+    : undefined;
   const cached = cacheKey === undefined ? undefined : variantCache.get(blueprint)?.get(cacheKey);
   if (cached) return cached;
   const parts = preparedParts(blueprint);
@@ -143,6 +159,7 @@ function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOpt
     return groupWithProps(geometry, transforms, part.opacity);
   });
   for (const accessory of accessories) rendered.push(compileAccessory(accessory, rig));
+  if (prop != null) rendered.push(compileCharacterProp(prop, rig));
   const base = group(rendered);
   const whole = wholePoseTransform(pose);
   const result = whole ? group([base], { transform: whole }) : base;

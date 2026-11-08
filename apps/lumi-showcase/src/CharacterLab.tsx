@@ -121,6 +121,27 @@ export function CharacterLab() {
           );
         })}
       </View>
+      <Text style={styles.smallHeading}>SIGNATURE AKCE · REKVIZITY</Text>
+      <View style={styles.gallery}>
+        {CHARACTER_COLLECTION[species].signatureActions.map((action) => {
+          const resolved = resolveSemanticPresentation(action.semantic, false);
+          return (
+            <View key={action.id} testID={`character-action-${species}-${action.id}`}
+              style={[styles.tile, { width: cardWidth }]}>
+              <LumiCharacter
+                species={species}
+                pose={resolved.pose}
+                expression={resolved.expression}
+                {...(action.prop ? { prop: action.prop } : {})}
+                width={cardWidth - 18}
+                height={140}
+              />
+              <Text style={styles.variantLabel}>{action.labelCs}</Text>
+              <Text style={styles.poseLabel}>{action.prop ?? 'bez rekvizity'}</Text>
+            </View>
+          );
+        })}
+      </View>
       <Text style={styles.footnote}>Geometrie všech variant se generuje lokálně. Osm druhů je součástí instalace; neznámé ID padá na klidného králíka.</Text>
     </ScrollView>
   );

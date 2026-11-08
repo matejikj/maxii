@@ -1,6 +1,7 @@
 import type { LumiAnimal } from '../types';
 import type { VectorNode } from '../vector/types';
 import { CHARACTER_ANATOMY } from './anatomy';
+import type { CharacterPropId } from './collection';
 import { RABBIT_ARTWORK_REVISION } from './rabbitArtDirection';
 
 /** Painter-stable, named anatomy. IDs are authoring identifiers, not SVG IDs. */
@@ -84,6 +85,8 @@ export interface CharacterCompileOptions {
   readonly expression?: CharacterExpression;
   readonly accessories?: readonly CharacterAccessory[];
   readonly proportions?: CharacterProportions;
+  /** Offline signature prop (book/blocks/leaf) — never a remote asset. */
+  readonly prop?: CharacterPropId | null;
 }
 
 const P = (x: number, y: number): Point => ({ x, y });

@@ -48,6 +48,8 @@ export type NursingSessionControllerProps = {
   nowEpochMs: number;
   compact?: boolean;
   hideExpanded?: boolean;
+  /** Fired only after a confirmed local commit — never for pending or failed writes. */
+  onSavedLocally?: () => void;
 };
 
 /**
@@ -61,6 +63,7 @@ export function NursingSessionController({
   nowEpochMs,
   compact = false,
   hideExpanded = false,
+  onSavedLocally,
 }: NursingSessionControllerProps) {
   void _timeZone;
   const { ui } = useLumiTheme();
@@ -148,13 +151,14 @@ export function NursingSessionController({
       });
       setUndoAvailable(result.undo?.kind === 'undoEndNursing');
       setFeedback('saved');
+      onSavedLocally?.();
       setFeedbackMessage(PRODUCT_COPY.feedback.nursingEnded);
       setPanel('none');
       setRetryAvailable(false);
       intendedEndMs.current = null;
       endIds.current = null;
     },
-    [activeNursing, childId, note, runtime.commands, services.ids],
+    [activeNursing, childId, note, onSavedLocally, runtime.commands, services.ids],
   );
 
   React.useEffect(() => {

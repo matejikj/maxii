@@ -52,6 +52,8 @@ export type DiaperRecorderProps = {
   onClose: () => void;
   returnFocusRef?: React.RefObject<View | null>;
   onOpenEvent?: (eventId: string) => void;
+  /** Fired only after a confirmed local commit — never for pending or failed writes. */
+  onSavedLocally?: () => void;
 };
 
 /**
@@ -65,6 +67,7 @@ export function DiaperRecorder({
   onClose,
   returnFocusRef,
   onOpenEvent,
+  onSavedLocally,
 }: DiaperRecorderProps) {
   const { ui } = useLumiTheme();
   const { services } = useCompositionRoot();
@@ -164,6 +167,7 @@ export function DiaperRecorder({
     await autosave.current.flush();
     setFeedback('saved');
     setFeedbackMessage(PRODUCT_COPY.feedback.diaperSaved);
+    onSavedLocally?.();
     setUndoAvailable(result.undo?.kind === 'undoCreateCare' && !expectedRevisionId);
     setSaved({
       eventId: command.eventId,

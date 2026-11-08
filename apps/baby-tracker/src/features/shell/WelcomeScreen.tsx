@@ -24,7 +24,12 @@ export function WelcomeScreen({
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <GuideCompanion species="rabbit" recognition="earPerk" testID="welcome-guide" />
+        <GuideCompanion
+          species="rabbit"
+          semantic="greeting"
+          signatureAction="earPerk"
+          testID="welcome-guide"
+        />
         <LumiText variant="caption" tone="accent">
           LUMI
         </LumiText>

@@ -39,6 +39,8 @@ export type ExperienceRecorderProps = {
   timeZone: TimeZoneId;
   open: boolean;
   onClose: () => void;
+  /** Fired only after a confirmed local commit — never for pending or failed writes. */
+  onSavedLocally?: () => void;
 };
 
 type MomentKind = 'play' | 'milestone' | 'note';
@@ -52,6 +54,7 @@ export function ExperienceRecorder({
   timeZone,
   open,
   onClose,
+  onSavedLocally,
 }: ExperienceRecorderProps) {
   const { ui } = useLumiTheme();
   const { services } = useCompositionRoot();
@@ -201,6 +204,7 @@ export function ExperienceRecorder({
     setSavedRevisionId(result.revisionIds[0] ?? ids.revisionId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.noteSaved);
   }
 
@@ -243,6 +247,7 @@ export function ExperienceRecorder({
     setSavedRevisionId(result.revisionIds[0] ?? ids.revisionId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.milestoneSaved);
   }
 
@@ -287,6 +292,7 @@ export function ExperienceRecorder({
     setSavedRevisionId(result.revisionIds[0] ?? ids.revisionId);
     setUndoAvailable(result.undo?.kind === 'undoCreateCare');
     setFeedback('saved');
+    onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.experienceSaved);
   }
 

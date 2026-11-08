@@ -20,7 +20,7 @@ export interface LumiCharacterProps extends CharacterCompileOptions {
  * Keep options arrays and proportion objects referentially stable in clients.
  */
 export const LumiCharacter = React.memo(function LumiCharacter({
-  species, pose = 'sitting', expression, accessories, proportions,
+  species, pose = 'sitting', expression, accessories, proportions, prop,
   width = 150, height = 162, style,
 }: LumiCharacterProps) {
   const geometry = useMemo(() => compileCharacter(CHARACTER_BLUEPRINTS[species], {
@@ -28,7 +28,8 @@ export const LumiCharacter = React.memo(function LumiCharacter({
     ...(expression === undefined ? {} : { expression }),
     ...(accessories === undefined ? {} : { accessories }),
     ...(proportions === undefined ? {} : { proportions }),
-  }), [species, pose, expression, accessories, proportions]);
+    ...(prop == null ? {} : { prop }),
+  }), [species, pose, expression, accessories, proportions, prop]);
   const nodes = useMemo(() => [geometry], [geometry]);
   // react-native-svg forwards native accessibility props to the DOM on web.
   return (
