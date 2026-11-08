@@ -6,6 +6,16 @@
     "version": "0.1.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-sqlite",
+        {
+          "enableFTS": true,
+          "useSQLCipher": true
+        }
+      ]
+    ],
     "ios": {
       "bundleIdentifier": "com.example.lumibabytracker",
       "supportsTablet": true

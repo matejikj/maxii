@@ -4,8 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   LumiCard, LumiCharacter, LumiEmptyState, LumiText, useLumiTheme,
 } from '@lumi/forest-design/native';
+import type { StorageProbeReport } from '../infrastructure/verification/runStorageProbe';
 
-export function HomeScreen() {
+type HomeScreenProps = {
+  probeReport?: StorageProbeReport | null;
+  probeError?: string | null;
+};
+
+export function HomeScreen({ probeReport = null, probeError = null }: HomeScreenProps) {
   const { colors, mode } = useLumiTheme();
 
   return (
@@ -24,6 +30,30 @@ export function HomeScreen() {
             description="Tady bude místo pro přehled krmení, spánku a péče o vaše miminko. Zatím tu nejsou žádné záznamy."
           />
         </LumiCard>
+        {probeError ? (
+          <LumiCard>
+            <LumiText variant="h2">Ověření úložiště selhalo</LumiText>
+            <LumiText tone="muted">{probeError}</LumiText>
+          </LumiCard>
+        ) : null}
+        {probeReport ? (
+          <LumiCard>
+            <LumiText variant="h2">Ověření úložiště</LumiText>
+            <LumiText tone="muted">
+              {`Platforma ${probeReport.platform}. Přenosná záloha ${probeReport.portableBackup.roundTripOk ? 'v pořádku' : 'selhala'}.`}
+            </LumiText>
+            {probeReport.nativeCipher ? (
+              <LumiText tone="muted">
+                {`SQLCipher ${probeReport.nativeCipher.cipherVersion}; zápis a znovuotevření s klíčem ${probeReport.nativeCipher.reopenedWithKeySucceeded ? 'prokázány' : 'neprokázány'}.`}
+              </LumiText>
+            ) : null}
+            {probeReport.webIndexedDb ? (
+              <LumiText tone="muted">
+                IndexedDB zápis přežil druhé spojení.
+              </LumiText>
+            ) : null}
+          </LumiCard>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

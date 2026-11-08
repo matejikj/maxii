@@ -29,6 +29,12 @@ coverage/
 **/.maestro/screenshots/
 **/.rnstorybook/storybook.requires.ts
 
+# Continuous native generation output for app development builds
+apps/baby-tracker/android/
+apps/baby-tracker/ios/
+apps/*/android/
+apps/*/ios/
+
 # Local task plans and supporting Markdown; keep standard public project guides
 *.[mM][dD]
 !README.md
