@@ -23,6 +23,8 @@ docker compose -f apps/lumi-api/deploy/docker-compose.yml --profile oidc up -d
 
 Auth endpoints: `GET /v1/auth/mode`, `POST /v1/auth/login/start`, `POST /v1/auth/login/callback`, `POST /v1/auth/logout`, `GET /v1/auth/session`.
 
+Family membership: `POST /v1/families`, `GET /v1/families/:id/members`, invitations (`POST .../invitations`, preview/accept), admin-only revoke/transfer/erasure, and `POST /v1/me/identities/link` for a second verified issuer on the same internal account. Invitation secrets are hashed; plaintext is returned once.
+
 ## Single-VPS overlay
 
 ```bash

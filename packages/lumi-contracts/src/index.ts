@@ -30,9 +30,11 @@ export type {
 } from './identity.ts';
 export {
   authorizeFamilyAccess,
+  authorizeFamilyAdminAction,
   resolveActiveBinding,
+  wouldLeaveFamilyWithoutAdmin,
 } from './authorization.ts';
-export type { AuthorizationDecision } from './authorization.ts';
+export type { AuthorizationDecision, FamilyAdminAction } from './authorization.ts';
 export {
   LUMI_AUTH_MODES,
   LUMI_AUTH_MODE_VERSION,
@@ -40,3 +42,27 @@ export {
   resolveAuthModeOrHold,
 } from './authMode.ts';
 export type { AuthModeDescriptor, LumiAuthMode } from './authMode.ts';
+export type {
+  AcceptInvitationRequest,
+  AcceptInvitationResponse,
+  ChildLinkDecision,
+  CreateInvitationRequest,
+  CreateInvitationResponse,
+  FamilyMemberView,
+  InvitationId,
+  InvitationPreview,
+  InvitationStatus,
+  LinkExternalIdentityRequest,
+  TransferAdminRequest,
+} from './invitations.ts';
+export {
+  applyExplicitChildLinkDecision,
+  bindLocalActorToAccount,
+  completeEnrollment,
+  markEnrollmentAwaitingNetwork,
+  suggestChildLinkDecision,
+} from './enrollment.ts';
+export type {
+  ChildLinkComparison,
+  EnrollmentIntent,
+} from './enrollment.ts';

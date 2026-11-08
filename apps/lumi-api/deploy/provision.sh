@@ -22,6 +22,7 @@ docker compose version >/dev/null || fail "docker compose is required"
 [[ -f "$ROOT/Caddyfile" ]] || fail "missing Caddyfile"
 [[ -f "$ROOT/../migrations/001_family_identity.sql" ]] || fail "missing identity migration"
 [[ -f "$ROOT/../migrations/002_worker_jobs.sql" ]] || fail "missing worker migration"
+[[ -f "$ROOT/../migrations/003_family_invitations.sql" ]] || fail "missing invitation migration"
 
 # Config must parse without a live host. Secrets stay in the caller's shell env.
 docker compose -f "$COMPOSE_BASE" -f "$COMPOSE_VPS" --profile api --profile worker --profile edge config >/dev/null \

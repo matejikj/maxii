@@ -2,8 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   authorizeFamilyAccess,
+  authorizeFamilyAdminAction,
   resolveActiveBinding,
   resolveAuthModeOrHold,
+  suggestChildLinkDecision,
+  applyExplicitChildLinkDecision,
+  bindLocalActorToAccount,
+  wouldLeaveFamilyWithoutAdmin,
   LUMI_AUTH_MODE_VERSION,
   type AppUserId,
   type FamilyId,
@@ -136,4 +141,101 @@ test('unknown auth mode holds local data instead of merging accounts', () => {
     holdLocalData: true,
     reason: 'unsupported_version',
   });
+});
+
+test('caregiver cannot manage membership while admin can', () => {
+  const memberships = [
+    membership({ appUserId: userA, familyId: family1, role: 'caregiver' }),
+    membership({ appUserId: userB, familyId: family1, role: 'admin' }),
+  ];
+  assert.equal(
+    authorizeFamilyAdminAction({
+      memberships,
+      appUserId: userA,
+      familyId: family1,
+      action: 'erase_family',
+    }).allow,
+    false,
+  );
+  assert.equal(
+    authorizeFamilyAdminAction({
+      memberships,
+      appUserId: userB,
+      familyId: family1,
+      action: 'invite',
+    }).allow,
+    true,
+  );
+});
+
+test('revoking the last admin is rejected by the guard', () => {
+  const memberships = [
+    membership({
+      appUserId: userA,
+      familyId: family1,
+      role: 'admin',
+      membershipId: 'm-admin' as MembershipId,
+    }),
+    membership({
+      appUserId: userB,
+      familyId: family1,
+      role: 'caregiver',
+      membershipId: 'm-care' as MembershipId,
+    }),
+  ];
+  assert.equal(
+    wouldLeaveFamilyWithoutAdmin({
+      memberships,
+      familyId: family1,
+      revokeMembershipId: 'm-admin',
+    }),
+    true,
+  );
+  assert.equal(
+    wouldLeaveFamilyWithoutAdmin({
+      memberships,
+      familyId: family1,
+      revokeMembershipId: 'm-care',
+    }),
+    false,
+  );
+});
+
+test('similar name or birthday never auto-merges children', () => {
+  const suggestion = suggestChildLinkDecision({
+    localChildId: 'local-1',
+    localDisplayName: 'Míša',
+    localBirthDate: '2025-01-02',
+    remoteChildId: 'remote-1',
+    remoteDisplayName: 'míša',
+    remoteBirthDate: '2025-01-02',
+  });
+  assert.equal(suggestion.autoMergeAllowed, false);
+  assert.equal(suggestion.nameLooksSimilar, true);
+  assert.equal(suggestion.birthDateLooksSimilar, true);
+  assert.equal(suggestion.requiresExplicitDecision, true);
+
+  const deferred = applyExplicitChildLinkDecision({
+    decision: 'defer',
+    localChildId: 'local-1',
+    remoteChildId: 'remote-1',
+  });
+  assert.equal(deferred.ok, true);
+  assert.equal(deferred.deferred, true);
+  assert.equal(deferred.keepSeparateLocalChild, true);
+});
+
+test('local actor binding refuses claiming another member authorship', () => {
+  const ok = bindLocalActorToAccount({
+    localActorId: 'actor-1',
+    authenticatedAppUserId: userA,
+    claimedAuthorAppUserId: null,
+  });
+  assert.equal(ok.ok, true);
+  const stolen = bindLocalActorToAccount({
+    localActorId: 'actor-1',
+    authenticatedAppUserId: userA,
+    claimedAuthorAppUserId: userB,
+  });
+  assert.equal(stolen.ok, false);
 });

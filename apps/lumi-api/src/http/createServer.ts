@@ -19,6 +19,7 @@ import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
 import { apiError } from './errors.ts';
 import { createFixedWindowRateLimiter } from './rateLimit.ts';
+import { registerFamilyRoutes } from './familyRoutes.ts';
 
 export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
@@ -47,6 +48,7 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   });
 
   registerAuthRoutes(app, { config, store, sessions, oidc });
+  registerFamilyRoutes(app, { config, store, tokens, sessions });
 
   app.addHook('onRequest', async (request, reply) => {
     const clientKey = request.ip || 'unknown';

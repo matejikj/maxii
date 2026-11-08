@@ -6,6 +6,11 @@ export const LUMI_API_LIMITS = {
   maxIdempotencyKeyLength: 128,
   maxDisplayNameLength: 80,
   maxPageSize: 100,
+  /** Invitation plaintext is shown once; server stores only a hash. */
+  invitationTokenBytes: 32,
+  invitationDefaultTtlSeconds: 48 * 60 * 60,
+  invitationMaxTtlSeconds: 7 * 24 * 60 * 60,
+  invitationMaxAttempts: 5,
 } as const;
 
 export type HealthResponse = {

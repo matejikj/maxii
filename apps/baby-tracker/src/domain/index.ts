@@ -167,3 +167,16 @@ export {
   type SuitabilityConditionLike,
 } from './recommendation';
 export type { RecommendationSetStatus } from './entities/development';
+export {
+  bindLocalActorToVerifiedAccount,
+  buildJoinPreview,
+  completeEnrollment,
+  isolateUnsentChangesAfterRevoke,
+  markEnrollmentAwaitingNetwork,
+  planHistoryMerge,
+  requireEnrollmentCheckpoint,
+  startEnrollmentIntent,
+  type ChildLinkDecision,
+  type EnrollmentIntent,
+  type JoinPreview,
+} from './family/enrollment';
