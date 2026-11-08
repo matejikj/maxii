@@ -19,6 +19,7 @@
     "test:components": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/component/*.test.mts",
     "content:validate": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/validate-content.mts",
     "content:generate-drafts": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/generate-first-year-drafts.mts",
+    "content:publish-first-year": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/publish-first-year.mts",
     "ops:evidence": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/print-release-evidence.mts",
     "test:e2e": "playwright test",
     "test:e2e:native": "maestro test .maestro/smoke.yaml",

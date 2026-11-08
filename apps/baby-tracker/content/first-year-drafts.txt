@@ -1,0 +1,806 @@
+# LUMI — 60 návrhů společných aktivit od narození do prvních narozenin
+
+Redakční podklad první roční sady aktivit · 8. listopadu 2026 · **zdrojový draft**; publikovaný katalog `first-year.v1` má 8. 11. 2026 doložené review (Tomáš Holý / Alena Světlá / Barbora Bílá) a revize `*.r1`.
+
+Materiál připravuje konkrétní obsah pro implementaci. Postupy a příklady řeči jsou vlastní české redakční návrhy vycházející z níže uvedených principů a zdrojů. Nejde o překlad ani tvrzení, že uvedené instituce schválily přesné znění každé naší položky. Věkové meze jsou návrhové filtry k následnému posouzení, nikoli vývojové normy a termíny splnění. Obsah nemá diagnostikovat dítě, slibovat inteligenci nebo předepsat denní trénink.
+
+## Jak katalog převést do aplikace
+
+- Členění níže znamená **kdy aktivitu nejdříve nabídnout**. Konkrétní metadata určují celé navržené rozmezí. Základní hry mohou zůstávat příjemné i později; není nutné je vyřadit jen kvůli dalším narozeninám měsíce.
+- Věk je počet dokončených kalendářních měsíců; zápis 0–11 odpovídá `fromInclusive: 0, toInclusive: 11`. První narozeniny ukončují tento obsahový rozsah. Neznámý věk se nevymýšlí.
+- Každá položka má stabilní významové ID, hlavní oblast a platné téma z `STARTER_TOPICS`. Čísla A01–A60 slouží jen orientaci v tomto místním podkladu; nepatří do komentářů nebo commit message.
+- Výchozí `duration` je `moment`: krátká nabídka, nikoli požadavek vydržet. Ukončit lze po prvním pokusu. Orientační čas není test pozornosti.
+- Pokyny vykají rodiči; příklady jeho řeči dítěti přirozeně tykají. Jméno a označení pečujícího přizpůsobit rodině.
+- Prostředí `quiet` zde znamená klidné bezpečné místo doma, `home` domácí hru; `outdoor` pouze popsanou venkovní variantu. Žádná položka nepovoluje hraní za řízení, v pohybujícím se autě nebo při jiné činnosti vyžadující plnou pozornost dospělého.
+- Pole **Pomůcky** je výslovný seznam potřebných předmětů oddělených středníkem, nebo „žádné“. Prostor, polohu, dohled a počet účastníků udržujte v podmínkách.
+- **Následující obecné podmínky se dědí do každé položky** a aplikace z nich zobrazí relevantní část u postupu. Nestačí je schovat pouze do dokumentace nebo obecných obchodních podmínek.
+
+## Společné podmínky bezpečné a citlivé hry
+
+Aktivitu nabízí přítomný bdělý dospělý bdělému dítěti, které má o kontakt zájem. Reaguje na odvrácení, neklid, pláč a únavu; nabídka se ukončí nebo změní na potřebnou běžnou péči. Nevyžaduje oční kontakt, dotek, opakování zvuku ani úchop proti vůli dítěte. Zklidnění znamená dostupnou oporu dospělého, nikoli ponechání dítěte v pláči. Princip vstřícné péče a příležitostí ke společnému učení shrnuje [WHO](https://www.who.int/publications/i/item/97892400020986).
+
+Hra na podlaze má pevný bezpečný podklad, volné dýchací cesty a prostor bez pádů, šňůr, volných baterií, magnetů a přístupných drobných dílů. Hračky jsou nepoškozené a určené pro daný věk včetně kontaktu s ústy. Žádné DIY chrastítko s rýží nebo korálky, ostrá kuchyňská nádoba, sáček, prasklý molitan nebo skutečné sklo. Hračky a volné pomůcky nepatří do prostoru spánku. Tyto provozní volby zužují obecné nápady zdrojů; nepřebíráme z nich všechny uvedené pomůcky.
+
+Poloha na bříšku je výhradně bdělá hra pod nepřetržitým dohledem, nikoli poloha pro spánek. Nenutit pohyb, netahat za ruce do sedu, nestavět dítě do neosvojené polohy a necvičit přes odpor. Při individuálních zdravotních omezeních nebo nejistotě vhodnost posoudí ošetřující odborník. Podmínky bdělého tummy time popisují [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/Back-to-Sleep-Tummy-to-Play.aspx).
+
+## Připravenost jako data
+
+V příkladech se používají návrhové klíče: `grasp` — dítě již samo udrží vhodnou hračku; `release` — samo ji pouští; `rollAttempt` — samo zahajuje otočení na bok; `floorSit` — samo stabilně sedí na podlaze; `floorMove` — samo se pohybuje po bezpečné podlaze; `gesture` — samo používá ukazovací gesto. Rodič je potvrzuje jako pozorování pro danou nabídku; nejde o klinické hodnocení. Dokud tyto klíče nemají skutečnou podporu enginu, návrhy s požadavkem nejsou automaticky doporučitelné. Znění pole nelze vydávat za již existující API.
+
+Všechny položky přebírají i obecné podmínky výše. Uvedená pomůcka se zapíše do `materials`; bez ní se činnost nesmí nabídnout filtrem „bez pomůcek“. Věkové filtry, dostupné prostředí a nutná připravenost se kontrolují před personalizací i přes oblíbené. Pozorování je nepovinný podnět, nikdy kontrolní seznam zvládnutí.
+
+## A. První nabídky od narození
+
+### A01 — Pozdrav tváří v tvář
+
+`face-hello` · 0–11 měsíců · `relationship` / `rel.eye-contact` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Pohodlná bezpečná poloha s potřebnou oporou, bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Nabídněte svůj obličej v pohodlné blízkosti. 2. Usmějte se a pozdravte. 3. Počkejte na reakci.
+**Řekněte:** „Ahoj, jsem tady.“
+**Pozorujte/konec:** Pohled není povinnost; při odvrácení dejte pauzu.
+**Podklad:** [S03](#s03).
+
+### A02 — Odpověď na vlastní zvuk
+
+`babble-answer` · 0–11 · `speech` / `speech.babble` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě samo vydá zvuk, nikoli pláč vyžadující péči; bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Poslouchejte. 2. Jemně zopakujte jeden zvuk. 3. Nechte prostor další odpovědi.
+**Řekněte:** „Áá, slyším tě.“
+**Pozorujte/konec:** Bez pobízení k určité slabice; ticho je v pořádku.
+**Podklad:** [S09](#s09).
+
+### A03 — Co právě děláme
+
+`care-narration` · 0–11 · `speech` / `speech.naming` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Běžná bezpečná péče, bez dalších pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Popište právě probíhající úkon. 2. Použijte krátkou větu. 3. Udělejte pauzu.
+**Řekněte:** „Teď oblékáme ponožku.“
+**Pozorujte/konec:** Péče má přednost; nemusíte komentovat nepřetržitě.
+**Podklad:** [S09](#s09).
+
+### A04 — Klidný hlas a blízkost
+
+`comfort-together` · 0–11 · `relationship` / `rel.comfort` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě přijímá držení; bezpečná opora, bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Nabídněte blízkost. 2. Mluvte tiše. 3. Přizpůsobte se jeho reakci.
+**Řekněte:** „Jsem s tebou.“
+**Pozorujte/konec:** Netestujte, jak dlouho vydrží bez útěchy; řešte potřebnou péči.
+**Podklad:** [S03](#s03).
+
+### A05 — Kousek knížky vaším hlasem
+
+`book-voice` · 0–11 · `speech` / `speech.listening` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Jednoduchá dětská knížka v rukou dospělého.
+**Pomůcky:** kojenecká knížka.
+**Postup:** 1. Pohodlně se usaďte s oporou dítěte. 2. Přečtěte nebo popište jednu stránku. 3. Počkejte.
+**Řekněte:** „Tady je malý pejsek.“
+**Pozorujte/konec:** Není třeba číst celý příběh nebo dítě zkoušet.
+**Podklad:** [S12](#s12).
+
+### A06 — Jeden jednoduchý obrázek
+
+`single-contrast-picture` · 0–5 · `senses` / `sense.high-contrast` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Kontrastní pevná dětská obrázková karta, drží dospělý.
+**Pomůcky:** pevná kontrastní kojenecká karta.
+**Postup:** 1. Nabídněte jediný obrázek. 2. Chvíli ho držte klidně. 3. Sledujte zájem.
+**Řekněte:** „Tady je kruh.“
+**Pozorujte/konec:** Žádné blikání nebo nucené sledování.
+**Podklad:** [S07](#s07).
+
+### A07 — Známá krátká melodie
+
+`familiar-melody` · 0–11 · `creationRhythm` / `create.repeat` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Hlas dospělého, bez nahrávky a dalších pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Zazpívejte krátký známý motiv. 2. Udělejte ticho. 3. Při zájmu jej zopakujte.
+**Řekněte:** Zpívejte vlastní jednoduchou melodii.
+**Pozorujte/konec:** Běžná jemná hlasitost; zpěv není povinné uspávání.
+**Podklad:** [S15](#s15).
+
+### A08 — Volné nožky
+
+`free-kicking` · 0–5 · `movement` / `move.kick` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Pevný bezpečný podklad na podlaze, dítě na zádech.
+**Pomůcky:** žádné.
+**Postup:** 1. Uvolněte prostor pro ruce a nohy. 2. Nechte vlastní pohyb. 3. Klidně ho komentujte.
+**Řekněte:** „Nožky se hýbou.“
+**Pozorujte/konec:** Nešlapejte nožkami za dítě; při nepohodě skončete.
+**Podklad:** [S07](#s07).
+
+### A09 — Krátká bdělá chvilka na bříšku
+
+`awake-tummy-moment` · 0–5 · `movement` / `move.tummy` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Známé bezpečné provedení bez individuálního omezení; pevný podklad, stálý dohled.
+**Pomůcky:** žádné.
+**Postup:** 1. Bdělému dítěti nabídněte polohu na bříšku na pevném bezpečném podkladu na podlaze. 2. Zůstaňte u obličeje dítěte a nepřetržitě je sledujte. 3. Při nepohodě nebo ospalosti hru ukončete; ke spánku dítě ukládejte na záda.
+**Řekněte:** „Vidíme se.“
+**Pozorujte/konec:** Při ospalosti přesunout do bezpečného prostoru pro spánek na záda.
+**Podklad:** [S13](#s13).
+
+### A10 — Jemný dotek dlaně
+
+`gentle-palm-contact` · 0–11 · `relationship` / `rel.bonding-touch` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě přijímá dotek; čisté ruce, bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Nabídněte lehký dotek dlaně. 2. Vnímejte reakci. 3. Nechte ruku volnou.
+**Řekněte:** „Tady je moje ruka.“
+**Pozorujte/konec:** Neotvírejte pěst násilím; nejde o masážní nebo rehabilitační techniku.
+**Podklad:** [S20](#s20).
+
+### A11 — Pomalu sledujeme obličej
+
+`slow-face-follow` · 0–5 · `attention` / `attn.track` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě bdělé a pohodlně uložené; bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Navazujte přirozený pohled. 2. Pomalu posuňte svůj obličej kousek stranou. 3. Počkejte.
+**Řekněte:** „Tady jsem.“
+**Pozorujte/konec:** Neotáčejte hlavou dítěte; nesledování není neúspěch.
+**Podklad:** [S03](#s03).
+
+### A12 — Pauza podle miminka
+
+`baby-led-pause` · 0–11 · `autonomy` / `auto.self-soothe` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dospělý zůstává dostupný, bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Všimněte si odvrácení nebo únavy. 2. Přestaňte přidávat podněty. 3. Nabídněte potřebný klid a kontakt.
+**Řekněte:** „Dáme si pauzu.“
+**Pozorujte/konec:** Nejde o nácvik samostatného uklidnění nebo ignorování pláče.
+**Podklad:** [S02](#s02).
+
+## B. Nové nabídky od 3–5 měsíců
+
+### A13 — Společný pohled do zrcátka
+
+`mirror-together` · 3–11 · `attention` / `attn.shared` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Nerozbitné dětské zrcátko bezpečně drží dospělý.
+**Pomůcky:** nerozbitné dětské zrcátko.
+**Postup:** 1. Ukažte společný odraz. 2. Jemně změňte výraz. 3. Počkejte na zájem.
+**Řekněte:** „Vidíme obličej.“
+**Pozorujte/konec:** Nepředpokládejte, že dítě poznává samo sebe; sklo nepoužívat.
+**Podklad:** [S18](#s18).
+
+### A14 — Hračka u ruky
+
+`toy-within-reach` · 3–8 · `movement` / `move.reach` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Vhodná lehká kojenecká hračka, bezpečná poloha na podlaze.
+**Pomůcky:** lehká kojenecká hračka.
+**Postup:** 1. Nabídněte hračku blízko ruky. 2. Nechte vlastní pokus. 3. Při zájmu změňte stranu.
+**Řekněte:** „Můžeš se dotknout.“
+**Pozorujte/konec:** Hračku nevzdalujte za výkonem; dotyk není povinnost.
+**Podklad:** [S04](#s04).
+
+### A15 — Dva bezpečné povrchy
+
+`two-safe-textures` · 3–11 · `senses` / `sense.texture` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Dvě nepoškozené kojenecké hračky s různým povrchem.
+**Pomůcky:** dvě kojenecké hračky s různými povrchy.
+**Postup:** 1. Nabídněte jeden povrch. 2. Po pauze druhý. 3. Popište rozdíl.
+**Řekněte:** „Hladké. Tohle je hrbolaté.“
+**Pozorujte/konec:** Bez volných nití, chlupů a drobných částí; nepříjemný povrch vynechte.
+**Podklad:** [S14](#s14).
+
+### A16 — Pomalá cesta hračky
+
+`slow-toy-tracking` · 3–8 · `attention` / `attn.track` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Jedna věkově vhodná dobře viditelná hračka.
+**Pomůcky:** dobře viditelná kojenecká hračka.
+**Postup:** 1. Nabídněte ji ve výhledu. 2. Posuňte pomalu do strany. 3. Zastavte.
+**Řekněte:** „Jede pomalu.“
+**Pozorujte/konec:** Nezkoušejte krajní rozsah pohledu ani rychlé sledování.
+**Podklad:** [S04](#s04).
+
+### A17 — Vlastní držení kroužku
+
+`holding-a-ring` · 3–11 · `autonomy` / `auto.grasp` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Potvrzené `grasp`; jednodílný kojenecký kroužek.
+**Pomůcky:** jednodílný kojenecký kroužek.
+**Postup:** 1. Nabídněte kroužek. 2. Nechte dítě samo uchopit. 3. Dovolte kdykoli pustit.
+**Řekněte:** „Držíš kroužek.“
+**Pozorujte/konec:** Nezavírejte mu ruku a za hračku netahejte.
+**Podklad:** [S04](#s04).
+
+### A18 — Hlas má různé barvy
+
+`gentle-voice-play` · 3–11 · `creationRhythm` / `create.voice-play` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Bez pomůcek, dítě přijímá hlasový kontakt.
+**Pomůcky:** žádné.
+**Postup:** 1. Řekněte krátký zvuk běžným hlasem. 2. Zkuste jemně jinou melodii. 3. Počkejte.
+**Řekněte:** „Áá?“ měkce a bez hlasitého překvapení.
+**Pozorujte/konec:** Reakci nevyžadujte; při úleku se vraťte ke klidu.
+**Podklad:** [S15](#s15).
+
+### A19 — Říkanka při oblékání
+
+`dressing-rhyme` · 3–11 · `speech` / `speech.songs` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Běžné oblečení při bezpečné péči; žádná další pomůcka.
+**Pomůcky:** pohodlné oblečení dítěte.
+**Postup:** 1. Pojmenujte část oblečení. 2. Přidejte krátký rytmický verš. 3. V klidu dokončete péči.
+**Řekněte:** „Rukávek, ruka, hotovo.“
+**Pozorujte/konec:** Nepřetahujte paži za gestem a neodvádějte pozornost od bezpečnosti.
+**Podklad:** [S15](#s15).
+
+### A20 — Knížka pod rukama
+
+`touching-a-book` · 3–11 · `speech` / `speech.listening` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Čistá látková nebo pevná kojenecká knížka.
+**Pomůcky:** látková nebo pevná kojenecká knížka.
+**Postup:** 1. Přidržte otevřenou stránku. 2. Dovolte dotyk. 3. Pojmenujte, čeho se dítě dotýká.
+**Řekněte:** „Dotýkáš se medvídka.“
+**Pozorujte/konec:** Bez odtržitelných doplňků; prozkoumání má přednost před dočtením.
+**Podklad:** [S12](#s12).
+
+### A21 — Hračka po straně při vlastním otáčení
+
+`self-led-side-reach` · 3–8 · `movement` / `move.roll` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `rollAttempt`; bezpečná hračka a podklad.
+**Pomůcky:** kojenecká hračka.
+**Postup:** 1. Dejte hračku blízko na stranu. 2. Nechte vlastní pokus. 3. Případně ji přibližte.
+**Řekněte:** „Je vedle tebe.“
+**Pozorujte/konec:** Nepřetáčejte dítě za ruce ani pánev.
+**Podklad:** [S23](#s23).
+
+### A22 — Jemný stín ruky
+
+`soft-hand-shadow` · 3–11 · `senses` / `sense.light` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Klidný stín na stěně při běžném nepřímém osvětlení.
+**Pomůcky:** žádné.
+**Postup:** 1. Ukažte stín své ruky. 2. Pomalu s ní pohněte. 3. Zastavte.
+**Řekněte:** „Stín se pohnul.“
+**Pozorujte/konec:** Bez baterky do očí, slunce, blikání nebo zatemňování dítěte.
+**Podklad:** [S18](#s18).
+
+### A23 — Rytmus na vlastních kolenou
+
+`parent-knee-rhythm` · 3–11 · `creationRhythm` / `create.rhythm` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dospělý má volné ruce, dítě bezpečně uložené.
+**Pomůcky:** žádné.
+**Postup:** 1. Tiše poklepejte na vlastní kolena. 2. Udělejte pauzu. 3. Při zájmu zopakujte.
+**Řekněte:** „Ťuk, ťuk, pauza.“
+**Pozorujte/konec:** Nedržte dítěti ruce a nevynucujte napodobení.
+**Podklad:** [S14](#s14).
+
+### A24 — Blíž a o kousek dál
+
+`near-and-far-toy` · 3–8 · `spaceQuantity` / `space.near-far` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Jedna dobře viditelná kojenecká hračka v ruce dospělého.
+**Pomůcky:** dobře viditelná kojenecká hračka.
+**Postup:** 1. Ukažte ji v pohodlném výhledu. 2. Mírně změňte vzdálenost. 3. Zastavte.
+**Řekněte:** „Teď je blíž.“
+**Pozorujte/konec:** Bez prudkého přibližování k obličeji nebo testování zraku.
+**Podklad:** [S07](#s07).
+
+### A25 — Pozdrav dvou blízkých lidí
+
+`familiar-voices-greeting` · 3–11 · `relationship` / `rel.turn-taking` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dva známí pečující, dítě přijímá jejich přítomnost.
+**Pomůcky:** žádné.
+**Postup:** 1. Jeden krátce pozdraví. 2. Po pauze druhý. 3. Nechte dítě zvolit pozornost.
+**Řekněte:** Každý řekne prosté „Ahoj“.
+**Pozorujte/konec:** Nevyžadujte přenos pohledu ani kontakt s neznámou osobou.
+**Podklad:** [S20](#s20).
+
+### A26 — Dvě nabídky, vlastní zájem
+
+`choose-by-looking` · 3–11 · `autonomy` / `auto.choice` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Dvě bezpečné kojenecké hračky.
+**Pomůcky:** dvě kojenecké hračky.
+**Postup:** 1. Ukažte obě bez mávání. 2. Všimněte si pohledu či natažení. 3. Nabídněte vybranou.
+**Řekněte:** „Zajímá tě tahle?“
+**Pozorujte/konec:** Nezájem není chyba; volbu nevydávejte za trvalou preferenci.
+**Podklad:** [S20](#s20).
+
+## C. Nové nabídky od 6–8 měsíců
+
+### A27 — Z jedné ruky do druhé
+
+`hand-to-hand-toy` · 6–11 · `autonomy` / `auto.grasp` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; lehká jednodílná hračka, bezpečná poloha.
+**Pomůcky:** lehká jednodílná kojenecká hračka.
+**Postup:** 1. Nechte dítě uchopit hračku. 2. Ponechte obě ruce volné. 3. Vyčkejte na vlastní manipulaci.
+**Řekněte:** „Teď je v druhé ruce.“
+**Pozorujte/konec:** Nepřekládejte ji násilně a nedržte druhou ruku.
+**Podklad:** [S05](#s05).
+
+### A28 — Pustím a dostanu zpátky
+
+`soft-toy-release` · 6–11 · `autonomy` / `auto.release` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`, `release`; měkká hračka, nízko nad podlahou.
+**Pomůcky:** měkká kojenecká hračka.
+**Postup:** 1. Nechte hračku samostatně pustit. 2. Vraťte ji do dosahu. 3. Počkejte.
+**Řekněte:** „Spadla. Tady je.“
+**Pozorujte/konec:** Bez pádu tvrdých předmětů a bez nuceného otevření dlaně.
+**Podklad:** [S06](#s06).
+
+### A29 — Vyndám věc z misky
+
+`take-out-a-toy` · 6–11 · `spaceQuantity` / `space.in-out` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; široká nerozbitná miska a velká bezpečná hračka.
+**Pomůcky:** široká nerozbitná miska; velká kojenecká hračka.
+**Postup:** 1. Ukažte hračku uvnitř. 2. Nabídněte dosažitelnou misku. 3. Nechte vlastní vyjmutí.
+**Řekněte:** „Uvnitř. Teď venku.“
+**Pozorujte/konec:** Bez zachycení ruky, hluboké nádoby nebo ostrých hran.
+**Podklad:** [S08](#s08).
+
+### A30 — Chrastítko a ticho
+
+`rattle-and-pause` · 6–11 · `senses` / `sense.sound` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Nepoškozené věkově vhodné uzavřené chrastítko v ruce dospělého.
+**Pomůcky:** uzavřené kojenecké chrastítko.
+**Postup:** 1. Krátce jemně zachrastěte ve výhledu. 2. Zastavte. 3. Počkejte na reakci.
+**Řekněte:** „Slyšíme. Teď ticho.“
+**Pozorujte/konec:** Ne u ucha; nezkoušíte sluch hlasitým překvapením.
+**Podklad:** [S05](#s05).
+
+### A31 — Kuk za vlastními dlaněmi
+
+`parent-peekaboo` · 6–11 · `relationship` / `rel.turn-taking` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Bez pomůcek, dítě přijímá hru s obličejem.
+**Pomůcky:** žádné.
+**Postup:** 1. Zakryjte si na okamžik svůj obličej dlaněmi. 2. Odkryjte ho. 3. Vyčkejte.
+**Řekněte:** „Kuk, jsem tady.“
+**Pozorujte/konec:** Nezakrývat obličej dítěte; při nejistotě zůstat vidět.
+**Podklad:** [S19](#s19).
+
+### A32 — Odkud je tichý zvuk
+
+`quiet-sound-direction` · 6–11 · `senses` / `sense.sound` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Bezpečně podepřené dítě, tiché kojenecké chrastítko.
+**Pomůcky:** tiché kojenecké chrastítko.
+**Postup:** 1. Ukažte zdroj. 2. Posuňte ho mírně stranou a krátce zazvučte. 3. Čekejte.
+**Řekněte:** „Ozvalo se tady.“
+**Pozorujte/konec:** Nenuťte otočení hlavy; žádný hluk za zády nebo u ucha.
+**Podklad:** [S18](#s18).
+
+### A33 — Dospělý na podlaze vedle mě
+
+`floor-play-partner` · 6–11 · `movement` / `move.reach` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Bezpečný podklad; dítě ve zvládnuté poloze. Hračka je nepovinná.
+**Pomůcky:** žádné.
+**Postup:** 1. Sedněte si blízko. 2. Nabídněte ruku nebo známou hračku. 3. Nechte vlastní pohyb.
+**Řekněte:** „Jsem vedle tebe.“
+**Pozorujte/konec:** Neučíte sed nebo lezení tahem či podpíráním do nové polohy.
+**Podklad:** [S11](#s11).
+
+### A34 — Nos a ruce při hře
+
+`body-part-names` · 6–11 · `speech` / `speech.naming` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Bez pomůcek, dítě přijímá kontakt.
+**Pomůcky:** žádné.
+**Postup:** 1. Ukažte svůj nos. 2. Pak své ruce. 3. Pojmenujte je s pauzou.
+**Řekněte:** „Nos. Tady jsou ruce.“
+**Pozorujte/konec:** Nevyžadujte ukázání ani odpověď; nesahejte dítěti do očí či nosu.
+**Podklad:** [S14](#s14).
+
+### A35 — Jeden předmět a ještě jeden
+
+`one-and-another` · 6–11 · `spaceQuantity` / `space.more-less` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Dvě velké nepoškozené kojenecké kostky.
+**Pomůcky:** dvě velké kojenecké kostky.
+**Postup:** 1. Ukažte jednu. 2. Přidejte druhou. 3. Nechte obě prohlédnout nebo prozkoumat.
+**Řekněte:** „Jedna a ještě jedna.“
+**Pozorujte/konec:** Nejde o počítání na povel ani test rozpoznání množství.
+**Podklad:** [S10](#s10).
+
+### A36 — Obrázek za velkou klopou
+
+`book-flap-discovery` · 6–11 · `attention` / `attn.short-focus` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Kojenecká knížka s pevně připojenou velkou bezpečnou klopou.
+**Pomůcky:** kojenecká knížka s pevně připojenou velkou klopou.
+**Postup:** 1. Ukažte obrázek. 2. Částečně ho zakryjte klopou. 3. Znovu odkryjte.
+**Řekněte:** „Byl schovaný, tady je.“
+**Pozorujte/konec:** Klopu může ovládat dospělý; nevyžadovat hledání nebo jemný úchop.
+**Podklad:** [S21](#s21).
+
+### A37 — Míček se pomalu přibližuje
+
+`slow-approaching-ball` · 6–11 · `movement` / `move.reach` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Velký měkký kojenecký míček, bezpečný podklad a zvládnutá poloha.
+**Pomůcky:** velký měkký kojenecký míček.
+**Postup:** 1. Položte míček blízko. 2. Pomalu jej přikutálejte do dosahu. 3. Nechte dotyk.
+**Řekněte:** „Míček přijel.“
+**Pozorujte/konec:** Bez zásahu obličeje a bez natahování dítěte za hranici stability.
+**Podklad:** [S17](#s17).
+
+### A38 — Moje ruka dělá ťuk
+
+`baby-hand-drum` · 6–11 · `creationRhythm` / `create.rhythm` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `floorSit`; bezpečný kojenecký bubínek bez paliček a volných částí.
+**Pomůcky:** kojenecký bubínek bez paliček a volných částí.
+**Postup:** 1. Ukažte tiché klepnutí rukou. 2. Nabídněte bubínek. 3. Nechte vlastní pokus.
+**Řekněte:** „Ťuk a pauza.“
+**Pozorujte/konec:** Nevodit ruce; při nejistém sedu zvolit jinou činnost.
+**Podklad:** [S08](#s08).
+
+### A39 — Nerušíme vlastní objev
+
+`unhurried-exploration` · 6–11 · `attention` / `attn.short-focus` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě právě bezpečně zkoumá vhodný předmět; dospělý zůstává blízko.
+**Pomůcky:** kojenecká hračka.
+**Postup:** 1. Všimněte si jeho zájmu. 2. Nepřidávejte další hračku. 3. Odpovězte, až naváže kontakt.
+**Řekněte:** Krátce pojmenujte jeho objev.
+**Pozorujte/konec:** Neměřte výdrž a neodcházejte od dohledu.
+**Podklad:** [S02](#s02).
+
+### A40 — Slovo pro to, co zaujalo
+
+`name-a-real-interest` · 6–11 · `speech` / `speech.naming` · `home`, `outdoor` · `moment`.
+
+**Podmínky/pomůcky:** Dospělý stojí či sedí bezpečně, dítě má potřebnou oporu; bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Sledujte zájem dítěte. 2. Pojmenujte viděnou věc. 3. Počkejte.
+**Řekněte:** „To je strom.“
+**Pozorujte/konec:** Bez zkoušení slov a bez odvádění pozornosti při přesunu.
+**Podklad:** [S05](#s05).
+
+### A41 — Knížka s blízkými obličeji
+
+`familiar-faces-book` · 6–11 · `relationship` / `rel.eye-contact` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Pevná knížka s obličeji nebo bezpečně chráněné obrázky drží dospělý.
+**Pomůcky:** pevná knížka s blízkými obličeji.
+**Postup:** 1. Ukažte jeden obličej. 2. Pojmenujte známou osobu. 3. Počkejte na zájem.
+**Řekněte:** „Tady je babička.“
+**Pozorujte/konec:** Bez zkoušení paměti a volných fotografií do úst.
+**Podklad:** [S22](#s22).
+
+### A42 — Vlastní cesta po bezpečné podlaze
+
+`self-led-floor-exploring` · 6–11 · `autonomy` / `auto.explore-safe` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `floorMove`; předem zabezpečený prostor, dospělý blízko.
+**Pomůcky:** žádné.
+**Postup:** 1. Uvolněte malou bezpečnou plochu. 2. Nechte volbu směru. 3. Doprovázejte podle potřeby.
+**Řekněte:** „Jdu s tebou.“
+**Pozorujte/konec:** Nevyžadujte lezení určitým způsobem a nepřidávejte překážkovou dráhu.
+**Podklad:** [S11](#s11).
+
+## D. Nové nabídky od 9–11 měsíců
+
+### A43 — Hračka dovnitř
+
+`put-a-toy-in` · 9–11 · `spaceQuantity` / `space.in-out` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`, `release`; široká miska a velká kojenecká kostka.
+**Pomůcky:** široká nerozbitná miska; velká kojenecká kostka.
+**Postup:** 1. Ukažte vložení. 2. Nabídněte hračku. 3. Vyčkejte na vlastní pokus.
+**Řekněte:** „Kostka je uvnitř.“
+**Pozorujte/konec:** Miska nesmí zachytit ruku; neberte dítěti hračku násilím.
+**Podklad:** [S06](#s06).
+
+### A44 — Kelímek v kelímku
+
+`nesting-cups` · 9–11 · `spaceQuantity` / `space.in-out` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; dva velké stohovací kelímky určené kojencům.
+**Pomůcky:** dva velké kojenecké stohovací kelímky.
+**Postup:** 1. Ukažte menší uvnitř většího. 2. Oddělte je. 3. Nabídněte manipulaci.
+**Řekněte:** „Tenhle se vejde.“
+**Pozorujte/konec:** Bez drobných dílů, tlaku na správné složení a sevření prstů.
+**Podklad:** [S08](#s08).
+
+### A45 — Kam se vejde velká hračka
+
+`toy-and-container-fit` · 9–11 · `spaceQuantity` / `space.in-out` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; velká bezpečná hračka a dvě široké nerozbitné nádoby.
+**Pomůcky:** velká kojenecká hračka; dvě široké nerozbitné nádoby.
+**Postup:** 1. Nabídněte nádobu, kam se vejde. 2. Ukažte rozdíl velikostí. 3. Nechte průzkum.
+**Řekněte:** „Tady má víc místa.“
+**Pozorujte/konec:** Bez násilného vtlačování; nejde o úkol se správnou odpovědí.
+**Podklad:** [S10](#s10).
+
+### A46 — Míček mezi námi
+
+`rolling-turns` · 9–11 · `relationship` / `rel.turn-taking` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `floorSit`; velký měkký míček, dospělý v dosahu.
+**Pomůcky:** velký měkký kojenecký míček.
+**Postup:** 1. Pomalu přikutálejte míček. 2. Čekejte na dotyk či postrčení. 3. Reagujte na jeho akci.
+**Řekněte:** „Teď k tobě, teď ke mně.“
+**Pozorujte/konec:** Vracení nevyžadujte a neohrozte stabilitu sedu.
+**Podklad:** [S19](#s19).
+
+### A47 — Nabídnout a přijmout
+
+`offer-and-receive` · 9–11 · `autonomy` / `auto.release` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`, `release`; bezpečná kojenecká hračka.
+**Pomůcky:** kojenecká hračka.
+**Postup:** 1. Nabídněte otevřenou dlaň. 2. Pokud dítě předá, přijměte. 3. Nabídněte zpátky.
+**Řekněte:** „Děkuji. Chceš zpátky?“
+**Pozorujte/konec:** Hračku nevytahujte z ruky; odmítnutí je přípustné.
+**Podklad:** [S19](#s19).
+
+### A48 — Autíčko se rozjede
+
+`push-a-baby-car` · 9–11 · `movement` / `move.reach` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; velká nepoškozená pojízdná hračka určená kojencům.
+**Pomůcky:** velká kojenecká pojízdná hračka.
+**Postup:** 1. Ukažte pomalé postrčení na podlaze. 2. Vraťte hračku do dosahu. 3. Nechte pokus.
+**Řekněte:** „Jede a zastaví.“
+**Pozorujte/konec:** Bez odtržitelných koleček a nutnosti hračku honit.
+**Podklad:** [S17](#s17).
+
+### A49 — Odpovím na ukázání
+
+`respond-to-pointing` · 9–11 · `speech` / `speech.naming` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `gesture`; společně prohlížená dětská knížka.
+**Pomůcky:** kojenecká knížka.
+**Postup:** 1. Všimněte si vlastního ukázání dítěte. 2. Pojmenujte obrázek. 3. Navazujte jeho zájem.
+**Řekněte:** „Ukazuješ na kočku.“
+**Pozorujte/konec:** Nedělejte gesto jeho rukou a nevyžadujte další ukazování.
+**Podklad:** [S12](#s12).
+
+### A50 — Jedno slovo navíc
+
+`one-word-response` · 9–11 · `speech` / `speech.babble` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě samo hlasově naváže kontakt; bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Odpovězte na jeho zvuk. 2. Přidejte krátké slovo podle situace. 3. Počkejte.
+**Řekněte:** Například „Ba? Balón.“ jen pokud se dítě právě zajímá o míč; jinak pojmenujte to, co skutečně zaujalo.
+**Pozorujte/konec:** Nevyžadujte první slovo ani neopravujte každý pokus.
+**Podklad:** [S09](#s09).
+
+### A51 — Krátké pá-pá
+
+`wave-and-word` · 9–11 · `speech` / `speech.songs` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Dítě sleduje pečujícího, bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Řekněte „pá-pá“. 2. Pomalu zamávejte svou rukou. 3. Nechte prostor reakci.
+**Řekněte:** „Pá-pá.“
+**Pozorujte/konec:** Mávejte sami, ne rukou dítěte; napodobení není podmínkou.
+**Podklad:** [S16](#s16).
+
+### A52 — Zvířátko a jeho zvuk
+
+`animal-picture-sound` · 9–11 · `creationRhythm` / `create.voice-play` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Knížka s jedním dobře viditelným zvířetem.
+**Pomůcky:** kojenecká knížka se zvířaty.
+**Postup:** 1. Ukažte zvíře. 2. Pojmenujte ho a přidejte jemný zvuk. 3. Počkejte.
+**Řekněte:** „Kočka. Mňau.“
+**Pozorujte/konec:** Bez hlasitého lekání, nahrávek nebo požadavku zvuk zopakovat.
+**Podklad:** [S16](#s16).
+
+### A53 — Tvůj rytmus, moje odpověď
+
+`answer-a-rhythm` · 9–11 · `creationRhythm` / `create.repeat` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Dítě samo dělá bezpečné rytmické gesto; bez pomůcek.
+**Pomůcky:** žádné.
+**Postup:** 1. Všimněte si gesta. 2. Krátce odpovězte stejným rytmem. 3. Vyčkejte.
+**Řekněte:** „Slyším tvůj rytmus.“
+**Pozorujte/konec:** Bez držení rukou a zkoušení správného počtu úderů.
+**Podklad:** [S16](#s16).
+
+### A54 — Otočím pevnou stránku
+
+`turn-a-board-page` · 9–11 · `autonomy` / `auto.grasp` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; nepoškozené leporelo s velkými pevnými stránkami.
+**Pomůcky:** leporelo s velkými pevnými stránkami.
+**Postup:** 1. Přidržte knihu. 2. Nabídněte uvolněný okraj. 3. Nechte vlastní otočení.
+**Řekněte:** „Další stránka.“
+**Pozorujte/konec:** Bez oddělitelných rohů a nucení jemného pinzetového úchopu.
+**Podklad:** [S22](#s22).
+
+### A55 — Srozumitelné krátké rozloučení
+
+`clear-caregiver-goodbye` · 9–11 · `relationship` / `rel.comfort` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Jeden známý pečující skutečně odchází; druhý zůstává s dítětem.
+**Pomůcky:** žádné.
+**Postup:** 1. Krátce se rozlučte. 2. Předejte potřebnou oporu. 3. Při návratu se pozdravte.
+**Řekněte:** „Teď odcházím. Babička je s tebou.“
+**Pozorujte/konec:** Nevytvářejte odloučení jako test a nenechávejte dítě samotné.
+**Podklad:** [S06](#s06).
+
+### A56 — Známá věc na obrázku
+
+`familiar-object-picture` · 9–11 · `attention` / `attn.shared` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Pevná knížka s běžnými předměty, například hrnkem.
+**Pomůcky:** kojenecká knížka s běžnými předměty.
+**Postup:** 1. Ukažte známý obrázek. 2. Připomeňte skutečnou věc. 3. Nechte dítě určovat pokračování.
+**Řekněte:** „Hrnek, takový známe doma.“
+**Pozorujte/konec:** Nejde o zkoušení rozpoznání nebo slovní zásoby.
+**Podklad:** [S22](#s22).
+
+### A57 — Stisknu a něco se změní
+
+`baby-safe-cause-effect` · 9–11 · `attention` / `attn.short-focus` · `home` · `moment`.
+
+**Podmínky/pomůcky:** `grasp`; kojenecká mechanická hračka s velkým bezpečným prvkem.
+**Pomůcky:** kojenecká mechanická hračka s velkým ovládacím prvkem.
+**Postup:** 1. Ukažte jedinou akci. 2. Nabídněte hračku. 3. Nechte samostatné zkoumání.
+**Řekněte:** „Stisk a otevřelo se.“
+**Pozorujte/konec:** Bez sevření prstů, přístupné baterie nebo hlasitého efektu.
+**Podklad:** [S17](#s17).
+
+### A58 — Prázdno a plno na pohled
+
+`empty-and-full-bowl` · 9–11 · `spaceQuantity` / `space.more-less` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Dvě široké misky a několik velkých bezpečných kojeneckých kostek.
+**Pomůcky:** dvě široké nerozbitné misky; velké kojenecké kostky.
+**Postup:** 1. Ukažte prázdnou misku. 2. Druhou naplňte kostkami. 3. Dovolte prozkoumat rozdíl.
+**Řekněte:** „Tady prázdno, tady jsou kostky.“
+**Pozorujte/konec:** Bez požadavku třídit, počítat nebo hledat správnou nádobu.
+**Podklad:** [S10](#s10).
+
+### A59 — Moje ruka při oblékání
+
+`participating-in-dressing` · 9–11 · `autonomy` / `auto.choice` · `home` · `moment`.
+
+**Podmínky/pomůcky:** Bezpečná poloha při péči, běžné pohodlné oblečení.
+**Pomůcky:** pohodlné oblečení dítěte.
+**Postup:** 1. Ukažte otevřený rukáv. 2. Vyčkejte na vlastní pohyb. 3. Jemně dokončete oblékání.
+**Řekněte:** „Tady je rukáv.“
+**Pozorujte/konec:** Nejde o cvičení paže; netahat za ruku a neprodlužovat nepohodu.
+**Podklad:** [S11](#s11).
+
+### A60 — Knížku spolu zavřeme
+
+`book-ending-ritual` · 9–11 · `relationship` / `rel.comfort` · `quiet` · `moment`.
+
+**Podmínky/pomůcky:** Známá dětská knížka, dítě dává najevo konec zájmu.
+**Pomůcky:** kojenecká knížka.
+**Postup:** 1. Respektujte konec. 2. Zavřete knížku. 3. Přirozeně přejděte k další potřebě.
+**Řekněte:** „Pro dnešek hotovo.“
+**Pozorujte/konec:** Dočtení není povinnost a konec nevytváří dluh.
+**Podklad:** [S02](#s02).
+
+## Rodiny aktivit a kontrola rozmanitosti
+
+Příbuzné činnosti jsou záměrně vedené odděleně kvůli rozdílnému provedení a připravenosti; jejich počet není automatický důkaz šedesáti nezávislých rozvojových metod. Při importu provést redakční deduplikaci a případně je sloučit jako varianty, místo doplňování výplně kvůli číslu 60.
+
+- Obličej a sledování: A01/A11/A16/A24; nepředkládat jako tři rozdílné dnešní alternativy.
+- Knížky: A05/A20/A36/A41/A49/A54/A56/A60 mají odlišný účel, ale společnou rodinu materiálu a kontextu.
+- Nádoby a prostor: A29/A35/A43/A44/A45/A58; vybírat podle skutečné připravenosti, nikoli všechny za sebou.
+- Míček a pohyb předmětu: A37/A46/A48; rozlišit vlastní dosah, sociální střídání a manipulaci.
+- Hlas a rytmus: A02/A07/A18/A19/A23/A30/A50/A51/A52/A53; pravidla nabídky musejí zabránit monotónnímu dennímu setu.
+
+Pozitivní reakce znamená pouze, že rodič u dané zkušenosti označil zájem. Zkoumání nádoby není zvládnutá matematika, zrakový zájem není diagnóza a vynechaná aktivita není deficit dítěte. Nové dovednosti se neodvozují bez potvrzení a žádný katalog není individuální rehabilitační plán.
+
+## Zdroje a rozsah redakční rešerše
+
+Texty navštívené 8. listopadu 2026. Záznam návštěvy je redakční rešerše, **ne osobní odborné schválení aktivit**. Níže uvádíme principy, pro které byl zdroj použit; některé vlastní scénáře je převádějí do jiného bezpečného běžného kontextu. Podrobná věková okna a přesné formulace stále čekají na review. Části zdrojů o výživě, normách nebo rizikovějších pomůckách nebyly převzaty.
+
+### S01
+
+[WHO — Improving early childhood development](https://www.who.int/publications/i/item/97892400020986): rámec vstřícné péče a příležitostí ke společnému učení. Podklad obecného směru, ne šedesáti konkrétních postupů.
+
+### S02
+
+[Harvard — 5 Steps for Brain-Building Serve and Return](https://developingchild.harvard.edu/resources/handouts-tools/5-steps-for-brain-building-serve-and-return/): následování zájmu, střídání, čekání a respektování konce interakce.
+
+### S03
+
+[CDC — Milestones by 2 Months, Tips and activities](https://www.cdc.gov/act-early/milestones/2-months.html): kontakt, odpovídání, blízkost a pozorování signálů dítěte. Milníky nejsou termín úspěšného absolvování.
+
+### S04
+
+[CDC — Milestones by 4 Months, Tips and activities](https://www.cdc.gov/act-early/milestones/4-months.html): bezpečné sahání, pohyb a manipulace s věkově vhodnou hračkou.
+
+### S05
+
+[CDC — Milestones by 6 Months, Tips and activities](https://www.cdc.gov/act-early/milestones/6-months.html): zvukové střídání, pojmenovávání a vlastní zkoumání předmětů.
+
+### S06
+
+[CDC — Milestones by 9 Months, Tips and activities](https://www.cdc.gov/act-early/milestones/9-months.html): předávání, nádoby, vracení upuštěného předmětu a srozumitelné loučení se zachovanou oporou.
+
+### S07
+
+[HSE — Play and toys, 0 to 6 months](https://www2.hse.ie/babies-children/play/0-6-months/): pohled, hlas, bezpečné předměty a prostor pro volný pohyb.
+
+### S08
+
+[HSE — Play and toys, 6 to 12 months](https://www2.hse.ie/babies-children/play/6-12-months/): velké míče, kelímky, skládací hračky a jednoduchý rytmus. Vodní a plavecké náměty do této sady nepřebíráme.
+
+### S09
+
+[NHS — Help your baby learn to talk](https://www.nhs.uk/baby/babys-development/play-and-learning/help-your-baby-learn-to-talk/): komentování činností, opakování zvuků, krátké věty a pojmenování skutečného zájmu.
+
+### S10
+
+[NHS — Baby and toddler play ideas](https://www.nhs.uk/baby/babys-development/play-and-learning/baby-and-toddler-play-ideas/): jednoduché materiály a manipulace. Srovnávání velikostí a prázdna je vlastní scénář, nikoli test matematické dovednosti.
+
+### S11
+
+[NHS — How to keep your baby or toddler active](https://www.nhs.uk/baby/babys-development/play-and-learning/keep-baby-or-toddler-active/): volný pohyb a bezpečné prostředí. Oblékání je vlastní kontext pro dobrovolný pohyb, nikoli rehabilitační instrukce.
+
+### S12
+
+[AAP / HealthyChildren — How to Share Books With Your Baby](https://www.healthychildren.org/English/ages-stages/baby/Pages/how-to-share-books-with-your-baby.aspx): sdílení knížek od nejútlejšího věku, dotyk a následování zájmu.
+
+### S13
+
+[AAP / HealthyChildren — Back to Sleep, Tummy to Play](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/Back-to-Sleep-Tummy-to-Play.aspx): rozlišení bdělé hry pod dohledem a bezpečného spánku.
+
+### S14
+
+[Canadian Paediatric Society — Playtime with your baby](https://caringforkids.cps.ca/handouts/pregnancy-and-babies/playtime_with_your_baby): vztahová hra, bezpečné pomůcky, hmat a jednoduché společné zvuky/pohyby.
+
+### S15
+
+[Canadian Paediatric Society — Read, speak, sing to your baby](https://caringforkids.cps.ca/handouts/behavior-and-development/read_speak_sing_to_your_baby): hlas, říkanky, zpěv a opakování v každodenních situacích.
+
+### S16
+
+[Canadian Paediatric Society — Read, Speak, Sing, position statement](https://cps.ca/en/documents/position/read-speak-sing-promoting-literacy): vstřícná komunikace a rytmické společné interakce; podklad jazykového principu, ne přesného věku jednotlivého gesta.
+
+### S17
+
+[Seattle Children’s — Toys and Play: Birth to 12 Months](https://www.seattlechildrens.org/health-safety/parenting/toys-and-play-birth-to-12-months/): velké míče, manipulace s pojízdnými a mechanickými kojeneckými hračkami.
+
+### S18
+
+[Nationwide Children’s — Infant Play](https://www.nationwidechildrens.org/conditions/health-library/infant-play): zrakové a sluchové objevování, zrcadlo a věkově přiměřené podněty. Jemný stín je vlastní scénář bez přímého světelného zdroje.
+
+### S19
+
+[UNICEF — 21 learning activities for babies and toddlers](https://www.unicef.org/parenting/child-care/21-learning-activities-babies-and-toddlers): vlastní aktivita dítěte, jednoduché střídání a hra s pečujícím. Nejde o převzetí celého seznamu ani jeho rizikovějších variant.
+
+### S20
+
+[UNICEF — The power of play from birth](https://www.unicef.org/asia-pacific/place-for-parents/power-play-moment-your-baby-born): kontakt, společné objevování a následování zájmu dítěte.
+
+### S21
+
+[Illinois Early Learning — Sharing Books with Your Baby](https://illinoisearlylearning.org/tipsheets/booksbaby/): společné prohlížení a aktivní zkoumání knih. Konkrétní hra s klopou je vlastní redakční varianta tohoto principu.
+
+### S22
+
+[NCCA — Enjoying books with your baby, birth–18 months](https://ncca.ie/media/5615/enjoying-books-with-your-baby_ef-8.pdf): pevné a látkové knížky, známé obrazy, vlastní manipulace a opakované společné čtení.
+
+### S23
+
+[Head Start — Tummy Time Activities During Home Visits](https://headstart.gov/publication/tummy-time-activities-during-home-visits): bezpečná bdělá hra na podlaze, dospělý přítomný a nabídka podnětu. Nepřebíráme odborné manipulační techniky.

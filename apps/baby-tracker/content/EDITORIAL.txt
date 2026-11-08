@@ -25,6 +25,14 @@ Workflow
 
 Oprava textu nebo podmínek = nová revize. Stažení = withdrawn s důvodem. Historické zkušenosti zůstávají čitelné podle původního revisionId.
 
+Převod pracovních návrhů
+
+- Verzovaný zdroj první roční sady je first-year-drafts.txt v tomto adresáři. Regenerace: npm run content:generate-drafts --workspace @maxii/baby-tracker z kořene repozitáře.
+- Pole Pomůcky musí být výslovné: názvy potřebných předmětů oddělené středníkem, nebo „žádné“. Polohu dítěte, dohled, osvětlení a počet pečujících uchovávejte v podmínkách, nikoli v seznamu pomůcek.
+- Nepovinná hračka nevytváří povinnou pomůcku. U požadovaných předmětů se generuje materials_all_of; bez nich aktivita neprojde výběrem.
+- Strojové klíče připravenosti zůstávají v suitability. Text podmínek a readinessNotes používá české věty pro rodiče.
+- Starší revize zůstávají v archivu pro dohledání původního znění. Archiv nevstupuje do aktuálního pracovního náhledu ani do doporučování.
+
 Validace
 
 Spusťte npm run content:validate v apps/baby-tracker. Chyby ukazují konkrétní pole (path), například steps[1] nebo editorial.history.

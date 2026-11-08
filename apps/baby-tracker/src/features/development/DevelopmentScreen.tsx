@@ -193,7 +193,7 @@ export function DevelopmentScreen({ onOpenEvent }: DevelopmentScreenProps) {
                 <LumiText>{revision.title}</LumiText>
                 <LumiText tone="muted">
                   {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
-                  {revision.editorial.stage === 'draft'
+                  {revision.editorial.stage !== 'published'
                     ? ` · ${PRODUCT_COPY.development.draftBadge}`
                     : ''}
                 </LumiText>

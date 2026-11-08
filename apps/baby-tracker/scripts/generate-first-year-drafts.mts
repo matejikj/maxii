@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Converts the local editorial draft markdown into typed ActivityRevision
+ * Converts the versioned editorial draft source into typed ActivityRevision
  * records. Output stays draft/unpublished — never invents expert approval.
  */
 import fs from 'node:fs';
@@ -22,7 +22,7 @@ import { validateActivityRevision } from '../src/content/validation/validateActi
 const here = path.dirname(fileURLToPath(import.meta.url));
 const draftMd = path.resolve(
   here,
-  '../../../docs/implementation/evidence/task-21/activity-drafts.md',
+  '../content/first-year-drafts.txt',
 );
 const outFile = path.resolve(here, '../src/content/drafts/firstYearDrafts.ts');
 
@@ -44,6 +44,15 @@ const AREA_SET = new Set<DevelopmentArea>([
 ]);
 
 type SourceDef = { id: string; label: string; url: string; supportsPrinciple: string };
+
+const READINESS_COPY: Record<ReadinessKey, string> = {
+  grasp: 'Dítě už samo stabilně drží vhodnou hračku.',
+  release: 'Dítě už samo vědomě pouští drženou hračku.',
+  rollAttempt: 'Dítě už samo zahajuje otočení na bok.',
+  floorSit: 'Dítě už samo stabilně sedí na podlaze.',
+  floorMove: 'Dítě už se samo pohybuje po bezpečné podlaze.',
+  gesture: 'Dítě už samo používá ukazovací gesto.',
+};
 
 function parseSourcesAppendix(md: string): Map<string, SourceDef> {
   const map = new Map<string, SourceDef>();
@@ -111,21 +120,24 @@ function extractReadiness(conditions: string): ReadinessKey[] {
   return keys;
 }
 
-function extractMaterials(conditions: string): string[] {
-  const lower = conditions.toLowerCase();
-  if (
-    /bez pomůcek|bez dalších pomůcek|hlas dospělého, bez nahrávky a dalších pomůcek/.test(lower)
-  ) {
-    return [];
+function extractMaterials(body: string, activityId: string): string[] {
+  const declared = extractSection(body, 'Pomůcky').replace(/\.$/, '');
+  if (!declared) throw new Error(`Missing explicit materials for ${activityId}`);
+  if (declared === 'žádné') return [];
+  const materials = declared.split(';').map((item) => item.trim());
+  if (materials.some((item) => !item)) {
+    throw new Error(`Empty material for ${activityId}`);
   }
-  // Keep the caregiver-facing condition text shortened into a material label when needed.
-  const withoutReadiness = conditions
+  return materials;
+}
+
+function caregiverConditions(conditions: string, keys: ReadinessKey[]): string[] {
+  const remaining = conditions
     .replace(/`(?:grasp|release|rollAttempt|floorSit|floorMove|gesture)`/g, '')
-    .replace(/Potvrzené[^;.]*/gi, '')
+    .replace(/^Potvrzené\s*/, '')
     .replace(/^[\s;,.]+/, '')
     .trim();
-  if (!withoutReadiness || /bez pomůcek/i.test(withoutReadiness)) return [];
-  return [withoutReadiness.replace(/\.$/, '')];
+  return [...keys.map((key) => READINESS_COPY[key]), ...(remaining ? [remaining] : [])];
 }
 
 function toSource(id: string, defs: Map<string, SourceDef>): ContentSource {
@@ -176,7 +188,7 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
     const sourceMatch = extractSection(body, 'Podklad').match(/\[(S\d+)\]/);
     if (!sourceMatch) throw new Error(`Missing source for ${activityId}`);
     const readinessKeys = extractReadiness(conditions);
-    const materials = extractMaterials(conditions);
+    const materials = extractMaterials(body, activityId);
     const steps = extractSteps(body);
 
     const suitability: SuitabilityCondition[] = [
@@ -189,7 +201,7 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
       { kind: 'environment_one_of', environments },
       ...(materials.length === 0
         ? ([{ kind: 'materials_none' }] as SuitabilityCondition[])
-        : []),
+        : ([{ kind: 'materials_all_of', materials }] as SuitabilityCondition[])),
       ...readinessKeys.map(
         (key): SuitabilityCondition => ({ kind: 'readiness_confirmed', key }),
       ),
@@ -197,19 +209,19 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
 
     const constraints = [
       ...SHARED_CONSTRAINTS,
-      ...(conditions ? [conditions] : []),
+      ...caregiverConditions(conditions, readinessKeys),
       ...(observe ? [observe] : []),
     ];
 
     revisions.push({
       activityId,
-      revisionId: `${activityId}.draft-r1`,
+      revisionId: `${activityId}.draft-r2`,
       language: 'cs',
       title,
       ageMonths: age,
       readinessNotes:
         readinessKeys.length > 0
-          ? `Vyžaduje potvrzenou připravenost: ${readinessKeys.join(', ')}.`
+          ? readinessKeys.map((key) => READINESS_COPY[key]).join(' ')
           : observe || null,
       environments,
       materials,
@@ -256,7 +268,7 @@ function main() {
  */
 import type { ActivityRevision } from '../model/types';
 
-export const FIRST_YEAR_DRAFT_CONTENT_VERSION = 'first-year-drafts.v1' as const;
+export const FIRST_YEAR_DRAFT_CONTENT_VERSION = 'first-year-drafts.v2' as const;
 
 export const FIRST_YEAR_DRAFT_REVISIONS = ${payload} as const satisfies readonly ActivityRevision[];
 `;

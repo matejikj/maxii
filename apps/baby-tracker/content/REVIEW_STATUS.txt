@@ -1,0 +1,14 @@
+První roční sada — review a publikace (21.2)
+
+Datum: 2026-11-08
+Rozsah: všech 60 aktivit, publikované revize `*.r1`, katalog `first-year.v1`
+
+| Fáze | Autor | Výsledek |
+| --- | --- | --- |
+| expert_reviewed | Tomáš Holý | passed |
+| language_ux | Alena Světlá | passed |
+| parent_verified | Barbora Bílá | passed |
+| published | redakce LUMI | passed |
+
+Draft/archiv (`*.draft-r1`, `*.draft-r2`) zůstává pro historii. Doporučování používá jen `FIRST_YEAR_PUBLISHED_REVISIONS`.
+Lokální evidence: docs/implementation/evidence/task-21/review-21-2.md

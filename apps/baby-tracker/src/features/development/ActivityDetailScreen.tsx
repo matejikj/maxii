@@ -197,6 +197,15 @@ export function ActivityDetailScreen({
           </View>
         ) : null}
 
+        {revision.constraints.length > 0 ? (
+          <View style={{ gap: ui.space.xs }} testID="activity-conditions">
+            <LumiText variant="h2">{PRODUCT_COPY.development.watchOut}</LumiText>
+            {revision.constraints.map((item) => (
+              <LumiText key={item}>{item}</LumiText>
+            ))}
+          </View>
+        ) : null}
+
         <View style={{ gap: ui.space.xs }}>
           <LumiText variant="h2">{PRODUCT_COPY.development.materials}</LumiText>
           <LumiText>
@@ -206,7 +215,7 @@ export function ActivityDetailScreen({
           </LumiText>
         </View>
 
-        <View style={{ gap: ui.space.xs }}>
+        <View style={{ gap: ui.space.xs }} testID="activity-steps">
           <LumiText variant="h2">{PRODUCT_COPY.development.howTo}</LumiText>
           {revision.steps.map((step, index) => (
             <LumiText key={`${revision.revisionId}-step-${index}`}>
@@ -219,15 +228,6 @@ export function ActivityDetailScreen({
           <View style={{ gap: ui.space.xs }}>
             <LumiText variant="h2">{PRODUCT_COPY.development.say}</LumiText>
             <LumiText>{revision.conversationPrompt}</LumiText>
-          </View>
-        ) : null}
-
-        {revision.constraints.length > 0 ? (
-          <View style={{ gap: ui.space.xs }}>
-            <LumiText variant="h2">{PRODUCT_COPY.development.watchOut}</LumiText>
-            {revision.constraints.map((item) => (
-              <LumiText key={item}>{item}</LumiText>
-            ))}
           </View>
         ) : null}
 

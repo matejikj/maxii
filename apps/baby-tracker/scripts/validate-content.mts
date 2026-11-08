@@ -5,7 +5,9 @@
  */
 import {
   DEV_FIXTURE_REVISIONS,
+  FIRST_YEAR_ARCHIVED_REVISIONS,
   FIRST_YEAR_DRAFT_REVISIONS,
+  FIRST_YEAR_PUBLISHED_REVISIONS,
   LOCAL_LIBRARY_REVISIONS,
   STARTER_TOPICS,
   buildCoverageReport,
@@ -15,7 +17,14 @@ import {
 } from '../src/content/index.ts';
 
 const drafts = [...FIRST_YEAR_DRAFT_REVISIONS];
-const all = [...DEV_FIXTURE_REVISIONS, ...LOCAL_LIBRARY_REVISIONS, ...drafts];
+const publishedFirstYear = [...FIRST_YEAR_PUBLISHED_REVISIONS];
+const all = [
+  ...DEV_FIXTURE_REVISIONS,
+  ...LOCAL_LIBRARY_REVISIONS,
+  ...FIRST_YEAR_ARCHIVED_REVISIONS,
+  ...drafts,
+  ...publishedFirstYear,
+];
 let failed = 0;
 
 for (const [index, revision] of all.entries()) {
@@ -59,11 +68,23 @@ const readinessGated = drafts.filter((revision) =>
   revision.suitability.some((item) => item.kind === 'readiness_confirmed'),
 ).length;
 const unpublishedReviewGaps = drafts.filter((revision) => !isRecommendable(revision)).length;
-const birthdayLeak = drafts.filter((revision) => revision.ageMonths.toInclusive >= 12).length;
+const publishedFirstYearCount = publishedFirstYear.filter((revision) => isRecommendable(revision)).length;
+if (publishedFirstYearCount !== 60) {
+  failed += 1;
+  console.error(`first-year published recommendable count: ${publishedFirstYearCount} (expected 60)`);
+}
+const birthdayLeak = [...drafts, ...publishedFirstYear].filter(
+  (revision) => revision.ageMonths.toInclusive >= 12,
+).length;
 if (birthdayLeak > 0) {
   failed += 1;
-  console.error(`first-birthday age leak in drafts: ${birthdayLeak}`);
+  console.error(`first-birthday age leak in drafts/published: ${birthdayLeak}`);
 }
+
+const firstYearCoverage = buildCoverageReport(publishedFirstYear, {
+  supportedAgeFrom: 0,
+  supportedAgeTo: 11,
+});
 
 console.log(
   JSON.stringify(
@@ -71,11 +92,14 @@ console.log(
       topics: STARTER_TOPICS.length,
       validated: all.length,
       drafts: drafts.length,
+      archivedDrafts: FIRST_YEAR_ARCHIVED_REVISIONS.length,
+      publishedFirstYear: publishedFirstYearCount,
       readinessGated,
       unpublishedReviewGaps,
       recommendable: catalog.recommendable.length,
       draftCoverageGaps: draftCoverage.gaps.map((gap) => gap.code),
       draftByAgeMonth: draftCoverage.byAgeMonth,
+      firstYearCoverageGaps: firstYearCoverage.gaps.map((gap) => gap.code),
       publishedCoverageGaps: publishedCoverage.gaps.map((gap) => gap.code),
       failed,
     },

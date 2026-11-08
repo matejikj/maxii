@@ -27,9 +27,10 @@ import {
 } from '../../application';
 import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../content';
 import {
+  FIRST_YEAR_ARCHIVED_REVISIONS,
   FIRST_YEAR_DRAFT_REVISIONS,
-  LOCAL_LIBRARY_CONTENT_VERSION,
-  LOCAL_LIBRARY_REVISIONS,
+  FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
+  FIRST_YEAR_PUBLISHED_REVISIONS,
 } from '../../content';
 import { useCompositionRoot } from '../../app/providers';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
@@ -63,15 +64,12 @@ export function useDevelopmentModel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Recommendations stay on published interim library only; drafts are browse/preview.
-  const publishedLibrary = useMemo(() => LOCAL_LIBRARY_REVISIONS, []);
-  const library = useMemo(
-    () => [...LOCAL_LIBRARY_REVISIONS, ...FIRST_YEAR_DRAFT_REVISIONS],
-    [],
-  );
+  // Product library and recommendations are published-only; drafts stay for history lookup.
+  const publishedLibrary = useMemo(() => [...FIRST_YEAR_PUBLISHED_REVISIONS], []);
+  const library = publishedLibrary;
   const catalog = useMemo(
     () => ({
-      contentVersion: LOCAL_LIBRARY_CONTENT_VERSION,
+      contentVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
       candidates: candidatesFromRevisions(publishedLibrary),
     }),
     [publishedLibrary],
@@ -81,15 +79,17 @@ export function useDevelopmentModel() {
 
   const revisionById = useMemo(() => {
     const map = new Map<string, ActivityRevision>();
-    for (const revision of library) map.set(revision.revisionId, revision);
+    for (const revision of FIRST_YEAR_ARCHIVED_REVISIONS) map.set(revision.revisionId, revision);
+    for (const revision of FIRST_YEAR_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
+    for (const revision of publishedLibrary) map.set(revision.revisionId, revision);
     return map;
-  }, [library]);
+  }, [publishedLibrary]);
 
   const activityById = useMemo(() => {
     const map = new Map<string, ActivityRevision>();
-    for (const revision of library) map.set(revision.activityId, revision);
+    for (const revision of publishedLibrary) map.set(revision.activityId, revision);
     return map;
-  }, [library]);
+  }, [publishedLibrary]);
 
   const filteredLibrary = useMemo(() => {
     return library.filter((revision) => matchesLibraryFilters(revision, filters));

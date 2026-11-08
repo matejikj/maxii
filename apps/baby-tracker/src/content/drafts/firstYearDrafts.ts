@@ -5,12 +5,12 @@
  */
 import type { ActivityRevision } from '../model/types';
 
-export const FIRST_YEAR_DRAFT_CONTENT_VERSION = 'first-year-drafts.v1' as const;
+export const FIRST_YEAR_DRAFT_CONTENT_VERSION = 'first-year-drafts.v2' as const;
 
 export const FIRST_YEAR_DRAFT_REVISIONS = [
   {
     "activityId": "face-hello",
-    "revisionId": "face-hello.draft-r1",
+    "revisionId": "face-hello.draft-r2",
     "language": "cs",
     "title": "Pozdrav tváří v tvář",
     "ageMonths": {
@@ -80,7 +80,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "babble-answer",
-    "revisionId": "babble-answer.draft-r1",
+    "revisionId": "babble-answer.draft-r2",
     "language": "cs",
     "title": "Odpověď na vlastní zvuk",
     "ageMonths": {
@@ -150,7 +150,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "care-narration",
-    "revisionId": "care-narration.draft-r1",
+    "revisionId": "care-narration.draft-r2",
     "language": "cs",
     "title": "Co právě děláme",
     "ageMonths": {
@@ -220,7 +220,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "comfort-together",
-    "revisionId": "comfort-together.draft-r1",
+    "revisionId": "comfort-together.draft-r2",
     "language": "cs",
     "title": "Klidný hlas a blízkost",
     "ageMonths": {
@@ -290,7 +290,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "book-voice",
-    "revisionId": "book-voice.draft-r1",
+    "revisionId": "book-voice.draft-r2",
     "language": "cs",
     "title": "Kousek knížky vaším hlasem",
     "ageMonths": {
@@ -302,7 +302,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Jednoduchá dětská knížka v rukou dospělého"
+      "kojenecká knížka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -348,6 +348,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka"
+        ]
       }
     ],
     "editorial": {
@@ -359,7 +365,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "single-contrast-picture",
-    "revisionId": "single-contrast-picture.draft-r1",
+    "revisionId": "single-contrast-picture.draft-r2",
     "language": "cs",
     "title": "Jeden jednoduchý obrázek",
     "ageMonths": {
@@ -371,7 +377,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Kontrastní pevná dětská obrázková karta, drží dospělý"
+      "pevná kontrastní kojenecká karta"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -417,6 +423,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "pevná kontrastní kojenecká karta"
+        ]
       }
     ],
     "editorial": {
@@ -428,7 +440,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "familiar-melody",
-    "revisionId": "familiar-melody.draft-r1",
+    "revisionId": "familiar-melody.draft-r2",
     "language": "cs",
     "title": "Známá krátká melodie",
     "ageMonths": {
@@ -498,7 +510,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "free-kicking",
-    "revisionId": "free-kicking.draft-r1",
+    "revisionId": "free-kicking.draft-r2",
     "language": "cs",
     "title": "Volné nožky",
     "ageMonths": {
@@ -509,9 +521,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "home"
     ],
-    "materials": [
-      "Pevný bezpečný podklad na podlaze, dítě na zádech"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -556,6 +566,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -567,7 +580,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "awake-tummy-moment",
-    "revisionId": "awake-tummy-moment.draft-r1",
+    "revisionId": "awake-tummy-moment.draft-r2",
     "language": "cs",
     "title": "Krátká bdělá chvilka na bříšku",
     "ageMonths": {
@@ -578,9 +591,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "home"
     ],
-    "materials": [
-      "Známé bezpečné provedení bez individuálního omezení; pevný podklad, stálý dohled"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -592,9 +603,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "kind": "moment"
     },
     "steps": [
-      "Nabídněte krátkou bdělou polohu",
-      "Buďte u úrovně obličeje",
-      "Ukončete podle tolerance"
+      "Bdělému dítěti nabídněte polohu na bříšku na pevném bezpečném podkladu na podlaze",
+      "Zůstaňte u obličeje dítěte a nepřetržitě je sledujte",
+      "Při nepohodě nebo ospalosti hru ukončete; ke spánku dítě ukládejte na záda"
     ],
     "conversationPrompt": "„Vidíme se.“",
     "primaryArea": "movement",
@@ -625,6 +636,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -636,7 +650,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "gentle-palm-contact",
-    "revisionId": "gentle-palm-contact.draft-r1",
+    "revisionId": "gentle-palm-contact.draft-r2",
     "language": "cs",
     "title": "Jemný dotek dlaně",
     "ageMonths": {
@@ -706,7 +720,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "slow-face-follow",
-    "revisionId": "slow-face-follow.draft-r1",
+    "revisionId": "slow-face-follow.draft-r2",
     "language": "cs",
     "title": "Pomalu sledujeme obličej",
     "ageMonths": {
@@ -776,7 +790,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "baby-led-pause",
-    "revisionId": "baby-led-pause.draft-r1",
+    "revisionId": "baby-led-pause.draft-r2",
     "language": "cs",
     "title": "Pauza podle miminka",
     "ageMonths": {
@@ -846,7 +860,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "mirror-together",
-    "revisionId": "mirror-together.draft-r1",
+    "revisionId": "mirror-together.draft-r2",
     "language": "cs",
     "title": "Společný pohled do zrcátka",
     "ageMonths": {
@@ -858,7 +872,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Nerozbitné dětské zrcátko bezpečně drží dospělý"
+      "nerozbitné dětské zrcátko"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -904,6 +918,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "nerozbitné dětské zrcátko"
+        ]
       }
     ],
     "editorial": {
@@ -915,7 +935,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "toy-within-reach",
-    "revisionId": "toy-within-reach.draft-r1",
+    "revisionId": "toy-within-reach.draft-r2",
     "language": "cs",
     "title": "Hračka u ruky",
     "ageMonths": {
@@ -927,7 +947,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Vhodná lehká kojenecká hračka, bezpečná poloha na podlaze"
+      "lehká kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -973,6 +993,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "lehká kojenecká hračka"
+        ]
       }
     ],
     "editorial": {
@@ -984,7 +1010,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "two-safe-textures",
-    "revisionId": "two-safe-textures.draft-r1",
+    "revisionId": "two-safe-textures.draft-r2",
     "language": "cs",
     "title": "Dva bezpečné povrchy",
     "ageMonths": {
@@ -996,7 +1022,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Dvě nepoškozené kojenecké hračky s různým povrchem"
+      "dvě kojenecké hračky s různými povrchy"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1042,6 +1068,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dvě kojenecké hračky s různými povrchy"
+        ]
       }
     ],
     "editorial": {
@@ -1053,7 +1085,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "slow-toy-tracking",
-    "revisionId": "slow-toy-tracking.draft-r1",
+    "revisionId": "slow-toy-tracking.draft-r2",
     "language": "cs",
     "title": "Pomalá cesta hračky",
     "ageMonths": {
@@ -1065,7 +1097,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Jedna věkově vhodná dobře viditelná hračka"
+      "dobře viditelná kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1111,6 +1143,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dobře viditelná kojenecká hračka"
+        ]
       }
     ],
     "editorial": {
@@ -1122,14 +1160,14 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "holding-a-ring",
-    "revisionId": "holding-a-ring.draft-r1",
+    "revisionId": "holding-a-ring.draft-r2",
     "language": "cs",
     "title": "Vlastní držení kroužku",
     "ageMonths": {
       "fromInclusive": 3,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
@@ -1140,7 +1178,8 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "Potvrzené `grasp`; jednodílný kojenecký kroužek.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "jednodílný kojenecký kroužek.",
       "Nezavírejte mu ruku a za hračku netahejte."
     ],
     "duration": {
@@ -1182,6 +1221,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "jednodílný kojenecký kroužek"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -1195,7 +1240,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "gentle-voice-play",
-    "revisionId": "gentle-voice-play.draft-r1",
+    "revisionId": "gentle-voice-play.draft-r2",
     "language": "cs",
     "title": "Hlas má různé barvy",
     "ageMonths": {
@@ -1265,7 +1310,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "dressing-rhyme",
-    "revisionId": "dressing-rhyme.draft-r1",
+    "revisionId": "dressing-rhyme.draft-r2",
     "language": "cs",
     "title": "Říkanka při oblékání",
     "ageMonths": {
@@ -1277,7 +1322,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Běžné oblečení při bezpečné péči; žádná další pomůcka"
+      "pohodlné oblečení dítěte"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1323,6 +1368,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "pohodlné oblečení dítěte"
+        ]
       }
     ],
     "editorial": {
@@ -1334,7 +1385,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "touching-a-book",
-    "revisionId": "touching-a-book.draft-r1",
+    "revisionId": "touching-a-book.draft-r2",
     "language": "cs",
     "title": "Knížka pod rukama",
     "ageMonths": {
@@ -1346,7 +1397,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Čistá látková nebo pevná kojenecká knížka"
+      "látková nebo pevná kojenecká knížka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1392,6 +1443,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "látková nebo pevná kojenecká knížka"
+        ]
       }
     ],
     "editorial": {
@@ -1403,25 +1460,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "self-led-side-reach",
-    "revisionId": "self-led-side-reach.draft-r1",
+    "revisionId": "self-led-side-reach.draft-r2",
     "language": "cs",
     "title": "Hračka po straně při vlastním otáčení",
     "ageMonths": {
       "fromInclusive": 3,
       "toInclusive": 8
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: rollAttempt.",
+    "readinessNotes": "Dítě už samo zahajuje otočení na bok.",
     "environments": [
       "home"
     ],
     "materials": [
-      "bezpečná hračka a podklad"
+      "kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`rollAttempt`; bezpečná hračka a podklad.",
+      "Dítě už samo zahajuje otočení na bok.",
+      "bezpečná hračka a podklad.",
       "Nepřetáčejte dítě za ruce ani pánev."
     ],
     "duration": {
@@ -1463,6 +1521,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "rollAttempt"
       }
@@ -1476,7 +1540,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "soft-hand-shadow",
-    "revisionId": "soft-hand-shadow.draft-r1",
+    "revisionId": "soft-hand-shadow.draft-r2",
     "language": "cs",
     "title": "Jemný stín ruky",
     "ageMonths": {
@@ -1487,9 +1551,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "home"
     ],
-    "materials": [
-      "Klidný stín na stěně při běžném nepřímém osvětlení"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -1534,6 +1596,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -1545,7 +1610,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "parent-knee-rhythm",
-    "revisionId": "parent-knee-rhythm.draft-r1",
+    "revisionId": "parent-knee-rhythm.draft-r2",
     "language": "cs",
     "title": "Rytmus na vlastních kolenou",
     "ageMonths": {
@@ -1556,9 +1621,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "quiet"
     ],
-    "materials": [
-      "Dospělý má volné ruce, dítě bezpečně uložené"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -1603,6 +1666,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -1614,7 +1680,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "near-and-far-toy",
-    "revisionId": "near-and-far-toy.draft-r1",
+    "revisionId": "near-and-far-toy.draft-r2",
     "language": "cs",
     "title": "Blíž a o kousek dál",
     "ageMonths": {
@@ -1626,7 +1692,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Jedna dobře viditelná kojenecká hračka v ruce dospělého"
+      "dobře viditelná kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1672,6 +1738,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dobře viditelná kojenecká hračka"
+        ]
       }
     ],
     "editorial": {
@@ -1683,7 +1755,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "familiar-voices-greeting",
-    "revisionId": "familiar-voices-greeting.draft-r1",
+    "revisionId": "familiar-voices-greeting.draft-r2",
     "language": "cs",
     "title": "Pozdrav dvou blízkých lidí",
     "ageMonths": {
@@ -1694,9 +1766,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "quiet"
     ],
-    "materials": [
-      "Dva známí pečující, dítě přijímá jejich přítomnost"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -1741,6 +1811,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -1752,7 +1825,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "choose-by-looking",
-    "revisionId": "choose-by-looking.draft-r1",
+    "revisionId": "choose-by-looking.draft-r2",
     "language": "cs",
     "title": "Dvě nabídky, vlastní zájem",
     "ageMonths": {
@@ -1764,7 +1837,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Dvě bezpečné kojenecké hračky"
+      "dvě kojenecké hračky"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -1810,6 +1883,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dvě kojenecké hračky"
+        ]
       }
     ],
     "editorial": {
@@ -1821,25 +1900,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "hand-to-hand-toy",
-    "revisionId": "hand-to-hand-toy.draft-r1",
+    "revisionId": "hand-to-hand-toy.draft-r2",
     "language": "cs",
     "title": "Z jedné ruky do druhé",
     "ageMonths": {
       "fromInclusive": 6,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "lehká jednodílná hračka, bezpečná poloha"
+      "lehká jednodílná kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; lehká jednodílná hračka, bezpečná poloha.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "lehká jednodílná hračka, bezpečná poloha.",
       "Nepřekládejte ji násilně a nedržte druhou ruku."
     ],
     "duration": {
@@ -1881,6 +1961,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "lehká jednodílná kojenecká hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -1894,25 +1980,27 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "soft-toy-release",
-    "revisionId": "soft-toy-release.draft-r1",
+    "revisionId": "soft-toy-release.draft-r2",
     "language": "cs",
     "title": "Pustím a dostanu zpátky",
     "ageMonths": {
       "fromInclusive": 6,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp, release.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku. Dítě už samo vědomě pouští drženou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "měkká hračka, nízko nad podlahou"
+      "měkká kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`, `release`; měkká hračka, nízko nad podlahou.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "Dítě už samo vědomě pouští drženou hračku.",
+      "měkká hračka, nízko nad podlahou.",
       "Bez pádu tvrdých předmětů a bez nuceného otevření dlaně."
     ],
     "duration": {
@@ -1954,6 +2042,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "měkká kojenecká hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       },
@@ -1971,25 +2065,27 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "take-out-a-toy",
-    "revisionId": "take-out-a-toy.draft-r1",
+    "revisionId": "take-out-a-toy.draft-r2",
     "language": "cs",
     "title": "Vyndám věc z misky",
     "ageMonths": {
       "fromInclusive": 6,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "široká nerozbitná miska a velká bezpečná hračka"
+      "široká nerozbitná miska",
+      "velká kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; široká nerozbitná miska a velká bezpečná hračka.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "široká nerozbitná miska a velká bezpečná hračka.",
       "Bez zachycení ruky, hluboké nádoby nebo ostrých hran."
     ],
     "duration": {
@@ -2031,6 +2127,13 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "široká nerozbitná miska",
+          "velká kojenecká hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -2044,7 +2147,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "rattle-and-pause",
-    "revisionId": "rattle-and-pause.draft-r1",
+    "revisionId": "rattle-and-pause.draft-r2",
     "language": "cs",
     "title": "Chrastítko a ticho",
     "ageMonths": {
@@ -2056,7 +2159,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Nepoškozené věkově vhodné uzavřené chrastítko v ruce dospělého"
+      "uzavřené kojenecké chrastítko"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2102,6 +2205,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "uzavřené kojenecké chrastítko"
+        ]
       }
     ],
     "editorial": {
@@ -2113,7 +2222,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "parent-peekaboo",
-    "revisionId": "parent-peekaboo.draft-r1",
+    "revisionId": "parent-peekaboo.draft-r2",
     "language": "cs",
     "title": "Kuk za vlastními dlaněmi",
     "ageMonths": {
@@ -2183,7 +2292,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "quiet-sound-direction",
-    "revisionId": "quiet-sound-direction.draft-r1",
+    "revisionId": "quiet-sound-direction.draft-r2",
     "language": "cs",
     "title": "Odkud je tichý zvuk",
     "ageMonths": {
@@ -2195,7 +2304,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Bezpečně podepřené dítě, tiché kojenecké chrastítko"
+      "tiché kojenecké chrastítko"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2241,6 +2350,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "tiché kojenecké chrastítko"
+        ]
       }
     ],
     "editorial": {
@@ -2252,7 +2367,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "floor-play-partner",
-    "revisionId": "floor-play-partner.draft-r1",
+    "revisionId": "floor-play-partner.draft-r2",
     "language": "cs",
     "title": "Dospělý na podlaze vedle mě",
     "ageMonths": {
@@ -2263,9 +2378,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "home"
     ],
-    "materials": [
-      "Bezpečný podklad; dítě ve zvládnuté poloze. Hračka je nepovinná"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -2310,6 +2423,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -2321,7 +2437,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "body-part-names",
-    "revisionId": "body-part-names.draft-r1",
+    "revisionId": "body-part-names.draft-r2",
     "language": "cs",
     "title": "Nos a ruce při hře",
     "ageMonths": {
@@ -2391,7 +2507,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "one-and-another",
-    "revisionId": "one-and-another.draft-r1",
+    "revisionId": "one-and-another.draft-r2",
     "language": "cs",
     "title": "Jeden předmět a ještě jeden",
     "ageMonths": {
@@ -2403,7 +2519,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Dvě velké nepoškozené kojenecké kostky"
+      "dvě velké kojenecké kostky"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2449,6 +2565,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dvě velké kojenecké kostky"
+        ]
       }
     ],
     "editorial": {
@@ -2460,7 +2582,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "book-flap-discovery",
-    "revisionId": "book-flap-discovery.draft-r1",
+    "revisionId": "book-flap-discovery.draft-r2",
     "language": "cs",
     "title": "Obrázek za velkou klopou",
     "ageMonths": {
@@ -2472,7 +2594,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Kojenecká knížka s pevně připojenou velkou bezpečnou klopou"
+      "kojenecká knížka s pevně připojenou velkou klopou"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2518,6 +2640,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka s pevně připojenou velkou klopou"
+        ]
       }
     ],
     "editorial": {
@@ -2529,7 +2657,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "slow-approaching-ball",
-    "revisionId": "slow-approaching-ball.draft-r1",
+    "revisionId": "slow-approaching-ball.draft-r2",
     "language": "cs",
     "title": "Míček se pomalu přibližuje",
     "ageMonths": {
@@ -2541,7 +2669,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Velký měkký kojenecký míček, bezpečný podklad a zvládnutá poloha"
+      "velký měkký kojenecký míček"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2587,6 +2715,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "velký měkký kojenecký míček"
+        ]
       }
     ],
     "editorial": {
@@ -2598,25 +2732,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "baby-hand-drum",
-    "revisionId": "baby-hand-drum.draft-r1",
+    "revisionId": "baby-hand-drum.draft-r2",
     "language": "cs",
     "title": "Moje ruka dělá ťuk",
     "ageMonths": {
       "fromInclusive": 6,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: floorSit.",
+    "readinessNotes": "Dítě už samo stabilně sedí na podlaze.",
     "environments": [
       "home"
     ],
     "materials": [
-      "bezpečný kojenecký bubínek bez paliček a volných částí"
+      "kojenecký bubínek bez paliček a volných částí"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`floorSit`; bezpečný kojenecký bubínek bez paliček a volných částí.",
+      "Dítě už samo stabilně sedí na podlaze.",
+      "bezpečný kojenecký bubínek bez paliček a volných částí.",
       "Nevodit ruce; při nejistém sedu zvolit jinou činnost."
     ],
     "duration": {
@@ -2658,6 +2793,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecký bubínek bez paliček a volných částí"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "floorSit"
       }
@@ -2671,7 +2812,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "unhurried-exploration",
-    "revisionId": "unhurried-exploration.draft-r1",
+    "revisionId": "unhurried-exploration.draft-r2",
     "language": "cs",
     "title": "Nerušíme vlastní objev",
     "ageMonths": {
@@ -2683,7 +2824,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Dítě právě bezpečně zkoumá vhodný předmět; dospělý zůstává blízko"
+      "kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2729,6 +2870,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká hračka"
+        ]
       }
     ],
     "editorial": {
@@ -2740,7 +2887,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "name-a-real-interest",
-    "revisionId": "name-a-real-interest.draft-r1",
+    "revisionId": "name-a-real-interest.draft-r2",
     "language": "cs",
     "title": "Slovo pro to, co zaujalo",
     "ageMonths": {
@@ -2812,7 +2959,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "familiar-faces-book",
-    "revisionId": "familiar-faces-book.draft-r1",
+    "revisionId": "familiar-faces-book.draft-r2",
     "language": "cs",
     "title": "Knížka s blízkými obličeji",
     "ageMonths": {
@@ -2824,7 +2971,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Pevná knížka s obličeji nebo bezpečně chráněné obrázky drží dospělý"
+      "pevná knížka s blízkými obličeji"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -2870,6 +3017,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "pevná knížka s blízkými obličeji"
+        ]
       }
     ],
     "editorial": {
@@ -2881,25 +3034,24 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "self-led-floor-exploring",
-    "revisionId": "self-led-floor-exploring.draft-r1",
+    "revisionId": "self-led-floor-exploring.draft-r2",
     "language": "cs",
     "title": "Vlastní cesta po bezpečné podlaze",
     "ageMonths": {
       "fromInclusive": 6,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: floorMove.",
+    "readinessNotes": "Dítě už se samo pohybuje po bezpečné podlaze.",
     "environments": [
       "home"
     ],
-    "materials": [
-      "předem zabezpečený prostor, dospělý blízko"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`floorMove`; předem zabezpečený prostor, dospělý blízko.",
+      "Dítě už se samo pohybuje po bezpečné podlaze.",
+      "předem zabezpečený prostor, dospělý blízko.",
       "Nevyžadujte lezení určitým způsobem a nepřidávejte překážkovou dráhu."
     ],
     "duration": {
@@ -2941,6 +3093,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_none"
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "floorMove"
       }
@@ -2954,25 +3109,28 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "put-a-toy-in",
-    "revisionId": "put-a-toy-in.draft-r1",
+    "revisionId": "put-a-toy-in.draft-r2",
     "language": "cs",
     "title": "Hračka dovnitř",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp, release.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku. Dítě už samo vědomě pouští drženou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "široká miska a velká kojenecká kostka"
+      "široká nerozbitná miska",
+      "velká kojenecká kostka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`, `release`; široká miska a velká kojenecká kostka.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "Dítě už samo vědomě pouští drženou hračku.",
+      "široká miska a velká kojenecká kostka.",
       "Miska nesmí zachytit ruku; neberte dítěti hračku násilím."
     ],
     "duration": {
@@ -3014,6 +3172,13 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "široká nerozbitná miska",
+          "velká kojenecká kostka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       },
@@ -3031,25 +3196,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "nesting-cups",
-    "revisionId": "nesting-cups.draft-r1",
+    "revisionId": "nesting-cups.draft-r2",
     "language": "cs",
     "title": "Kelímek v kelímku",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "dva velké stohovací kelímky určené kojencům"
+      "dva velké kojenecké stohovací kelímky"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; dva velké stohovací kelímky určené kojencům.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "dva velké stohovací kelímky určené kojencům.",
       "Bez drobných dílů, tlaku na správné složení a sevření prstů."
     ],
     "duration": {
@@ -3091,6 +3257,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "dva velké kojenecké stohovací kelímky"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -3104,25 +3276,27 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "toy-and-container-fit",
-    "revisionId": "toy-and-container-fit.draft-r1",
+    "revisionId": "toy-and-container-fit.draft-r2",
     "language": "cs",
     "title": "Kam se vejde velká hračka",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "velká bezpečná hračka a dvě široké nerozbitné nádoby"
+      "velká kojenecká hračka",
+      "dvě široké nerozbitné nádoby"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; velká bezpečná hračka a dvě široké nerozbitné nádoby.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "velká bezpečná hračka a dvě široké nerozbitné nádoby.",
       "Bez násilného vtlačování; nejde o úkol se správnou odpovědí."
     ],
     "duration": {
@@ -3164,6 +3338,13 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "velká kojenecká hračka",
+          "dvě široké nerozbitné nádoby"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -3177,25 +3358,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "rolling-turns",
-    "revisionId": "rolling-turns.draft-r1",
+    "revisionId": "rolling-turns.draft-r2",
     "language": "cs",
     "title": "Míček mezi námi",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: floorSit.",
+    "readinessNotes": "Dítě už samo stabilně sedí na podlaze.",
     "environments": [
       "home"
     ],
     "materials": [
-      "velký měkký míček, dospělý v dosahu"
+      "velký měkký kojenecký míček"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`floorSit`; velký měkký míček, dospělý v dosahu.",
+      "Dítě už samo stabilně sedí na podlaze.",
+      "velký měkký míček, dospělý v dosahu.",
       "Vracení nevyžadujte a neohrozte stabilitu sedu."
     ],
     "duration": {
@@ -3237,6 +3419,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "velký měkký kojenecký míček"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "floorSit"
       }
@@ -3250,25 +3438,27 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "offer-and-receive",
-    "revisionId": "offer-and-receive.draft-r1",
+    "revisionId": "offer-and-receive.draft-r2",
     "language": "cs",
     "title": "Nabídnout a přijmout",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp, release.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku. Dítě už samo vědomě pouští drženou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "bezpečná kojenecká hračka"
+      "kojenecká hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`, `release`; bezpečná kojenecká hračka.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "Dítě už samo vědomě pouští drženou hračku.",
+      "bezpečná kojenecká hračka.",
       "Hračku nevytahujte z ruky; odmítnutí je přípustné."
     ],
     "duration": {
@@ -3310,6 +3500,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       },
@@ -3327,25 +3523,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "push-a-baby-car",
-    "revisionId": "push-a-baby-car.draft-r1",
+    "revisionId": "push-a-baby-car.draft-r2",
     "language": "cs",
     "title": "Autíčko se rozjede",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "velká nepoškozená pojízdná hračka určená kojencům"
+      "velká kojenecká pojízdná hračka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; velká nepoškozená pojízdná hračka určená kojencům.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "velká nepoškozená pojízdná hračka určená kojencům.",
       "Bez odtržitelných koleček a nutnosti hračku honit."
     ],
     "duration": {
@@ -3387,6 +3584,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "velká kojenecká pojízdná hračka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -3400,25 +3603,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "respond-to-pointing",
-    "revisionId": "respond-to-pointing.draft-r1",
+    "revisionId": "respond-to-pointing.draft-r2",
     "language": "cs",
     "title": "Odpovím na ukázání",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: gesture.",
+    "readinessNotes": "Dítě už samo používá ukazovací gesto.",
     "environments": [
       "home"
     ],
     "materials": [
-      "společně prohlížená dětská knížka"
+      "kojenecká knížka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`gesture`; společně prohlížená dětská knížka.",
+      "Dítě už samo používá ukazovací gesto.",
+      "společně prohlížená dětská knížka.",
       "Nedělejte gesto jeho rukou a nevyžadujte další ukazování."
     ],
     "duration": {
@@ -3460,6 +3664,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "gesture"
       }
@@ -3473,7 +3683,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "one-word-response",
-    "revisionId": "one-word-response.draft-r1",
+    "revisionId": "one-word-response.draft-r2",
     "language": "cs",
     "title": "Jedno slovo navíc",
     "ageMonths": {
@@ -3500,7 +3710,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "Přidejte krátké slovo podle situace",
       "Počkejte"
     ],
-    "conversationPrompt": "„Ba? Ano, balón.“",
+    "conversationPrompt": "Například „Ba? Balón.“ jen pokud se dítě právě zajímá o míč; jinak pojmenujte to, co skutečně zaujalo.",
     "primaryArea": "speech",
     "relatedAreas": [],
     "topicIds": [
@@ -3543,7 +3753,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "wave-and-word",
-    "revisionId": "wave-and-word.draft-r1",
+    "revisionId": "wave-and-word.draft-r2",
     "language": "cs",
     "title": "Krátké pá-pá",
     "ageMonths": {
@@ -3613,7 +3823,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "animal-picture-sound",
-    "revisionId": "animal-picture-sound.draft-r1",
+    "revisionId": "animal-picture-sound.draft-r2",
     "language": "cs",
     "title": "Zvířátko a jeho zvuk",
     "ageMonths": {
@@ -3625,7 +3835,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Knížka s jedním dobře viditelným zvířetem"
+      "kojenecká knížka se zvířaty"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -3671,6 +3881,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka se zvířaty"
+        ]
       }
     ],
     "editorial": {
@@ -3682,7 +3898,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "answer-a-rhythm",
-    "revisionId": "answer-a-rhythm.draft-r1",
+    "revisionId": "answer-a-rhythm.draft-r2",
     "language": "cs",
     "title": "Tvůj rytmus, moje odpověď",
     "ageMonths": {
@@ -3752,25 +3968,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "turn-a-board-page",
-    "revisionId": "turn-a-board-page.draft-r1",
+    "revisionId": "turn-a-board-page.draft-r2",
     "language": "cs",
     "title": "Otočím pevnou stránku",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "quiet"
     ],
     "materials": [
-      "nepoškozené leporelo s velkými pevnými stránkami"
+      "leporelo s velkými pevnými stránkami"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; nepoškozené leporelo s velkými pevnými stránkami.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "nepoškozené leporelo s velkými pevnými stránkami.",
       "Bez oddělitelných rohů a nucení jemného pinzetového úchopu."
     ],
     "duration": {
@@ -3812,6 +4029,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "leporelo s velkými pevnými stránkami"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -3825,7 +4048,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "clear-caregiver-goodbye",
-    "revisionId": "clear-caregiver-goodbye.draft-r1",
+    "revisionId": "clear-caregiver-goodbye.draft-r2",
     "language": "cs",
     "title": "Srozumitelné krátké rozloučení",
     "ageMonths": {
@@ -3836,9 +4059,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
     "environments": [
       "home"
     ],
-    "materials": [
-      "Jeden známý pečující skutečně odchází; druhý zůstává s dítětem"
-    ],
+    "materials": [],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
@@ -3883,6 +4104,9 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_none"
       }
     ],
     "editorial": {
@@ -3894,7 +4118,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "familiar-object-picture",
-    "revisionId": "familiar-object-picture.draft-r1",
+    "revisionId": "familiar-object-picture.draft-r2",
     "language": "cs",
     "title": "Známá věc na obrázku",
     "ageMonths": {
@@ -3906,7 +4130,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Pevná knížka s běžnými předměty, například hrnkem"
+      "kojenecká knížka s běžnými předměty"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -3952,6 +4176,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "quiet"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka s běžnými předměty"
+        ]
       }
     ],
     "editorial": {
@@ -3963,25 +4193,26 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "baby-safe-cause-effect",
-    "revisionId": "baby-safe-cause-effect.draft-r1",
+    "revisionId": "baby-safe-cause-effect.draft-r2",
     "language": "cs",
     "title": "Stisknu a něco se změní",
     "ageMonths": {
       "fromInclusive": 9,
       "toInclusive": 11
     },
-    "readinessNotes": "Vyžaduje potvrzenou připravenost: grasp.",
+    "readinessNotes": "Dítě už samo stabilně drží vhodnou hračku.",
     "environments": [
       "home"
     ],
     "materials": [
-      "kojenecká mechanická hračka s velkým bezpečným prvkem"
+      "kojenecká mechanická hračka s velkým ovládacím prvkem"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
       "Hra probíhá na bezpečném pevném podkladu bez pádu, šňůr, volných baterií, magnetů a drobných dílů.",
       "Netlačte dítě do neosvojené polohy a necvičte přes odpor; při zdravotních omezeních vhodnost posoudí ošetřující odborník.",
-      "`grasp`; kojenecká mechanická hračka s velkým bezpečným prvkem.",
+      "Dítě už samo stabilně drží vhodnou hračku.",
+      "kojenecká mechanická hračka s velkým bezpečným prvkem.",
       "Bez sevření prstů, přístupné baterie nebo hlasitého efektu."
     ],
     "duration": {
@@ -4023,6 +4254,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         ]
       },
       {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká mechanická hračka s velkým ovládacím prvkem"
+        ]
+      },
+      {
         "kind": "readiness_confirmed",
         "key": "grasp"
       }
@@ -4036,7 +4273,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "empty-and-full-bowl",
-    "revisionId": "empty-and-full-bowl.draft-r1",
+    "revisionId": "empty-and-full-bowl.draft-r2",
     "language": "cs",
     "title": "Prázdno a plno na pohled",
     "ageMonths": {
@@ -4048,7 +4285,8 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Dvě široké misky a několik velkých bezpečných kojeneckých kostek"
+      "dvě široké nerozbitné misky",
+      "velké kojenecké kostky"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -4094,6 +4332,13 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "dvě široké nerozbitné misky",
+          "velké kojenecké kostky"
+        ]
       }
     ],
     "editorial": {
@@ -4105,7 +4350,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "participating-in-dressing",
-    "revisionId": "participating-in-dressing.draft-r1",
+    "revisionId": "participating-in-dressing.draft-r2",
     "language": "cs",
     "title": "Moje ruka při oblékání",
     "ageMonths": {
@@ -4117,7 +4362,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "home"
     ],
     "materials": [
-      "Bezpečná poloha při péči, běžné pohodlné oblečení"
+      "pohodlné oblečení dítěte"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -4163,6 +4408,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "environments": [
           "home"
         ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "pohodlné oblečení dítěte"
+        ]
       }
     ],
     "editorial": {
@@ -4174,7 +4425,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
   },
   {
     "activityId": "book-ending-ritual",
-    "revisionId": "book-ending-ritual.draft-r1",
+    "revisionId": "book-ending-ritual.draft-r2",
     "language": "cs",
     "title": "Knížku spolu zavřeme",
     "ageMonths": {
@@ -4186,7 +4437,7 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
       "quiet"
     ],
     "materials": [
-      "Známá dětská knížka, dítě dává najevo konec zájmu"
+      "kojenecká knížka"
     ],
     "constraints": [
       "Nabízejte aktivitu jen bdělému dítěti, které o kontakt stojí; při únavě nebo pláči skončete a vraťte se k potřebné péči.",
@@ -4231,6 +4482,12 @@ export const FIRST_YEAR_DRAFT_REVISIONS = [
         "kind": "environment_one_of",
         "environments": [
           "quiet"
+        ]
+      },
+      {
+        "kind": "materials_all_of",
+        "materials": [
+          "kojenecká knížka"
         ]
       }
     ],

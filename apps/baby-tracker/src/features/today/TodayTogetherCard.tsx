@@ -11,8 +11,8 @@ import {
   loadReadinessByKey,
 } from '../../application';
 import {
-  LOCAL_LIBRARY_CONTENT_VERSION,
-  LOCAL_LIBRARY_REVISIONS,
+  FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
+  FIRST_YEAR_PUBLISHED_REVISIONS,
 } from '../../content';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
@@ -53,8 +53,8 @@ export function TodayTogetherCard({
           localDay,
           context,
           catalog: {
-            contentVersion: LOCAL_LIBRARY_CONTENT_VERSION,
-            candidates: candidatesFromRevisions(LOCAL_LIBRARY_REVISIONS),
+            contentVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
+            candidates: candidatesFromRevisions([...FIRST_YEAR_PUBLISHED_REVISIONS]),
           },
           nowSeed: `today-${localDay.year}${localDay.month}${localDay.day}`,
         });
@@ -68,7 +68,7 @@ export function TodayTogetherCard({
 
   const primary = view?.set.offers[0];
   const revision = primary
-    ? LOCAL_LIBRARY_REVISIONS.find((item) => item.revisionId === primary.activityRevisionId)
+    ? FIRST_YEAR_PUBLISHED_REVISIONS.find((item) => item.revisionId === primary.activityRevisionId)
     : null;
 
   return (
@@ -83,11 +83,7 @@ export function TodayTogetherCard({
       {revision && primary ? (
         <View style={{ gap: ui.space.sm }}>
           <LumiText>{revision.title}</LumiText>
-          <LumiText tone="muted">
-            {revision.duration.kind === 'moment'
-              ? PRODUCT_COPY.development.filterMoment
-              : `${revision.duration.minutes} minut`}
-          </LumiText>
+          <LumiText tone="muted">{PRODUCT_COPY.development.filterMoment}</LumiText>
           <LumiButton
             title={PRODUCT_COPY.today.showGame}
             fullWidth
