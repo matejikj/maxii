@@ -37,9 +37,19 @@ npm run build           # pouze distribuovatelný framework, včetně deklarací
 npm run typecheck       # framework a obě aplikace
 npm test                # framework + hranice projektů + katalog Storybooku
 npm run check:tsx       # kontrola syntaxe React Native zdrojů a obou aplikací
+npm run check:boundaries
+npm run check:secrets
+npm run check:lockfile
+npm run lint:baby
 npm run test:all        # navíc API kontrakt, Python parser a obrazové regrese
+npm run sbom            # lokální CycloneDX inventář do reports/ (ignorováno Gitem)
 npm run expo:doctor
 npm run baby:doctor
+```
+
+Rychlá PR sada CI spouští typecheck/testy/hranice/secrety. Dlouhé Metro exporty a Playwright web E2E jsou v workflow `device-quality` ( bundlování ≠ běh nativního klienta ).
+
+```sh
 npm run expo:bundle:android
 npm run expo:bundle:ios
 npm run expo:bundle:web

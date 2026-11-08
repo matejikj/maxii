@@ -24,6 +24,7 @@ dist-web/
 dist-storybook-android/
 dist-storybook-web/
 coverage/
+reports/
 *.tgz
 **/.maestro/captures/
 **/.maestro/screenshots/

@@ -1,0 +1,39 @@
+name: LUMI CI device and web export (long)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  export-and-web-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c4804d46898778ad8554cb37 # v4.1.0
+        with:
+          node-version: '22.16.0'
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Expo dependency alignment and Metro exports
+        run: |
+          npm run expo:doctor
+          npm run expo:bundle:android
+          npm run expo:bundle:ios
+          npm run expo:bundle:web
+          npm run expo:storybook:bundle:android
+          npm run expo:storybook:bundle:web
+          npm run baby:doctor
+          npm run baby:bundle:android
+          npm run baby:bundle:ios
+          npm run baby:bundle:web
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/baby-tracker
+      - name: Web E2E against exported baby-tracker bundle
+        run: npm run test:e2e --workspace @maxii/baby-tracker
+      - name: Native Maestro note
+        run: |
+          echo "Maestro smoke lives at apps/baby-tracker/.maestro/smoke.yaml"
+          echo "It requires a development build on a device/emulator; this job only certifies web export + Playwright."

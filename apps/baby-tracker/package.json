@@ -12,7 +12,13 @@
     "export:ios": "expo export --platform ios --output-dir dist-ios",
     "export:web": "expo export --platform web --output-dir dist-web",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/*.test.mts",
+    "lint": "eslint .",
+    "test": "npm run test:domain && npm run test:storage && npm run test:components",
+    "test:domain": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/domain/*.test.mts tests/config/*.test.mts tests/infrastructure/logger.test.mts",
+    "test:storage": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/portable-backup.test.mts tests/stack-compatibility.test.mts",
+    "test:components": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/component/*.test.mts",
+    "test:e2e": "playwright test",
+    "test:e2e:native": "maestro test .maestro/smoke.yaml",
     "prebuild:native": "expo prebuild --clean",
     "run:android:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:android",
     "run:ios:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:ios",
@@ -46,9 +52,14 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.65.0",
     "@types/luxon": "^3.7.6",
     "@types/react": "~19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.7",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1"
   }
 }

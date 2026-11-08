@@ -4,13 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   LumiCard, LumiCharacter, LumiEmptyState, LumiText, useLumiTheme,
 } from '@lumi/forest-design/native';
-import type { StorageProbeReport } from '../infrastructure/verification/runStorageProbe';
+import type { StorageProbeReport } from '../../infrastructure/verification/runStorageProbe';
 
 type HomeScreenProps = {
   probeReport?: StorageProbeReport | null;
   probeError?: string | null;
 };
 
+/**
+ * Temporary Today shell: brand, calm empty state, optional storage-probe
+ * diagnostics. Product care actions replace the empty card in later work.
+ */
 export function HomeScreen({ probeReport = null, probeError = null }: HomeScreenProps) {
   const { colors, mode } = useLumiTheme();
 

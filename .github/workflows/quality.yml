@@ -1,4 +1,4 @@
-name: LUMI CI (not a device certification)
+name: LUMI CI PR (fast; not a device certification)
 on:
   push:
   pull_request:
@@ -10,39 +10,36 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c4804d46898778ad8554cb37 # v4.1.0
         with:
           node-version: '22.16.0'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
           python-version: '3.13'
       - name: Install JS dependencies
         run: npm ci --no-audit --no-fund
       - name: Install image-regression dependencies
         run: python -m pip install -r packages/lumi-forest/tools/requirements-visual.txt
+      - name: Lockfile, import boundaries and secret scan
+        run: |
+          npm run check:lockfile
+          npm run check:boundaries
+          npm run check:secrets
       - name: Build distributable package before consumer typecheck
         run: npm run build
-      - name: Public API, TypeScript, contract and source tests
+      - name: Public API, TypeScript, lint, contract and source tests
         run: |
           npm run typecheck:all
+          npm run lint:baby
           npm run test:all
+          npm run test:baby:pr
       - name: Validate contents of publication tarball
         run: npm run release:verify-package --workspace @lumi/forest-design && npm run release:smoke-core --workspace @lumi/forest-design && npm pack --workspace @lumi/forest-design --dry-run --ignore-scripts
-      - name: Expo dependency alignment and mobile/web Metro exports
-        run: |
-          npm run expo:doctor
-          npm run expo:bundle:android
-          npm run expo:bundle:ios
-          npm run expo:bundle:web
-          npm run expo:storybook:bundle:android
-          npm run expo:storybook:bundle:web
-          npm run baby:doctor
-          npm run baby:bundle:android
-          npm run baby:bundle:ios
-          npm run baby:bundle:web
+      - name: SBOM snapshot (artifact is non-secret dependency inventory)
+        run: npm run sbom
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: lumi-regression-diagnostics
           path: |
