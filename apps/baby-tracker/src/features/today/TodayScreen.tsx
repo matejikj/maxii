@@ -1,41 +1,119 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   LumiButton,
   LumiCard,
   LumiCharacter,
-  LumiEmptyState,
   LumiText,
   useLumiTheme,
 } from '@lumi/forest-design/native';
+import { asTimeZoneId } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
-import {
-  formatIsoCalendarDate,
-} from '../../app/navigation/historyTabState';
+import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
+import {
+  ActiveMeasurement,
+  CareActionSheet,
+  PRODUCT_COPY,
+} from '../ui';
+import { DiaperRecorder } from './DiaperRecorder';
+import { type QuickActionId } from './quickActions';
+import { useTodayCareModel } from './useTodayCareModel';
 
 type TodayScreenProps = {
   onOpenProfile: () => void;
   onOpenHistoryToday: () => void;
+  onOpenEvent?: (eventId: string) => void;
 };
 
 /**
- * Personal Today shell: header with child avatar entry, empty care area ready
- * for later quick actions, and a direct path to today's History without filters.
+ * Care-first Today: measurement slot, four stable quick actions, last care,
+ * one honest activity placeholder, and a link into today's History.
  */
-export function TodayScreen({ onOpenProfile, onOpenHistoryToday }: TodayScreenProps) {
-  const { colors, mode } = useLumiTheme();
+export function TodayScreen({
+  onOpenProfile,
+  onOpenHistoryToday,
+  onOpenEvent,
+}: TodayScreenProps) {
+  const { colors, mode, ui } = useLumiTheme();
   const { profile } = useBootstrap();
   const { services } = useCompositionRoot();
   const history = useHistoryTabState();
   const childName = profile?.displayName ?? 'Miminko';
+  const childId = profile?.childId ?? null;
+  const zone = asTimeZoneId(profile?.settings.summaryTimeZone ?? 'Europe/Prague');
+  const model = useTodayCareModel(childId, profile?.settings.summaryTimeZone);
+  const [diaperOpen, setDiaperOpen] = useState(false);
+  const [editingActions, setEditingActions] = useState(false);
+  const [infoSheet, setInfoSheet] = useState<QuickActionId | null>(null);
+  const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
+  const diaperOpenerRef = useRef(null);
+
+  // Keep the clock label fresh for a running measurement without inventing sleep data.
+  React.useEffect(() => {
+    if (!model.activeSleep) return;
+    const timer = setInterval(() => setNowMs(services.clock.now().epochMs), 1000);
+    return () => clearInterval(timer);
+  }, [model.activeSleep, services.clock]);
+
+  function openHistoryToday() {
+    const today = formatIsoCalendarDate(services.clock.now().epochMs, zone);
+    history.showToday(today);
+    onOpenHistoryToday();
+  }
+
+  function actionTitle(id: QuickActionId): string {
+    switch (id) {
+      case 'feeding':
+        return PRODUCT_COPY.actions.feeding;
+      case 'sleep':
+        return PRODUCT_COPY.actions.startSleep;
+      case 'diaper':
+        return PRODUCT_COPY.actions.diaper;
+      case 'experience':
+        return PRODUCT_COPY.actions.experience;
+    }
+  }
+
+  function onQuickAction(id: QuickActionId) {
+    if (editingActions) {
+      void model.reorderQuickActionEarlier(id);
+      return;
+    }
+    if (id === 'diaper') {
+      setDiaperOpen(true);
+      return;
+    }
+    setInfoSheet(id);
+  }
+
+  const infoCopy =
+    infoSheet === 'feeding'
+      ? {
+          title: PRODUCT_COPY.sheets.unavailableFeeding,
+          body: PRODUCT_COPY.empty.feedingSoon,
+        }
+      : infoSheet === 'sleep'
+        ? {
+            title: PRODUCT_COPY.sheets.unavailableSleep,
+            body: PRODUCT_COPY.empty.sleepSoon,
+          }
+        : infoSheet === 'experience'
+          ? {
+              title: PRODUCT_COPY.sheets.unavailableExperience,
+              body: PRODUCT_COPY.empty.experienceSoon,
+            }
+          : null;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.heading}>
           <View style={styles.headingText}>
             <LumiText variant="caption" tone="accent">
@@ -44,7 +122,9 @@ export function TodayScreen({ onOpenProfile, onOpenHistoryToday }: TodayScreenPr
             <LumiText variant="h1" accessibilityRole="header">
               Dnes s {childName}
             </LumiText>
-            <LumiText tone="muted">Rychlé akce a poslední péče přijdou vzápětí.</LumiText>
+            <LumiText tone="muted">
+              {model.calendarDate ? model.calendarDate : 'Místní deník bez účtu'}
+            </LumiText>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -52,28 +132,123 @@ export function TodayScreen({ onOpenProfile, onOpenHistoryToday }: TodayScreenPr
             onPress={onOpenProfile}
             style={[styles.avatar, { borderColor: colors.controlBorder }]}
           >
-            <LumiCharacter species="rabbit" expression="happy" />
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <LumiCharacter species="rabbit" expression="happy" />
+            </View>
           </Pressable>
         </View>
-        <LumiCard>
-          <LumiEmptyState
-            illustration={<LumiCharacter species="rabbit" expression="happy" />}
-            title="Připraveno k zápisu"
-            description="Účet ani narozeniny nepotřebujete. Záznamy zůstávají v tomto zařízení."
+
+        {model.activeSleep ? (
+          <ActiveMeasurement
+            title={PRODUCT_COPY.actions.sleepRunning}
+            startedAtEpochMs={model.activeSleep.startedAt.instant.epochMs}
+            nowEpochMs={nowMs}
+            onOpen={() => setInfoSheet('sleep')}
+            onStop={() => setInfoSheet('sleep')}
           />
+        ) : (
+          <LumiCard>
+            <LumiText variant="caption" tone="muted">
+              {PRODUCT_COPY.measurement.none}
+            </LumiText>
+          </LumiCard>
+        )}
+
+        <View style={{ gap: ui.space.sm }}>
+          <View style={styles.rowBetween}>
+            <LumiText variant="h2">{PRODUCT_COPY.today.quickActions}</LumiText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={PRODUCT_COPY.actions.editQuickActions}
+              onPress={() => setEditingActions((value) => !value)}
+              style={styles.editLink}
+            >
+              <LumiText tone="accent">
+                {editingActions ? PRODUCT_COPY.actions.close : PRODUCT_COPY.actions.editQuickActions}
+              </LumiText>
+            </Pressable>
+          </View>
+          {editingActions ? (
+            <LumiText tone="muted" variant="caption">
+              Klepnutím posunete akci dřív. Pořadí se uloží; frekvence ho sama nemění.
+            </LumiText>
+          ) : null}
+          <View style={styles.quickGrid}>
+            {model.quickActions.map((id) => {
+              const button = (
+                <LumiButton
+                  title={actionTitle(id)}
+                  variant={id === 'diaper' ? 'primary' : 'secondary'}
+                  fullWidth
+                  onPress={() => onQuickAction(id)}
+                  testID={`quick-${id}`}
+                />
+              );
+              if (id === 'diaper') {
+                return (
+                  <View key={id} ref={diaperOpenerRef} collapsable={false} style={styles.quickSlot}>
+                    {button}
+                  </View>
+                );
+              }
+              return (
+                <View key={id} style={styles.quickSlot}>
+                  {button}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {childId ? (
+          <DiaperRecorder
+            childId={childId}
+            timeZone={zone}
+            open={diaperOpen}
+            onClose={() => setDiaperOpen(false)}
+            returnFocusRef={diaperOpenerRef}
+            {...(onOpenEvent ? { onOpenEvent } : {})}
+          />
+        ) : null}
+
+        <LumiCard>
+          <LumiText variant="h2">{PRODUCT_COPY.today.lastCare}</LumiText>
+          {model.lastCare ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${model.lastCare.title}, ${model.lastCare.detail}`}
+              onPress={() => onOpenEvent?.(model.lastCare!.eventId)}
+              style={{ gap: ui.space.xs, minHeight: 48, justifyContent: 'center' }}
+            >
+              <LumiText>{model.lastCare.title}</LumiText>
+              <LumiText tone="muted">{model.lastCare.detail}</LumiText>
+            </Pressable>
+          ) : (
+            <LumiText tone="muted">{PRODUCT_COPY.empty.noLastCare}</LumiText>
+          )}
         </LumiCard>
+
+        <LumiCard>
+          <LumiText variant="h2">{PRODUCT_COPY.today.together}</LumiText>
+          <LumiText tone="muted">{PRODUCT_COPY.empty.activitySlot}</LumiText>
+        </LumiCard>
+
         <LumiButton
-          title="Zobrazit dnešní záznamy"
+          title={PRODUCT_COPY.actions.showTodayRecords}
           variant="secondary"
           fullWidth
-          onPress={() => {
-            const zone = profile?.settings.summaryTimeZone ?? 'Europe/Prague';
-            const today = formatIsoCalendarDate(services.clock.now().epochMs, zone);
-            history.showToday(today);
-            onOpenHistoryToday();
-          }}
+          onPress={openHistoryToday}
         />
       </ScrollView>
+
+      <CareActionSheet
+        visible={infoCopy != null}
+        title={infoCopy?.title ?? ''}
+        onClose={() => setInfoSheet(null)}
+      >
+        <LumiText>{infoCopy?.body}</LumiText>
+        <LumiButton title={PRODUCT_COPY.actions.close} onPress={() => setInfoSheet(null)} fullWidth />
+      </CareActionSheet>
     </SafeAreaView>
   );
 }
@@ -83,7 +258,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 24,
-    gap: 24,
+    gap: 20,
     width: '100%',
     maxWidth: 600,
     alignSelf: 'center',
@@ -99,4 +274,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  editLink: { minHeight: 48, justifyContent: 'center' },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  quickSlot: { width: '47%', flexGrow: 1, minWidth: 140 },
 });

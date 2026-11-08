@@ -33,6 +33,9 @@ function MainTabs() {
           <TodayScreen
             onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
             onOpenHistoryToday={() => navigation.navigate('History')}
+            onOpenEvent={(eventId) =>
+              navigation.getParent()?.navigate('EventDetail', { eventId })
+            }
           />
         )}
       </Tab.Screen>
@@ -42,7 +45,15 @@ function MainTabs() {
         component={DevelopmentScreen}
         options={{ title: 'Rozvoj' }}
       />
-      <Tab.Screen name="History" component={HistoryScreen} options={{ title: 'Historie' }} />
+      <Tab.Screen name="History" options={{ title: 'Historie' }}>
+        {({ navigation }) => (
+          <HistoryScreen
+            onOpenEvent={(eventId) =>
+              navigation.getParent()?.navigate('EventDetail', { eventId })
+            }
+          />
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

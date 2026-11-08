@@ -263,6 +263,38 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM change_notifications/i.test(sql)) {
     return [...ensureTable(state, 'change_notifications').rows];
   }
+  const careById =
+    /^SELECT .+ FROM care_events WHERE event_id = \?$/i.exec(sql);
+  if (careById) {
+    return ensureTable(state, 'care_events').rows.filter((row) => row.event_id === params[0]);
+  }
+  const careRecent =
+    /^SELECT .+ FROM care_events WHERE child_id = \? ORDER BY sort_at_ms DESC LIMIT \?$/i.exec(sql);
+  if (careRecent) {
+    const limit = Number(params[1] ?? 0);
+    return ensureTable(state, 'care_events')
+      .rows.filter((row) => row.child_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.sort_at_ms) - Number(a.sort_at_ms))
+      .slice(0, Number.isFinite(limit) ? limit : 0);
+  }
+  const careRange =
+    /^SELECT .+ FROM care_events WHERE child_id = \? AND sort_at_ms >= \? AND sort_at_ms < \? ORDER BY sort_at_ms DESC$/i.exec(
+      sql,
+    );
+  if (careRange) {
+    const fromMs = Number(params[1]);
+    const toMs = Number(params[2]);
+    return ensureTable(state, 'care_events')
+      .rows.filter(
+        (row) =>
+          row.child_id === params[0] &&
+          Number(row.sort_at_ms) >= fromMs &&
+          Number(row.sort_at_ms) < toMs,
+      )
+      .slice()
+      .sort((a, b) => Number(b.sort_at_ms) - Number(a.sort_at_ms));
+  }
   if (/FROM care_events/i.test(sql)) {
     return [...ensureTable(state, 'care_events').rows];
   }

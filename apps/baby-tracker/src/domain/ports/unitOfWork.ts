@@ -23,6 +23,14 @@ export type CareRepository = {
   save(event: CareEvent): Promise<void>;
   /** Removes an active care row; soft-delete keeps a trash marker separately. */
   delete(eventId: EntityId): Promise<void>;
+  /** Newest first by care-time sort key (not write clock). Soft-deleted rows are absent. */
+  listRecent(childId: ChildId, limit: number): Promise<CareEvent[]>;
+  /** Inclusive start / exclusive end on the same sort key used for timeline views. */
+  listInSortRange(
+    childId: ChildId,
+    fromSortAtMsInclusive: number,
+    toSortAtMsExclusive: number,
+  ): Promise<CareEvent[]>;
 };
 
 export type SessionRepository = {

@@ -17,9 +17,17 @@ import {
   updatePersonalProfile,
   type PersonalBootstrapResult,
 } from '../../application/personalBootstrap';
+import type { CommandDispatcher, ReadModelInvalidator } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
 import type { ChildProfile, UnitOfWorkFactory } from '../../domain';
+import { wirePersonalCommands } from '../openPersonalUnitOfWork';
 import { useCompositionRoot } from '../providers';
+
+export type PersonalRuntime = {
+  unitOfWork: UnitOfWorkFactory;
+  commands: CommandDispatcher;
+  readModels: ReadModelInvalidator;
+};
 
 export type BootstrapContextValue = {
   phase: StartupPhase;
@@ -27,6 +35,8 @@ export type BootstrapContextValue = {
   welcomePending: boolean;
   errorMessage: string | null;
   presentation: ReturnType<typeof presentStartupPhase>;
+  /** Present once the personal diary adapters and command bus are ready. */
+  runtime: PersonalRuntime | null;
   skipWelcome: () => Promise<void>;
   saveProfile: (profile: ChildProfile) => Promise<void>;
   retry: () => void;
@@ -42,21 +52,28 @@ export function BootstrapProvider({
   openUnitOfWork: () => Promise<UnitOfWorkFactory>;
 }) {
   const { services } = useCompositionRoot();
-  const cached = useRef<UnitOfWorkFactory | null>(null);
+  const cached = useRef<PersonalRuntime | null>(null);
   const [result, setResult] = useState<PersonalBootstrapResult>({
     phase: 'initializing',
     profile: null,
     welcomePending: false,
     error: null,
   });
+  const [runtime, setRuntime] = useState<PersonalRuntime | null>(null);
   const [attempt, setAttempt] = useState(0);
 
-  const resolveUnitOfWork = useCallback(async () => {
+  const resolveRuntime = useCallback(async () => {
     if (cached.current) return cached.current;
     const unitOfWork = await openUnitOfWork();
-    cached.current = unitOfWork;
-    return unitOfWork;
-  }, [openUnitOfWork]);
+    const wired = wirePersonalCommands(services, unitOfWork);
+    const next: PersonalRuntime = {
+      unitOfWork,
+      commands: wired.commands!,
+      readModels: wired.readModels!,
+    };
+    cached.current = next;
+    return next;
+  }, [openUnitOfWork, services]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,18 +84,20 @@ export function BootstrapProvider({
         welcomePending: false,
         error: null,
       });
+      setRuntime(null);
       try {
         // Fresh attempt may need a new open after a hard failure.
         if (attempt > 0) cached.current = null;
-        const unitOfWork = await resolveUnitOfWork();
+        const personal = await resolveRuntime();
         if (cancelled) return;
-        const profile = await ensurePersonalChildProfile(unitOfWork, {
+        const profile = await ensurePersonalChildProfile(personal.unitOfWork, {
           ids: services.ids,
           clock: services.clock,
           summaryTimeZone: resolveDefaultTimeZone(),
         });
-        const welcomePending = await readWelcomePending(unitOfWork);
+        const welcomePending = await readWelcomePending(personal.unitOfWork);
         if (cancelled) return;
+        setRuntime(personal);
         setResult({
           phase: welcomePending ? 'welcome' : 'ready',
           profile,
@@ -88,31 +107,32 @@ export function BootstrapProvider({
       } catch (error) {
         cached.current = null;
         if (cancelled) return;
+        setRuntime(null);
         setResult(mapBootstrapOpenError(error));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [attempt, resolveUnitOfWork, services.clock, services.ids]);
+  }, [attempt, resolveRuntime, services.clock, services.ids]);
 
   const skipWelcome = useCallback(async () => {
-    const unitOfWork = await resolveUnitOfWork();
-    await markWelcomeCompleted(unitOfWork);
+    const personal = await resolveRuntime();
+    await markWelcomeCompleted(personal.unitOfWork);
     setResult((current) => ({
       ...current,
       phase: 'ready',
       welcomePending: false,
     }));
-  }, [resolveUnitOfWork]);
+  }, [resolveRuntime]);
 
   const saveProfile = useCallback(
     async (profile: ChildProfile) => {
-      const unitOfWork = await resolveUnitOfWork();
-      const saved = await updatePersonalProfile(unitOfWork, profile);
+      const personal = await resolveRuntime();
+      const saved = await updatePersonalProfile(personal.unitOfWork, profile);
       setResult((current) => ({ ...current, profile: saved }));
     },
-    [resolveUnitOfWork],
+    [resolveRuntime],
   );
 
   const value = useMemo<BootstrapContextValue>(
@@ -122,11 +142,12 @@ export function BootstrapProvider({
       welcomePending: result.welcomePending,
       errorMessage: result.error?.message ?? null,
       presentation: presentStartupPhase(result.phase),
+      runtime,
       skipWelcome,
       saveProfile,
       retry: () => setAttempt((n) => n + 1),
     }),
-    [result, saveProfile, skipWelcome],
+    [result, runtime, saveProfile, skipWelcome],
   );
 
   return <BootstrapContext.Provider value={value}>{children}</BootstrapContext.Provider>;
@@ -138,4 +159,12 @@ export function useBootstrap(): BootstrapContextValue {
     throw new Error('Bootstrap context is unavailable outside BootstrapProvider.');
   }
   return value;
+}
+
+export function usePersonalRuntime(): PersonalRuntime {
+  const { runtime } = useBootstrap();
+  if (!runtime) {
+    throw new Error('Personal runtime is not ready yet.');
+  }
+  return runtime;
 }

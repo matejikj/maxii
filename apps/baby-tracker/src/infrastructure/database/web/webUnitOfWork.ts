@@ -164,6 +164,43 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.careEvents.delete(eventId);
       topics.add('care');
     },
+    async listRecent(childId: ChildId, limit: number) {
+      const rows = await db.careEvents.where('childId').equals(childId).sortBy('sortAtMs');
+      return rows
+        .slice()
+        .reverse()
+        .slice(0, Math.max(0, limit))
+        .map((row) =>
+          careEventFromRow({
+            event_id: row.eventId,
+            child_id: row.childId,
+            event_type: row.eventType,
+            revision_id: row.revisionId,
+            sort_at_ms: row.sortAtMs,
+            payload_json: row.payloadJson,
+          }),
+        );
+    },
+    async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
+      const rows = await db.careEvents
+        .where('childId')
+        .equals(childId)
+        .and((row) => row.sortAtMs >= fromSortAtMsInclusive && row.sortAtMs < toSortAtMsExclusive)
+        .sortBy('sortAtMs');
+      return rows
+        .slice()
+        .reverse()
+        .map((row) =>
+          careEventFromRow({
+            event_id: row.eventId,
+            child_id: row.childId,
+            event_type: row.eventType,
+            revision_id: row.revisionId,
+            sort_at_ms: row.sortAtMs,
+            payload_json: row.payloadJson,
+          }),
+        );
+    },
   };
 
   const sessions: SessionRepository = {

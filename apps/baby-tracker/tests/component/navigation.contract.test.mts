@@ -31,9 +31,11 @@ test('welcome is skippable and does not require account or birthday', () => {
 
 test('today offers show-today history action with Czech copy', () => {
   const today = read('features/today/TodayScreen.tsx');
-  assert.match(today, /Zobrazit dnešní záznamy/);
+  assert.match(today, /showTodayRecords|Zobrazit dnešní záznamy/);
   assert.match(today, /Dnes s/);
   assert.match(today, /Otevřít profil a nastavení/);
+  const copy = read('features/ui/productCopy.ts');
+  assert.match(copy, /Zobrazit dnešní záznamy/);
 });
 
 test('startup copy never asks for login when storage fails', () => {

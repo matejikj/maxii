@@ -74,6 +74,8 @@ Osobní start založí jeden místní profil „Miminko“ bez účtu a API. Nav
 
 Produktové UI skládá veřejné Lumi komponenty (`features/ui`): přímé akce vs „Uložit“, poznámka se systémovou klávesnicí, undo feedback a aktivní měření bez sekundového hlášení čtečce. Kanonické texty jsou v `productCopy.ts`.
 
+Dnes propojuje `wirePersonalCommands` s plenkovým panelem (tři přímé zápisy + podrobný formulář), poslední péčí z deníku a čtyřmi upravitelnými rychlými akcemi. Historie čte stejný denní výřez; otevření panelu nic nezapisuje.
+
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
 Sonda development buildu:

@@ -121,6 +121,23 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM care_events WHERE event_id = ?', eventId);
       topics.add('care');
     },
+    async listRecent(childId: ChildId, limit: number) {
+      const rows = await txn.getAllAsync<CareEventRow>(
+        'SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json FROM care_events WHERE child_id = ? ORDER BY sort_at_ms DESC LIMIT ?',
+        childId,
+        limit,
+      );
+      return rows.map(careEventFromRow);
+    },
+    async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
+      const rows = await txn.getAllAsync<CareEventRow>(
+        'SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json FROM care_events WHERE child_id = ? AND sort_at_ms >= ? AND sort_at_ms < ? ORDER BY sort_at_ms DESC',
+        childId,
+        fromSortAtMsInclusive,
+        toSortAtMsExclusive,
+      );
+      return rows.map(careEventFromRow);
+    },
   };
 
   const sessions: SessionRepository = {
