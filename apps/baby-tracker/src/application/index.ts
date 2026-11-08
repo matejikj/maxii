@@ -51,4 +51,18 @@ export {
   loadWeeklyCareOverview,
   type CareOverviewCache,
 } from './careOverviewQueries';
+export {
+  META_LAST_PORTABLE_EXPORT_AT,
+  activatePortableImport,
+  ensureDailyLogicalCheckpoint,
+  exportPrivateCareCsv,
+  exportSealedPortableDiary,
+  listLocalRecoveryPoints,
+  readLastPortableExportAtMs,
+  restoreLocalRecoveryPoint,
+  rollbackPreImportRestore,
+  stagePortableImport,
+  type ActivatedPortableImport,
+  type StagedPortableImport,
+} from './diaryBackup';
 

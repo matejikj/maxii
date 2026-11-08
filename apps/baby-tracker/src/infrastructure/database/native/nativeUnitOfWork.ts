@@ -5,6 +5,7 @@ import type {
   CareRepository,
   ChildId,
   ChildProfile,
+  DiarySnapshotRepository,
   Draft,
   DraftRepository,
   EntityId,
@@ -25,6 +26,8 @@ import type {
   DeletionMarker,
 } from '../../../domain';
 import { AppError } from '../../../domain/errors';
+import { SCHEMA_VERSION_4 } from './schema/v4';
+import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
 import type { PrivateDatabase } from './privateDatabase';
@@ -168,6 +171,10 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       );
       topics.add('sessions');
     },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM sessions');
+      return rows.map((row) => sessionFromRow(row) as SessionRecord);
+    },
   };
 
   const drafts: DraftRepository = {
@@ -201,6 +208,10 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
         `SELECT payload_json FROM drafts WHERE child_id = ? ORDER BY updated_at_ms DESC, draft_id DESC`,
         childId,
       );
+      return rows.map(draftFromRow);
+    },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM drafts');
       return rows.map(draftFromRow);
     },
   };
@@ -395,6 +406,32 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM deletion_markers WHERE deletion_id = ?', deletionId);
       topics.add('revisions');
     },
+    async listRevisions() {
+      const rows = await txn.getAllAsync<{
+        revision_id: string;
+        entity_id: string;
+        operation_id: string;
+        parent_revision_ids_json: string;
+        command_type: string;
+        created_at_ms: number;
+        device_id: string | null;
+        actor_id: string | null;
+        state_json: string;
+      }>('SELECT * FROM revisions');
+      return rows.map(revisionFromRow);
+    },
+    async listReceipts() {
+      const rows = await txn.getAllAsync<{
+        operation_id: string;
+        command_type: string;
+        intent_captured_at_ms: number;
+        completed_at_ms: number;
+        entity_ids_json: string;
+        revision_ids_json: string;
+        result_code: 'savedLocally';
+      }>('SELECT * FROM operation_receipts');
+      return rows.map(receiptFromRow);
+    },
   };
 
   const profiles: ProfileRepository = {
@@ -439,9 +476,83 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM app_meta WHERE key = ?', key);
       await txn.runAsync('INSERT INTO app_meta (key, value) VALUES (?, ?)', key, value);
     },
+    async listEntries() {
+      const rows = await txn.getAllAsync<{ key: string; value: string }>(
+        'SELECT key, value FROM app_meta',
+      );
+      return rows;
+    },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search };
+  const diary: DiarySnapshotRepository = {
+    async capture(input) {
+      const profilesList = await profiles.list();
+      const careEvents: CareEvent[] = [];
+      for (const profile of profilesList) {
+        let before = null as TimelineCursor | null;
+        for (;;) {
+          const page = await care.listPage(profile.childId, 200, before);
+          careEvents.push(...page.events);
+          if (!page.nextCursor) break;
+          before = page.nextCursor;
+        }
+      }
+      return assembleDiaryArchive({
+        createdAtMs: input.createdAtMs,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_4,
+        profiles: profilesList,
+        careEvents,
+        sessions: await sessions.listAll(),
+        drafts: await drafts.listAll(),
+        revisions: await revisions.listRevisions(),
+        receipts: await revisions.listReceipts(),
+        deletions: await revisions.listDeletions(),
+        meta: await meta.listEntries(),
+      });
+    },
+    async replace(archive) {
+      await txn.runAsync('DELETE FROM search_documents');
+      await txn.runAsync('DELETE FROM care_events');
+      await txn.runAsync('DELETE FROM sessions');
+      await txn.runAsync('DELETE FROM drafts');
+      await txn.runAsync('DELETE FROM revisions');
+      await txn.runAsync('DELETE FROM operation_receipts');
+      await txn.runAsync('DELETE FROM deletion_markers');
+      await txn.runAsync('DELETE FROM child_profiles');
+      await txn.runAsync('DELETE FROM app_meta');
+      for (const profile of archive.profiles) {
+        await profiles.save(profile);
+      }
+      for (const entry of archive.meta) {
+        await meta.set(entry.key, entry.value);
+      }
+      for (const event of archive.careEvents) {
+        await care.save(event);
+      }
+      for (const session of archive.sessions) {
+        await sessions.save(session);
+      }
+      for (const draft of archive.drafts) {
+        await drafts.save(draft);
+      }
+      for (const revision of archive.revisions) {
+        await revisions.saveRevision(revision);
+      }
+      for (const receipt of archive.receipts) {
+        await revisions.saveReceipt(receipt);
+      }
+      for (const deletion of archive.deletions) {
+        await revisions.saveDeletion(deletion);
+      }
+      topics.add('care');
+      topics.add('sessions');
+      topics.add('drafts');
+      topics.add('revisions');
+      topics.add('profile');
+    },
+  };
+
+  return { care, sessions, drafts, revisions, profiles, meta, search, diary };
 }
 
 async function listCarePage(

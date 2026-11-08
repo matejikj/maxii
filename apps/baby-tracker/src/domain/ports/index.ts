@@ -6,6 +6,7 @@ export type {
   AppMetaRepository,
   CarePage,
   CareRepository,
+  DiarySnapshotRepository,
   DraftRepository,
   ProfileRepository,
   RevisionRepository,

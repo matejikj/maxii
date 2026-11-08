@@ -6,6 +6,7 @@ import type {
   ChildId,
   ChildProfile,
   DeletionMarker,
+  DiarySnapshotRepository,
   Draft,
   DraftRepository,
   EntityId,
@@ -31,6 +32,7 @@ import {
   nextTimelineCursor,
   searchDocumentFromCareEvent,
 } from '../../../domain/projections/historyQuery';
+import { assembleDiaryArchive } from '../diarySnapshotShared';
 import type { ChangeTopic } from '../native/changeFeed';
 import {
   careEventFromRow,
@@ -49,6 +51,7 @@ import {
   sessionFromRow,
   sessionToRow,
 } from '../native/serialization';
+import { WEB_SCHEMA_VERSION } from './lumiWebDatabase';
 import type { LumiWebDatabase } from './lumiWebDatabase';
 import type { TabLeaseCoordinator } from './tabLease';
 import type { WebChangeFeed } from './webChangeFeed';
@@ -239,6 +242,10 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       });
       topics.add('sessions');
     },
+    async listAll() {
+      const rows = await db.sessions.toArray();
+      return rows.map((row) => sessionFromRow({ payload_json: row.payloadJson }) as SessionRecord);
+    },
   };
 
   const drafts: DraftRepository = {
@@ -268,6 +275,10 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
         .slice()
         .reverse()
         .map((row) => draftFromRow({ payload_json: row.payloadJson }));
+    },
+    async listAll() {
+      const rows = await db.drafts.toArray();
+      return rows.map((row) => draftFromRow({ payload_json: row.payloadJson }));
     },
   };
 
@@ -422,6 +433,36 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.deletionMarkers.delete(deletionId);
       topics.add('revisions');
     },
+    async listRevisions() {
+      const rows = await db.revisions.toArray();
+      return rows.map((row) =>
+        revisionFromRow({
+          revision_id: row.revisionId,
+          entity_id: row.entityId,
+          operation_id: row.operationId,
+          parent_revision_ids_json: row.parentRevisionIdsJson,
+          command_type: row.commandType,
+          created_at_ms: row.createdAtMs,
+          device_id: row.deviceId,
+          actor_id: row.actorId,
+          state_json: row.stateJson,
+        }),
+      );
+    },
+    async listReceipts() {
+      const rows = await db.operationReceipts.toArray();
+      return rows.map((row) =>
+        receiptFromRow({
+          operation_id: row.operationId,
+          command_type: row.commandType,
+          intent_captured_at_ms: row.intentCapturedAtMs,
+          completed_at_ms: row.completedAtMs,
+          entity_ids_json: row.entityIdsJson,
+          revision_ids_json: row.revisionIdsJson,
+          result_code: row.resultCode as 'savedLocally',
+        }),
+      );
+    },
   };
 
   const profiles: ProfileRepository = {
@@ -454,9 +495,81 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     async set(key: string, value: string) {
       await db.meta.put({ key, value });
     },
+    async listEntries() {
+      const rows = await db.meta.toArray();
+      return rows.map((row) => ({ key: row.key, value: row.value }));
+    },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search };
+  const diary: DiarySnapshotRepository = {
+    async capture(input) {
+      const profilesList = await profiles.list();
+      const careEvents: CareEvent[] = [];
+      for (const profile of profilesList) {
+        let before = null as TimelineCursor | null;
+        for (;;) {
+          const page = await care.listPage(profile.childId, 200, before);
+          careEvents.push(...page.events);
+          if (!page.nextCursor) break;
+          before = page.nextCursor;
+        }
+      }
+      return assembleDiaryArchive({
+        createdAtMs: input.createdAtMs,
+        schemaCompatibility: input.schemaCompatibility || WEB_SCHEMA_VERSION,
+        profiles: profilesList,
+        careEvents,
+        sessions: await sessions.listAll(),
+        drafts: await drafts.listAll(),
+        revisions: await revisions.listRevisions(),
+        receipts: await revisions.listReceipts(),
+        deletions: await revisions.listDeletions(),
+        meta: await meta.listEntries(),
+      });
+    },
+    async replace(archive) {
+      await db.searchDocuments.clear();
+      await db.careEvents.clear();
+      await db.sessions.clear();
+      await db.drafts.clear();
+      await db.revisions.clear();
+      await db.operationReceipts.clear();
+      await db.deletionMarkers.clear();
+      await db.childProfiles.clear();
+      await db.meta.clear();
+      for (const profile of archive.profiles) {
+        await profiles.save(profile);
+      }
+      for (const entry of archive.meta) {
+        await meta.set(entry.key, entry.value);
+      }
+      for (const event of archive.careEvents) {
+        await care.save(event);
+      }
+      for (const session of archive.sessions) {
+        await sessions.save(session);
+      }
+      for (const draft of archive.drafts) {
+        await drafts.save(draft);
+      }
+      for (const revision of archive.revisions) {
+        await revisions.saveRevision(revision);
+      }
+      for (const receipt of archive.receipts) {
+        await revisions.saveReceipt(receipt);
+      }
+      for (const deletion of archive.deletions) {
+        await revisions.saveDeletion(deletion);
+      }
+      topics.add('care');
+      topics.add('sessions');
+      topics.add('drafts');
+      topics.add('revisions');
+      topics.add('profile');
+    },
+  };
+
+  return { care, sessions, drafts, revisions, profiles, meta, search, diary };
 }
 
 async function listWebCarePage(

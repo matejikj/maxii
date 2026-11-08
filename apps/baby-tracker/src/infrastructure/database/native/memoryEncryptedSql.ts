@@ -367,6 +367,15 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM revisions/i.test(sql)) {
     return [...ensureTable(state, 'revisions').rows];
   }
+  if (/FROM operation_receipts/i.test(sql)) {
+    return [...ensureTable(state, 'operation_receipts').rows];
+  }
+  if (/FROM sessions/i.test(sql)) {
+    return [...ensureTable(state, 'sessions').rows];
+  }
+  if (/FROM drafts/i.test(sql)) {
+    return [...ensureTable(state, 'drafts').rows];
+  }
   if (/^SELECT payload_json FROM child_profiles$/i.test(sql) || /^SELECT \* FROM child_profiles$/i.test(sql)) {
     return [...ensureTable(state, 'child_profiles').rows];
   }
@@ -430,6 +439,13 @@ function insertRow(state: DatabaseState, sql: string, params: SqlBindValue[]): n
 }
 
 function deleteRows(state: DatabaseState, sql: string, params: SqlBindValue[]): number {
+  const clearAll = /^DELETE FROM (\w+)$/i.exec(sql.trim());
+  if (clearAll) {
+    const table = ensureTable(state, clearAll[1]!);
+    const before = table.rows.length;
+    table.rows = [];
+    return before;
+  }
   const match = /^DELETE FROM (\w+) WHERE (\w+) = \?$/i.exec(sql.trim());
   if (!match) throw new Error(`Unsupported DELETE in memory SQL: ${sql}`);
   const table = ensureTable(state, match[1]!);

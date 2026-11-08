@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import { createChildProfile, parseCalendarDate } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
+import { BackupRestorePanel } from './BackupRestorePanel';
 
 type ProfileScreenProps = {
   onClose: () => void;
@@ -86,6 +87,7 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
             }
           }}
         />
+        <BackupRestorePanel />
         <LumiButton title="Zavřít" variant="ghost" onPress={onClose} fullWidth />
       </ScrollView>
     </SafeAreaView>

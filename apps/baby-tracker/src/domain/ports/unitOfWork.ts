@@ -1,3 +1,4 @@
+import type { DiaryArchive } from '../backup/diaryArchive';
 import type { CareEvent } from '../entities/careEvent';
 import type { ActiveSession, SessionKind, SessionRecord } from '../entities/activeSession';
 import type { ChildProfile } from '../entities/childProfile';
@@ -18,6 +19,8 @@ export type UnitOfWork = {
   profiles: ProfileRepository;
   meta: AppMetaRepository;
   search: SearchIndexRepository;
+  /** Personal replace/export helpers stay inside the same private DB boundary. */
+  diary: DiarySnapshotRepository;
 };
 
 export type CarePage = {
@@ -53,6 +56,7 @@ export type CareRepository = {
 export type SessionRepository = {
   getActive(childId: ChildId, kind: SessionKind): Promise<ActiveSession | null>;
   save(session: SessionRecord): Promise<void>;
+  listAll(): Promise<SessionRecord[]>;
 };
 
 export type DraftRepository = {
@@ -61,6 +65,17 @@ export type DraftRepository = {
   delete(draftId: EntityId): Promise<void>;
   /** Newest edits first; drafts are never mixed into care timelines. */
   listByChild(childId: ChildId): Promise<Draft[]>;
+  listAll(): Promise<Draft[]>;
+};
+
+export type DiarySnapshotRepository = {
+  /** Capture a logical archive of the live personal diary. */
+  capture(input: { createdAtMs: number; schemaCompatibility: number }): Promise<DiaryArchive>;
+  /**
+   * Atomically replace the live diary. Callers must create a rollback checkpoint
+   * first; this method itself never merges with existing rows.
+   */
+  replace(archive: DiaryArchive): Promise<void>;
 };
 
 /**
@@ -90,6 +105,8 @@ export type RevisionRepository = {
   findDeletionByEntityId(entityId: EntityId): Promise<DeletionMarker | null>;
   listDeletions(): Promise<DeletionMarker[]>;
   removeDeletion(deletionId: EntityId): Promise<void>;
+  listRevisions(): Promise<Revision[]>;
+  listReceipts(): Promise<OperationReceipt[]>;
 };
 
 export type ProfileRepository = {
@@ -102,6 +119,7 @@ export type ProfileRepository = {
 export type AppMetaRepository = {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
+  listEntries(): Promise<{ key: string; value: string }[]>;
 };
 
 export type UnitOfWorkFactory = {

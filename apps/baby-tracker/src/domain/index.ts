@@ -86,6 +86,7 @@ export type {
   CarePage,
   CareRepository,
   Clock,
+  DiarySnapshotRepository,
   DraftRepository,
   FaultInjection,
   FaultKind,
@@ -100,6 +101,29 @@ export type {
   UnitOfWork,
   UnitOfWorkFactory,
 } from './ports';
+export {
+  DIARY_ARCHIVE_FORMAT,
+  DIARY_ARCHIVE_MAX_COMPAT,
+  buildDiaryArchiveManifest,
+  compareDiaryArchives,
+  createDiaryArchive,
+  type DiaryArchive,
+  type DiaryArchiveCompare,
+  type DiaryArchiveManifest,
+  type DiaryArchiveMetaEntry,
+} from './backup/diaryArchive';
+export {
+  MAX_DIARY_ARCHIVE_BYTES,
+  MAX_DIARY_CARE_EVENTS,
+  MAX_DIARY_RELATED_ROWS,
+  filterExportableMeta,
+  isExportableMetaKey,
+  parseDiaryArchive,
+} from './backup/parseDiaryArchive';
+export {
+  careEventsToPrivateCsv,
+  escapeCsvCell,
+} from './backup/diaryCsv';
 export {
   bottleContentsSchema,
   careOccurrenceSchema,

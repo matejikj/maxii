@@ -95,13 +95,16 @@ function PersonalAppShell() {
 
 function BootstrappedApp() {
   const { services } = useCompositionRoot();
-  const openUnitOfWork = useCallback(async () => {
+  const openPersonalDiary = useCallback(async () => {
     const opened = await openPersonalUnitOfWork(services);
-    return opened.unitOfWork;
+    return {
+      unitOfWork: opened.unitOfWork,
+      checkpoints: opened.checkpoints,
+    };
   }, [services]);
 
   return (
-    <BootstrapProvider openUnitOfWork={openUnitOfWork}>
+    <BootstrapProvider openPersonalDiary={openPersonalDiary}>
       <HistoryTabProvider>
         <PersonalAppShell />
       </HistoryTabProvider>

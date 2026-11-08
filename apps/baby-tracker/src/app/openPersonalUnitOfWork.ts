@@ -2,10 +2,16 @@ import { Platform } from 'react-native';
 import type { UnitOfWorkFactory } from '../domain';
 import { createCommandDispatcher, createReadModelInvalidator } from '../application';
 import type { ApplicationServices } from '../application';
+import {
+  createMemoryLogicalCheckpointVault,
+  type LogicalCheckpointVault,
+} from '../infrastructure/database/logicalCheckpointVault';
 import { resolveRemoteServicesBoundary, shouldInitializeRemoteClients } from './remoteServicesBoundary';
 
 export type OpenedPersonalRuntime = {
   unitOfWork: UnitOfWorkFactory;
+  /** Local recovery points kept outside the live diary so replace import can roll back. */
+  checkpoints: LogicalCheckpointVault;
   close: () => Promise<void>;
 };
 
@@ -21,6 +27,8 @@ export async function openPersonalUnitOfWork(
     throw new Error('Remote family clients are configured but not wired in personal mode yet.');
   }
 
+  const checkpoints = createMemoryLogicalCheckpointVault();
+
   if (Platform.OS === 'web') {
     const web = await import('../infrastructure/database/web');
     const handle = await web.openWebDatabase({
@@ -33,6 +41,7 @@ export async function openPersonalUnitOfWork(
     });
     return {
       unitOfWork,
+      checkpoints,
       close: async () => handle.close(),
     };
   }
@@ -48,6 +57,7 @@ export async function openPersonalUnitOfWork(
   });
   return {
     unitOfWork,
+    checkpoints,
     close: () => database.close(),
   };
 }

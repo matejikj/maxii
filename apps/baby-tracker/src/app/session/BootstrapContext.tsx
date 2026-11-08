@@ -10,13 +10,14 @@ import React, {
 } from 'react';
 import {
   ensurePersonalChildProfile,
+  ensureDailyLogicalCheckpoint,
   mapBootstrapOpenError,
   markWelcomeCompleted,
   readWelcomePending,
   resolveDefaultTimeZone,
   updatePersonalProfile,
   type PersonalBootstrapResult,
-} from '../../application/personalBootstrap';
+} from '../../application';
 import type {
   CareOverviewCache,
   CommandDispatcher,
@@ -25,6 +26,7 @@ import type {
 import { createCareOverviewCache } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
 import type { ChildProfile, UnitOfWorkFactory } from '../../domain';
+import type { LogicalCheckpointVault } from '../../infrastructure/database/logicalCheckpointVault';
 import { wirePersonalCommands } from '../openPersonalUnitOfWork';
 import { useCompositionRoot } from '../providers';
 
@@ -34,7 +36,14 @@ export type PersonalRuntime = {
   readModels: ReadModelInvalidator;
   /** Derived day/week totals; cleared on care commits without touching diary rows. */
   overviewCache: CareOverviewCache;
+  /** Device-local recovery points outside the live diary tables. */
+  checkpoints: LogicalCheckpointVault;
 };
+
+export type OpenPersonalDiary = () => Promise<{
+  unitOfWork: UnitOfWorkFactory;
+  checkpoints: LogicalCheckpointVault;
+}>;
 
 export type BootstrapContextValue = {
   phase: StartupPhase;
@@ -53,10 +62,10 @@ const BootstrapContext = createContext<BootstrapContextValue | null>(null);
 
 export function BootstrapProvider({
   children,
-  openUnitOfWork,
+  openPersonalDiary,
 }: {
   children: ReactNode;
-  openUnitOfWork: () => Promise<UnitOfWorkFactory>;
+  openPersonalDiary: OpenPersonalDiary;
 }) {
   const { services } = useCompositionRoot();
   const cached = useRef<PersonalRuntime | null>(null);
@@ -71,8 +80,8 @@ export function BootstrapProvider({
 
   const resolveRuntime = useCallback(async () => {
     if (cached.current) return cached.current;
-    const unitOfWork = await openUnitOfWork();
-    const wired = wirePersonalCommands(services, unitOfWork);
+    const opened = await openPersonalDiary();
+    const wired = wirePersonalCommands(services, opened.unitOfWork);
     const overviewCache = createCareOverviewCache();
     const readModels = wired.readModels!;
     readModels.subscribe((topics) => {
@@ -85,14 +94,15 @@ export function BootstrapProvider({
       }
     });
     const next: PersonalRuntime = {
-      unitOfWork,
+      unitOfWork: opened.unitOfWork,
       commands: wired.commands!,
       readModels,
       overviewCache,
+      checkpoints: opened.checkpoints,
     };
     cached.current = next;
     return next;
-  }, [openUnitOfWork, services]);
+  }, [openPersonalDiary, services]);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +125,13 @@ export function BootstrapProvider({
           summaryTimeZone: resolveDefaultTimeZone(),
         });
         const welcomePending = await readWelcomePending(personal.unitOfWork);
+        if (cancelled) return;
+        await ensureDailyLogicalCheckpoint({
+          unitOfWork: personal.unitOfWork,
+          vault: personal.checkpoints,
+          nowMs: services.clock.now().epochMs,
+          timeZone: profile.settings.summaryTimeZone,
+        });
         if (cancelled) return;
         setRuntime(personal);
         setResult({
