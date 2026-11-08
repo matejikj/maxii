@@ -37,6 +37,12 @@ export type RecommendationOffer = {
 };
 
 /**
+ * Lifecycle of one stored daily selection. Opening an offer never creates an
+ * experience by itself; “care only today” hides the set without deleting history.
+ */
+export type RecommendationSetStatus = 'prepared' | 'opened' | 'replaced' | 'hidden';
+
+/**
  * At most three distinct offers for one child and local calendar day. Offers
  * are not tasks with deadlines.
  */
@@ -47,6 +53,11 @@ export type RecommendationSet = {
   rulesVersion: string;
   contentVersion: string;
   offers: RecommendationOffer[];
+  status: RecommendationSetStatus;
+  /** When status is replaced, points at the successor set for the same day. */
+  replacedBySetId: EntityId | null;
+  /** Stable explanation codes when the set was invalidated (no child PII). */
+  invalidationReasonCodes: string[];
 };
 
 export type Favorite = {
@@ -63,6 +74,9 @@ export function createRecommendationSet(input: {
   rulesVersion: string;
   contentVersion: string;
   offers: RecommendationOffer[];
+  status?: RecommendationSetStatus;
+  replacedBySetId?: EntityId | null;
+  invalidationReasonCodes?: string[];
 }): RecommendationSet {
   if (input.offers.length > 3) {
     throw new AppError('VALIDATION', 'Recommendation set allows at most three offers', {
@@ -82,6 +96,9 @@ export function createRecommendationSet(input: {
     rulesVersion: input.rulesVersion,
     contentVersion: input.contentVersion,
     offers: input.offers,
+    status: input.status ?? 'prepared',
+    replacedBySetId: input.replacedBySetId ?? null,
+    invalidationReasonCodes: input.invalidationReasonCodes ?? [],
   };
 }
 

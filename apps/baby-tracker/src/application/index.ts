@@ -96,4 +96,19 @@ export {
   serializeDiagnosticsSnapshot,
   type DiagnosticsSnapshot,
 } from './diagnosticsExport';
+export {
+  META_RECOMMENDATION_SET_PREFIX,
+  buildParentRecommendationContext,
+  candidateFromRevision,
+  candidatesFromRevisions,
+  ensureDailyRecommendationSet,
+  hideDailyRecommendationForCare,
+  openDailyRecommendation,
+  readDailyRecommendationSet,
+  replaceDailyRecommendationSet,
+  type DailyRecommendationView,
+  type RecommendationCatalogInput,
+  type RecommendationFilterInput,
+} from './recommendation';
+
 

@@ -62,5 +62,6 @@ export {
   type Observation,
   type RecommendationOffer,
   type RecommendationSet,
+  type RecommendationSetStatus,
 } from './development';
 export type { DeletionMarker, OperationReceipt, Revision } from './revision';
