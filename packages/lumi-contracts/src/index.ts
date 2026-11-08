@@ -81,3 +81,18 @@ export type {
   SyncPushResponse,
   SyncTransferPresentation,
 } from './sync.ts';
+export type {
+  ApplyResult,
+  ConflictRecord,
+  EntityGraphState,
+  EntityHeadsView,
+  GraphRevision,
+  TombstoneRecord,
+} from './causality.ts';
+export {
+  applyRevision,
+  bumpEraseGeneration,
+  convergeByRevisions,
+  createEmptyEntityGraph,
+  materializeTombstone,
+} from './causality.ts';

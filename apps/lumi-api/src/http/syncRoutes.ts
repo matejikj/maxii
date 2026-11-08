@@ -105,6 +105,9 @@ export function registerSyncRoutes(app: FastifyInstance, deps: SyncRouteDeps): v
         memberships: store.allMemberships(),
         attemptId: body.attemptId,
         operations: body.operations ?? [],
+        ...(body.writerGeneration != null
+          ? { writerGeneration: body.writerGeneration }
+          : {}),
         now: new Date().toISOString(),
       });
       return result;

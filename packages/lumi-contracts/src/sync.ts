@@ -29,6 +29,8 @@ export type SyncPushRequest = {
   readonly protocolVersion: typeof LUMI_API_PROTOCOL_VERSION;
   readonly attemptId: string;
   readonly operations: readonly SyncOperation[];
+  /** Fences an abandoned writer after a hosting cut-over. */
+  readonly writerGeneration?: number;
 };
 
 export type SyncOperationReceipt = {
@@ -44,10 +46,13 @@ export type SyncOperationReceipt = {
     | 'forbidden'
     | 'validation'
     | 'unsupported_schema'
-    | 'revoked';
+    | 'revoked'
+    | 'tombstoned'
+    | 'stale_writer';
   readonly revisionId?: string;
   readonly heads?: readonly string[];
   readonly changelogSeq?: number;
+  readonly conflictId?: string;
 };
 
 export type SyncPushResponse = {

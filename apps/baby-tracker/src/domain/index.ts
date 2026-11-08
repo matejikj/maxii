@@ -198,3 +198,17 @@ export {
   buildSyncTransferPresentation,
   type SyncTransferPresentation,
 } from './sync/presentation';
+export {
+  applyRevision,
+  bumpEraseGeneration,
+  convergeByRevisions,
+  createEmptyEntityGraph,
+  detectConcurrentSleepSessions,
+  isolateOutboxForResync,
+  materializeTombstone,
+  type ApplyResult,
+  type ConflictRecord,
+  type EntityGraphState,
+  type GraphRevision,
+  type TombstoneRecord,
+} from './sync/causality';

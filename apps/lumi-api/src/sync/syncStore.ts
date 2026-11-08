@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type {
   AppUserId,
+  EntityGraphState,
   FamilyId,
   SyncChangelogEntry,
   SyncCursor,
@@ -12,7 +13,11 @@ import type {
 import {
   LUMI_API_LIMITS,
   LUMI_API_PROTOCOL_VERSION,
+  applyRevision,
   authorizeFamilyAccess,
+  bumpEraseGeneration,
+  createEmptyEntityGraph,
+  materializeTombstone,
 } from '@lumi/contracts';
 
 type FamilySyncState = {
@@ -20,6 +25,7 @@ type FamilySyncState = {
   epoch: number;
   lastChangelogSeq: number;
   writerGeneration: number;
+  graph: EntityGraphState;
 };
 
 type StoredReceipt = {
@@ -38,9 +44,8 @@ type CursorPayload = {
 };
 
 /**
- * In-memory sync ledger with commit-safe changelog numbering. Sequence is
- * assigned only while the family lock is held at accept time, never leased
- * before the durable write completes.
+ * In-memory sync ledger with commit-safe changelog numbering and a causal
+ * revision graph. Sequence is assigned only while the family lock is held.
  */
 export class MemorySyncStore {
   readonly states = new Map<FamilyId, FamilySyncState>();
@@ -58,6 +63,7 @@ export class MemorySyncStore {
         epoch: 1,
         lastChangelogSeq: 0,
         writerGeneration: 1,
+        graph: createEmptyEntityGraph(1),
       };
       this.states.set(familyId, state);
       this.changelog.set(familyId, []);
@@ -66,14 +72,29 @@ export class MemorySyncStore {
   }
 
   /**
-   * Simulates a hosting move that keeps receipts/hashes but bumps epoch so an
-   * old cursor cannot silently skip gaps.
+   * Hosting cut-over: keep receipts/hashes, bump epoch/writer so old cursors
+   * and abandoned writers cannot silently continue.
    */
   rotateEpochKeepReceipts(familyId: FamilyId): number {
     const state = this.ensureFamily(familyId);
     state.epoch += 1;
     state.writerGeneration += 1;
+    state.graph = bumpEraseGeneration(state.graph);
     return state.epoch;
+  }
+
+  materializeTombstone(
+    familyId: FamilyId,
+    entityId: string,
+    deletedByRevisionId: string,
+    now: string,
+  ): void {
+    const state = this.ensureFamily(familyId);
+    state.graph = materializeTombstone(state.graph, {
+      entityId,
+      deletedByRevisionId,
+      now,
+    });
   }
 
   async push(input: {
@@ -87,6 +108,7 @@ export class MemorySyncStore {
     }[];
     attemptId: string;
     operations: readonly SyncOperation[];
+    writerGeneration?: number;
     now: string;
   }): Promise<SyncPushResponse> {
     const access = authorizeFamilyAccess({
@@ -103,9 +125,23 @@ export class MemorySyncStore {
 
     return this.withFamilyLock(input.familyId, async () => {
       const state = this.ensureFamily(input.familyId);
-      const receipts: SyncOperationReceipt[] = [];
+      if (
+        input.writerGeneration != null &&
+        input.writerGeneration !== state.writerGeneration
+      ) {
+        return {
+          familyId: input.familyId,
+          attemptId: input.attemptId,
+          epoch: state.epoch,
+          receipts: input.operations.map((operation) => ({
+            operationId: operation.operationId,
+            status: 'rejected' as const,
+            reason: 'stale_writer' as const,
+          })),
+        };
+      }
 
-      // Family lock scope: assign sequences only after validation, in order.
+      const receipts: SyncOperationReceipt[] = [];
       for (const operation of input.operations) {
         receipts.push(await this.acceptOne(state, input.appUserId, operation, input.now));
       }
@@ -245,18 +281,46 @@ export class MemorySyncStore {
       return { ...existing.receipt, status: 'duplicate' };
     }
 
+    const kind = mapOperationKind(operation.kind, operation.payload);
+    const applied = applyRevision(state.graph, {
+      revisionId: operation.revisionId,
+      entityId: operation.entityId,
+      operationId: operation.operationId,
+      parentRevisionIds: operation.parentRevisionIds,
+      kind,
+      actorId: String(operation.actorAppUserId),
+      createdAt: now,
+      state: operation.payload,
+    });
+    if (!applied.ok) {
+      return {
+        operationId: operation.operationId,
+        status: 'rejected',
+        reason:
+          applied.reason === 'cannot_auto_resurrect'
+            ? 'tombstoned'
+            : applied.reason === 'tombstoned'
+              ? 'tombstoned'
+              : applied.reason === 'unknown_parents'
+                ? 'unknown_parents'
+                : 'validation',
+      };
+    }
+
     if (this.slowCommitMs > 0) {
       await sleep(this.slowCommitMs);
     }
 
+    state.graph = applied.state;
     state.lastChangelogSeq += 1;
     const changelogSeq = state.lastChangelogSeq;
     const receipt: SyncOperationReceipt = {
       operationId: operation.operationId,
-      status: 'accepted',
+      status: applied.status,
       revisionId: operation.revisionId,
-      heads: [operation.revisionId],
+      heads: applied.heads,
       changelogSeq,
+      ...(applied.conflictId ? { conflictId: applied.conflictId } : {}),
     };
     const stored: StoredReceipt = {
       familyId: state.familyId,
@@ -271,6 +335,18 @@ export class MemorySyncStore {
     this.changelog.get(state.familyId)!.push(stored);
     return receipt;
   }
+}
+
+function mapOperationKind(
+  kind: string,
+  payload: Readonly<Record<string, unknown>>,
+): 'create' | 'update' | 'delete' | 'restore' | 'resolve' | 'merge_sleep' {
+  if (kind === 'care.delete' || payload.revisionKind === 'delete') return 'delete';
+  if (kind === 'care.restore' || payload.revisionKind === 'restore') return 'restore';
+  if (payload.revisionKind === 'resolve') return 'resolve';
+  if (payload.revisionKind === 'merge_sleep') return 'merge_sleep';
+  if (kind === 'care.update' || payload.revisionKind === 'update') return 'update';
+  return 'create';
 }
 
 export function hashSyncPayload(payload: Readonly<Record<string, unknown>>): string {
