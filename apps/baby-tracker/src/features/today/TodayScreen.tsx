@@ -13,8 +13,9 @@ import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
-import { CareActionSheet, PRODUCT_COPY } from '../ui';
+import { PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
+import { ExperienceRecorder } from './ExperienceRecorder';
 import { FeedingRecorder } from './FeedingRecorder';
 import { type QuickActionId } from './quickActions';
 import { NursingSessionController } from './NursingSessionController';
@@ -47,8 +48,8 @@ export function TodayScreen({
   const sleepStarter = useSleepStarter(childId, zone, model.activeSleep);
   const [diaperOpen, setDiaperOpen] = useState(false);
   const [feedingOpen, setFeedingOpen] = useState(false);
+  const [experienceOpen, setExperienceOpen] = useState(false);
   const [editingActions, setEditingActions] = useState(false);
-  const [infoSheet, setInfoSheet] = useState<'experience' | null>(null);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
   const diaperOpenerRef = useRef(null);
 
@@ -103,7 +104,7 @@ export function TodayScreen({
       return;
     }
     if (id === 'experience') {
-      setInfoSheet(id);
+      setExperienceOpen(true);
     }
   }
 
@@ -233,6 +234,12 @@ export function TodayScreen({
               activeNursing={model.activeNursing}
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
+            <ExperienceRecorder
+              childId={childId}
+              timeZone={zone}
+              open={experienceOpen}
+              onClose={() => setExperienceOpen(false)}
+            />
           </>
         ) : null}
 
@@ -266,14 +273,6 @@ export function TodayScreen({
         />
       </ScrollView>
 
-      <CareActionSheet
-        visible={infoSheet != null}
-        title={PRODUCT_COPY.sheets.unavailableExperience}
-        onClose={() => setInfoSheet(null)}
-      >
-        <LumiText>{PRODUCT_COPY.empty.experienceSoon}</LumiText>
-        <LumiButton title={PRODUCT_COPY.actions.close} onPress={() => setInfoSheet(null)} fullWidth />
-      </CareActionSheet>
     </SafeAreaView>
   );
 }

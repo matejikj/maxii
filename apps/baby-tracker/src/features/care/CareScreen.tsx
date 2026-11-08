@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LumiButton, LumiChip, LumiText, useLumiTheme } from '@lumi/forest-design/native';
@@ -7,9 +7,13 @@ import {
   asOperationId,
   asRevisionId,
   asTimeZoneId,
+  buildGrowthSeries,
   sleepOccurrenceFromInterval,
   sleepOccurrenceWithoutDuration,
   type FeedingSide,
+  type GrowthCareEvent,
+  type LengthDisplayUnit,
+  type WeightDisplayUnit,
 } from '../../domain';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { useCompositionRoot } from '../../app/providers';
@@ -30,10 +34,16 @@ import {
   mintFeedingIds,
   sideLabel,
 } from '../today/recordFeedingIntent';
+import { GrowthChart } from './GrowthChart';
+import { GrowthRecorder } from './GrowthRecorder';
+import {
+  loadGrowthDisplayUnits,
+  saveGrowthDisplayUnits,
+} from './growthUnitPreference';
 
 /**
- * Care tab hosts past / no-duration sleep and nursing writes. Live timers stay
- * on Today and the compact strip — not duplicated here as a second measurement.
+ * Care tab hosts growth overview plus past / no-duration sleep and nursing.
+ * Live timers stay on Today and the compact strip.
  */
 export function CareScreen() {
   const { colors, ui } = useLumiTheme();
@@ -45,6 +55,10 @@ export function CareScreen() {
   const [sheet, setSheet] = useState<
     'none' | 'past' | 'noduration' | 'nursingPast' | 'nursingNoDuration'
   >('none');
+  const [growthOpen, setGrowthOpen] = useState(false);
+  const [growthEvents, setGrowthEvents] = useState<GrowthCareEvent[]>([]);
+  const [weightUnit, setWeightUnit] = useState<WeightDisplayUnit>('kg');
+  const [lengthUnit, setLengthUnit] = useState<LengthDisplayUnit>('cm');
   const [startWall, setStartWall] = useState('');
   const [endWall, setEndWall] = useState('');
   const [observedWall, setObservedWall] = useState('');
@@ -55,6 +69,58 @@ export function CareScreen() {
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<SaveFeedbackState>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState<string | undefined>();
+
+  const refreshGrowth = useCallback(async () => {
+    if (!childId) {
+      setGrowthEvents([]);
+      return;
+    }
+    const recent = await runtime.unitOfWork.run((uow) => uow.care.listRecent(childId, 80));
+    setGrowthEvents(recent.filter((event): event is GrowthCareEvent => event.type === 'growth'));
+  }, [childId, runtime.unitOfWork]);
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      void loadGrowthDisplayUnits(runtime.unitOfWork).then((units) => {
+        if (cancelled) return;
+        setWeightUnit(units.weightUnit);
+        setLengthUnit(units.lengthUnit);
+      });
+      void refreshGrowth();
+    });
+    const unsubscribe = runtime.readModels.subscribe((topics) => {
+      if (topics.includes('care')) void refreshGrowth();
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [refreshGrowth, runtime.readModels, runtime.unitOfWork]);
+
+  async function changeWeightUnit(unit: WeightDisplayUnit) {
+    setWeightUnit(unit);
+    await saveGrowthDisplayUnits(runtime.unitOfWork, { weightUnit: unit, lengthUnit });
+  }
+
+  async function changeLengthUnit(unit: LengthDisplayUnit) {
+    setLengthUnit(unit);
+    await saveGrowthDisplayUnits(runtime.unitOfWork, { weightUnit, lengthUnit: unit });
+  }
+
+  function formatGrowthDate(epochMs: number): string {
+    try {
+      return new Intl.DateTimeFormat('cs-CZ', {
+        timeZone: zone,
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+      }).format(new Date(epochMs));
+    } catch {
+      return new Date(epochMs).toISOString().slice(0, 10);
+    }
+  }
 
   function openPast() {
     const now = formatWallDateTime(services.clock.now().epochMs, zone);
@@ -242,12 +308,26 @@ export function CareScreen() {
           Péče
         </LumiText>
         <LumiText tone="muted">
-          Minulý spánek a kojení bez běžícího timeru. Probíhající měření zůstává na Dnes.
+          Růst a minulý spánek či kojení. Probíhající měření zůstává na Dnes.
         </LumiText>
         <SaveFeedback
           state={feedback}
           {...(feedbackMessage !== undefined ? { message: feedbackMessage } : {})}
         />
+        <LumiText variant="h2">Růst</LumiText>
+        <GrowthChart
+          series={buildGrowthSeries(growthEvents)}
+          weightUnit={weightUnit}
+          lengthUnit={lengthUnit}
+          formatDate={formatGrowthDate}
+        />
+        <LumiButton
+          title={PRODUCT_COPY.actions.recordGrowth}
+          fullWidth
+          onPress={() => setGrowthOpen(true)}
+          testID="care-record-growth"
+        />
+        <LumiText variant="h2">Spánek a kojení</LumiText>
         <LumiButton
           title={PRODUCT_COPY.actions.recordPastSleep}
           fullWidth
@@ -274,6 +354,19 @@ export function CareScreen() {
           onPress={openNursingNoDuration}
         />
       </ScrollView>
+
+      {childId ? (
+        <GrowthRecorder
+          childId={childId}
+          timeZone={zone}
+          open={growthOpen}
+          onClose={() => setGrowthOpen(false)}
+          weightUnit={weightUnit}
+          lengthUnit={lengthUnit}
+          onChangeWeightUnit={(unit) => void changeWeightUnit(unit)}
+          onChangeLengthUnit={(unit) => void changeLengthUnit(unit)}
+        />
+      ) : null}
 
       <CareActionSheet
         visible={sheet === 'past'}

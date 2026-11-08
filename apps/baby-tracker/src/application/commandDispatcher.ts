@@ -123,6 +123,9 @@ export function createCommandDispatcher(deps: {
             case 'recordNursing':
             case 'recordFood':
             case 'recordGrowth':
+            case 'recordNote':
+            case 'recordExperience':
+            case 'recordMilestone':
               return writeCare(uow, command, deps, faults, defaultZone);
             case 'startSleepSession':
               return startSleepSession(uow, command, deps, faults);
@@ -1049,6 +1052,9 @@ function expectedFingerprint(command: ApplicationCommand): string | null {
     case 'recordNursing':
     case 'recordFood':
     case 'recordGrowth':
+    case 'recordNote':
+    case 'recordExperience':
+    case 'recordMilestone':
       return fingerprintCareWrite(command);
     case 'startSleepSession':
       return fingerprintStartSleep(command);
@@ -1182,6 +1188,9 @@ function eventZone(command: CareMutationCommand, fallback: TimeZoneId): TimeZone
     case 'recordDiaper':
     case 'recordBottle':
     case 'recordFood':
+    case 'recordNote':
+    case 'recordExperience':
+    case 'recordMilestone':
       return command.occurredAt.timeZone;
     case 'recordSleep':
     case 'recordNursing':

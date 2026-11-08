@@ -213,6 +213,27 @@ function careBody(command: CareWriteCommand): unknown {
         headCm: command.headCm ?? null,
         note: command.note ?? null,
       };
+    case 'recordNote':
+      return {
+        occurredAtMs: command.occurredAt.instant.epochMs,
+        body: command.body,
+        note: command.note ?? null,
+      };
+    case 'recordExperience':
+      return {
+        occurredAtMs: command.occurredAt.instant.epochMs,
+        title: command.title ?? null,
+        area: command.area ?? null,
+        activityId: command.activityId ?? null,
+        activityRevisionId: command.activityRevisionId ?? null,
+        note: command.note ?? null,
+      };
+    case 'recordMilestone':
+      return {
+        occurredAtMs: command.occurredAt.instant.epochMs,
+        body: command.body,
+        note: command.note ?? null,
+      };
   }
 }
 

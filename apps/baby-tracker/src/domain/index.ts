@@ -37,6 +37,21 @@ export {
   type NursingDaySummary,
   type SleepDaySummary,
 } from './projections/careSummaries';
+export {
+  buildGrowthSeries,
+  type GrowthSeries,
+  type GrowthSeriesPoint,
+} from './projections/growthSeries';
+export {
+  cmToDisplay,
+  displayToCm,
+  displayToKg,
+  formatDisplayMeasure,
+  kgToDisplay,
+  parseDecimalInput,
+  type LengthDisplayUnit,
+  type WeightDisplayUnit,
+} from './growth/units';
 export type {
   AppMetaRepository,
   CareRepository,

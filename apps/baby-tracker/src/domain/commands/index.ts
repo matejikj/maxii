@@ -3,8 +3,11 @@ export {
   type CareWriteCommand,
   type RecordBottleCommand,
   type RecordDiaperCommand,
+  type RecordExperienceCommand,
   type RecordFoodCommand,
   type RecordGrowthCommand,
+  type RecordMilestoneCommand,
+  type RecordNoteCommand,
   type RecordNursingCommand,
   type RecordSleepCommand,
 } from './careCommands';

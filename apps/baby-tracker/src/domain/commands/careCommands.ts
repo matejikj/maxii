@@ -2,21 +2,28 @@ import { AppError } from '../errors';
 import {
   createBottleEvent,
   createDiaperEvent,
+  createExperienceEvent,
   createFoodEvent,
   createGrowthEvent,
+  createMilestoneEvent,
+  createNoteEvent,
   createNursingEvent,
   createSleepEvent,
   type BottleCareEvent,
   type BottleContents,
   type DiaperCareEvent,
   type DiaperContents,
+  type ExperienceCareEvent,
   type FeedingSide,
   type FoodCareEvent,
   type GrowthCareEvent,
   type MeasuredQuantity,
+  type MilestoneCareEvent,
+  type NoteCareEvent,
   type NursingCareEvent,
   type SleepCareEvent,
 } from '../entities/careEvent';
+import type { DevelopmentArea } from '../entities/development';
 import type { ActorId, ChildId, EntityId, RevisionId } from '../ids';
 import type { CareOccurrence, EpochInterval, ZonedInstant } from '../time';
 import type { CommandIntent } from './results';
@@ -91,13 +98,52 @@ export type RecordGrowthCommand = CommandIntent & {
   recordedBy?: ActorId | null;
 };
 
+export type RecordNoteCommand = CommandIntent & {
+  type: 'recordNote';
+  eventId: EntityId;
+  revisionId: RevisionId;
+  childId: ChildId;
+  occurredAt: ZonedInstant;
+  body: string;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+};
+
+export type RecordExperienceCommand = CommandIntent & {
+  type: 'recordExperience';
+  eventId: EntityId;
+  revisionId: RevisionId;
+  childId: ChildId;
+  occurredAt: ZonedInstant;
+  title?: string | null;
+  area?: DevelopmentArea | null;
+  activityId?: string | null;
+  activityRevisionId?: string | null;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+};
+
+export type RecordMilestoneCommand = CommandIntent & {
+  type: 'recordMilestone';
+  eventId: EntityId;
+  revisionId: RevisionId;
+  childId: ChildId;
+  occurredAt: ZonedInstant;
+  body: string;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+};
+
 export type CareWriteCommand =
   | RecordDiaperCommand
   | RecordSleepCommand
   | RecordBottleCommand
   | RecordNursingCommand
   | RecordFoodCommand
-  | RecordGrowthCommand;
+  | RecordGrowthCommand
+  | RecordNoteCommand
+  | RecordExperienceCommand
+  | RecordMilestoneCommand;
 
 /** Pure validation + entity construction; persistence happens in application services. */
 export function buildCareEventFromCommand(
@@ -109,7 +155,10 @@ export function buildCareEventFromCommand(
   | BottleCareEvent
   | NursingCareEvent
   | FoodCareEvent
-  | GrowthCareEvent {
+  | GrowthCareEvent
+  | NoteCareEvent
+  | ExperienceCareEvent
+  | MilestoneCareEvent {
   switch (command.type) {
     case 'recordDiaper':
       return createDiaperEvent({
@@ -178,6 +227,44 @@ export function buildCareEventFromCommand(
         ...(command.weightKg !== undefined ? { weightKg: command.weightKg } : {}),
         ...(command.lengthCm !== undefined ? { lengthCm: command.lengthCm } : {}),
         ...(command.headCm !== undefined ? { headCm: command.headCm } : {}),
+        ...(command.note !== undefined ? { note: command.note } : {}),
+        ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),
+      });
+    case 'recordNote':
+      return createNoteEvent({
+        eventId: command.eventId,
+        childId: command.childId,
+        revisionId: command.revisionId,
+        occurredAt: command.occurredAt,
+        body: command.body,
+        createdAt,
+        ...(command.note !== undefined ? { note: command.note } : {}),
+        ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),
+      });
+    case 'recordExperience':
+      return createExperienceEvent({
+        eventId: command.eventId,
+        childId: command.childId,
+        revisionId: command.revisionId,
+        occurredAt: command.occurredAt,
+        createdAt,
+        ...(command.title !== undefined ? { title: command.title } : {}),
+        ...(command.area !== undefined ? { area: command.area } : {}),
+        ...(command.activityId !== undefined ? { activityId: command.activityId } : {}),
+        ...(command.activityRevisionId !== undefined
+          ? { activityRevisionId: command.activityRevisionId }
+          : {}),
+        ...(command.note !== undefined ? { note: command.note } : {}),
+        ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),
+      });
+    case 'recordMilestone':
+      return createMilestoneEvent({
+        eventId: command.eventId,
+        childId: command.childId,
+        revisionId: command.revisionId,
+        occurredAt: command.occurredAt,
+        body: command.body,
+        createdAt,
         ...(command.note !== undefined ? { note: command.note } : {}),
         ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),
       });

@@ -74,9 +74,25 @@ export function HistoryScreen({ onOpenEvent }: HistoryScreenProps) {
     };
   }, [load, runtime.readModels]);
 
-  // Activities/notes filters stay empty until those event types exist locally.
-  const visible =
-    state.filter === 'all' || state.filter === 'care' ? events : [];
+  const visible = events.filter((event) => {
+    switch (state.filter) {
+      case 'all':
+        return true;
+      case 'care':
+        return (
+          event.type === 'diaper' ||
+          event.type === 'sleep' ||
+          event.type === 'nursing' ||
+          event.type === 'bottle' ||
+          event.type === 'food' ||
+          event.type === 'growth'
+        );
+      case 'activities':
+        return event.type === 'experience';
+      case 'notes':
+        return event.type === 'note' || event.type === 'milestone';
+    }
+  });
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>

@@ -3,7 +3,8 @@ import type { ChildId, EntityId } from '../ids';
 import type { Instant } from '../ports/clock';
 import type { CareEventType } from './careEvent';
 
-export type DraftFormType = CareEventType | 'note' | 'experience' | 'observation';
+/** Draft form kinds match durable care types; legacy “observation” maps to milestone. */
+export type DraftFormType = CareEventType | 'observation';
 
 /**
  * A draft is recoverable form state, never a care event and never part of

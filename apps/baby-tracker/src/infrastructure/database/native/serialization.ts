@@ -27,6 +27,9 @@ export function careSortAtMs(event: CareEvent): number {
     case 'bottle':
     case 'food':
     case 'diaper':
+    case 'note':
+    case 'experience':
+    case 'milestone':
       return event.occurredAt.instant.epochMs;
     case 'growth':
       return event.measuredOn.instant.epochMs;

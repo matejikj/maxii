@@ -2,6 +2,7 @@ import { AppError } from '../errors';
 import type { ActorId, ChildId, EntityId, RevisionId } from '../ids';
 import type { CareOccurrence, EpochInterval, ZonedInstant } from '../time';
 import { knownInterval } from '../time';
+import type { DevelopmentArea } from './development';
 
 export type DiaperContents = 'wet' | 'dirty' | 'both';
 
@@ -66,9 +67,41 @@ export type DiaperCareEvent = CareEventBase & {
 export type GrowthCareEvent = CareEventBase & {
   type: 'growth';
   measuredOn: ZonedInstant;
+  /** Canonical kilograms; null means not recorded — never coerce to 0. */
   weightKg: number | null;
+  /** Canonical centimetres; null means not recorded. */
   lengthCm: number | null;
   headCm: number | null;
+};
+
+/**
+ * Free-text parental note. Dictated or typed text stays one event — never split
+ * into inferred care or catalog experiences.
+ */
+export type NoteCareEvent = CareEventBase & {
+  type: 'note';
+  occurredAt: ZonedInstant;
+  body: string;
+};
+
+/**
+ * Free-form play outside the activity catalog. Optional title/area; catalog
+ * confirmation is a later, explicit path and must not be inferred here.
+ */
+export type ExperienceCareEvent = CareEventBase & {
+  type: 'experience';
+  occurredAt: ZonedInstant;
+  title: string | null;
+  area: DevelopmentArea | null;
+  activityId: string | null;
+  activityRevisionId: string | null;
+};
+
+/** Parental milestone observation — descriptive fact, not readiness scoring. */
+export type MilestoneCareEvent = CareEventBase & {
+  type: 'milestone';
+  occurredAt: ZonedInstant;
+  body: string;
 };
 
 export type CareEvent =
@@ -77,7 +110,10 @@ export type CareEvent =
   | BottleCareEvent
   | FoodCareEvent
   | DiaperCareEvent
-  | GrowthCareEvent;
+  | GrowthCareEvent
+  | NoteCareEvent
+  | ExperienceCareEvent
+  | MilestoneCareEvent;
 
 export type CareEventType = CareEvent['type'];
 
@@ -264,6 +300,103 @@ export function createGrowthEvent(input: {
     weightKg,
     lengthCm,
     headCm,
+    note: input.note ?? null,
+    recordedBy: input.recordedBy ?? null,
+    createdAt: input.createdAt,
+  };
+}
+
+export function createNoteEvent(input: {
+  eventId: EntityId;
+  childId: ChildId;
+  revisionId: RevisionId;
+  occurredAt: ZonedInstant;
+  body: string;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+  createdAt: ZonedInstant;
+}): NoteCareEvent {
+  const body = input.body.trim();
+  if (!body) {
+    throw new AppError('VALIDATION', 'Note needs a short description', {
+      details: { reason: 'empty_note' },
+    });
+  }
+  return {
+    type: 'note',
+    eventId: input.eventId,
+    childId: input.childId,
+    revisionId: input.revisionId,
+    occurredAt: input.occurredAt,
+    body,
+    note: input.note ?? null,
+    recordedBy: input.recordedBy ?? null,
+    createdAt: input.createdAt,
+  };
+}
+
+export function createExperienceEvent(input: {
+  eventId: EntityId;
+  childId: ChildId;
+  revisionId: RevisionId;
+  occurredAt: ZonedInstant;
+  title?: string | null;
+  area?: DevelopmentArea | null;
+  activityId?: string | null;
+  activityRevisionId?: string | null;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+  createdAt: ZonedInstant;
+}): ExperienceCareEvent {
+  const title = input.title?.trim() ? input.title.trim() : null;
+  const area = input.area ?? null;
+  const activityId = input.activityId?.trim() ? input.activityId.trim() : null;
+  const note = input.note?.trim() ? input.note.trim() : null;
+  // Free play can be area-only; empty forms must not invent an experience.
+  if (!title && !area && !activityId && !note) {
+    throw new AppError('VALIDATION', 'Experience needs an area, title, or short note', {
+      details: { reason: 'empty_experience' },
+    });
+  }
+  return {
+    type: 'experience',
+    eventId: input.eventId,
+    childId: input.childId,
+    revisionId: input.revisionId,
+    occurredAt: input.occurredAt,
+    title,
+    area,
+    activityId,
+    activityRevisionId: activityId ? (input.activityRevisionId ?? null) : null,
+    note,
+    recordedBy: input.recordedBy ?? null,
+    createdAt: input.createdAt,
+  };
+}
+
+export function createMilestoneEvent(input: {
+  eventId: EntityId;
+  childId: ChildId;
+  revisionId: RevisionId;
+  occurredAt: ZonedInstant;
+  body: string;
+  note?: string | null;
+  recordedBy?: ActorId | null;
+  createdAt: ZonedInstant;
+}): MilestoneCareEvent {
+  const body = input.body.trim();
+  if (!body) {
+    throw new AppError('VALIDATION', 'Milestone needs a short description', {
+      details: { reason: 'empty_milestone' },
+    });
+  }
+  return {
+    type: 'milestone',
+    eventId: input.eventId,
+    childId: input.childId,
+    revisionId: input.revisionId,
+    occurredAt: input.occurredAt,
+    body,
     note: input.note ?? null,
     recordedBy: input.recordedBy ?? null,
     createdAt: input.createdAt,

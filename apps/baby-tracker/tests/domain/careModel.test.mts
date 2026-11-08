@@ -22,7 +22,10 @@ import {
   diaperCountContribution,
   knownSleepDurationMs,
   nursingActiveDurationMs,
+  createExperienceEvent,
   createFoodEvent,
+  createMilestoneEvent,
+  createNoteEvent,
   createNursingEvent,
   pauseNursingSession,
   recordDiaperInputSchema,
@@ -106,6 +109,48 @@ test('switchNursingSide closes the open segment atomically', () => {
   assert.equal(switched.activeSegments.length, 1);
   assert.equal(switched.activeSegments[0]?.endMs, 1_700_000_030_000);
   assert.equal(switched.currentSegmentStartedAtMs, 1_700_000_030_000);
+});
+
+test('note milestone and free play reject empty meaningful payloads', () => {
+  assert.throws(() =>
+    createNoteEvent({
+      eventId: asEntityId('note_empty'),
+      childId,
+      revisionId: asRevisionId('rev_ne'),
+      occurredAt: now,
+      body: '  ',
+      createdAt: now,
+    }),
+  );
+  assert.throws(() =>
+    createMilestoneEvent({
+      eventId: asEntityId('ms_empty'),
+      childId,
+      revisionId: asRevisionId('rev_me'),
+      occurredAt: now,
+      body: '',
+      createdAt: now,
+    }),
+  );
+  assert.throws(() =>
+    createExperienceEvent({
+      eventId: asEntityId('xp_empty'),
+      childId,
+      revisionId: asRevisionId('rev_xe'),
+      occurredAt: now,
+      createdAt: now,
+    }),
+  );
+  const play = createExperienceEvent({
+    eventId: asEntityId('xp_ok'),
+    childId,
+    revisionId: asRevisionId('rev_xo'),
+    occurredAt: now,
+    area: 'speech',
+    createdAt: now,
+  });
+  assert.equal(play.activityId, null);
+  assert.equal(play.area, 'speech');
 });
 
 test('nursing and food summaries stay separated from bottle ml', () => {

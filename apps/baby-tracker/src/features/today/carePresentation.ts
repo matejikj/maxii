@@ -18,6 +18,9 @@ export function careSortAtMs(event: CareEvent): number {
     case 'bottle':
     case 'food':
     case 'diaper':
+    case 'note':
+    case 'experience':
+    case 'milestone':
       return event.occurredAt.instant.epochMs;
     case 'growth':
       return event.measuredOn.instant.epochMs;
@@ -87,11 +90,38 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
         sortAtMs,
       };
     }
-    case 'growth':
+    case 'growth': {
+      const parts = [
+        event.weightKg != null ? `${event.weightKg} kg` : null,
+        event.lengthCm != null ? `${event.lengthCm} cm` : null,
+        event.headCm != null ? `hlava ${event.headCm} cm` : null,
+      ].filter(Boolean);
       return {
         eventId: event.eventId,
         title: 'Růst',
-        detail: `měření ${clock}`,
+        detail: parts.length > 0 ? `měření ${clock} · ${parts.join(', ')}` : `měření ${clock}`,
+        sortAtMs,
+      };
+    }
+    case 'note':
+      return {
+        eventId: event.eventId,
+        title: 'Poznámka',
+        detail: `v ${clock} · ${event.body.slice(0, 80)}`,
+        sortAtMs,
+      };
+    case 'experience':
+      return {
+        eventId: event.eventId,
+        title: event.title?.trim() ? event.title : 'Zážitek',
+        detail: `v ${clock}${event.area ? ` · ${event.area}` : ''}`,
+        sortAtMs,
+      };
+    case 'milestone':
+      return {
+        eventId: event.eventId,
+        title: 'Milník',
+        detail: `v ${clock} · ${event.body.slice(0, 80)}`,
         sortAtMs,
       };
     case 'sleep':
