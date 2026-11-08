@@ -25,6 +25,8 @@ Auth endpoints: `GET /v1/auth/mode`, `POST /v1/auth/login/start`, `POST /v1/auth
 
 Family membership: `POST /v1/families`, `GET /v1/families/:id/members`, invitations (`POST .../invitations`, preview/accept), admin-only revoke/transfer/erasure, and `POST /v1/me/identities/link` for a second verified issuer on the same internal account. Invitation secrets are hashed; plaintext is returned once.
 
+Sync transport: `POST /v1/families/:id/sync/push` and `GET /v1/families/:id/sync/pull`. Receipts are idempotent on `(familyId, operationId, payloadHash)`; an opaque cursor advances only with applied changelog pages. Invalid epoch cursors return `resync_required` without clearing client outboxes.
+
 ## Single-VPS overlay
 
 ```bash

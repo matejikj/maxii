@@ -13,3 +13,9 @@ export {
 } from './ops/jobQueue.ts';
 export { runWorkerLoop } from './ops/workerLoop.ts';
 export { createFixedWindowRateLimiter } from './http/rateLimit.ts';
+export {
+  MemorySyncStore,
+  hashSyncPayload,
+  encodeCursor,
+  decodeCursor,
+} from './sync/syncStore.ts';

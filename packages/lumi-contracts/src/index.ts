@@ -66,3 +66,18 @@ export type {
   ChildLinkComparison,
   EnrollmentIntent,
 } from './enrollment.ts';
+export {
+  buildSyncTransferPresentation,
+} from './sync.ts';
+export type {
+  SyncChangelogEntry,
+  SyncCursor,
+  SyncOperation,
+  SyncOperationKind,
+  SyncOperationReceipt,
+  SyncPullQuery,
+  SyncPullResponse,
+  SyncPushRequest,
+  SyncPushResponse,
+  SyncTransferPresentation,
+} from './sync.ts';

@@ -180,3 +180,21 @@ export {
   type EnrollmentIntent,
   type JoinPreview,
 } from './family/enrollment';
+export {
+  applyPushReceipts,
+  commitPullPage,
+  createEmptySyncState,
+  enqueueDurableOutbox,
+  isolateRejectedFamilyPush,
+  markOutboxAttempt,
+  pendingOutbox,
+  syncBackoffMs,
+  type DurableOutboxEntry,
+  type InboxEntry,
+  type LocalSyncState,
+} from './sync/transport';
+export { runSyncTick, type SyncTransportPort, type SyncWorkerResult } from './sync/worker';
+export {
+  buildSyncTransferPresentation,
+  type SyncTransferPresentation,
+} from './sync/presentation';

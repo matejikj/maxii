@@ -11,6 +11,9 @@ export const LUMI_API_LIMITS = {
   invitationDefaultTtlSeconds: 48 * 60 * 60,
   invitationMaxTtlSeconds: 7 * 24 * 60 * 60,
   invitationMaxAttempts: 5,
+  /** Push batches stay small so partial failures stay recoverable. */
+  maxSyncPushBatch: 25,
+  maxSyncPullPage: 50,
 } as const;
 
 export type HealthResponse = {

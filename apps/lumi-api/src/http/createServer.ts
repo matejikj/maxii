@@ -17,13 +17,16 @@ import { OidcTokenExchanger } from '../auth/oidcExchange.ts';
 import { registerAuthRoutes } from '../auth/loginRoutes.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
+import { MemorySyncStore } from '../sync/syncStore.ts';
 import { apiError } from './errors.ts';
 import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
+import { registerSyncRoutes } from './syncRoutes.ts';
 
 export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
   readonly store: MemoryFamilyStore;
+  readonly sync: MemorySyncStore;
   readonly tokens: AccessTokenVerifier;
   readonly sessions: AuthSessionStore;
   readonly oidc: OidcTokenExchanger;
@@ -31,6 +34,7 @@ export type CreatedApi = {
 
 export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
+  const sync = new MemorySyncStore();
   const tokens = new AccessTokenVerifier(config, store);
   const sessions = new AuthSessionStore();
   const oidc = new OidcTokenExchanger(config);
@@ -49,6 +53,7 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
 
   registerAuthRoutes(app, { config, store, sessions, oidc });
   registerFamilyRoutes(app, { config, store, tokens, sessions });
+  registerSyncRoutes(app, { config, store, sync, tokens, sessions });
 
   app.addHook('onRequest', async (request, reply) => {
     const clientKey = request.ip || 'unknown';
@@ -223,5 +228,5 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     return { ok: true };
   });
 
-  return { app, store, tokens, sessions, oidc };
+  return { app, store, sync, tokens, sessions, oidc };
 }
