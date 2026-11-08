@@ -4,10 +4,12 @@ export type { FaultInjection, FaultKind } from './faultInjection';
 export type { OutboxEntry, OutboxPort } from './outbox';
 export type {
   AppMetaRepository,
+  CarePage,
   CareRepository,
   DraftRepository,
   ProfileRepository,
   RevisionRepository,
+  SearchIndexRepository,
   SessionRepository,
   UnitOfWork,
   UnitOfWorkFactory,

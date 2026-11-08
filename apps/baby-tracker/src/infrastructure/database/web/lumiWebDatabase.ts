@@ -10,7 +10,7 @@ import Dexie, { type EntityTable } from 'dexie';
  */
 export const WEB_DIARY_DATABASE_NAME = 'lumi-web-diary';
 export const WEB_APP_CACHE_DATABASE_NAME = 'lumi-web-app-cache';
-export const WEB_SCHEMA_VERSION = 3;
+export const WEB_SCHEMA_VERSION = 4;
 
 export type WebChildProfileRow = {
   childId: string;
@@ -99,6 +99,14 @@ export type WebChangeRow = {
   dataVersion: number;
 };
 
+export type WebSearchDocumentRow = {
+  entityId: string;
+  childId: string;
+  sortAtMs: number;
+  docType: string;
+  textNormalized: string;
+};
+
 export class LumiWebDatabase extends Dexie {
   childProfiles!: EntityTable<WebChildProfileRow, 'childId'>;
   careEvents!: EntityTable<WebCareEventRow, 'eventId'>;
@@ -109,6 +117,7 @@ export class LumiWebDatabase extends Dexie {
   deletionMarkers!: EntityTable<WebDeletionRow, 'deletionId'>;
   meta!: EntityTable<WebMetaRow, 'key'>;
   changeNotifications!: EntityTable<WebChangeRow, 'seq'>;
+  searchDocuments!: EntityTable<WebSearchDocumentRow, 'entityId'>;
 
   constructor(databaseName = WEB_DIARY_DATABASE_NAME) {
     super(databaseName);
@@ -133,7 +142,7 @@ export class LumiWebDatabase extends Dexie {
         // Drop legacy probe rows that do not match the diary contract.
         await tx.table('careEvents').clear();
       });
-    this.version(WEB_SCHEMA_VERSION).stores({
+    this.version(3).stores({
       childProfiles: 'childId',
       careEvents: 'eventId, childId, sortAtMs, eventType',
       sessions: 'sessionId, [childId+kind], status',
@@ -144,5 +153,22 @@ export class LumiWebDatabase extends Dexie {
       meta: 'key',
       changeNotifications: '++seq, publishedAtMs, dataVersion',
     });
+    this.version(WEB_SCHEMA_VERSION)
+      .stores({
+        childProfiles: 'childId',
+        careEvents: 'eventId, childId, sortAtMs, eventType',
+        sessions: 'sessionId, [childId+kind], status',
+        drafts: 'draftId, childId, updatedAtMs',
+        revisions: 'revisionId, entityId, operationId',
+        operationReceipts: 'operationId',
+        deletionMarkers: 'deletionId, entityId, retainUntilMs',
+        meta: 'key',
+        changeNotifications: '++seq, publishedAtMs, dataVersion',
+        searchDocuments: 'entityId, childId, sortAtMs, textNormalized',
+      })
+      .upgrade(async (tx) => {
+        // Rebuildable index — empty until care saves or an explicit rebuild.
+        await tx.table('searchDocuments').clear();
+      });
   }
 }

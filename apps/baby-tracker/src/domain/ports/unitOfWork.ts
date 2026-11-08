@@ -4,6 +4,7 @@ import type { ChildProfile } from '../entities/childProfile';
 import type { Draft } from '../entities/draft';
 import type { DeletionMarker, OperationReceipt, Revision } from '../entities/revision';
 import type { ChildId, EntityId, OperationId, RevisionId } from '../ids';
+import type { TimelineCursor } from '../projections/historyQuery';
 
 /**
  * Transactional scope for one atomic care command. Concrete SQLite/Dexie
@@ -16,6 +17,13 @@ export type UnitOfWork = {
   revisions: RevisionRepository;
   profiles: ProfileRepository;
   meta: AppMetaRepository;
+  search: SearchIndexRepository;
+};
+
+export type CarePage = {
+  events: CareEvent[];
+  /** Null when the page was shorter than the requested limit (end of history). */
+  nextCursor: TimelineCursor | null;
 };
 
 export type CareRepository = {
@@ -31,6 +39,15 @@ export type CareRepository = {
     fromSortAtMsInclusive: number,
     toSortAtMsExclusive: number,
   ): Promise<CareEvent[]>;
+  /**
+   * Descending care-time page with exclusive cursor. Inserts newer than the
+   * cursor never displace older rows off the next page.
+   */
+  listPage(
+    childId: ChildId,
+    limit: number,
+    before: TimelineCursor | null,
+  ): Promise<CarePage>;
 };
 
 export type SessionRepository = {
@@ -42,6 +59,25 @@ export type DraftRepository = {
   getById(draftId: EntityId): Promise<Draft | null>;
   save(draft: Draft): Promise<void>;
   delete(draftId: EntityId): Promise<void>;
+  /** Newest edits first; drafts are never mixed into care timelines. */
+  listByChild(childId: ChildId): Promise<Draft[]>;
+};
+
+/**
+ * Rebuildable local search documents. Lives behind the same private DB boundary
+ * as care rows; query strings stay on-device.
+ */
+export type SearchIndexRepository = {
+  upsertFromCare(event: CareEvent): Promise<void>;
+  remove(entityId: EntityId): Promise<void>;
+  /** Clears and rebuilds documents for one child from live care rows. */
+  rebuildForChild(childId: ChildId): Promise<number>;
+  search(
+    childId: ChildId,
+    normalizedQuery: string,
+    limit: number,
+    before: TimelineCursor | null,
+  ): Promise<CarePage>;
 };
 
 export type RevisionRepository = {

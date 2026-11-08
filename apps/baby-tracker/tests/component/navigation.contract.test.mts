@@ -38,6 +38,18 @@ test('today offers show-today history action with Czech copy', () => {
   assert.match(copy, /Zobrazit dnešní záznamy/);
 });
 
+test('history screen exposes filters, search, drafts and trash without network', () => {
+  const history = read('features/history/HistoryScreen.tsx');
+  assert.match(history, /Zrušit filtry|clearHistoryFilters/);
+  assert.match(history, /Nedávno smazané|trash/);
+  assert.match(history, /Koncepty|drafts/);
+  assert.match(history, /rebuildSearchIndex|Obnovit hledání/);
+  assert.doesNotMatch(history, /fetch\(|EXPO_PUBLIC_LUMI_API_URL|signIn/i);
+  const detail = read('features/history/EventDetailScreen.tsx');
+  assert.match(detail, /softDeleteCare|Upravit/);
+  assert.match(detail, /undoSoftDelete|Zpět/);
+});
+
 test('startup copy never asks for login when storage fails', () => {
   const startup = read('application/startupState.ts');
   assert.match(startup, /Přihlášení ani síť nepotřebujete/);

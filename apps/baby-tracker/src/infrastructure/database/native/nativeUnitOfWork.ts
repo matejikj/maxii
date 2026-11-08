@@ -15,14 +15,17 @@ import type {
   Revision,
   RevisionId,
   RevisionRepository,
+  SearchIndexRepository,
   SessionKind,
   SessionRecord,
   SessionRepository,
+  TimelineCursor,
   UnitOfWork,
   UnitOfWorkFactory,
   DeletionMarker,
 } from '../../../domain';
 import { AppError } from '../../../domain/errors';
+import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
 import type { PrivateDatabase } from './privateDatabase';
 import type { SqlConnection } from './sqlConnection';
@@ -115,31 +118,34 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
         row.sort_at_ms,
         row.payload_json,
       );
+      await upsertSearchDocument(txn, event);
       topics.add('care');
     },
     async delete(eventId: EntityId) {
       await txn.runAsync('DELETE FROM care_events WHERE event_id = ?', eventId);
+      await txn.runAsync('DELETE FROM search_documents WHERE entity_id = ?', eventId);
       topics.add('care');
     },
     async listRecent(childId: ChildId, limit: number) {
-      const rows = await txn.getAllAsync<CareEventRow>(
-        'SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json FROM care_events WHERE child_id = ? ORDER BY sort_at_ms DESC LIMIT ?',
-        childId,
-        limit,
-      );
-      return rows.map(careEventFromRow);
+      const page = await listCarePage(txn, childId, limit, null);
+      return page.events;
     },
     async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
       const rows = await txn.getAllAsync<CareEventRow>(
-        'SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json FROM care_events WHERE child_id = ? AND sort_at_ms >= ? AND sort_at_ms < ? ORDER BY sort_at_ms DESC',
+        `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
+         FROM care_events
+         WHERE child_id = ? AND sort_at_ms >= ? AND sort_at_ms < ?
+         ORDER BY sort_at_ms DESC, event_id DESC`,
         childId,
         fromSortAtMsInclusive,
         toSortAtMsExclusive,
       );
       return rows.map(careEventFromRow);
     },
+    async listPage(childId: ChildId, limit: number, before: TimelineCursor | null) {
+      return listCarePage(txn, childId, limit, before);
+    },
   };
-
   const sessions: SessionRepository = {
     async getActive(childId: ChildId, kind: SessionKind) {
       const row = await txn.getFirstAsync<{ payload_json: string }>(
@@ -189,6 +195,77 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     async delete(draftId: EntityId) {
       await txn.runAsync('DELETE FROM drafts WHERE draft_id = ?', draftId);
       topics.add('drafts');
+    },
+    async listByChild(childId: ChildId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM drafts WHERE child_id = ? ORDER BY updated_at_ms DESC, draft_id DESC`,
+        childId,
+      );
+      return rows.map(draftFromRow);
+    },
+  };
+
+  const search: SearchIndexRepository = {
+    async upsertFromCare(event: CareEvent) {
+      await upsertSearchDocument(txn, event);
+    },
+    async remove(entityId: EntityId) {
+      await txn.runAsync('DELETE FROM search_documents WHERE entity_id = ?', entityId);
+    },
+    async rebuildForChild(childId: ChildId) {
+      await txn.runAsync('DELETE FROM search_documents WHERE child_id = ?', childId);
+      const rows = await txn.getAllAsync<CareEventRow>(
+        `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
+         FROM care_events WHERE child_id = ?`,
+        childId,
+      );
+      for (const row of rows) {
+        await upsertSearchDocument(txn, careEventFromRow(row));
+      }
+      return rows.length;
+    },
+    async search(childId: ChildId, normalizedQuery: string, limit: number, before: TimelineCursor | null) {
+      if (!normalizedQuery) {
+        return listCarePage(txn, childId, limit, before);
+      }
+      const like = `%${escapeLike(normalizedQuery)}%`;
+      const rows =
+        before == null
+          ? await txn.getAllAsync<CareEventRow>(
+              `SELECT c.event_id, c.child_id, c.event_type, c.revision_id, c.sort_at_ms, c.payload_json
+               FROM care_events c
+               INNER JOIN search_documents s ON s.entity_id = c.event_id
+               WHERE s.child_id = ? AND s.text_normalized LIKE ? ESCAPE '\\'
+               ORDER BY c.sort_at_ms DESC, c.event_id DESC
+               LIMIT ?`,
+              childId,
+              like,
+              limit,
+            )
+          : await txn.getAllAsync<CareEventRow>(
+              `SELECT c.event_id, c.child_id, c.event_type, c.revision_id, c.sort_at_ms, c.payload_json
+               FROM care_events c
+               INNER JOIN search_documents s ON s.entity_id = c.event_id
+               WHERE s.child_id = ?
+                 AND s.text_normalized LIKE ? ESCAPE '\\'
+                 AND (
+                   c.sort_at_ms < ?
+                   OR (c.sort_at_ms = ? AND c.event_id < ?)
+                 )
+               ORDER BY c.sort_at_ms DESC, c.event_id DESC
+               LIMIT ?`,
+              childId,
+              like,
+              before.sortAtMs,
+              before.sortAtMs,
+              before.eventId,
+              limit,
+            );
+      const events = rows.map(careEventFromRow);
+      return {
+        events,
+        nextCursor: events.length < limit ? null : nextTimelineCursor(events),
+      };
     },
   };
 
@@ -364,5 +441,64 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta };
+  return { care, sessions, drafts, revisions, profiles, meta, search };
+}
+
+async function listCarePage(
+  txn: SqlConnection,
+  childId: ChildId,
+  limit: number,
+  before: TimelineCursor | null,
+) {
+  const safeLimit = Math.max(0, limit);
+  const rows =
+    before == null
+      ? await txn.getAllAsync<CareEventRow>(
+          `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
+           FROM care_events
+           WHERE child_id = ?
+           ORDER BY sort_at_ms DESC, event_id DESC
+           LIMIT ?`,
+          childId,
+          safeLimit,
+        )
+      : await txn.getAllAsync<CareEventRow>(
+          `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
+           FROM care_events
+           WHERE child_id = ?
+             AND (
+               sort_at_ms < ?
+               OR (sort_at_ms = ? AND event_id < ?)
+             )
+           ORDER BY sort_at_ms DESC, event_id DESC
+           LIMIT ?`,
+          childId,
+          before.sortAtMs,
+          before.sortAtMs,
+          before.eventId,
+          safeLimit,
+        );
+  const events = rows.map(careEventFromRow);
+  return {
+    events,
+    nextCursor: events.length < safeLimit ? null : nextTimelineCursor(events),
+  };
+}
+
+async function upsertSearchDocument(txn: SqlConnection, event: CareEvent): Promise<void> {
+  const doc = searchDocumentFromCareEvent(event);
+  await txn.runAsync('DELETE FROM search_documents WHERE entity_id = ?', doc.entityId);
+  await txn.runAsync(
+    `INSERT INTO search_documents (entity_id, child_id, sort_at_ms, doc_type, text_normalized)
+     VALUES (?, ?, ?, ?, ?)`,
+    doc.entityId,
+    doc.childId,
+    doc.sortAtMs,
+    doc.docType,
+    doc.textNormalized,
+  );
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
 }

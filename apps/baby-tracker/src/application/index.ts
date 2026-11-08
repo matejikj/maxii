@@ -35,4 +35,14 @@ export {
   type StartupPhase,
   type StartupPresentation,
 } from './startupState';
+export {
+  careEventFromTrashMarker,
+  loadDraftsForChild,
+  loadHistoryDay,
+  loadHistoryPage,
+  loadRestorableTrash,
+  rebuildSearchIndex,
+  type HistoryDayQuery,
+  type HistoryPageQuery,
+} from './historyQueries';
 

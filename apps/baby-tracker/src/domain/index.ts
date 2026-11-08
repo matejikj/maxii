@@ -42,6 +42,24 @@ export {
   type GrowthSeries,
   type GrowthSeriesPoint,
 } from './projections/growthSeries';
+export { careSortAtMs } from './projections/careTime';
+export {
+  compareCareTimelineAsc,
+  compareCareTimelineDesc,
+  eventMatchesHistoryBucket,
+  isBeforeTimelineCursor,
+  isDurableHistoryRow,
+  matchesLocalSearch,
+  nextTimelineCursor,
+  normalizeSearchText,
+  searchableTextFromCareEvent,
+  searchDocumentFromCareEvent,
+  type CareSubtype,
+  type HistoryBucket,
+  type HistoryTimelineRow,
+  type SearchDocument,
+  type TimelineCursor,
+} from './projections/historyQuery';
 export {
   cmToDisplay,
   displayToCm,
@@ -54,6 +72,7 @@ export {
 } from './growth/units';
 export type {
   AppMetaRepository,
+  CarePage,
   CareRepository,
   Clock,
   DraftRepository,
@@ -65,6 +84,7 @@ export type {
   OutboxPort,
   ProfileRepository,
   RevisionRepository,
+  SearchIndexRepository,
   SessionRepository,
   UnitOfWork,
   UnitOfWorkFactory,

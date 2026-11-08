@@ -8,6 +8,9 @@ import type {
   Revision,
   SessionRecord,
 } from '../../../domain';
+import { careSortAtMs } from '../../../domain/projections/careTime';
+
+export { careSortAtMs };
 
 export function encodeJson(value: unknown): string {
   return JSON.stringify(value);
@@ -15,25 +18,6 @@ export function encodeJson(value: unknown): string {
 
 export function decodeJson<T>(raw: string): T {
   return JSON.parse(raw) as T;
-}
-
-export function careSortAtMs(event: CareEvent): number {
-  switch (event.type) {
-    case 'sleep':
-    case 'nursing':
-      return event.occurrence.kind === 'known'
-        ? event.occurrence.start.instant.epochMs
-        : event.occurrence.observedAt.instant.epochMs;
-    case 'bottle':
-    case 'food':
-    case 'diaper':
-    case 'note':
-    case 'experience':
-    case 'milestone':
-      return event.occurredAt.instant.epochMs;
-    case 'growth':
-      return event.measuredOn.instant.epochMs;
-  }
 }
 
 export type CareEventRow = {

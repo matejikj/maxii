@@ -269,31 +269,91 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
     return ensureTable(state, 'care_events').rows.filter((row) => row.event_id === params[0]);
   }
   const careRecent =
-    /^SELECT .+ FROM care_events WHERE child_id = \? ORDER BY sort_at_ms DESC LIMIT \?$/i.exec(sql);
+    /^SELECT .+ FROM care_events WHERE child_id = \? ORDER BY sort_at_ms DESC(?:, event_id DESC)? LIMIT \?$/i.exec(
+      sql,
+    );
   if (careRecent) {
     const limit = Number(params[1] ?? 0);
-    return ensureTable(state, 'care_events')
-      .rows.filter((row) => row.child_id === params[0])
-      .slice()
-      .sort((a, b) => Number(b.sort_at_ms) - Number(a.sort_at_ms))
-      .slice(0, Number.isFinite(limit) ? limit : 0);
+    return sortCareDesc(
+      ensureTable(state, 'care_events').rows.filter((row) => row.child_id === params[0]),
+    ).slice(0, Number.isFinite(limit) ? limit : 0);
+  }
+  const carePage =
+    /^SELECT .+ FROM care_events WHERE child_id = \? AND \( sort_at_ms < \? OR \(sort_at_ms = \? AND event_id < \?\) \) ORDER BY sort_at_ms DESC, event_id DESC LIMIT \?$/i.exec(
+      sql,
+    );
+  if (carePage) {
+    const beforeSort = Number(params[1]);
+    const beforeId = String(params[3]);
+    const limit = Number(params[4] ?? 0);
+    return sortCareDesc(
+      ensureTable(state, 'care_events').rows.filter((row) => {
+        if (row.child_id !== params[0]) return false;
+        const sortAt = Number(row.sort_at_ms);
+        if (sortAt < beforeSort) return true;
+        if (sortAt > beforeSort) return false;
+        return String(row.event_id) < beforeId;
+      }),
+    ).slice(0, Number.isFinite(limit) ? limit : 0);
   }
   const careRange =
-    /^SELECT .+ FROM care_events WHERE child_id = \? AND sort_at_ms >= \? AND sort_at_ms < \? ORDER BY sort_at_ms DESC$/i.exec(
+    /^SELECT .+ FROM care_events WHERE child_id = \? AND sort_at_ms >= \? AND sort_at_ms < \? ORDER BY sort_at_ms DESC(?:, event_id DESC)?$/i.exec(
       sql,
     );
   if (careRange) {
     const fromMs = Number(params[1]);
     const toMs = Number(params[2]);
-    return ensureTable(state, 'care_events')
-      .rows.filter(
+    return sortCareDesc(
+      ensureTable(state, 'care_events').rows.filter(
         (row) =>
           row.child_id === params[0] &&
           Number(row.sort_at_ms) >= fromMs &&
           Number(row.sort_at_ms) < toMs,
-      )
+      ),
+    );
+  }
+  const careByChild =
+    /^SELECT .+ FROM care_events WHERE child_id = \?$/i.exec(sql);
+  if (careByChild) {
+    return ensureTable(state, 'care_events').rows.filter((row) => row.child_id === params[0]);
+  }
+  if (/FROM care_events c INNER JOIN search_documents s/i.test(sql)) {
+    const needle = unwrapLike(String(params[1] ?? ''));
+    const hasCursor = params.length >= 6;
+    const beforeSort = hasCursor ? Number(params[2]) : null;
+    const beforeId = hasCursor ? String(params[4]) : null;
+    const limit = Number(params[hasCursor ? 5 : 2] ?? 0);
+    const docs = ensureTable(state, 'search_documents').rows.filter((row) => {
+      if (row.child_id !== params[0]) return false;
+      if (!String(row.text_normalized ?? '').includes(needle)) return false;
+      if (beforeSort == null || beforeId == null) return true;
+      const sortAt = Number(row.sort_at_ms);
+      if (sortAt < beforeSort) return true;
+      if (sortAt > beforeSort) return false;
+      return String(row.entity_id) < beforeId;
+    });
+    const care = ensureTable(state, 'care_events');
+    const events = docs
+      .map((doc) => care.rows.find((row) => row.event_id === doc.entity_id))
+      .filter((row): row is Row => row != null);
+    return sortCareDesc(events).slice(0, Number.isFinite(limit) ? limit : 0);
+  }
+  const draftsByChild =
+    /^SELECT payload_json FROM drafts WHERE child_id = \? ORDER BY updated_at_ms DESC(?:, draft_id DESC)?$/i.exec(
+      sql,
+    );
+  if (draftsByChild) {
+    return ensureTable(state, 'drafts')
+      .rows.filter((row) => row.child_id === params[0])
       .slice()
-      .sort((a, b) => Number(b.sort_at_ms) - Number(a.sort_at_ms));
+      .sort((a, b) => {
+        const updated = Number(b.updated_at_ms) - Number(a.updated_at_ms);
+        if (updated !== 0) return updated;
+        return String(b.draft_id) < String(a.draft_id) ? -1 : 1;
+      });
+  }
+  if (/FROM search_documents/i.test(sql)) {
+    return [...ensureTable(state, 'search_documents').rows];
   }
   if (/FROM care_events/i.test(sql)) {
     return [...ensureTable(state, 'care_events').rows];
@@ -376,6 +436,18 @@ function deleteRows(state: DatabaseState, sql: string, params: SqlBindValue[]): 
   const before = table.rows.length;
   table.rows = table.rows.filter((row) => row[match[2]!] !== params[0]);
   return before - table.rows.length;
+}
+
+function sortCareDesc(rows: Row[]): Row[] {
+  return rows.slice().sort((a, b) => {
+    const sortDelta = Number(b.sort_at_ms) - Number(a.sort_at_ms);
+    if (sortDelta !== 0) return sortDelta;
+    return String(b.event_id) < String(a.event_id) ? -1 : String(b.event_id) > String(a.event_id) ? 1 : 0;
+  });
+}
+
+function unwrapLike(pattern: string): string {
+  return pattern.replace(/^%/, '').replace(/%$/, '').replace(/\\([%_\\])/g, '$1');
 }
 
 function updateRows(state: DatabaseState, sql: string, params: SqlBindValue[]): number {

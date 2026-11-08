@@ -1,4 +1,7 @@
 import type { CareEvent, DiaperContents, TimeZoneId } from '../../domain';
+import { careSortAtMs } from '../../domain/projections/careTime';
+
+export { careSortAtMs };
 
 export type LastCarePresentation = {
   eventId: string;
@@ -6,26 +9,6 @@ export type LastCarePresentation = {
   detail: string;
   sortAtMs: number;
 };
-
-/** Same sort key the diary adapters use for timelines — care meaning, not write clock. */
-export function careSortAtMs(event: CareEvent): number {
-  switch (event.type) {
-    case 'sleep':
-    case 'nursing':
-      return event.occurrence.kind === 'known'
-        ? event.occurrence.start.instant.epochMs
-        : event.occurrence.observedAt.instant.epochMs;
-    case 'bottle':
-    case 'food':
-    case 'diaper':
-    case 'note':
-    case 'experience':
-    case 'milestone':
-      return event.occurredAt.instant.epochMs;
-    case 'growth':
-      return event.measuredOn.instant.epochMs;
-  }
-}
 
 function diaperLabel(contents: DiaperContents): string {
   switch (contents) {

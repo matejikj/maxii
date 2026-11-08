@@ -16,13 +16,21 @@ import type {
   Revision,
   RevisionId,
   RevisionRepository,
+  SearchIndexRepository,
   SessionKind,
   SessionRecord,
   SessionRepository,
+  TimelineCursor,
   UnitOfWork,
   UnitOfWorkFactory,
 } from '../../../domain';
 import { AppError } from '../../../domain/errors';
+import {
+  compareCareTimelineDesc,
+  isBeforeTimelineCursor,
+  nextTimelineCursor,
+  searchDocumentFromCareEvent,
+} from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from '../native/changeFeed';
 import {
   careEventFromRow,
@@ -95,6 +103,7 @@ export function createWebUnitOfWorkFactory(
             runtime.db.deletionMarkers,
             runtime.db.meta,
             runtime.db.changeNotifications,
+            runtime.db.searchDocuments,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
@@ -158,38 +167,25 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
         sortAtMs: careSortAtMs(event),
         payloadJson: encodeJson(event),
       });
+      await putSearchDocument(db, event);
       topics.add('care');
     },
     async delete(eventId: EntityId) {
       await db.careEvents.delete(eventId);
+      await db.searchDocuments.delete(eventId);
       topics.add('care');
     },
     async listRecent(childId: ChildId, limit: number) {
-      const rows = await db.careEvents.where('childId').equals(childId).sortBy('sortAtMs');
-      return rows
-        .slice()
-        .reverse()
-        .slice(0, Math.max(0, limit))
-        .map((row) =>
-          careEventFromRow({
-            event_id: row.eventId,
-            child_id: row.childId,
-            event_type: row.eventType,
-            revision_id: row.revisionId,
-            sort_at_ms: row.sortAtMs,
-            payload_json: row.payloadJson,
-          }),
-        );
+      const page = await listWebCarePage(db, childId, limit, null);
+      return page.events;
     },
     async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
       const rows = await db.careEvents
         .where('childId')
         .equals(childId)
         .and((row) => row.sortAtMs >= fromSortAtMsInclusive && row.sortAtMs < toSortAtMsExclusive)
-        .sortBy('sortAtMs');
+        .toArray();
       return rows
-        .slice()
-        .reverse()
         .map((row) =>
           careEventFromRow({
             event_id: row.eventId,
@@ -199,10 +195,13 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
             sort_at_ms: row.sortAtMs,
             payload_json: row.payloadJson,
           }),
-        );
+        )
+        .sort(compareCareTimelineDesc);
+    },
+    async listPage(childId: ChildId, limit: number, before: TimelineCursor | null) {
+      return listWebCarePage(db, childId, limit, before);
     },
   };
-
   const sessions: SessionRepository = {
     async getActive(childId: ChildId, kind: SessionKind) {
       const row = await db.sessions
@@ -262,6 +261,77 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     async delete(draftId: EntityId) {
       await db.drafts.delete(draftId);
       topics.add('drafts');
+    },
+    async listByChild(childId: ChildId) {
+      const rows = await db.drafts.where('childId').equals(childId).sortBy('updatedAtMs');
+      return rows
+        .slice()
+        .reverse()
+        .map((row) => draftFromRow({ payload_json: row.payloadJson }));
+    },
+  };
+
+  const search: SearchIndexRepository = {
+    async upsertFromCare(event: CareEvent) {
+      await putSearchDocument(db, event);
+    },
+    async remove(entityId: EntityId) {
+      await db.searchDocuments.delete(entityId);
+    },
+    async rebuildForChild(childId: ChildId) {
+      const existing = await db.searchDocuments.where('childId').equals(childId).primaryKeys();
+      await db.searchDocuments.bulkDelete(existing);
+      const rows = await db.careEvents.where('childId').equals(childId).toArray();
+      for (const row of rows) {
+        await putSearchDocument(
+          db,
+          careEventFromRow({
+            event_id: row.eventId,
+            child_id: row.childId,
+            event_type: row.eventType,
+            revision_id: row.revisionId,
+            sort_at_ms: row.sortAtMs,
+            payload_json: row.payloadJson,
+          }),
+        );
+      }
+      return rows.length;
+    },
+    async search(childId: ChildId, normalizedQuery: string, limit: number, before: TimelineCursor | null) {
+      if (!normalizedQuery) {
+        return listWebCarePage(db, childId, limit, before);
+      }
+      const docs = await db.searchDocuments
+        .where('childId')
+        .equals(childId)
+        .filter((doc) => doc.textNormalized.includes(normalizedQuery))
+        .toArray();
+      const ranked = docs
+        .filter((doc) => isBeforeTimelineCursor(doc.sortAtMs, doc.entityId, before))
+        .sort((a, b) => {
+          if (b.sortAtMs !== a.sortAtMs) return b.sortAtMs - a.sortAtMs;
+          return b.entityId < a.entityId ? -1 : b.entityId > a.entityId ? 1 : 0;
+        })
+        .slice(0, Math.max(0, limit));
+      const events: CareEvent[] = [];
+      for (const doc of ranked) {
+        const row = await db.careEvents.get(doc.entityId);
+        if (!row) continue;
+        events.push(
+          careEventFromRow({
+            event_id: row.eventId,
+            child_id: row.childId,
+            event_type: row.eventType,
+            revision_id: row.revisionId,
+            sort_at_ms: row.sortAtMs,
+            payload_json: row.payloadJson,
+          }),
+        );
+      }
+      return {
+        events,
+        nextCursor: events.length < limit ? null : nextTimelineCursor(events),
+      };
     },
   };
 
@@ -386,7 +456,48 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta };
+  return { care, sessions, drafts, revisions, profiles, meta, search };
+}
+
+async function listWebCarePage(
+  db: LumiWebDatabase,
+  childId: ChildId,
+  limit: number,
+  before: TimelineCursor | null,
+) {
+  const safeLimit = Math.max(0, limit);
+  const rows = await db.careEvents.where('childId').equals(childId).toArray();
+  const events = rows
+    .map((row) =>
+      careEventFromRow({
+        event_id: row.eventId,
+        child_id: row.childId,
+        event_type: row.eventType,
+        revision_id: row.revisionId,
+        sort_at_ms: row.sortAtMs,
+        payload_json: row.payloadJson,
+      }),
+    )
+    .filter((event) =>
+      isBeforeTimelineCursor(careSortAtMs(event), event.eventId, before),
+    )
+    .sort(compareCareTimelineDesc)
+    .slice(0, safeLimit);
+  return {
+    events,
+    nextCursor: events.length < safeLimit ? null : nextTimelineCursor(events),
+  };
+}
+
+async function putSearchDocument(db: LumiWebDatabase, event: CareEvent): Promise<void> {
+  const doc = searchDocumentFromCareEvent(event);
+  await db.searchDocuments.put({
+    entityId: doc.entityId,
+    childId: doc.childId,
+    sortAtMs: doc.sortAtMs,
+    docType: doc.docType,
+    textNormalized: doc.textNormalized,
+  });
 }
 
 function webDeletionFromRow(row: {
