@@ -1,5 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils.js';
+import { DatabaseKeyStoreError, type DatabaseKeyStore } from './databaseKeyStoreTypes';
+
+export { DatabaseKeyStoreError } from './databaseKeyStoreTypes';
+export type { DatabaseKeyStore } from './databaseKeyStoreTypes';
 
 /**
  * The SQLCipher key is a random 32-byte secret held only in the platform vault
@@ -17,24 +21,6 @@ export const DATABASE_KEY_SECURE_STORE_ID = 'lumi.native.db-key.v1';
 export const DATABASE_KEY_ACCESSIBILITY = SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY;
 
 const KEY_BYTES = 32;
-
-export class DatabaseKeyStoreError extends Error {
-  readonly code: 'UNAVAILABLE' | 'CORRUPT' | 'WRITE_FAILED' | 'READ_FAILED';
-
-  constructor(code: DatabaseKeyStoreError['code'], message: string) {
-    super(message);
-    this.name = 'DatabaseKeyStoreError';
-    this.code = code;
-  }
-}
-
-export type DatabaseKeyStore = {
-  /** Returns the existing key or creates one once; never silently rotates. */
-  getOrCreateDatabaseKey(): Promise<Uint8Array>;
-  /** Read-only probe used when the vault must not create a replacement key. */
-  readDatabaseKey(): Promise<Uint8Array | null>;
-  clearDatabaseKey(): Promise<void>;
-};
 
 function toHexKey(bytes: Uint8Array): string {
   return bytesToHex(bytes);

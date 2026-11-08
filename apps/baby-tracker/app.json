@@ -18,10 +18,15 @@
     ],
     "ios": {
       "bundleIdentifier": "com.example.lumibabytracker",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIFileSharingEnabled": false,
+        "LSSupportsOpeningDocumentsInPlace": false
+      }
     },
     "android": {
-      "package": "com.example.lumibabytracker"
+      "package": "com.example.lumibabytracker",
+      "allowBackup": false
     }
   }
 }

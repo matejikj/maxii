@@ -64,10 +64,15 @@ Rozlišení:
 
 ## Úložiště
 
-Produktová databáze ještě není hotová. V `src/infrastructure` jsou ověřené základy SQLCipher, SecureStore, přenosného obalu a IndexedDB. Sonda:
+Nativní osobní deník používá SQLCipher (`useSQLCipher`), SecureStore klíč a verzované migrace přes `openPrivateDatabase` / `createNativeUnitOfWorkFactory`. Webový IndexedDB adaptér a přenosný šifrovaný export zůstávají oddělené; web netvrdí hardwarový trezor.
+
+Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
+
+Sonda development buildu:
 
 ```sh
 EXPO_PUBLIC_LUMI_STORAGE_PROBE=1
+npm run run:android:cipher --workspace @maxii/baby-tracker
 ```
 
 Expo Go SQLCipher neobsahuje.

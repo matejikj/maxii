@@ -10,14 +10,12 @@ import {
 } from './cipherGuard';
 
 export { EncryptedDatabaseError, assertSqlCipherAvailable, sqlCipherKeyPragma } from './cipherGuard';
+export { PRIVATE_DATABASE_NAME } from './databaseNames';
+import { PRIVATE_DATABASE_NAME } from './databaseNames';
 
 /**
- * Private care records open only through SQLCipher. Plain SQLite would store
- * the diary readable on disk; Expo Go and builds without useSQLCipher must fail
- * closed rather than appear to succeed.
+ * Probe helpers for development builds. Product opens go through openPrivateDatabase.
  */
-export const PRIVATE_DATABASE_NAME = 'lumi-private.db';
-
 export type CipherProbeResult = {
   cipherVersion: string;
   databaseName: string;
