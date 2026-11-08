@@ -97,6 +97,7 @@ Osobní release kontroly bez obchodního účtu:
 EXPO_PUBLIC_LUMI_ENV=production EXPO_PUBLIC_LUMI_STORAGE_PROBE=0 npm run release:gate --workspace @maxii/baby-tracker
 npm run release:android --workspace @maxii/baby-tracker
 npm run release:android:care-smoke --workspace @maxii/baby-tracker
+npm run release:android:care-matrix --workspace @maxii/baby-tracker
 ```
 
-`release:gate` ověří studenou rodinnou hranici, absenci tajemství v `EXPO_PUBLIC_*`, nativní ID a balíček APK. Care smoke na headless emulátoru uloží plenku, ukončí proces a zkontroluje Historii.
+`release:gate` ověří studenou rodinnou hranici, absenci tajemství v `EXPO_PUBLIC_*`, nativní ID, APK verzi/oprávnění a hash. Care smoke uloží plenku; care matrix v režimu letadlo projde plenku, lahvičku, poznámku, růst, Rozvoj a Historii po restartu.

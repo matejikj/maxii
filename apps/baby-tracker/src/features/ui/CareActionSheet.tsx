@@ -35,6 +35,21 @@ export function CareActionSheet({
       onClose={onClose}
       bottomInset={insets.bottom}
       {...(returnFocusRef ? { returnFocusRef } : {})}
+      {...(footer
+        ? {
+            // Pin save/confirm outside the scroll body so long care forms never hide it.
+            footer: (
+              <View
+                style={{
+                  gap: ui.space.sm,
+                  marginBottom: Math.max(insets.bottom, ui.space.md),
+                }}
+              >
+                {footer}
+              </View>
+            ),
+          }
+        : {})}
     >
       <View style={{ gap: ui.space.lg, paddingBottom: ui.space.lg }}>
         {subtitle ? (
@@ -43,18 +58,6 @@ export function CareActionSheet({
           </LumiText>
         ) : null}
         {children}
-        {footer ? (
-          <View
-            style={{
-              gap: ui.space.sm,
-              paddingTop: ui.space.md,
-              // Keep confirm actions reachable while the keyboard is open.
-              marginBottom: Math.max(insets.bottom, ui.space.md),
-            }}
-          >
-            {footer}
-          </View>
-        ) : null}
       </View>
     </LumiBottomSheet>
   );

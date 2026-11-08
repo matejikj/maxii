@@ -27,8 +27,13 @@ or store signing secrets are required for local care after install.
    - Record the printed release evidence with the binary hash in your release log.
    - Never uninstall the previous app as an automated build step. A different application ID has separate data and needs a verified portable export/import path.
    - Candidate checklist helper: `npm run release:candidate -w @maxii/baby-tracker`
-     (evidence print + native id verify + web export/e2e). Android APK remains a
-     separate `release:android` step so signing stays explicit.
+     (evidence print + `release:gate` + native id verify + web export/e2e).
+     Android APK remains a separate `release:android` step so signing stays explicit.
+   - After an APK exists, `npm run release:gate -w @maxii/baby-tracker` also checks
+     aapt package/version/permissions and prints the APK sha256.
+   - Emulator care matrix (airplane install, diaper/bottle/note/growth, Rozvoj,
+     force-stop, Historie):
+     `npm run release:android:care-matrix -w @maxii/baby-tracker`
 
 3. Progressive publish
    - Ship to an internal track first.

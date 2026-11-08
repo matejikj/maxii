@@ -33,3 +33,11 @@ export {
   type PersonalReleaseGateInput,
   type PersonalReleaseGateResult,
 } from './personalReleaseGate';
+export {
+  FORBIDDEN_APK_PERMISSIONS,
+  inspectApkReleaseArtifact,
+  parseAaptBadging,
+  type ApkBadgingSummary,
+  type ApkInspectionFinding,
+  type ApkInspectionInput,
+} from './apkReleaseInspection';

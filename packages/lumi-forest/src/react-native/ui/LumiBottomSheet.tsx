@@ -18,6 +18,11 @@ export interface LumiBottomSheetProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  /**
+   * Primary actions stay pinned below the scroll region so confirm/save remains
+   * reachable without scrolling past long forms (keyboard + small screens).
+   */
+  footer?: React.ReactNode;
   /** Pass safe-area inset from your root if necessary (e.g. `useSafeAreaInsets().bottom`). */
   bottomInset?: number;
   testID?: string;
@@ -54,6 +59,7 @@ export function LumiBottomSheet({
   title,
   onClose,
   children,
+  footer,
   bottomInset = 0,
   testID,
   returnFocusRef,
@@ -154,6 +160,19 @@ export function LumiBottomSheet({
           >
             {children}
           </ScrollView>
+          {footer ? (
+            <View
+              style={{
+                paddingHorizontal: ui.space.xl,
+                paddingTop: ui.space.md,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.border,
+                gap: ui.space.sm,
+              }}
+            >
+              {footer}
+            </View>
+          ) : null}
         </View>
       </View>
     </Modal>

@@ -31,6 +31,8 @@
     "release:gate": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/verify-personal-release-gate.mts",
     "release:android": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs ./scripts/build-personal-android-apk.mts",
     "release:android:care-smoke": "bash ./scripts/emulator-care-smoke.sh",
+    "release:android:care-matrix": "bash ./scripts/emulator-care-matrix.sh",
+    "test:e2e:native:matrix": "maestro test .maestro/care-matrix.yaml",
     "release:web": "npm run export:web && npm run test:e2e -- --grep \"service worker|diaper|welcome|accessibility\"",
     "release:candidate": "npm run content:validate && npm run release:evidence && npm run release:gate && npm run prebuild:native && npm run release:verify-native && npm run release:web",
 

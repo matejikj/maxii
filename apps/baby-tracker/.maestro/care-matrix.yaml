@@ -1,0 +1,53 @@
+# Personal care matrix against an installed release/dev build (airplane optional).
+# Install com.matejikj first; Maestro is not a Metro-export substitute.
+appId: com.matejikj
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "LUMI"
+    timeout: 30000
+- tapOn:
+    text: "Přeskočit úvod"
+    optional: true
+- tapOn:
+    id: "quick-diaper"
+- tapOn:
+    id: "direct-wet"
+- assertVisible: "Přebalení uloženo."
+- tapOn:
+    id: "quick-feeding"
+- tapOn:
+    text: "Lahvička"
+- tapOn:
+    id: "feeding-open-bottle"
+- tapOn:
+    id: "form-save"
+- assertVisible: "Lahvička uložena."
+- tapOn:
+    id: "quick-experience"
+- tapOn:
+    id: "experience-play"
+- tapOn: "Pohyb"
+- tapOn:
+    id: "form-save"
+- assertVisible: "Zážitek uložen."
+- tapOn: "Péče"
+- tapOn:
+    id: "care-record-growth"
+- tapOn:
+    id: "growth-weight-input"
+- inputText: "4"
+- tapOn:
+    id: "form-save"
+- assertVisible: "Měření růstu uloženo."
+- tapOn: "Rozvoj"
+- assertVisible:
+    id: "development-screen"
+- stopApp
+- launchApp
+- tapOn:
+    text: "Přeskočit úvod"
+    optional: true
+- tapOn: "Historie"
+- assertVisible: "Mokrá plenka"
+- assertVisible: "Lahvička"

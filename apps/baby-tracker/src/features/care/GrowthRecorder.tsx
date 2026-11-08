@@ -270,6 +270,7 @@ export function GrowthRecorder({
           onChangeText={setWeightRaw}
           keyboardType="decimal-pad"
           hint={`Jednotka: ${weightUnit}`}
+          testID="growth-weight-input"
         />
         <View style={{ flexDirection: 'row', gap: ui.space.sm }}>
           {(['kg', 'lb'] as const).map((unit) => (

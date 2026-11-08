@@ -4,6 +4,10 @@ import {
 } from '../app/remoteServicesBoundary.ts';
 import { checkNativeApplicationIds } from './nativeApplicationId.ts';
 import {
+  inspectApkReleaseArtifact,
+  type ApkInspectionInput,
+} from './apkReleaseInspection.ts';
+import {
   PERSONAL_APPLICATION_ID,
   type ReleaseEvidenceManifest,
 } from './releaseEvidence.ts';
@@ -35,6 +39,11 @@ export type PersonalReleaseGateInput = {
   repositoryPaths?: string[];
   /** Optional APK package name from aapt dump badging. */
   apkPackageName?: string | null;
+  /** Full `aapt dump badging` text for permission/version checks. */
+  apkBadgingDump?: string | null;
+  /** Hex SHA-256 of the candidate APK when hashing is available. */
+  apkSha256?: string | null;
+  expectedApkVersionName?: string;
   evidence?: Pick<ReleaseEvidenceManifest, 'app' | 'signing' | 'environment'>;
 };
 
@@ -211,6 +220,27 @@ function evaluateApkPackage(
   ];
 }
 
+function evaluateApkArtifact(input: PersonalReleaseGateInput): PersonalReleaseGateFinding[] {
+  if (input.apkBadgingDump === undefined && input.apkSha256 === undefined) {
+    return [];
+  }
+  const inspectionInput: ApkInspectionInput = {
+    expectedPackageName: PERSONAL_APPLICATION_ID,
+  };
+  if (input.apkBadgingDump !== undefined) {
+    inspectionInput.badgingDump = input.apkBadgingDump;
+  }
+  if (input.apkSha256 !== undefined) {
+    inspectionInput.sha256 = input.apkSha256;
+  }
+  if (input.expectedApkVersionName !== undefined) {
+    inspectionInput.expectedVersionName = input.expectedApkVersionName;
+  }
+  return inspectApkReleaseArtifact(inspectionInput).map((item) =>
+    finding(item.id, item.ok, item.detail),
+  );
+}
+
 function evaluateEvidence(
   evidence: PersonalReleaseGateInput['evidence'],
 ): PersonalReleaseGateFinding[] {
@@ -244,10 +274,16 @@ export function evaluatePersonalReleaseGate(
   input: PersonalReleaseGateInput = {},
 ): PersonalReleaseGateResult {
   const env = input.env ?? {};
+  const apkArtifactFindings = evaluateApkArtifact(input);
+  // Prefer full badging inspection when present; keep the simple package check otherwise.
+  const apkFindings =
+    apkArtifactFindings.length > 0
+      ? apkArtifactFindings
+      : evaluateApkPackage(input.apkPackageName);
   const findings = [
     ...evaluatePublicEnv(env, input.candidateEnvironment),
     ...evaluateNativeIds(input),
-    ...evaluateApkPackage(input.apkPackageName),
+    ...apkFindings,
     ...evaluateRepositoryPaths(input.repositoryPaths ?? []),
     ...evaluateEvidence(input.evidence),
   ];

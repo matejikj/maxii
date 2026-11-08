@@ -481,6 +481,8 @@ export function FeedingRecorder({
               label={label}
               selected={kind === id}
               onPress={() => void selectKind(id)}
+              // Stable selector for release care matrix (bottle path skips live timer).
+              {...(id === 'bottle' ? { testID: 'feeding-kind-bottle' } : {})}
             />
           ))}
         </View>

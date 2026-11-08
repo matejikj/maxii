@@ -2,8 +2,9 @@
 /**
  * Runs personal release-candidate checks without requiring a store account:
  * native application ids, cold family remote boundary, public env hygiene,
- * and absence of signing material inside the app tree.
+ * APK badging/permissions/hash, and absence of signing material in the app tree.
  */
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,13 +25,25 @@ function collectScannedPaths(dir: string, out: string[]): void {
   if (!fs.existsSync(dir)) return;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === 'node_modules' || entry.name === 'dist-web' || entry.name === 'dist-android' || entry.name === 'dist-ios' || entry.name === '.git') {
+    if (
+      entry.name === 'node_modules' ||
+      entry.name === 'dist-web' ||
+      entry.name === 'dist-android' ||
+      entry.name === 'dist-ios' ||
+      entry.name === '.git'
+    ) {
       continue;
     }
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      // Generated native trees may hold debug keystores; still scan basenames.
-      if (entry.name === 'android' || entry.name === 'ios' || entry.name === 'ops' || entry.name === 'scripts' || entry.name === 'src' || entry.name.startsWith('.')) {
+      if (
+        entry.name === 'android' ||
+        entry.name === 'ios' ||
+        entry.name === 'ops' ||
+        entry.name === 'scripts' ||
+        entry.name === 'src' ||
+        entry.name.startsWith('.')
+      ) {
         collectScannedPaths(full, out);
       } else if (!entry.name.startsWith('.')) {
         collectScannedPaths(full, out);
@@ -56,12 +69,12 @@ function findAapt(): string | null {
   return fs.existsSync(candidate) ? candidate : null;
 }
 
-function readApkPackageName(apkPath: string): string | null {
+function readApkBadging(apkPath: string): string | null {
   const aapt = process.env.AAPT?.trim() || findAapt();
   if (!aapt || !fs.existsSync(apkPath)) return null;
   const dump = spawnSync(aapt, ['dump', 'badging', apkPath], { encoding: 'utf8' });
-  const match = /package: name='([^']+)'/.exec(dump.stdout ?? '');
-  return match?.[1] ?? null;
+  if (dump.status !== 0) return null;
+  return dump.stdout ?? null;
 }
 
 const androidAppGradle = readIfExists(path.join(root, 'android/app/build.gradle'));
@@ -75,8 +88,13 @@ collectScannedPaths(root, repositoryPaths);
 const apkPath =
   process.env.LUMI_RELEASE_APK?.trim() ||
   path.join(root, 'android/app/build/outputs/apk/release/app-release.apk');
-const apkPackageName = fs.existsSync(apkPath)
-  ? readApkPackageName(apkPath)
+const apkExists = fs.existsSync(apkPath);
+const apkBadgingDump = apkExists ? readApkBadging(apkPath) : undefined;
+const apkPackageName = apkBadgingDump
+  ? /package: name='([^']+)'/.exec(apkBadgingDump)?.[1] ?? null
+  : undefined;
+const apkSha256 = apkExists
+  ? createHash('sha256').update(fs.readFileSync(apkPath)).digest('hex')
   : undefined;
 
 const candidateEnvironment =
@@ -86,10 +104,11 @@ const candidateEnvironment =
       ? 'staging'
       : 'development';
 
+const appVersion = process.env.npm_package_version ?? '0.1.0';
 const evidence = buildReleaseEvidenceManifest({
   nowMs: Date.now(),
   environment: candidateEnvironment,
-  appVersion: process.env.npm_package_version ?? '0.1.0',
+  appVersion,
 });
 
 const result = evaluatePersonalReleaseGate({
@@ -99,6 +118,9 @@ const result = evaluatePersonalReleaseGate({
   iosPbxproj,
   repositoryPaths,
   apkPackageName,
+  apkBadgingDump,
+  apkSha256,
+  expectedApkVersionName: appVersion,
   evidence,
 });
 
