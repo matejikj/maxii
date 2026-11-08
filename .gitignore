@@ -25,6 +25,8 @@ dist-storybook-android/
 dist-storybook-web/
 coverage/
 reports/
+**/test-results/
+**/playwright-report/
 *.tgz
 **/.maestro/captures/
 **/.maestro/screenshots/

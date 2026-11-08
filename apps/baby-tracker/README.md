@@ -64,7 +64,9 @@ Rozlišení:
 
 ## Úložiště
 
-Nativní osobní deník používá SQLCipher (`useSQLCipher`), SecureStore klíč a verzované migrace přes `openPrivateDatabase` / `createNativeUnitOfWorkFactory`. Webový IndexedDB adaptér a přenosný šifrovaný export zůstávají oddělené; web netvrdí hardwarový trezor.
+Nativní osobní deník používá SQLCipher (`useSQLCipher`), SecureStore klíč a verzované migrace přes `openPrivateDatabase` / `createNativeUnitOfWorkFactory`.
+
+Webový deník je IndexedDB/Dexie (`openWebDatabase` / `createWebUnitOfWorkFactory`) se stejným UnitOfWork kontraktem, oddělenou lock DB pro záložky a bez tvrzení o hardwarovém trezoru nebo jisté perzistenci po vymazání prohlížeče. Aplikační cache nesmí sdílet jméno s deníkem (`lumi-web-app-cache` vs `lumi-web-diary`). Citlivá data nepatří do `localStorage` ani URL.
 
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
