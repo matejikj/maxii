@@ -3,7 +3,7 @@ import type { ActiveSession, SessionKind, SessionRecord } from '../entities/acti
 import type { ChildProfile } from '../entities/childProfile';
 import type { Draft } from '../entities/draft';
 import type { DeletionMarker, OperationReceipt, Revision } from '../entities/revision';
-import type { ChildId, EntityId, OperationId } from '../ids';
+import type { ChildId, EntityId, OperationId, RevisionId } from '../ids';
 
 /**
  * Transactional scope for one atomic care command. Concrete SQLite/Dexie
@@ -19,6 +19,8 @@ export type UnitOfWork = {
 export type CareRepository = {
   getById(eventId: EntityId): Promise<CareEvent | null>;
   save(event: CareEvent): Promise<void>;
+  /** Removes an active care row; soft-delete keeps a trash marker separately. */
+  delete(eventId: EntityId): Promise<void>;
 };
 
 export type SessionRepository = {
@@ -34,9 +36,14 @@ export type DraftRepository = {
 
 export type RevisionRepository = {
   saveRevision(revision: Revision): Promise<void>;
+  findRevision(revisionId: RevisionId): Promise<Revision | null>;
   saveReceipt(receipt: OperationReceipt): Promise<void>;
   findReceipt(operationId: OperationId): Promise<OperationReceipt | null>;
   saveDeletion(marker: DeletionMarker): Promise<void>;
+  findDeletion(deletionId: EntityId): Promise<DeletionMarker | null>;
+  findDeletionByEntityId(entityId: EntityId): Promise<DeletionMarker | null>;
+  listDeletions(): Promise<DeletionMarker[]>;
+  removeDeletion(deletionId: EntityId): Promise<void>;
 };
 
 export type ProfileRepository = {

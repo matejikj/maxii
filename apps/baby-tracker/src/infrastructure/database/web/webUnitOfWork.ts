@@ -11,6 +11,7 @@ import type {
   OperationId,
   OperationReceipt,
   Revision,
+  RevisionId,
   RevisionRepository,
   SessionKind,
   SessionRecord,
@@ -23,12 +24,14 @@ import type { ChangeTopic } from '../native/changeFeed';
 import {
   careEventFromRow,
   careSortAtMs,
+  deletionFromRow,
   deletionToRow,
   draftFromRow,
   draftToRow,
   encodeJson,
   receiptFromRow,
   receiptToRow,
+  revisionFromRow,
   revisionToRow,
   sessionFromRow,
   sessionToRow,
@@ -152,6 +155,10 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       });
       topics.add('care');
     },
+    async delete(eventId: EntityId) {
+      await db.careEvents.delete(eventId);
+      topics.add('care');
+    },
   };
 
   const sessions: SessionRepository = {
@@ -232,6 +239,21 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       });
       topics.add('revisions');
     },
+    async findRevision(revisionId: RevisionId) {
+      const row = await db.revisions.get(revisionId);
+      if (!row) return null;
+      return revisionFromRow({
+        revision_id: row.revisionId,
+        entity_id: row.entityId,
+        operation_id: row.operationId,
+        parent_revision_ids_json: row.parentRevisionIdsJson,
+        command_type: row.commandType,
+        created_at_ms: row.createdAtMs,
+        device_id: row.deviceId,
+        actor_id: row.actorId,
+        state_json: row.stateJson,
+      });
+    },
     async saveReceipt(receipt: OperationReceipt) {
       const row = receiptToRow(receipt);
       await db.operationReceipts.put({
@@ -267,12 +289,52 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
         deletedAtMs: row.deleted_at_ms,
         revisionId: row.revision_id,
         retainUntilMs: row.retain_until_ms,
+        payloadJson: row.payload_json,
+        payloadPurged: row.payload_purged,
       });
+      topics.add('revisions');
+    },
+    async findDeletion(deletionId: EntityId) {
+      const row = await db.deletionMarkers.get(deletionId);
+      return row ? webDeletionFromRow(row) : null;
+    },
+    async findDeletionByEntityId(entityId: EntityId) {
+      const row = await db.deletionMarkers.where('entityId').equals(entityId).first();
+      return row ? webDeletionFromRow(row) : null;
+    },
+    async listDeletions() {
+      const rows = await db.deletionMarkers.toArray();
+      return rows.map(webDeletionFromRow);
+    },
+    async removeDeletion(deletionId: EntityId) {
+      await db.deletionMarkers.delete(deletionId);
       topics.add('revisions');
     },
   };
 
   return { care, sessions, drafts, revisions };
+}
+
+function webDeletionFromRow(row: {
+  deletionId: string;
+  entityId: string;
+  entityType: string;
+  deletedAtMs: number;
+  revisionId: string;
+  retainUntilMs: number;
+  payloadJson?: string | null;
+  payloadPurged?: number | null;
+}) {
+  return deletionFromRow({
+    deletion_id: row.deletionId,
+    entity_id: row.entityId,
+    entity_type: row.entityType,
+    deleted_at_ms: row.deletedAtMs,
+    revision_id: row.revisionId,
+    retain_until_ms: row.retainUntilMs,
+    payload_json: row.payloadJson ?? null,
+    payload_purged: row.payloadPurged ?? 0,
+  });
 }
 
 function mapQuotaError(error: unknown): void {

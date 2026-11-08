@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "test": "npm run test:domain && npm run test:storage && npm run test:components",
     "test:domain": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/domain/*.test.mts tests/config/*.test.mts tests/infrastructure/logger.test.mts",
-    "test:storage": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/portable-backup.test.mts tests/stack-compatibility.test.mts tests/native-private-database.test.mts tests/web-private-database.test.mts",
+    "test:storage": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/portable-backup.test.mts tests/stack-compatibility.test.mts tests/native-private-database.test.mts tests/web-private-database.test.mts tests/command-dispatcher.test.mts",
     "test:components": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/component/*.test.mts",
     "test:e2e": "playwright test",
     "test:e2e:native": "maestro test .maestro/smoke.yaml",

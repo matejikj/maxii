@@ -30,6 +30,7 @@ export { createMemoryCheckpointStore } from './checkpoint';
 export type { CheckpointStore, CheckpointRecord } from './checkpoint';
 export { applyPendingMigrations, currentSchemaVersion, MIGRATIONS } from './migrations';
 export { SCHEMA_VERSION_1, SCHEMA_V1_CHECKSUM } from './schema/v1';
+export { SCHEMA_VERSION_2, SCHEMA_V2_CHECKSUM } from './schema/v2';
 export { DATABASE_KEY_LIFECYCLE } from './keyLifecycle';
 export {
   assertExplicitPlaintextConversion,

@@ -68,6 +68,8 @@ Nativní osobní deník používá SQLCipher (`useSQLCipher`), SecureStore klí�
 
 Webový deník je IndexedDB/Dexie (`openWebDatabase` / `createWebUnitOfWorkFactory`) se stejným UnitOfWork kontraktem, oddělenou lock DB pro záložky a bez tvrzení o hardwarovém trezoru nebo jisté perzistenci po vymazání prohlížeče. Aplikační cache nesmí sdílet jméno s deníkem (`lumi-web-app-cache` vs `lumi-web-diary`). Citlivá data nepatří do `localStorage` ani URL.
 
+Zápisy jdou přes `createCommandDispatcher`: entita, revize a receipt v jedné UnitOfWork, idempotentní retry, měkké smazání se sedmidenním košem a desetisekundovým Zpět. Koncepty se odkládají lokálně (`createDraftAutosave`) a do souhrnů nevstupují.
+
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
 Sonda development buildu:

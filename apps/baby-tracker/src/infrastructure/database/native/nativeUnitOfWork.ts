@@ -10,6 +10,7 @@ import type {
   OperationId,
   OperationReceipt,
   Revision,
+  RevisionId,
   RevisionRepository,
   SessionKind,
   SessionRecord,
@@ -25,11 +26,13 @@ import type { SqlConnection } from './sqlConnection';
 import {
   careEventFromRow,
   careEventToRow,
+  deletionFromRow,
   deletionToRow,
   draftFromRow,
   draftToRow,
   receiptFromRow,
   receiptToRow,
+  revisionFromRow,
   revisionToRow,
   sessionFromRow,
   sessionToRow,
@@ -109,6 +112,10 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       );
       topics.add('care');
     },
+    async delete(eventId: EntityId) {
+      await txn.runAsync('DELETE FROM care_events WHERE event_id = ?', eventId);
+      topics.add('care');
+    },
   };
 
   const sessions: SessionRepository = {
@@ -166,6 +173,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
   const revisions: RevisionRepository = {
     async saveRevision(revision: Revision) {
       const row = revisionToRow(revision);
+      await txn.runAsync('DELETE FROM revisions WHERE revision_id = ?', row.revision_id);
       await txn.runAsync(
         `INSERT INTO revisions (
           revision_id, entity_id, operation_id, parent_revision_ids_json, command_type,
@@ -182,6 +190,20 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
         row.state_json,
       );
       topics.add('revisions');
+    },
+    async findRevision(revisionId: RevisionId) {
+      const row = await txn.getFirstAsync<{
+        revision_id: string;
+        entity_id: string;
+        operation_id: string;
+        parent_revision_ids_json: string;
+        command_type: string;
+        created_at_ms: number;
+        device_id: string | null;
+        actor_id: string | null;
+        state_json: string;
+      }>('SELECT * FROM revisions WHERE revision_id = ?', revisionId);
+      return row ? revisionFromRow(row) : null;
     },
     async saveReceipt(receipt: OperationReceipt) {
       const row = receiptToRow(receipt);
@@ -214,17 +236,64 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
     async saveDeletion(marker: DeletionMarker) {
       const row = deletionToRow(marker);
+      await txn.runAsync('DELETE FROM deletion_markers WHERE deletion_id = ?', row.deletion_id);
       await txn.runAsync(
         `INSERT INTO deletion_markers (
-          deletion_id, entity_id, entity_type, deleted_at_ms, revision_id, retain_until_ms
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
+          deletion_id, entity_id, entity_type, deleted_at_ms, revision_id, retain_until_ms,
+          payload_json, payload_purged
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         row.deletion_id,
         row.entity_id,
         row.entity_type,
         row.deleted_at_ms,
         row.revision_id,
         row.retain_until_ms,
+        row.payload_json,
+        row.payload_purged,
       );
+      topics.add('revisions');
+    },
+    async findDeletion(deletionId: EntityId) {
+      const row = await txn.getFirstAsync<{
+        deletion_id: string;
+        entity_id: string;
+        entity_type: string;
+        deleted_at_ms: number;
+        revision_id: string;
+        retain_until_ms: number;
+        payload_json: string | null;
+        payload_purged: number | null;
+      }>('SELECT * FROM deletion_markers WHERE deletion_id = ?', deletionId);
+      return row ? deletionFromRow(row) : null;
+    },
+    async findDeletionByEntityId(entityId: EntityId) {
+      const row = await txn.getFirstAsync<{
+        deletion_id: string;
+        entity_id: string;
+        entity_type: string;
+        deleted_at_ms: number;
+        revision_id: string;
+        retain_until_ms: number;
+        payload_json: string | null;
+        payload_purged: number | null;
+      }>('SELECT * FROM deletion_markers WHERE entity_id = ?', entityId);
+      return row ? deletionFromRow(row) : null;
+    },
+    async listDeletions() {
+      const rows = await txn.getAllAsync<{
+        deletion_id: string;
+        entity_id: string;
+        entity_type: string;
+        deleted_at_ms: number;
+        revision_id: string;
+        retain_until_ms: number;
+        payload_json: string | null;
+        payload_purged: number | null;
+      }>('SELECT * FROM deletion_markers');
+      return rows.map(deletionFromRow);
+    },
+    async removeDeletion(deletionId: EntityId) {
+      await txn.runAsync('DELETE FROM deletion_markers WHERE deletion_id = ?', deletionId);
       topics.add('revisions');
     },
   };

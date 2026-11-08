@@ -116,6 +116,30 @@ export function revisionToRow(revision: Revision) {
   };
 }
 
+export function revisionFromRow(row: {
+  revision_id: string;
+  entity_id: string;
+  operation_id: string;
+  parent_revision_ids_json: string;
+  command_type: string;
+  created_at_ms: number;
+  device_id: string | null;
+  actor_id: string | null;
+  state_json: string;
+}): Revision {
+  return {
+    revisionId: row.revision_id as Revision['revisionId'],
+    entityId: row.entity_id as Revision['entityId'],
+    operationId: row.operation_id as Revision['operationId'],
+    parentRevisionIds: decodeJson(row.parent_revision_ids_json),
+    commandType: row.command_type,
+    createdAt: { epochMs: row.created_at_ms },
+    deviceId: row.device_id as Revision['deviceId'],
+    actorId: row.actor_id as Revision['actorId'],
+    state: decodeJson(row.state_json),
+  };
+}
+
 export function receiptToRow(receipt: OperationReceipt) {
   return {
     operation_id: receipt.operationId,
@@ -156,5 +180,29 @@ export function deletionToRow(marker: DeletionMarker) {
     deleted_at_ms: marker.deletedAt.epochMs,
     revision_id: marker.revisionId,
     retain_until_ms: marker.retainUntil.epochMs,
+    payload_json: marker.payload == null ? null : encodeJson(marker.payload),
+    payload_purged: marker.payloadPurged ? 1 : 0,
+  };
+}
+
+export function deletionFromRow(row: {
+  deletion_id: string;
+  entity_id: string;
+  entity_type: string;
+  deleted_at_ms: number;
+  revision_id: string;
+  retain_until_ms: number;
+  payload_json?: string | null;
+  payload_purged?: number | null;
+}): DeletionMarker {
+  return {
+    deletionId: row.deletion_id as DeletionMarker['deletionId'],
+    entityId: row.entity_id as DeletionMarker['entityId'],
+    entityType: row.entity_type,
+    deletedAt: { epochMs: row.deleted_at_ms },
+    revisionId: row.revision_id as DeletionMarker['revisionId'],
+    retainUntil: { epochMs: row.retain_until_ms },
+    payload: row.payload_json ? decodeJson(row.payload_json) : null,
+    payloadPurged: row.payload_purged === 1,
   };
 }

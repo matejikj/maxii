@@ -7,6 +7,9 @@ export type FaultKind =
   | 'storage_full'
   | 'storage_busy'
   | 'storage_corrupt'
+  | 'storage_after_entity'
+  | 'storage_before_receipt'
+  | 'storage_after_commit'
   | 'keystore_read'
   | 'network';
 

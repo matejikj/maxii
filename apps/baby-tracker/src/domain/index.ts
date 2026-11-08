@@ -40,6 +40,8 @@ export type {
   FaultKind,
   IdGenerator,
   Instant,
+  OutboxEntry,
+  OutboxPort,
   ProfileRepository,
   RevisionRepository,
   SessionRepository,

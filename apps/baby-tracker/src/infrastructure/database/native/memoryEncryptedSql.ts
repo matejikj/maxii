@@ -213,6 +213,10 @@ async function execute(state: DatabaseState, source: string, params: SqlBindValu
     if (table) ensureTable(state, table);
     return 0;
   }
+  // Column additions are no-ops for the in-memory double; rows gain fields on insert.
+  if (/^ALTER TABLE\b/i.test(sql) || /^CREATE INDEX IF NOT EXISTS\b/i.test(sql)) {
+    return 0;
+  }
   if (/^INSERT INTO\b/i.test(sql)) {
     return insertRow(state, sql, params);
   }
@@ -261,6 +265,15 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   }
   if (/FROM care_events/i.test(sql)) {
     return [...ensureTable(state, 'care_events').rows];
+  }
+  if (/^SELECT \* FROM deletion_markers$/i.test(sql)) {
+    return [...ensureTable(state, 'deletion_markers').rows];
+  }
+  if (/FROM deletion_markers/i.test(sql)) {
+    return [...ensureTable(state, 'deletion_markers').rows];
+  }
+  if (/FROM revisions/i.test(sql)) {
+    return [...ensureTable(state, 'revisions').rows];
   }
   return [];
 }

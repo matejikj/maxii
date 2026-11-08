@@ -40,4 +40,10 @@ export type DeletionMarker = {
   revisionId: RevisionId;
   /** Soft-delete retention end; payload may be purged afterwards. */
   retainUntil: Instant;
+  /**
+   * Restorable entity snapshot while retention lasts. Cleared after purge so the
+   * marker can still replay a deletion without keeping sensitive note text.
+   */
+  payload: unknown | null;
+  payloadPurged: boolean;
 };
