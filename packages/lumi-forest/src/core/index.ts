@@ -1,7 +1,35 @@
 export { composeScene } from './scenes/compose';
 export { SCENE_CATALOG } from './scenes/catalog';
-export { CHARACTER_CATALOG, CHARACTER_BLUEPRINTS, CHARACTER_ANATOMY, compileCharacter, ACCESSORY_SLOTS, PROPORTION_LIMITS } from './characters';
-export type { CharacterBlueprint, CharacterBlueprintV1, CharacterBlueprintV2, CharacterPart, CharacterPartRole, CharacterPose, CharacterExpression, CharacterAccessory, CharacterProportions, CharacterRig, CharacterComposition, CharacterVariant, CharacterCompileOptions } from './characters';
+export {
+  CHARACTER_CATALOG,
+  CHARACTER_BLUEPRINTS,
+  CHARACTER_ANATOMY,
+  RABBIT_ANATOMY_BASELINE,
+  RABBIT_ARTWORK_REVISION,
+  RABBIT_ART_DIRECTION_NOTES,
+  SELECTED_RABBIT_ART_VARIANT,
+  buildRabbitArtVariants,
+  compileCharacter,
+  ACCESSORY_SLOTS,
+  PROPORTION_LIMITS,
+} from './characters';
+export type {
+  CharacterBlueprint,
+  CharacterBlueprintV1,
+  CharacterBlueprintV2,
+  CharacterPart,
+  CharacterPartRole,
+  CharacterPose,
+  CharacterExpression,
+  CharacterAccessory,
+  CharacterProportions,
+  CharacterRig,
+  CharacterComposition,
+  CharacterVariant,
+  CharacterCompileOptions,
+  RabbitArtVariant,
+  RabbitArtVariantId,
+} from './characters';
 export { CHARACTER_ARTWORK } from './characters/artwork';
 export { planDecorations, DECORATION_SLOTS } from './engine/decorations';
 export { seededRandom } from './engine/random';

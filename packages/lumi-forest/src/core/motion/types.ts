@@ -1,5 +1,5 @@
 /** Animation vocabulary. No React Native, worklets or clock access in core. */
-export type CharacterMotion = 'idle' | 'sleeping' | 'still';
+export type CharacterMotion = 'idle' | 'sleeping' | 'still' | 'perk' | 'tilt';
 export type AnimationChannel = 'blink' | 'breathe' | 'leftEar' | 'rightEar' | 'float' | 'celebrate';
 export type MotionState = Readonly<{
   enabled: boolean;
@@ -16,10 +16,13 @@ export interface MotionTiming {
   readonly floatHalfCycleMs: number;
   readonly sceneTransitionMs: number;
   readonly celebrationMs: number;
+  readonly recognitionMs: number;
 }
 export interface MotionAmplitude {
   readonly breatheScale: number;
   readonly earDegrees: number;
+  readonly perkEarDegrees: number;
+  readonly tiltHeadDegrees: number;
   readonly floatPx: number;
   readonly celebrationLiftPx: number;
 }

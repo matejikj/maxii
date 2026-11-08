@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   LumiButton,
   LumiCard,
-  LumiCharacter,
   LumiText,
   useLumiTheme,
 } from '@lumi/forest-design/native';
@@ -15,6 +14,7 @@ import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
 import { BackupHintBanner } from '../shell/BackupHintBanner';
+import { GuideCompanion } from '../shell/GuideCompanion';
 import { PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
 import { ExperienceRecorder } from './ExperienceRecorder';
@@ -139,7 +139,14 @@ export function TodayScreen({
             style={[styles.avatar, { borderColor: colors.controlBorder }]}
           >
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <LumiCharacter species={preferences.guideSpecies} expression="happy" />
+              <GuideCompanion
+                species={preferences.guideSpecies}
+                expression="happy"
+                recognition="headTilt"
+                width={72}
+                height={78}
+                testID="today-guide"
+              />
             </View>
           </Pressable>
         </View>

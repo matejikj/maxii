@@ -109,14 +109,16 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
   const blink = useSharedValue(1);
   const breath = useSharedValue(1);
   const ears = useSharedValue(0);
+  const tilt = useSharedValue(0);
   const float = useSharedValue(0);
   const lift = useSharedValue(0);
   const burst = useSharedValue(0);
   const previousCelebration = useRef(celebrationKey);
 
   useEffect(() => {
-    cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears); cancelAnimation(float);
-    blink.value = 1; breath.value = 1; ears.value = 0; float.value = 0;
+    cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
+    cancelAnimation(tilt); cancelAnimation(float);
+    blink.value = 1; breath.value = 1; ears.value = 0; tilt.value = 0; float.value = 0;
     if (!active) return;
     if (blinkEnabled) {
       blink.value = withRepeat(withSequence(
@@ -133,13 +135,37 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
         duration: timing.earHalfCycleMs, easing: smooth, reduceMotion: ReduceMotion.System,
       }), -1, true, undefined, ReduceMotion.System);
     }
+    if (motion === 'perk') {
+      ears.value = withSequence(
+        withTiming(amplitude.perkEarDegrees, {
+          duration: timing.recognitionMs * 0.35, easing: out, reduceMotion: ReduceMotion.System,
+        }),
+        withTiming(0, {
+          duration: timing.recognitionMs * 0.65, easing: smooth, reduceMotion: ReduceMotion.System,
+        }),
+      );
+    }
+    if (motion === 'tilt') {
+      // Whole-figure lean keeps the SVG group budget unchanged while reading as a head tilt.
+      tilt.value = withSequence(
+        withTiming(amplitude.tiltHeadDegrees, {
+          duration: timing.recognitionMs * 0.4, easing: out, reduceMotion: ReduceMotion.System,
+        }),
+        withTiming(0, {
+          duration: timing.recognitionMs * 0.6, easing: smooth, reduceMotion: ReduceMotion.System,
+        }),
+      );
+    }
     if (motion === 'sleeping') {
       float.value = withRepeat(withTiming(-amplitude.floatPx, {
         duration: timing.floatHalfCycleMs, easing: smooth, reduceMotion: ReduceMotion.System,
       }), -1, true, undefined, ReduceMotion.System);
     }
-    return () => { cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears); cancelAnimation(float); };
-  }, [active, blinkEnabled, motion, species, blink, breath, ears, float]);
+    return () => {
+      cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
+      cancelAnimation(tilt); cancelAnimation(float);
+    };
+  }, [active, blinkEnabled, motion, species, blink, breath, ears, tilt, float]);
 
   useEffect(() => {
     if (previousCelebration.current === celebrationKey) return;
@@ -156,7 +182,11 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
   }, [celebrationKey, active, lift, burst]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: float.value + lift.value }, { scale: breath.value }],
+    transform: [
+      { translateY: float.value + lift.value },
+      { rotate: `${tilt.value}deg` },
+      { scale: breath.value },
+    ],
   }));
   return (
     <Animated.View testID={testID} accessible={false} pointerEvents="none"

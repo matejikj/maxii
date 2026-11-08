@@ -1,5 +1,7 @@
 export { LumiCharacter } from './LumiCharacter';
 export type { LumiCharacterProps } from './LumiCharacter';
+export { LumiBlueprintCharacter } from './LumiBlueprintCharacter';
+export type { LumiBlueprintCharacterProps } from './LumiBlueprintCharacter';
 export { LumiBackground } from './LumiBackground';
 export { LumiVectorDocument } from './LumiVectorDocument';
 export * from './ui';

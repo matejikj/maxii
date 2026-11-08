@@ -12,6 +12,6 @@ test('Today home screen keeps brand-first Czech empty state and header semantics
   assert.match(source, /Deník miminka/);
   assert.match(source, /Každý den spolu/);
   assert.match(source, /accessibilityRole="header"/);
-  assert.match(source, /LumiCharacter/);
+  assert.match(source, /GuideCompanion/);
   assert.doesNotMatch(source, /storybook|showcase/i);
 });

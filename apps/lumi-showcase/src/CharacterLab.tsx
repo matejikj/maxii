@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import {
-  CHARACTER_BLUEPRINTS, LUMI_ANIMALS, LumiCharacter,
+  CHARACTER_BLUEPRINTS, LUMI_ANIMALS, LumiBlueprintCharacter, LumiCharacter,
+  RABBIT_ANATOMY_BASELINE, SELECTED_RABBIT_ART_VARIANT, buildRabbitArtVariants,
   type LumiAnimal, type CharacterPose, type CharacterExpression,
   type CharacterAccessory, type CharacterProportions,
 } from '@lumi/forest-design';
@@ -23,6 +24,7 @@ export function CharacterLab() {
   [bigHead, longEars, species]);
   const selectedAccessories = useMemo<readonly CharacterAccessory[]>(() =>
     accessory === 'none' ? [] : [accessory], [accessory]);
+  const rabbitVariants = useMemo(() => buildRabbitArtVariants(RABBIT_ANATOMY_BASELINE), []);
   const wide = width >= 720;
   const columns = wide ? 4 : 2;
   const cardWidth = Math.max(130, (Math.min(width, 940) - 44 - 12 * (columns - 1)) / columns);
@@ -32,6 +34,26 @@ export function CharacterLab() {
       <Text style={styles.eyebrow}>CHARACTER ENGINE · v0.3</Text>
       <Text style={styles.heading}>Seznam se s lesními kamarády</Text>
       <Text style={styles.subtitle}>Pět postav, 4 emoce, dvě pózy. Vše živě z vektorových anatomických dílů.</Text>
+      <Text style={styles.smallHeading}>PILOT LUMI · TŘI SMĚRY</Text>
+      <Text style={styles.subtitle}>Stejná póza a měřítko. Vybraný pracovní směr je {SELECTED_RABBIT_ART_VARIANT}.</Text>
+      <View style={styles.gallery}>
+        {rabbitVariants.map((variant) => (
+          <View key={variant.id} testID={`rabbit-art-variant-${variant.id}`}
+            style={[styles.tile, { width: cardWidth }, variant.id === SELECTED_RABBIT_ART_VARIANT && styles.pilotSelected]}>
+            <LumiBlueprintCharacter
+              blueprint={{
+                ...CHARACTER_BLUEPRINTS.rabbit,
+                base: { kind: 'parts', parts: variant.parts },
+              }}
+              width={cardWidth - 18}
+              height={140}
+              testID={`rabbit-art-preview-${variant.id}`}
+            />
+            <Text style={styles.variantLabel}>{variant.id} · {variant.label}</Text>
+            <Text style={styles.poseLabel}>{variant.summary}</Text>
+          </View>
+        ))}
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         {LUMI_ANIMALS.map(animal => (
           <Pressable key={animal} testID={`character-species-${animal}`}
@@ -95,4 +117,5 @@ const styles = StyleSheet.create({
   variantLabel: { color: '#384C4A', fontWeight: '700', fontSize: 12, textTransform: 'capitalize', marginTop: 3 },
   poseLabel: { color: '#84968D', fontSize: 10, textTransform: 'capitalize', marginTop: 2 },
   footnote: { fontSize: 11, color: '#84968D', lineHeight: 17, marginTop: 16 },
+  pilotSelected: { borderWidth: 2, borderColor: '#91AF8F' },
 });

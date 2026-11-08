@@ -40,12 +40,12 @@ function Gallery({ paused }: { paused: boolean }) {
     </View>
     <Text style={styles.subhead}>Pohyb</Text>
     <View style={styles.row}>
-      {(['idle','sleeping','still'] as const).map(mode => <Toggle key={mode} id={`motion-mode-${mode}`}
+      {(['idle','sleeping','still','perk','tilt'] as const).map(mode => <Toggle key={mode} id={`motion-mode-${mode}`}
         label={mode} selected={motion === mode} onPress={() => setMotion(mode)}/>)}
     </View>
     <View style={styles.characterStage} testID="motion-character-stage">
       <LumiAnimatedCharacter species={species} pose={motion === 'sleeping' ? 'sleeping' : 'sitting'}
-        expression={motion === 'sleeping' ? 'sleepy' : 'neutral'}
+        expression={motion === 'sleeping' ? 'sleepy' : motion === 'perk' || motion === 'tilt' ? 'curious' : 'neutral'}
         motion={motion} playing={!paused} celebrationKey={celebrationKey} width={245} height={250}
         testID="animated-character"/>
     </View>

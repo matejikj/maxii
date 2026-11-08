@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LumiButton, LumiCharacter, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { LumiButton, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { GuideCompanion } from './GuideCompanion';
 
 type WelcomeScreenProps = {
   childName: string;
@@ -23,7 +24,7 @@ export function WelcomeScreen({
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <LumiCharacter species="rabbit" expression="happy" />
+        <GuideCompanion species="rabbit" recognition="earPerk" testID="welcome-guide" />
         <LumiText variant="caption" tone="accent">
           LUMI
         </LumiText>

@@ -5,7 +5,7 @@ const { createHash } = require('node:crypto');
 const { createLumiSvg } = require('../.test-dist/core/index.js');
 
 const expected = {
-  home: '5da36f097eddcccf958bb14bcb484aec0e8a11da760a068782400c1271e44a12',
+  home: '103673692b6810261a84fa19b01fa14305ca54aa2dabbcb0f42359003ae263df',
   growth: 'a9ef2bddf0bbf8b0d61e37848f68cfe8ecc75cc2074afc6f7d11547a810f2fec',
   sleep: 'cfe79cd47bbf755a3a9d6c051f035e0a361d41f07dedb0816a699dc423dfe8a9',
   feeding: 'bd47ffe85a198693fcf2e1eb503ce048cdf88de324f9cb86750ec7dd7fc8b6cd',

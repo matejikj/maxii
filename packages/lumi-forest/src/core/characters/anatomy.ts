@@ -7,9 +7,10 @@
  */
 import type { LumiAnimal } from '../types';
 import type { CharacterPart } from './blueprint';
+import { selectRabbitAnatomy } from './rabbitArtDirection';
 
-export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
-  "rabbit": [
+/** Pre-direction rabbit geometry used to build comparable art variants A/B/C. */
+export const RABBIT_ANATOMY_BASELINE: readonly CharacterPart[] = [
     {
       "id": "shadow",
       "role": "shadow",
@@ -336,7 +337,10 @@ export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPa
         }
       }
     }
-  ],
+];
+
+export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
+  rabbit: selectRabbitAnatomy(RABBIT_ANATOMY_BASELINE),
   "bear": [
     {
       "id": "ear-left-outer",

@@ -2,9 +2,10 @@ import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  LumiCard, LumiCharacter, LumiEmptyState, LumiText, useLumiTheme,
+  LumiCard, LumiEmptyState, LumiText, useLumiTheme,
 } from '@lumi/forest-design/native';
 import type { StorageProbeReport } from '../../infrastructure/verification/runStorageProbe';
+import { GuideCompanion } from '../shell/GuideCompanion';
 
 type HomeScreenProps = {
   probeReport?: StorageProbeReport | null;
@@ -29,7 +30,7 @@ export function HomeScreen({ probeReport = null, probeError = null }: HomeScreen
         </View>
         <LumiCard>
           <LumiEmptyState
-            illustration={<LumiCharacter species="rabbit" expression="happy" />}
+            illustration={<GuideCompanion species="rabbit" expression="happy" />}
             title="Každý den spolu"
             description="Tady bude místo pro přehled krmení, spánku a péče o vaše miminko. Zatím tu nejsou žádné záznamy."
           />

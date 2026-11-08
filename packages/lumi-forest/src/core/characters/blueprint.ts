@@ -1,6 +1,7 @@
 import type { LumiAnimal } from '../types';
 import type { VectorNode } from '../vector/types';
 import { CHARACTER_ANATOMY } from './anatomy';
+import { RABBIT_ARTWORK_REVISION } from './rabbitArtDirection';
 
 /** Painter-stable, named anatomy. IDs are authoring identifiers, not SVG IDs. */
 export type CharacterPartRole =
@@ -70,6 +71,11 @@ export interface CharacterBlueprintV2 {
   readonly supportedPoses: readonly ('sitting' | 'standing' | 'sleeping')[];
   readonly supportedExpressions: readonly CharacterExpression[];
   readonly supportedAccessories: readonly CharacterAccessory[];
+  /**
+   * Optional graphic revision for the shipped artwork. Independent from
+   * schemaVersion so art refreshes do not force blueprint migrations.
+   */
+  readonly artworkRevision?: string;
 }
 
 export type CharacterBlueprint = CharacterBlueprintV1 | CharacterBlueprintV2;
@@ -94,10 +100,12 @@ const pivots = (leftEarX: number, rightEarX: number, earY: number) => ({
 export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprintV2>> = {
   rabbit: {
     schemaVersion: 2, species: 'rabbit', displayName: 'Lumi',
+    artworkRevision: RABBIT_ARTWORK_REVISION,
     base: { kind: 'parts', parts: CHARACTER_ANATOMY.rabbit }, ...COMMON,
-    rig: { leftEye: P(-30, 8), rightEye: P(30, 8), mouth: P(0, 25),
-      pivots: pivots(-44, 32, -50), accessoryAnchors: { head: P(52, -103), neck: P(0, 55), hand: P(84, 92) },
-      ink: '#5A5550', blush: '#EAB8B0', soft: '#F1E5DA' },
+    // Soft-compact pilot: ear pivots sit slightly lower/wider with shorter ears.
+    rig: { leftEye: P(-30, 7), rightEye: P(30, 7), mouth: P(0, 25),
+      pivots: pivots(-46, 34, -46), accessoryAnchors: { head: P(52, -98), neck: P(0, 55), hand: P(84, 92) },
+      ink: '#5A5550', blush: '#EAB8B0', soft: '#F4E9DF' },
   },
   bear: {
     schemaVersion: 2, species: 'bear', displayName: 'Momo',
