@@ -7,6 +7,8 @@
  */
 import type { LumiAnimal } from '../types';
 import type { CharacterPart } from './blueprint';
+import { applySoftCompactFleetPolish } from './fleetPolish';
+import { NEW_SPECIES_ANATOMY } from './newSpeciesAnatomy';
 import { selectRabbitAnatomy } from './rabbitArtDirection';
 
 /** Pre-direction rabbit geometry used to build comparable art variants A/B/C. */
@@ -339,9 +341,7 @@ export const RABBIT_ANATOMY_BASELINE: readonly CharacterPart[] = [
     }
 ];
 
-export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
-  rabbit: selectRabbitAnatomy(RABBIT_ANATOMY_BASELINE),
-  "bear": [
+const BEAR_ANATOMY_BASE: readonly CharacterPart[] = [
     {
       "id": "ear-left-outer",
       "role": "ear",
@@ -637,8 +637,9 @@ export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPa
         ]
       }
     }
-  ],
-  "fox": [
+  ];
+
+const FOX_ANATOMY_BASE: readonly CharacterPart[] = [
     {
       "id": "tail",
       "role": "tail",
@@ -947,8 +948,9 @@ export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPa
         ]
       }
     }
-  ],
-  "otter": [
+  ];
+
+const OTTER_ANATOMY_BASE: readonly CharacterPart[] = [
     {
       "id": "tail",
       "role": "tail",
@@ -1229,8 +1231,9 @@ export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPa
         ]
       }
     }
-  ],
-  "hedgehog": [
+  ];
+
+const HEDGEHOG_ANATOMY_BASE: readonly CharacterPart[] = [
     {
       "id": "spines",
       "role": "spines",
@@ -1469,5 +1472,15 @@ export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPa
         ]
       }
     }
-  ]
-} as const;
+  ];
+
+export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
+  rabbit: selectRabbitAnatomy(RABBIT_ANATOMY_BASELINE),
+  bear: applySoftCompactFleetPolish(BEAR_ANATOMY_BASE),
+  fox: applySoftCompactFleetPolish(FOX_ANATOMY_BASE),
+  otter: applySoftCompactFleetPolish(OTTER_ANATOMY_BASE),
+  hedgehog: applySoftCompactFleetPolish(HEDGEHOG_ANATOMY_BASE),
+  owl: NEW_SPECIES_ANATOMY.owl,
+  squirrel: NEW_SPECIES_ANATOMY.squirrel,
+  fawn: NEW_SPECIES_ANATOMY.fawn,
+};

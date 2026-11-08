@@ -29,7 +29,7 @@ for (const scene of LUMI_SCENES) {
 }
 
 test('every character retains declarative geometry', () => {
-  assert.equal(Object.keys(CHARACTER_CATALOG).length, 5);
+  assert.equal(Object.keys(CHARACTER_CATALOG).length, 8);
   for (const animal of LUMI_ANIMALS) {
     const c = CHARACTER_CATALOG[animal];
     assert.ok(c.name.length > 0);

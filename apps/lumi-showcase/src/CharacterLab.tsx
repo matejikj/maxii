@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import {
-  CHARACTER_BLUEPRINTS, LUMI_ANIMALS, LumiBlueprintCharacter, LumiCharacter,
+  CHARACTER_BLUEPRINTS, CHARACTER_COLLECTION, CHARACTER_SEMANTIC_STATES,
+  LUMI_ANIMALS, LumiBlueprintCharacter, LumiCharacter,
   RABBIT_ANATOMY_BASELINE, SELECTED_RABBIT_ART_VARIANT, buildRabbitArtVariants,
+  resolveSemanticPresentation,
   type LumiAnimal, type CharacterPose, type CharacterExpression,
-  type CharacterAccessory, type CharacterProportions,
+  type CharacterAccessory, type CharacterProportions, type CharacterSemanticState,
 } from '@lumi/forest-design';
 
 const EXPRESSIONS: readonly CharacterExpression[] = ['neutral', 'happy', 'curious', 'sleepy'];
@@ -33,7 +35,7 @@ export function CharacterLab() {
     <ScrollView testID="character-lab" style={styles.scroll} contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>CHARACTER ENGINE · v0.3</Text>
       <Text style={styles.heading}>Seznam se s lesními kamarády</Text>
-      <Text style={styles.subtitle}>Pět postav, 4 emoce, dvě pózy. Vše živě z vektorových anatomických dílů.</Text>
+      <Text style={styles.subtitle}>Osm postav, 4 emoce, dvě pózy a osm společných sémantických stavů. Vše živě z vektorových anatomických dílů.</Text>
       <Text style={styles.smallHeading}>PILOT LUMI · TŘI SMĚRY</Text>
       <Text style={styles.subtitle}>Stejná póza a měřítko. Vybraný pracovní směr je {SELECTED_RABBIT_ART_VARIANT}.</Text>
       <View style={styles.gallery}>
@@ -96,7 +98,30 @@ export function CharacterLab() {
           </View>
         )))}
       </View>
-      <Text style={styles.footnote}>Geometrie všech variant se generuje lokálně. Výchozí neutral/sitting je pixelově kompatibilní s v0.2.1.</Text>
+      <Text style={styles.smallHeading}>SÉMANTICKÉ STAVY · STATICKÝ FALLBACK</Text>
+      <Text style={styles.subtitle}>
+        {CHARACTER_COLLECTION[species].displayName}: {CHARACTER_COLLECTION[species].signatureActions.map((action) => action.labelCs).join(' · ')}
+      </Text>
+      <View style={styles.gallery}>
+        {CHARACTER_SEMANTIC_STATES.map((state: CharacterSemanticState) => {
+          const resolved = resolveSemanticPresentation(state, false);
+          return (
+            <View key={state} testID={`character-semantic-${species}-${state}`}
+              style={[styles.tile, { width: cardWidth }]}>
+              <LumiCharacter
+                species={species}
+                pose={resolved.pose}
+                expression={resolved.expression}
+                width={cardWidth - 18}
+                height={140}
+              />
+              <Text style={styles.variantLabel}>{state}</Text>
+              <Text style={styles.poseLabel}>{resolved.pose}/{resolved.expression}</Text>
+            </View>
+          );
+        })}
+      </View>
+      <Text style={styles.footnote}>Geometrie všech variant se generuje lokálně. Osm druhů je součástí instalace; neznámé ID padá na klidného králíka.</Text>
     </ScrollView>
   );
 }

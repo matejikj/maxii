@@ -6,10 +6,10 @@ const { createLumiSvg } = require('../.test-dist/core/index.js');
 
 const expected = {
   home: '103673692b6810261a84fa19b01fa14305ca54aa2dabbcb0f42359003ae263df',
-  growth: 'a9ef2bddf0bbf8b0d61e37848f68cfe8ecc75cc2074afc6f7d11547a810f2fec',
-  sleep: 'cfe79cd47bbf755a3a9d6c051f035e0a361d41f07dedb0816a699dc423dfe8a9',
-  feeding: 'bd47ffe85a198693fcf2e1eb503ce048cdf88de324f9cb86750ec7dd7fc8b6cd',
-  milestones: 'b189720578308cbccbdae30dab2c1b32ad740e508e278d634ee63e26518ffa16',
+  growth: 'b23ae9518f03d0e4a21e6b651d42e100fa64e72a5988f9fdea09859d2824cfff',
+  sleep: 'fa2ca6b9ab465943785d8b3983b48ebcb222aa3697eef78a4df363afad2598c2',
+  feeding: '2a295a6ca74a7aaa68779969c9257acfe795f255f0fb9ecbd0593e2da50eec9a',
+  milestones: 'c006f8f662a3ffe2df8b96bf0c68ab69e5f43aaa867d755783f5b92cb64b8bbe',
 };
 for (const [scene, hash] of Object.entries(expected)) {
   test(`golden: ${scene}`, () => {

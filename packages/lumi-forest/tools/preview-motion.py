@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 root = Path(__file__).resolve().parents[1]
 source = root / 'previews/motion-frames'
 labels = ['Idle', 'Blink', 'Ear sway', 'Celebrate']
-animals = ['rabbit', 'bear', 'fox', 'otter', 'hedgehog']
+animals = ['rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn']
 W, H, pad = 245, 294, 12
 im = Image.new('RGB', (W * 4, H * 5 + 58), '#FAF7F1')
 d = ImageDraw.Draw(im)

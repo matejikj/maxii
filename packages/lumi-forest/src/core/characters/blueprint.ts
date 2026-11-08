@@ -109,6 +109,7 @@ export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprin
   },
   bear: {
     schemaVersion: 2, species: 'bear', displayName: 'Momo',
+    artworkRevision: 'lumi.bear.art.c1',
     base: { kind: 'parts', parts: CHARACTER_ANATOMY.bear }, ...COMMON,
     rig: { leftEye: P(-31, 2), rightEye: P(31, 2), mouth: P(0, 32),
       pivots: pivots(-68, 68, -49), accessoryAnchors: { head: P(63, -66), neck: P(0, 53), hand: P(85, 97) },
@@ -116,6 +117,7 @@ export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprin
   },
   fox: {
     schemaVersion: 2, species: 'fox', displayName: 'Nori',
+    artworkRevision: 'lumi.fox.art.c1',
     base: { kind: 'parts', parts: CHARACTER_ANATOMY.fox }, ...COMMON,
     rig: { leftEye: P(-31, 4), rightEye: P(31, 4), mouth: P(0, 39),
       pivots: pivots(-70, 70, -60), accessoryAnchors: { head: P(69, -96), neck: P(0, 68), hand: P(87, 94) },
@@ -123,6 +125,7 @@ export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprin
   },
   otter: {
     schemaVersion: 2, species: 'otter', displayName: 'Kiko',
+    artworkRevision: 'lumi.otter.art.c1',
     base: { kind: 'parts', parts: CHARACTER_ANATOMY.otter }, ...COMMON,
     rig: { leftEye: P(-31, 0), rightEye: P(31, 0), mouth: P(0, 30),
       pivots: pivots(-74, 74, -51), accessoryAnchors: { head: P(63, -58), neck: P(0, 58), hand: P(88, 104) },
@@ -130,10 +133,35 @@ export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprin
   },
   hedgehog: {
     schemaVersion: 2, species: 'hedgehog', displayName: 'Piko',
+    artworkRevision: 'lumi.hedgehog.art.c1',
     base: { kind: 'parts', parts: CHARACTER_ANATOMY.hedgehog }, ...COMMON,
     rig: { leftEye: P(-28, 2), rightEye: P(28, 2), mouth: P(0, 36),
       pivots: pivots(-68, 68, -51), accessoryAnchors: { head: P(49, -54), neck: P(0, 60), hand: P(80, 98) },
       ink: '#5D514D', blush: '#E8B1A8', soft: '#F0D5BF' },
+  },
+  owl: {
+    schemaVersion: 2, species: 'owl', displayName: 'Eli',
+    artworkRevision: 'lumi.owl.art.c1',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.owl }, ...COMMON,
+    rig: { leftEye: P(-30, 6), rightEye: P(30, 6), mouth: P(0, 38),
+      pivots: pivots(-72, 72, -80), accessoryAnchors: { head: P(58, -88), neck: P(0, 52), hand: P(86, 88) },
+      ink: '#5A4F55', blush: '#E6B3B0', soft: '#C9B8B0' },
+  },
+  squirrel: {
+    schemaVersion: 2, species: 'squirrel', displayName: 'Tili',
+    artworkRevision: 'lumi.squirrel.art.c1',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.squirrel }, ...COMMON,
+    rig: { leftEye: P(-28, 4), rightEye: P(28, 4), mouth: P(0, 30),
+      pivots: pivots(-58, 58, -78), accessoryAnchors: { head: P(54, -92), neck: P(0, 50), hand: P(82, 90) },
+      ink: '#5E4639', blush: '#E8B0A2', soft: '#E0A878' },
+  },
+  fawn: {
+    schemaVersion: 2, species: 'fawn', displayName: 'Runi',
+    artworkRevision: 'lumi.fawn.art.c1',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.fawn }, ...COMMON,
+    rig: { leftEye: P(-29, 5), rightEye: P(29, 5), mouth: P(0, 32),
+      pivots: pivots(-48, 48, -90), accessoryAnchors: { head: P(50, -100), neck: P(0, 48), hand: P(80, 96) },
+      ink: '#5B4A3F', blush: '#E8B1A8', soft: '#F2E4D4' },
   },
 };
 

@@ -23,4 +23,4 @@ for (const species of LUMI_ANIMALS) for (const v of variants) {
   const content = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="250" viewBox="-176 -178 352 360"><g transform="translate(0 ${escap(v.lift)})">${inner}</g></svg>`;
   fs.writeFileSync(path.join(dest,`${species}-${v.name}.svg`),content);
 }
-console.log('Exported 20 static design-only animation frame samples');
+console.log(`Exported ${LUMI_ANIMALS.length * variants.length} static design-only animation frame samples`);

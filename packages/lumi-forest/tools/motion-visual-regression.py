@@ -13,7 +13,8 @@ mode = sys.argv[1] if len(sys.argv) > 1 else 'verify'
 if mode not in ('verify','approve'):
     raise SystemExit('Usage: motion-visual-regression.py verify|approve')
 files = sorted(source.glob('*.svg'))
-if len(files) != 20: raise SystemExit(f'Expected exactly 20 SVG samples, got {len(files)}')
+expected = 8 * 4  # species × still variants
+if len(files) != expected: raise SystemExit(f'Expected exactly {expected} SVG samples, got {len(files)}')
 for file in files:
     png = cairosvg.svg2png(url=str(file), output_width=240, output_height=250)
     name = baseline / f'{file.stem}.png'

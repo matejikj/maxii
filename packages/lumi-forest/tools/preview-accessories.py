@@ -6,7 +6,7 @@ import cairosvg
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-NAMES = ('rabbit', 'bear', 'fox', 'otter', 'hedgehog')
+NAMES = ('rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn')
 W, H = 210, 274
 out = Image.new('RGB', (W * 5 + 40, H + 76), '#FAF7F1')
 draw = ImageDraw.Draw(out)

@@ -1,7 +1,7 @@
 # LUMI Forest — v1.0.0 source release candidate
 
 **Declarative, deterministic vector design system for React Native / Expo.**
-The library contains Character Engine (5 animals; expressions, poses and accessories), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
+The library contains Character Engine (8 animals; expressions, poses, accessories, semantic states and offline props), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
 
 **Certification status:** Automated checks cover core contracts, image regressions, public API, TypeScript, package outputs and Metro exports. A passing result belongs to the tested commit and build. Physical-device rendering, frame/memory metrics, signed native builds and store distribution remain **NOT verified**. The release and npm publication workflows fail closed until real device evidence and the remaining release requirements are provided. Do not claim a production-certified v1.0.0 yet.
 

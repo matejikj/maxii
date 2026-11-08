@@ -12,6 +12,23 @@ export {
   compileCharacter,
   ACCESSORY_SLOTS,
   PROPORTION_LIMITS,
+  CHARACTER_COLLECTION,
+  CHARACTER_COLLECTION_COMPAT,
+  CHARACTER_COLLECTION_VERSION,
+  CHARACTER_PROP_IDS,
+  CHARACTER_SEMANTIC_STATES,
+  DEFAULT_GUIDE_SPECIES,
+  SEMANTIC_PRESENTATIONS,
+  listCollectionEntries,
+  resolveCollectionSpecies,
+  resolveSemanticPresentation,
+  summarizeCollectionComplexity,
+  compileCharacterProp,
+  COLLECTION_BACKGROUND_FIXTURES,
+  COLLECTION_EXTREME_PROPORTIONS,
+  COLLECTION_POSE_EXPRESSION_FIXTURES,
+  COLLECTION_SAFE_UI_INSET,
+  COLLECTION_SCALE_FIXTURES,
 } from './characters';
 export type {
   CharacterBlueprint,
@@ -29,6 +46,11 @@ export type {
   CharacterCompileOptions,
   RabbitArtVariant,
   RabbitArtVariantId,
+  CharacterCollectionEntry,
+  CharacterPropId,
+  CharacterSemanticState,
+  CharacterSignatureAction,
+  SemanticPresentation,
 } from './characters';
 export { CHARACTER_ARTWORK } from './characters/artwork';
 export { planDecorations, DECORATION_SLOTS } from './engine/decorations';

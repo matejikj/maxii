@@ -2,6 +2,7 @@ node_modules/
 .expo/
 .expo-export/
 .test-dist/
+.venv-visual/
 .DS_Store
 *.tsbuildinfo
 *.log

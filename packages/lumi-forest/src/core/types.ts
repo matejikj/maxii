@@ -2,7 +2,16 @@ import type { ProceduralSceneConfig } from './procedural/types';
 import type { CharacterPose, CharacterExpression, CharacterAccessory, CharacterProportions } from './characters/blueprint';
 /** Stable public identifiers. A breaking change requires a new scene document version. */
 export const LUMI_SCENES = ['home', 'growth', 'sleep', 'feeding', 'milestones'] as const;
-export const LUMI_ANIMALS = ['rabbit', 'bear', 'fox', 'otter', 'hedgehog'] as const;
+export const LUMI_ANIMALS = [
+  'rabbit',
+  'bear',
+  'fox',
+  'otter',
+  'hedgehog',
+  'owl',
+  'squirrel',
+  'fawn',
+] as const;
 export const LUMI_DENSITIES = ['quiet', 'regular', 'playful'] as const;
 
 export type LumiScene = (typeof LUMI_SCENES)[number];

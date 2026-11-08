@@ -18,6 +18,9 @@ const GUIDE_LABELS: Record<GuideSpecies, string> = {
   fox: 'Nori (liška)',
   otter: 'Kiko (vydra)',
   hedgehog: 'Piko (ježek)',
+  owl: 'Eli (sova)',
+  squirrel: 'Tili (veverka)',
+  fawn: 'Runi (koloušek)',
 };
 
 /**

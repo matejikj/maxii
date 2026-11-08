@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline pixel snapshots for 5 species × 2 poses × 4 expressions.
+"""Offline pixel snapshots for 8 species × 2 poses × 4 expressions.
 
 Pinned CairoSVG and Pillow are used for deterministic rasterization. These are
 NOT native screenshots; Expo/Android rendering still needs device tests.
@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EXPORTS = ROOT / 'exports/characters'
 BASELINES = ROOT / 'tests/characters-visual/baselines'
 ACTUAL = ROOT / 'tests/characters-visual/actual'
-ANIMALS = ('rabbit', 'bear', 'fox', 'otter', 'hedgehog')
+ANIMALS = ('rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn')
 POSES = ('sitting', 'standing')
 EXPRESSIONS = ('neutral', 'happy', 'curious', 'sleepy')
 SIZE = (192, 198)
@@ -42,7 +42,7 @@ def compare(image: Image.Image, baseline: Image.Image) -> tuple[bool, float]:
 def render_grid() -> None:
     from PIL import ImageDraw, ImageFont
     margin, cell_w, cell_h = 22, 198, 244
-    canvas = Image.new('RGB', (margin * 2 + 8 * cell_w, 78 + 5 * cell_h), '#FAF7F1')
+    canvas = Image.new('RGB', (margin * 2 + 8 * cell_w, 78 + len(ANIMALS) * cell_h), '#FAF7F1')
     draw = ImageDraw.Draw(canvas)
     try:
         font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 14)
@@ -50,7 +50,7 @@ def render_grid() -> None:
         title = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 22)
     except OSError:
         font = small = title = ImageFont.load_default()
-    draw.text((margin, 22), 'LUMI FOREST | CHARACTER ENGINE v0.3', fill='#384C4A', font=title)
+    draw.text((margin, 22), 'LUMI FOREST | CHARACTER COLLECTION v1', fill='#384C4A', font=title)
     for row, animal in enumerate(ANIMALS):
         for col, (pose, expression) in enumerate((p, e) for p in POSES for e in EXPRESSIONS):
             x, y = margin + col * cell_w, 75 + row * cell_h

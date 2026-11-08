@@ -6,6 +6,7 @@ import { CHARACTER_BLUEPRINTS } from '../characters/blueprint';
 import { compileCharacter } from '../characters/compiler';
 import { composeScene } from '../scenes/compose';
 import type { SceneOptions, LumiAnimal, LumiDensity, LumiScene } from '../types';
+import { LUMI_ANIMALS } from '../types';
 import type { CharacterAccessory, CharacterExpression, CharacterPose, CharacterProportions } from '../characters/blueprint';
 import type { SceneDocument } from '../vector/types';
 import type { ProceduralSceneConfig, SafeZone } from '../procedural/types';
@@ -59,7 +60,7 @@ function keysOnly(value: Record<string, unknown>, names: readonly string[], fiel
 }
 const SCENES = Object.keys(SCENE_CATALOG);
 const DENSITIES = ['quiet', 'regular', 'playful'];
-const ANIMALS = ['rabbit', 'bear', 'fox', 'otter', 'hedgehog'];
+const ANIMALS = [...LUMI_ANIMALS];
 const POSES = ['default', 'sitting', 'standing', 'sleeping'];
 const EXPRESSIONS = ['neutral', 'happy', 'curious', 'sleepy'];
 const ACCESSORIES = ['bow', 'flower', 'scarf', 'star'];
