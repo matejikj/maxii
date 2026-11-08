@@ -47,6 +47,7 @@ export {
   FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
   FIRST_YEAR_PUBLISHED_REVISIONS,
 } from './catalog/firstYearPublished';
+export * from './pack';
 export {
   FIRST_YEAR_DRAFT_CONTENT_VERSION,
   FIRST_YEAR_DRAFT_REVISIONS,

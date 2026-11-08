@@ -45,3 +45,8 @@ apps/*/ios/
 
 # Product planning stays local, including its implementation README
 /docs/
+
+# Content-pack signing secrets (public keys and signed packs stay versioned)
+**/*.ed25519.sk
+**/*.ed25519.sk.hex
+**/content/packs/keys/

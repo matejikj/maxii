@@ -17,7 +17,7 @@
       ]
     ],
     "ios": {
-      "bundleIdentifier": "com.example.lumibabytracker",
+      "bundleIdentifier": "com.matejikj",
       "supportsTablet": true,
       "infoPlist": {
         "UIFileSharingEnabled": false,
@@ -25,7 +25,7 @@
       }
     },
     "android": {
-      "package": "com.example.lumibabytracker",
+      "package": "com.matejikj",
       "allowBackup": false
     }
   }

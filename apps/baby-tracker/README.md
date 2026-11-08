@@ -89,4 +89,4 @@ npm run run:android:cipher --workspace @maxii/baby-tracker
 
 Expo Go SQLCipher neobsahuje.
 
-Před vydáním nahraď `com.example.lumibabytracker` vlastním identifikátorem.
+Identifikátor aplikace pro iOS i Android je `com.matejikj`. Vygenerované nativní projekty musí převzít aktuální Expo konfiguraci před dalším buildem. Instalace dřívější vývojové aplikace pod jiným ID má samostatná data; před jejím odstraněním použij přenosnou zálohu a ověř obnovu.

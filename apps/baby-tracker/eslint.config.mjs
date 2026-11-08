@@ -16,6 +16,7 @@ export default tseslint.config(
       'node_modules/**',
       'metro.config.js',
       'playwright.config.mjs',
+      'public/**',
       'tests/e2e/**',
       'tests/ts-resolve-*.mjs',
     ],

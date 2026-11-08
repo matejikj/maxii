@@ -10,9 +10,14 @@ or store signing secrets are required for local care after install.
    - Install on a device/emulator without network if verifying airplane mode.
 
 2. Distribution build
-   - Use export:android / export:ios / export:web or a native release build.
+   - Native application ID on iOS and Android: com.matejikj.
+   - export:android / export:ios only export JavaScript and assets; they do not produce an installable native release.
+   - Build a signed native release with the current Expo configuration using the local Android/Xcode toolchain (or a configured optional EAS build).
+   - Record the installable Android APK and store AAB separately; an AAB is not installed directly on a device. For iOS, record the signed archive/export or distributed TestFlight build.
+   - export:web produces the static web files; verify service worker activation and an offline restart in a supported browser.
    - Keep signing keys and store credentials outside the repository.
    - Record the printed release evidence with the binary hash in your release log.
+   - Never uninstall the previous app as an automated build step. A different application ID has separate data and needs a verified portable export/import path.
 
 3. Progressive publish
    - Ship to an internal track first.
@@ -27,7 +32,8 @@ or store signing secrets are required for local care after install.
 5. Rollback
    - Do not install an older binary over a newer diary schema.
    - The app refuses schemas newer than its native/web compatibility ceiling.
-   - Safe path: export a portable diary (or keep a checkpoint), install the matching older build, then restore if needed.
+   - Keep a verified portable diary export and the original compatible build available before changing versions.
+   - Restore into an older build only if that build supports the archive/schema being restored; otherwise use a compatible fixed build. A backup does not make an incompatible downgrade safe.
    - Never rely on silent schema downgrades.
 
 6. Support

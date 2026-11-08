@@ -17,8 +17,11 @@ import { BootstrapProvider, useBootstrap } from './session/BootstrapContext';
 import { HistoryTabProvider } from './session/HistoryTabContext';
 import { MotionPreferenceBridge } from './session/MotionPreferenceBridge';
 import { PreferencesProvider } from './session/PreferencesContext';
+import { ContentPackProvider } from './session/ContentPackContext';
+import { registerPublicServiceWorker } from './registerPublicServiceWorker';
 
 const config = loadPublicAppConfig();
+registerPublicServiceWorker();
 
 function StorageProbeHost({ children }: { children: React.ReactNode }) {
   const { logger } = useCompositionRoot();
@@ -116,13 +119,15 @@ function BootstrappedApp() {
   return (
     <BootstrapProvider openPersonalDiary={openPersonalDiary}>
       <PreferencesProvider>
-        <MotionPreferenceBridge>
-          <AppLockGate>
-            <HistoryTabProvider>
-              <PersonalAppShell />
-            </HistoryTabProvider>
-          </AppLockGate>
-        </MotionPreferenceBridge>
+        <ContentPackProvider>
+          <MotionPreferenceBridge>
+            <AppLockGate>
+              <HistoryTabProvider>
+                <PersonalAppShell />
+              </HistoryTabProvider>
+            </AppLockGate>
+          </MotionPreferenceBridge>
+        </ContentPackProvider>
       </PreferencesProvider>
     </BootstrapProvider>
   );

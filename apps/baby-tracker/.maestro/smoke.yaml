@@ -1,6 +1,6 @@
 # Personal client smoke: launch and see the Today shell. Requires a running
 # development build on a device/emulator; not a Metro-export substitute.
-appId: com.example.lumibabytracker
+appId: com.matejikj
 ---
 - launchApp
 - assertVisible: "Deník miminka"
