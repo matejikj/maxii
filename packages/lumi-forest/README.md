@@ -3,7 +3,7 @@
 **Declarative, deterministic vector design system for React Native / Expo.**
 The library contains Character Engine (5 animals; expressions, poses and accessories), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
 
-**Certification status:** Core tests, offline image regressions, API contracts, full workspace TypeScript checks, the Bob ESM/declaration build, and Android/iOS Metro exports have been verified during the monorepo migration. Physical-device rendering, frame/memory metrics, signed native builds and store distribution remain **NOT verified**. The release and npm publication workflows deliberately fail closed until real device evidence and the remaining release requirements are provided. Do not claim a production-certified v1.0.0 yet. Older validation documents describe the original offline environment.
+**Certification status:** Automated checks cover core contracts, image regressions, public API, TypeScript, package outputs and Metro exports. A passing result belongs to the tested commit and build. Physical-device rendering, frame/memory metrics, signed native builds and store distribution remain **NOT verified**. The release and npm publication workflows fail closed until real device evidence and the remaining release requirements are provided. Do not claim a production-certified v1.0.0 yet.
 
 ## Supported environment
 
@@ -70,7 +70,7 @@ A `LumiBackground` is absolute-positioned decorative SVG; arrange the app's real
 
 - `@lumi/forest-design`: core + native components (imports motion peer dependencies).
 - `@lumi/forest-design/core`: **pure TypeScript**, suitable for Node, tooling and tests.
-- `@lumi/forest-design/native`: explicitly mobile-only components.
+- `@lumi/forest-design/native`: React Native UI and motion adapters, including web through `react-native-web`.
 
 Only these entrypoints and `package.json` are public. Do not deep-import source files. `contracts/public-api.json` freezes exported symbol names. An intentional change requires `npm run api:approve` and a SemVer review.
 
@@ -82,8 +82,6 @@ Native and browser consumers use the shipped TypeScript sources through the `rea
 - SceneDocument v1 is the active stable renderer document format; use `readSceneDocument()` at untrusted JSON boundaries.
 - Blueprint v1 and v2 are both accepted. `migrateCharacterBlueprint()` upgrades **only exact-artwork equivalent** bundled legacy blueprints; custom V1 authors should keep V1 or manually author a V2 rig.
 - **No silent conversion** of unknown future schema versions; explicit errors preserve data integrity.
-
-See [docs/VERSIONING.md](docs/VERSIONING.md), [docs/API_STABILITY.md](docs/API_STABILITY.md) and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
 ## Quality and performance
 
@@ -100,10 +98,12 @@ npm run test:motion:visual
 node tools/bench-release.cjs reports/performance/node-cpu-local.json
 ```
 
-Existing golden scene SHA-256 hashes remain unchanged. Complexity budgets are enforced in tests. **Node CPU timings do not show mobile FPS or memory consumption**. Real-device performance requires the documented test matrix and evidence gate.
+Existing golden scene SHA-256 hashes remain unchanged. Complexity budgets are enforced in tests. **Node CPU timings do not show mobile FPS or memory consumption**. Real-device performance requires sanitized physical Android/iPhone measurements for the exact release commit and the release evidence gate. The source repository includes [evidence requirements](release-evidence/README.md) and the verifier at `tools/device/verify-release-evidence.cjs`.
 
-See [docs/PERFORMANCE_V1.md](docs/PERFORMANCE_V1.md), [docs/VALIDATION_V1.md](docs/VALIDATION_V1.md) and [docs/RELEASING.md](docs/RELEASING.md).
+Release checks include `npm run release:verify-device`, `npm run release:verify-package`, and `npm run release:smoke-core`. Publishing additionally requires ownership of the package namespace, an appropriate license, the committed dependency lockfile, and manual approval in the configured GitHub environment.
 
-## Previous architecture and history
+## Architecture boundaries
 
-The v0.6 animation, v0.5 UI, v0.4 procedural scene and v0.3 character documentation remains in `docs/`. Architecture retains the same `VectorNode` / `SceneDocument` IR and native `react-native-svg` rendering. Optional Skia / prerendering should be decided only after measured bottlenecks and reproducible A/B comparisons.
+The framework uses a renderer-neutral `VectorNode` / `SceneDocument` IR and native `react-native-svg` rendering. Core compilers stay independent of React Native; motion works above prepared geometry. Application records, accounts, storage and synchronization remain outside the framework. Optional Skia / prerendering should be decided only after measured bottlenecks and reproducible A/B comparisons. The current release candidate is summarized in [CHANGELOG.md](CHANGELOG.md).
+
+Task plans and supporting Markdown documents are local-only and excluded from Git and the npm package. Standard project READMEs and changelogs remain versioned.

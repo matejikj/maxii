@@ -28,3 +28,11 @@ coverage/
 **/.maestro/captures/
 **/.maestro/screenshots/
 **/.rnstorybook/storybook.requires.ts
+
+# Local task plans and supporting Markdown; keep standard public project guides
+*.[mM][dD]
+!README.md
+!CHANGELOG*.md
+
+# Product planning stays local, including its implementation README
+/docs/

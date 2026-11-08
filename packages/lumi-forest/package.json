@@ -85,7 +85,6 @@
     "src/",
     "README.md",
     "CHANGELOG.md",
-    "docs/",
     "assets/"
   ],
   "engines": {

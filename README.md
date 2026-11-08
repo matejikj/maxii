@@ -63,8 +63,10 @@ npm pack --workspace @lumi/forest-design --dry-run --ignore-scripts
 
 ## CI a publikování
 
-GitHub Actions jsou v kořenovém `.github/workflows`. CI kontroluje všechny tři projekty. Release a npm publikace cílí výhradně na `@lumi/forest-design`; aplikace mají `private: true`. Publikování zůstává ruční a podmíněné schválením, licencí, lockfilem a fyzickým měřením na Androidu i iOS. Viz [framework](packages/lumi-forest/README.md) a [release postup](packages/lumi-forest/docs/RELEASING.md).
+GitHub Actions jsou v kořenovém `.github/workflows`. CI kontroluje všechny tři projekty. Release a npm publikace cílí výhradně na `@lumi/forest-design`; aplikace mají `private: true`. Publikování zůstává ruční a podmíněné schválením, licencí, lockfilem a fyzickým měřením na Androidu i iOS. Viz [framework](packages/lumi-forest/README.md) a [požadavky na důkazy z fyzických zařízení](packages/lumi-forest/release-evidence/README.md).
 
-Při reorganizaci byly lokálně ověřeny build frameworku včetně ESM smoke testu, typová kontrola všech tří projektů, 133 Node testů, 2 Python testy, 120 obrazových referencí a mobilní Metro exporty. Zdrojové mapy Baby Trackeru neobsahují galerii ani Storybook. Jde o ověření zdrojů a JS bundlů; fyzická zařízení, podepsané native buildy a vydání do obchodů zatím ověřeny nejsou.
+Tasky, produktové návrhy a podpůrné Markdown dokumenty zůstávají pouze lokálně a jsou ignorované Gitem. Verzují se standardní projektové `README.md` a changelogy; kořenový adresář `docs/` je celý lokální. Podpůrné dokumenty nejsou součástí distribuovaného npm balíčku.
+
+Výsledek automatických kontrol se vztahuje ke konkrétnímu commitu a buildu; aktuální stav určují výstupy testů a CI. Kontroly zdrojů, obrazových referencí a JS bundlů nenahrazují ověření fyzických zařízení, podepsaných native buildů a vydání do obchodů. Tyto distribuční a device podmínky zůstávají samostatnou branou vydání.
 
 Konfigurace navazuje na oficiální dokumentaci [Expo monorepozitářů](https://docs.expo.dev/guides/monorepos/), [npm workspaces](https://docs.npmjs.com/cli/v11/using-npm/workspaces/) a [odděleného vstupu React Native Storybooku](https://storybookjs.github.io/react-native/docs/intro/getting-started/).
