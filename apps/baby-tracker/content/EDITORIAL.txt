@@ -1,0 +1,30 @@
+Redakční návod k aktivitám LUMI
+
+Tento dokument je pracovní šablona pro autory obsahu. Vývojové fixture se do doporučovacího katalogu nedostanou.
+
+Povinná pole jedné revize
+
+- activityId — stabilní identifikátor aktivity
+- revisionId — neměnný identifikátor konkrétního znění
+- title, language (cs)
+- ageMonths.fromInclusive / toInclusive
+- 1–3 krátké steps
+- primaryArea a volitelné relatedAreas
+- topicIds ze schválené taxonomie
+- suitability jako datové podmínky (věk, prostředí, pomůcky) — žádný skript
+- sources s datem kontroly
+- editorial.stage a historie kontrol
+
+Workflow
+
+1. draft
+2. expert_reviewed (autor, datum, výsledek)
+3. language_ux
+4. parent_verified
+5. published
+
+Oprava textu nebo podmínek = nová revize. Stažení = withdrawn s důvodem. Historické zkušenosti zůstávají čitelné podle původního revisionId.
+
+Validace
+
+Spusťte npm run content:validate v apps/baby-tracker. Chyby ukazují konkrétní pole (path), například steps[1] nebo editorial.history.
