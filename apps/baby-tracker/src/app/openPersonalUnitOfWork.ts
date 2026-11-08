@@ -6,13 +6,33 @@ import {
   createMemoryLogicalCheckpointVault,
   type LogicalCheckpointVault,
 } from '../infrastructure/database/logicalCheckpointVault';
+import { PRIVATE_DATABASE_NAME } from '../infrastructure/database/native/databaseNames';
+import type { DatabaseKeyStore } from '../infrastructure/database/native/databaseKeyStoreTypes';
+import type { DatabasePresence } from '../infrastructure/database/native/databasePresence';
+import type { SqlDatabaseOpener } from '../infrastructure/database/native/sqlConnection';
+import { WEB_DIARY_DATABASE_NAME } from '../infrastructure/database/web/lumiWebDatabase';
+import {
+  createPlatformReminderScheduler,
+  type ReminderScheduler,
+} from '../infrastructure/notifications/reminderScheduler';
+import {
+  createMemoryAppLockStore,
+  createSecureStoreAppLockStore,
+  type AppLockStore,
+} from '../infrastructure/security/appLockStore';
 import { resolveRemoteServicesBoundary, shouldInitializeRemoteClients } from './remoteServicesBoundary';
 
 export type OpenedPersonalRuntime = {
   unitOfWork: UnitOfWorkFactory;
   /** Local recovery points kept outside the live diary so replace import can roll back. */
   checkpoints: LogicalCheckpointVault;
+  reminders: ReminderScheduler;
+  appLock: AppLockStore;
+  databaseName: string;
+  keyStore?: DatabaseKeyStore;
+  presence?: DatabasePresence;
   close: () => Promise<void>;
+  deleteDurableStore: () => Promise<void>;
 };
 
 /**
@@ -28,12 +48,19 @@ export async function openPersonalUnitOfWork(
   }
 
   const checkpoints = createMemoryLogicalCheckpointVault();
+  const reminders = createPlatformReminderScheduler();
+  const appLock =
+    Platform.OS === 'web'
+      ? createMemoryAppLockStore()
+      : await createSecureStoreAppLockStore().catch(() => createMemoryAppLockStore());
 
   if (Platform.OS === 'web') {
     const web = await import('../infrastructure/database/web');
+    const databaseName = WEB_DIARY_DATABASE_NAME;
     const handle = await web.openWebDatabase({
       now: services.clock.now(),
       faults: services.faults,
+      databaseName,
     });
     const unitOfWork = web.createWebUnitOfWorkFactory(handle, {
       faults: services.faults,
@@ -42,12 +69,32 @@ export async function openPersonalUnitOfWork(
     return {
       unitOfWork,
       checkpoints,
+      reminders,
+      appLock,
+      databaseName,
       close: async () => handle.close(),
+      deleteDurableStore: async () => {
+        const Dexie = (await import('dexie')).default;
+        await Dexie.delete(databaseName);
+      },
     };
   }
 
   const native = await import('../infrastructure/database/native');
+  const databaseName = PRIVATE_DATABASE_NAME;
+  const keyStoreMod = await native.loadSecureStoreDatabaseKeyStore();
+  const keyStore = keyStoreMod.createSecureStoreDatabaseKeyStore();
+  const presence = await (
+    await native.loadSecureStoreDatabasePresence()
+  ).createSecureStoreDatabasePresence();
+  const openerMod = await native.loadExpoSqlOpener();
+  const opener: SqlDatabaseOpener = openerMod.createExpoSqlOpener();
+
   const database = await native.openPrivateDatabase({
+    databaseName,
+    keyStore,
+    presence,
+    opener,
     faults: services.faults,
     now: services.clock.now(),
   });
@@ -58,7 +105,15 @@ export async function openPersonalUnitOfWork(
   return {
     unitOfWork,
     checkpoints,
+    reminders,
+    appLock,
+    databaseName,
+    keyStore,
+    presence,
     close: () => database.close(),
+    deleteDurableStore: async () => {
+      await opener.delete(databaseName);
+    },
   };
 }
 

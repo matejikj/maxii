@@ -37,6 +37,8 @@ export type LogicalCheckpointVault = {
   list(): Promise<LogicalCheckpointSummary[]>;
   read(checkpointId: string): Promise<LogicalCheckpointRecord | null>;
   readArchive(checkpointId: string): Promise<DiaryArchive>;
+  /** Removes every local recovery point (used by full personal wipe). */
+  clearAll(): Promise<void>;
 };
 
 export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
@@ -106,6 +108,9 @@ export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
         });
       }
       return parseDiaryArchive(record.archiveJson);
+    },
+    async clearAll() {
+      records.clear();
     },
   };
 }

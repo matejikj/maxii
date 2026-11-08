@@ -16,7 +16,9 @@ import {
   readWelcomePending,
   resolveDefaultTimeZone,
   updatePersonalProfile,
+  wipePersonalData,
   type PersonalBootstrapResult,
+  type PersonalWipeResult,
 } from '../../application';
 import type {
   CareOverviewCache,
@@ -27,6 +29,10 @@ import { createCareOverviewCache } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
 import type { ChildProfile, UnitOfWorkFactory } from '../../domain';
 import type { LogicalCheckpointVault } from '../../infrastructure/database/logicalCheckpointVault';
+import type { DatabaseKeyStore } from '../../infrastructure/database/native/databaseKeyStoreTypes';
+import type { DatabasePresence } from '../../infrastructure/database/native/databasePresence';
+import type { ReminderScheduler } from '../../infrastructure/notifications/reminderScheduler';
+import type { AppLockStore } from '../../infrastructure/security/appLockStore';
 import { wirePersonalCommands } from '../openPersonalUnitOfWork';
 import { useCompositionRoot } from '../providers';
 
@@ -38,11 +44,25 @@ export type PersonalRuntime = {
   overviewCache: CareOverviewCache;
   /** Device-local recovery points outside the live diary tables. */
   checkpoints: LogicalCheckpointVault;
+  reminders: ReminderScheduler;
+  appLock: AppLockStore;
+  databaseName: string;
+  keyStore?: DatabaseKeyStore;
+  presence?: DatabasePresence;
+  close: () => Promise<void>;
+  deleteDurableStore: () => Promise<void>;
 };
 
 export type OpenPersonalDiary = () => Promise<{
   unitOfWork: UnitOfWorkFactory;
   checkpoints: LogicalCheckpointVault;
+  reminders: ReminderScheduler;
+  appLock: AppLockStore;
+  databaseName: string;
+  keyStore?: DatabaseKeyStore;
+  presence?: DatabasePresence;
+  close: () => Promise<void>;
+  deleteDurableStore: () => Promise<void>;
 }>;
 
 export type BootstrapContextValue = {
@@ -55,6 +75,8 @@ export type BootstrapContextValue = {
   runtime: PersonalRuntime | null;
   skipWelcome: () => Promise<void>;
   saveProfile: (profile: ChildProfile) => Promise<void>;
+  /** Confirmed full local wipe; restarts bootstrap for a clean first launch. */
+  wipeAllLocalData: () => Promise<PersonalWipeResult>;
   retry: () => void;
 };
 
@@ -99,6 +121,13 @@ export function BootstrapProvider({
       readModels,
       overviewCache,
       checkpoints: opened.checkpoints,
+      reminders: opened.reminders,
+      appLock: opened.appLock,
+      databaseName: opened.databaseName,
+      ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
+      ...(opened.presence ? { presence: opened.presence } : {}),
+      close: opened.close,
+      deleteDurableStore: opened.deleteDurableStore,
     };
     cached.current = next;
     return next;
@@ -171,6 +200,32 @@ export function BootstrapProvider({
     [resolveRuntime],
   );
 
+  const wipeAllLocalData = useCallback(async () => {
+    const personal = await resolveRuntime();
+    const wipeResult = await wipePersonalData({
+      unitOfWork: personal.unitOfWork,
+      checkpoints: personal.checkpoints,
+      reminders: personal.reminders,
+      appLock: personal.appLock,
+      nowMs: services.clock.now().epochMs,
+      closeRuntime: personal.close,
+      deleteDurableStore: personal.deleteDurableStore,
+      databaseName: personal.databaseName,
+      ...(personal.keyStore ? { keyStore: personal.keyStore } : {}),
+      ...(personal.presence ? { presence: personal.presence } : {}),
+    });
+    cached.current = null;
+    setRuntime(null);
+    setResult({
+      phase: 'initializing',
+      profile: null,
+      welcomePending: false,
+      error: null,
+    });
+    setAttempt((n) => n + 1);
+    return wipeResult;
+  }, [resolveRuntime, services.clock]);
+
   const value = useMemo<BootstrapContextValue>(
     () => ({
       phase: result.phase,
@@ -181,9 +236,10 @@ export function BootstrapProvider({
       runtime,
       skipWelcome,
       saveProfile,
+      wipeAllLocalData,
       retry: () => setAttempt((n) => n + 1),
     }),
-    [result, runtime, saveProfile, skipWelcome],
+    [result, runtime, saveProfile, skipWelcome, wipeAllLocalData],
   );
 
   return <BootstrapContext.Provider value={value}>{children}</BootstrapContext.Provider>;

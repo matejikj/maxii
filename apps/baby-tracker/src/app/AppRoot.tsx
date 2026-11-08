@@ -11,9 +11,12 @@ import {
   personalModeBlocksOnMissingBackend,
   resolveRemoteServicesBoundary,
 } from './remoteServicesBoundary';
+import { AppLockGate } from '../features/shell/AppLockGate';
 import { AppProviders, useCompositionRoot } from './providers';
 import { BootstrapProvider, useBootstrap } from './session/BootstrapContext';
 import { HistoryTabProvider } from './session/HistoryTabContext';
+import { MotionPreferenceBridge } from './session/MotionPreferenceBridge';
+import { PreferencesProvider } from './session/PreferencesContext';
 
 const config = loadPublicAppConfig();
 
@@ -100,14 +103,27 @@ function BootstrappedApp() {
     return {
       unitOfWork: opened.unitOfWork,
       checkpoints: opened.checkpoints,
+      reminders: opened.reminders,
+      appLock: opened.appLock,
+      databaseName: opened.databaseName,
+      ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
+      ...(opened.presence ? { presence: opened.presence } : {}),
+      close: opened.close,
+      deleteDurableStore: opened.deleteDurableStore,
     };
   }, [services]);
 
   return (
     <BootstrapProvider openPersonalDiary={openPersonalDiary}>
-      <HistoryTabProvider>
-        <PersonalAppShell />
-      </HistoryTabProvider>
+      <PreferencesProvider>
+        <MotionPreferenceBridge>
+          <AppLockGate>
+            <HistoryTabProvider>
+              <PersonalAppShell />
+            </HistoryTabProvider>
+          </AppLockGate>
+        </MotionPreferenceBridge>
+      </PreferencesProvider>
     </BootstrapProvider>
   );
 }

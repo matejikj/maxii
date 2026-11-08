@@ -11,8 +11,10 @@ import {
 import { asTimeZoneId } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
+import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
+import { BackupHintBanner } from '../shell/BackupHintBanner';
 import { PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
 import { ExperienceRecorder } from './ExperienceRecorder';
@@ -39,6 +41,7 @@ export function TodayScreen({
 }: TodayScreenProps) {
   const { colors, mode, ui } = useLumiTheme();
   const { profile } = useBootstrap();
+  const { preferences } = usePersonalPreferences();
   const { services } = useCompositionRoot();
   const history = useHistoryTabState();
   const childName = profile?.displayName ?? 'Miminko';
@@ -133,10 +136,12 @@ export function TodayScreen({
             style={[styles.avatar, { borderColor: colors.controlBorder }]}
           >
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <LumiCharacter species="rabbit" expression="happy" />
+              <LumiCharacter species={preferences.guideSpecies} expression="happy" />
             </View>
           </Pressable>
         </View>
+
+        <BackupHintBanner />
 
         {childId ? (
           <>

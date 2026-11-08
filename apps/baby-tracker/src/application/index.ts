@@ -65,4 +65,35 @@ export {
   type ActivatedPortableImport,
   type StagedPortableImport,
 } from './diaryBackup';
+export {
+  DEFAULT_REMINDER_PREFERENCES,
+  LOCAL_GUIDE_SPECIES,
+  META_BACKUP_HINT_SHOWN,
+  META_CHARACTER_MOTION,
+  META_GUIDE_SPECIES,
+  META_REMINDER_PREFS,
+  defaultPersonalPreferences,
+  loadPersonalPreferences,
+  markBackupHintShown,
+  saveGrowthDisplayUnits,
+  saveReminderPreferences,
+  setCharacterMotionEnabled,
+  setGuideSpecies,
+  shouldShowBackupHint,
+  updateSummaryTimeZone,
+  type GuideSpecies,
+  type PersonalPreferences,
+  type ReminderPreferences,
+} from './personalSettings';
+export {
+  findCanaryResidues,
+  wipePersonalData,
+  type PersonalWipeDeps,
+  type PersonalWipeResult,
+} from './wipePersonalData';
+export {
+  buildDiagnosticsSnapshot,
+  serializeDiagnosticsSnapshot,
+  type DiagnosticsSnapshot,
+} from './diagnosticsExport';
 

@@ -5,6 +5,7 @@ import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/f
 import { createChildProfile, parseCalendarDate } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { BackupRestorePanel } from './BackupRestorePanel';
+import { SettingsPanel } from './SettingsPanel';
 
 type ProfileScreenProps = {
   onClose: () => void;
@@ -87,6 +88,7 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
             }
           }}
         />
+        <SettingsPanel />
         <BackupRestorePanel />
         <LumiButton title="Zavřít" variant="ghost" onPress={onClose} fullWidth />
       </ScrollView>
