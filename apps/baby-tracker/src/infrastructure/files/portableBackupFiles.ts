@@ -4,9 +4,15 @@ import {
   assertPortableBackupReadable,
   portableBackupFileName,
 } from './portableBackupLimits';
+import { writeLastPortableBackupSidecar } from './portableBackupAppFiles';
 
 export type PortableBackupFileResult =
-  | { ok: true; outcome: 'shared' | 'downloaded' | 'copied' }
+  | {
+      ok: true;
+      outcome: 'shared' | 'downloaded' | 'copied';
+      /** App-local sealed copy when the platform could write one. */
+      sidecarUri?: string;
+    }
   | { ok: false; code: 'cancelled' | 'unavailable' | 'failed'; message: string };
 
 export type PortableBackupPickResult =
@@ -26,17 +32,25 @@ export async function shareOrDownloadPortableBackup(
   if (Platform.OS === 'web') {
     return downloadPortableBackupWeb(serialized, fileName);
   }
+  const sidecar = await writeLastPortableBackupSidecar(serialized, fileName);
   try {
     const FileSystem = await import('expo-file-system/legacy');
     const Sharing = await import('expo-sharing');
     const cacheRoot = FileSystem.cacheDirectory;
     if (!cacheRoot) {
+      if (sidecar.ok) {
+        // Sidecar alone still lets the caregiver retry from app storage.
+        return { ok: true, outcome: 'copied', sidecarUri: sidecar.uri };
+      }
       return { ok: false, code: 'unavailable', message: 'Dočasné úložiště není dostupné.' };
     }
     const path = `${cacheRoot}${fileName}`;
     await FileSystem.writeAsStringAsync(path, serialized);
     const available = await Sharing.isAvailableAsync();
     if (!available) {
+      if (sidecar.ok) {
+        return { ok: true, outcome: 'copied', sidecarUri: sidecar.uri };
+      }
       return {
         ok: false,
         code: 'unavailable',
@@ -48,10 +62,15 @@ export async function shareOrDownloadPortableBackup(
       dialogTitle: 'Uložit přenosnou zálohu',
       UTI: 'public.json',
     });
-    // Best-effort cleanup of the plaintext cache copy after the sheet returns.
+    // Best-effort cleanup of the share staging copy after the sheet returns.
     await FileSystem.deleteAsync(path, { idempotent: true }).catch(() => undefined);
-    return { ok: true, outcome: 'shared' };
+    return sidecar.ok
+      ? { ok: true, outcome: 'shared', sidecarUri: sidecar.uri }
+      : { ok: true, outcome: 'shared' };
   } catch (error) {
+    if (sidecar.ok) {
+      return { ok: true, outcome: 'copied', sidecarUri: sidecar.uri };
+    }
     return {
       ok: false,
       code: 'failed',

@@ -19,6 +19,10 @@ import {
   portableBackupFileName,
   shareOrDownloadPortableBackup,
 } from '../../infrastructure/files/portableBackupFiles';
+import {
+  readLastPortableBackupSidecar,
+  writeLastPortableBackupSidecar,
+} from '../../infrastructure/files/portableBackupAppFiles';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 /**
@@ -142,6 +146,7 @@ export function BackupRestorePanel() {
           onChangeText={setPassword}
           secureTextEntry
           autoCapitalize="none"
+          testID="backup-export-password"
         />
         <LumiInput
           label="Potvrzení hesla"
@@ -149,11 +154,13 @@ export function BackupRestorePanel() {
           onChangeText={setPasswordConfirm}
           secureTextEntry
           autoCapitalize="none"
+          testID="backup-export-password-confirm"
         />
         <LumiButton
           title="Vytvořit a uložit přenosnou zálohu"
           loading={busy}
           fullWidth
+          testID="backup-export-create"
           onPress={() => {
             if (!password || password !== passwordConfirm) {
               setError('Heslo a potvrzení se musí shodovat a nesmí být prázdné.');
@@ -169,6 +176,12 @@ export function BackupRestorePanel() {
             })
               .then(async (result) => {
                 setExportText(result.serialized);
+                // Persist under the app document folder before the share sheet
+                // blocks, so a cancelled or stuck share still leaves a reloadable copy.
+                await writeLastPortableBackupSidecar(
+                  result.serialized,
+                  portableBackupFileName(nowMs),
+                );
                 const shared = await shareOrDownloadPortableBackup(
                   result.serialized,
                   portableBackupFileName(nowMs),
@@ -184,10 +197,16 @@ export function BackupRestorePanel() {
                       'Soubor se nepodařilo předat systému. Můžete použít nouzové zkopírování níže.',
                     );
                   }
+                } else if (shared.outcome === 'downloaded') {
+                  setMessage('Šifrovaný soubor byl stažen. Uložte jej mimo prohlížeč.');
+                } else if (shared.outcome === 'copied') {
+                  setMessage(
+                    'Šifrovaný soubor je ve složce aplikace. Systémové sdílení nebylo dostupné.',
+                  );
                 } else {
                   setMessage(
-                    shared.outcome === 'downloaded'
-                      ? 'Šifrovaný soubor byl stažen. Uložte jej mimo prohlížeč.'
+                    shared.sidecarUri
+                      ? 'Systémové sdílení bylo otevřeno. Kopii máte i ve složce aplikace; uzavření dialogu samo neznamená trvalé uložení jinde.'
                       : 'Systémové sdílení bylo otevřeno. Uzavření dialogu samo neznamená, že je soubor trvale uložený.',
                   );
                 }
@@ -225,6 +244,7 @@ export function BackupRestorePanel() {
           title="Vybrat soubor zálohy"
           loading={busy}
           fullWidth
+          testID="backup-import-pick-file"
           onPress={() => {
             setBusy(true);
             setError(null);
@@ -242,6 +262,34 @@ export function BackupRestorePanel() {
                   picked.fileName
                     ? `Načten soubor ${picked.fileName}. Zadejte heslo a zkontrolujte.`
                     : 'Soubor načten. Zadejte heslo a zkontrolujte.',
+                );
+              })
+              .catch((err: unknown) => {
+                setError(err instanceof Error ? err.message : 'Soubor se nepodařilo načíst');
+              })
+              .finally(() => setBusy(false));
+          }}
+        />
+        <LumiButton
+          title="Načíst poslední export ze složky aplikace"
+          variant="secondary"
+          loading={busy}
+          fullWidth
+          testID="backup-import-load-sidecar"
+          onPress={() => {
+            setBusy(true);
+            setError(null);
+            setStaged(null);
+            void readLastPortableBackupSidecar()
+              .then((picked) => {
+                if (!picked.ok) {
+                  setError(picked.message);
+                  return;
+                }
+                setImportPayload(picked.contents);
+                setImportFileName('lumi-last-portable-backup.json');
+                setMessage(
+                  'Načten poslední export ze složky aplikace. Zadejte heslo a zkontrolujte.',
                 );
               })
               .catch((err: unknown) => {
@@ -278,11 +326,13 @@ export function BackupRestorePanel() {
           onChangeText={setImportPassword}
           secureTextEntry
           autoCapitalize="none"
+          testID="backup-import-password"
         />
         <LumiButton
           title="Zkontrolovat soubor"
           loading={busy}
           fullWidth
+          testID="backup-import-stage"
           onPress={() => {
             if (!importPayload.trim()) {
               setError('Nejdřív vyberte soubor zálohy nebo vložte její obsah.');
@@ -322,6 +372,37 @@ export function BackupRestorePanel() {
               Smazané položky se vrátí do stavu ze zálohy. Nahrazení, ne sloučení.
             </LumiText>
             <LumiButton
+              title="Potvrdit nahrazení deníku"
+              loading={busy}
+              fullWidth
+              testID="backup-import-activate"
+              onPress={() => {
+                setBusy(true);
+                setError(null);
+                void activatePortableImport({
+                  unitOfWork: runtime.unitOfWork,
+                  vault: runtime.checkpoints,
+                  archive: staged.archive,
+                  nowMs: Date.now(),
+                })
+                  .then((result) => {
+                    setRollbackId(result.rollbackCheckpointId);
+                    setStaged(null);
+                    setImportPayload('');
+                    setImportFileName(null);
+                    setImportPassword('');
+                    setMessage(
+                      `Deník nahrazen (${result.restoredCareEventCount} záznamů). Můžete vrátit stav před obnovou.`,
+                    );
+                    return refresh();
+                  })
+                  .catch((err: unknown) => {
+                    setError(err instanceof Error ? err.message : 'Nahrazení selhalo');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            />
+            <LumiButton
               title="Nejprve exportovat současný stav"
               variant="ghost"
               disabled={busy}
@@ -353,36 +434,6 @@ export function BackupRestorePanel() {
                   })
                   .catch((err: unknown) => {
                     setError(err instanceof Error ? err.message : 'Export selhal');
-                  })
-                  .finally(() => setBusy(false));
-              }}
-            />
-            <LumiButton
-              title="Potvrdit nahrazení deníku"
-              loading={busy}
-              fullWidth
-              onPress={() => {
-                setBusy(true);
-                setError(null);
-                void activatePortableImport({
-                  unitOfWork: runtime.unitOfWork,
-                  vault: runtime.checkpoints,
-                  archive: staged.archive,
-                  nowMs: Date.now(),
-                })
-                  .then((result) => {
-                    setRollbackId(result.rollbackCheckpointId);
-                    setStaged(null);
-                    setImportPayload('');
-                    setImportFileName(null);
-                    setImportPassword('');
-                    setMessage(
-                      `Deník nahrazen (${result.restoredCareEventCount} záznamů). Můžete vrátit stav před obnovou.`,
-                    );
-                    return refresh();
-                  })
-                  .catch((err: unknown) => {
-                    setError(err instanceof Error ? err.message : 'Nahrazení selhalo');
                   })
                   .finally(() => setBusy(false));
               }}

@@ -19,5 +19,8 @@ test('profile backup UI distinguishes local, portable, and remote concepts', () 
   assert.match(panel, /CSV pro čtení/);
   assert.match(panel, /nahrazuje|Nahrazení/);
   assert.match(panel, /Vrátit stav před obnovou/);
+  assert.match(panel, /Načíst poslední export ze složky aplikace/);
+  assert.match(panel, /backup-import-load-sidecar/);
+  assert.match(panel, /backup-export-create/);
   assert.doesNotMatch(panel, /task-18|Co-Authored-By|as an AI/i);
 });
