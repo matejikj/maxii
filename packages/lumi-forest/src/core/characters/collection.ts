@@ -103,9 +103,19 @@ export const SEMANTIC_PRESENTATIONS: Readonly<
   },
 };
 
-/** Offline props with correct scale/hand anchors — never remote assets. */
-export const CHARACTER_PROP_IDS = ['book', 'blocks', 'leaf', 'scarfProp'] as const;
+/** Offline forest props plus workshop props — never remote assets. */
+export const FOREST_PROP_IDS = ['book', 'blocks', 'leaf', 'scarfProp'] as const;
+export const CHARACTER_PROP_IDS = [
+  ...FOREST_PROP_IDS,
+  'routeMap',
+  'bridgePieces',
+  'notebook',
+  'pencil',
+  'patternTiles',
+  'displayStand',
+] as const;
 export type CharacterPropId = (typeof CHARACTER_PROP_IDS)[number];
+export type ForestPropId = (typeof FOREST_PROP_IDS)[number];
 
 export type CharacterSignatureAction = {
   readonly id: string;

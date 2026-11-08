@@ -2,6 +2,7 @@ import type { LumiAnimal } from '../types';
 import type { VectorNode } from '../vector/types';
 import { CHARACTER_ANATOMY } from './anatomy';
 import type { CharacterPropId } from './collection';
+import type { CharacterAppearanceStyle } from './studioCollection';
 import { RABBIT_ARTWORK_REVISION } from './rabbitArtDirection';
 
 /** Painter-stable, named anatomy. IDs are authoring identifiers, not SVG IDs. */
@@ -9,7 +10,18 @@ export type CharacterPartRole =
   | 'shadow' | 'tail' | 'body' | 'belly' | 'paw' | 'head' | 'ear'
   | 'eye' | 'nose' | 'mouth' | 'cheek' | 'muzzle' | 'spines'
   | 'face' | 'mark' | 'accessory'; // `face` remains for v1 consumers.
-export type CharacterPose = 'default' | 'sitting' | 'standing' | 'sleeping';
+export type CharacterForestPose = 'default' | 'sitting' | 'standing' | 'sleeping';
+/** Static workshop action poses — additive; forest poses stay unchanged. */
+export type CharacterStudioPose =
+  | 'planPath'
+  | 'tryAlternatePath'
+  | 'bridgeSpan'
+  | 'testBridge'
+  | 'sketchPlan'
+  | 'compareNotes'
+  | 'arrangePattern'
+  | 'presentCreation';
+export type CharacterPose = CharacterForestPose | CharacterStudioPose;
 export type CharacterExpression = 'neutral' | 'happy' | 'curious' | 'sleepy';
 export type CharacterAccessory = 'bow' | 'flower' | 'scarf' | 'star';
 export type ProportionChannel = 'body' | 'head' | 'ears' | 'paws';
@@ -69,7 +81,7 @@ export interface CharacterBlueprintV2 {
   readonly displayName: string;
   readonly base: { readonly kind: 'parts'; readonly parts: readonly CharacterPart[] };
   readonly rig: CharacterRig;
-  readonly supportedPoses: readonly ('sitting' | 'standing' | 'sleeping')[];
+  readonly supportedPoses: readonly Exclude<CharacterPose, 'default'>[];
   readonly supportedExpressions: readonly CharacterExpression[];
   readonly supportedAccessories: readonly CharacterAccessory[];
   /**
@@ -85,13 +97,29 @@ export interface CharacterCompileOptions {
   readonly expression?: CharacterExpression;
   readonly accessories?: readonly CharacterAccessory[];
   readonly proportions?: CharacterProportions;
-  /** Offline signature prop (book/blocks/leaf) — never a remote asset. */
+  /** Offline signature or workshop prop — never a remote asset. */
   readonly prop?: CharacterPropId | null;
+  /** Additional offline props (e.g. pencil beside notebook); max two total. */
+  readonly props?: readonly CharacterPropId[];
+  /** Forest / workshop / restrained look preference. */
+  readonly appearanceStyle?: CharacterAppearanceStyle;
 }
 
 const P = (x: number, y: number): Point => ({ x, y });
 const COMMON = {
-  supportedPoses: ['sitting', 'standing', 'sleeping'],
+  supportedPoses: [
+    'sitting',
+    'standing',
+    'sleeping',
+    'planPath',
+    'tryAlternatePath',
+    'bridgeSpan',
+    'testBridge',
+    'sketchPlan',
+    'compareNotes',
+    'arrangePattern',
+    'presentCreation',
+  ],
   supportedExpressions: ['neutral', 'happy', 'curious', 'sleepy'],
   supportedAccessories: ['bow', 'flower', 'scarf', 'star'],
 } as const;

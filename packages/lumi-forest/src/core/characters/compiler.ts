@@ -1,5 +1,6 @@
 import { group } from '../vector/nodes';
 import type { VectorNode, VectorProps } from '../vector/types';
+import { applyAppearanceStylePolish } from './appearanceStyles';
 import { compileAccessory, ACCESSORY_SLOTS } from './accessories';
 import type {
   CharacterBlueprint, CharacterBlueprintV2, CharacterCompileOptions,
@@ -13,6 +14,8 @@ import { expressionEye, expressionMouth } from './expressions';
 import { poseTransform, wholePoseTransform } from './poses';
 import { compileCharacterProp } from './props';
 import { proportionTransform, validateProportions } from './proportions';
+import type { CharacterAppearanceStyle, StudioActionId } from './studioCollection';
+import { resolveStudioAction } from './studioCollection';
 
 /** Safe retained default render: the source blueprints are treated as immutable. */
 const preparedPartsCache = new WeakMap<CharacterBlueprintV2, readonly CharacterPart[]>();
@@ -91,15 +94,35 @@ function compileV1(composition: CharacterComposition): VectorNode {
   return group(parts.map(part => groupWithProps(part.geometry, [part.transform], part.opacity)));
 }
 
+function resolvePropList(options: CharacterCompileOptions): readonly CharacterPropId[] {
+  const list: CharacterPropId[] = [];
+  if (options.prop != null) list.push(options.prop);
+  if (options.props) {
+    for (const prop of options.props) {
+      if (!list.includes(prop)) list.push(prop);
+    }
+  }
+  if (list.length > 2) {
+    throw new RangeError('A character supports at most two props at once');
+  }
+  for (const prop of list) {
+    if (!(CHARACTER_PROP_IDS as readonly string[]).includes(prop)) {
+      throw new RangeError(`Unsupported character prop: ${String(prop)}`);
+    }
+  }
+  return list;
+}
+
 function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): {
   pose: CharacterPose;
   expression: CharacterExpression;
   accessories: readonly CharacterAccessory[];
-  prop: CharacterPropId | null;
+  props: readonly CharacterPropId[];
+  appearanceStyle: CharacterAppearanceStyle;
 } {
   const pose = options.pose === undefined || options.pose === 'default' ? 'sitting' : options.pose;
   const expression = options.expression ?? (pose === 'sleeping' ? 'sleepy' : 'neutral');
-  if (!blueprint.supportedPoses.includes(pose as 'sitting' | 'standing' | 'sleeping')) {
+  if (!blueprint.supportedPoses.includes(pose as Exclude<CharacterPose, 'default'>)) {
     throw new RangeError(`Unsupported pose for ${blueprint.species}: ${String(pose)}`);
   }
   if (!blueprint.supportedExpressions.includes(expression)) {
@@ -118,35 +141,34 @@ function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOp
     if (usedSlots.has(slot)) throw new RangeError(`Accessory slot already occupied: ${slot}`);
     usedSlots.add(slot);
   }
-  const prop = options.prop ?? null;
-  if (prop != null && !(CHARACTER_PROP_IDS as readonly string[]).includes(prop)) {
-    throw new RangeError(`Unsupported character prop: ${String(prop)}`);
-  }
+  const props = resolvePropList(options);
+  const appearanceStyle = options.appearanceStyle ?? 'forest';
   validateProportions(options.proportions, preparedParts(blueprint));
-  return { pose, expression, accessories, prop };
+  return { pose, expression, accessories, props, appearanceStyle };
 }
 
 function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): VectorNode {
-  const { pose, expression, accessories, prop } = validateV2(blueprint, options);
+  const { pose, expression, accessories, props, appearanceStyle } = validateV2(blueprint, options);
   const proportional = options.proportions !== undefined &&
     Object.values(options.proportions).some(value => value !== undefined && value !== 1);
   const pristine =
     pose === 'sitting' &&
     expression === 'neutral' &&
     accessories.length === 0 &&
-    prop == null &&
+    props.length === 0 &&
+    appearanceStyle === 'forest' &&
     !proportional;
   if (pristine) {
     const previous = defaultCache.get(blueprint);
     if (previous) return previous;
   }
   // Cache only low-cardinality, immutable presets, never arbitrary proportions.
-  const cacheKey = !proportional && accessories.length <= 1
-    ? `${pose}/${expression}/${accessories[0] ?? 'none'}/${prop ?? 'none'}`
+  const cacheKey = !proportional && accessories.length <= 1 && props.length <= 1
+    ? `${pose}/${expression}/${accessories[0] ?? 'none'}/${props[0] ?? 'none'}/${appearanceStyle}`
     : undefined;
   const cached = cacheKey === undefined ? undefined : variantCache.get(blueprint)?.get(cacheKey);
   if (cached) return cached;
-  const parts = preparedParts(blueprint);
+  const parts = applyAppearanceStylePolish(preparedParts(blueprint), appearanceStyle);
   const rig = blueprint.rig;
   const rendered = parts.map(part => {
     let geometry: VectorNode = part.geometry;
@@ -159,7 +181,7 @@ function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOpt
     return groupWithProps(geometry, transforms, part.opacity);
   });
   for (const accessory of accessories) rendered.push(compileAccessory(accessory, rig));
-  if (prop != null) rendered.push(compileCharacterProp(prop, rig));
+  for (const prop of props) rendered.push(compileCharacterProp(prop, rig));
   const base = group(rendered);
   const whole = wholePoseTransform(pose);
   const result = whole ? group([base], { transform: whole }) : base;
@@ -174,6 +196,26 @@ function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOpt
     cache.set(cacheKey, result);
   }
   return result;
+}
+
+/**
+ * Compile a workshop action as a static offline drawing. Unknown action IDs
+ * return null so callers can fall back to a calm forest pose.
+ */
+export function compileStudioActionStatic(
+  blueprint: CharacterBlueprint,
+  actionId: StudioActionId | string,
+  appearanceStyle: CharacterAppearanceStyle = 'workshop',
+): VectorNode | null {
+  const action = resolveStudioAction(actionId);
+  if (!action) return null;
+  if (blueprint.schemaVersion !== 2 || blueprint.species !== action.species) return null;
+  return compileCharacter(blueprint, {
+    pose: action.pose,
+    expression: action.expression,
+    props: action.props as readonly CharacterPropId[],
+    appearanceStyle,
+  });
 }
 
 /**
