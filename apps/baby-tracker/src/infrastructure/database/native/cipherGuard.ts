@@ -20,14 +20,16 @@ type CipherQueryable = {
 };
 
 /**
- * Escapes a hex key for PRAGMA key = "x'..'". Hex encoding avoids quote-breaking
- * characters that a raw string key could introduce.
+ * Applies the vault key as a SQLCipher passphrase. Expo's Android SQLCipher
+ * build accepts `PRAGMA key = '…'` reliably; the raw `x'hex'` form has been
+ * observed to leave connections unreadable (`file is not a database`).
+ * Hex encoding keeps the 32-byte secret high-entropy and quote-safe.
  */
 export function sqlCipherKeyPragma(key: Uint8Array): string {
   if (key.byteLength === 0) {
     throw new EncryptedDatabaseError('KEY_REQUIRED', 'SQLCipher key must not be empty.');
   }
-  return `PRAGMA key = "x'${bytesToHex(key)}'"`;
+  return `PRAGMA key = '${bytesToHex(key)}'`;
 }
 
 /**

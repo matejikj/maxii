@@ -1,0 +1,33 @@
+LUMI Baby Tracker — personal privacy and permissions (offline)
+
+Scope: one caregiver, one child, one device. No account and no family cloud.
+
+Data on device
+- Care diary, preferences, recovery checkpoints, and encrypted portable backups
+  stay on this device (or in files the caregiver explicitly exports).
+- Native builds store the diary in an encrypted SQLite database. The web build
+  keeps data in origin-scoped browser storage; same-origin scripts can still
+  reach it — treat the browser profile as the trust boundary.
+- App lock (when enabled) uses the platform secure store / biometric prompt.
+  A lock failure is reported; the app does not silently drop to an unlocked
+  memory substitute after the caregiver turned locking on.
+
+Permissions (requested only when the related feature is used)
+- Notifications: local care reminders scheduled on the device OS. Unsupported
+  environments do not pretend delivery was granted.
+- Face ID / biometrics (iOS): unlock the app when the caregiver enabled the lock.
+- Files / sharing: choose a destination for an encrypted backup export, or pick
+  a previously exported archive to restore. The app does not upload backups.
+
+What this personal build does not do
+- No sign-in, analytics backend, remote sync, or store of another phone’s diary.
+- “Uloženo” means the local write finished — not an independent off-device copy.
+- Dictation, if used, is the system keyboard feature, not an in-app cloud service.
+
+Support reports
+- Settings → Diagnostika can export a redacted support report. Notes, dates of
+  birth, and diary backups are not attached automatically.
+
+Deletion
+- Removing the app removes its on-device sandbox. Exported backup files the
+  caregiver saved elsewhere are not deleted by uninstalling the app.

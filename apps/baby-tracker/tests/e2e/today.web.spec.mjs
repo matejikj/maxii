@@ -88,3 +88,17 @@ test('service worker registers and serves the shell offline after first visit', 
   await expect(page.getByText('LUMI').first()).toBeVisible({ timeout: 15_000 });
   await context.setOffline(false);
 });
+
+test('accessibility: Today exposes header and primary diaper action by role/name', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await skipWelcomeIfPresent(page);
+  await expect(page.getByRole('heading', { name: /Dnes s / })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Plenka|diaper|quick-diaper/i }).or(
+    page.getByTestId('quick-diaper'),
+  )).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Otevřít profil a nastavení' }),
+  ).toBeVisible();
+});

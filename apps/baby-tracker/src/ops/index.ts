@@ -8,6 +8,14 @@ export {
   type ReleaseEvidenceManifest,
 } from './releaseEvidence';
 export {
+  checkNativeApplicationIds,
+  extractAndroidApplicationId,
+  extractAndroidNamespace,
+  extractIosBundleIdentifiers,
+  type NativeIdCheckInput,
+  type NativeIdCheckResult,
+} from './nativeApplicationId';
+export {
   assertSchemaCompatibleWithBinary,
   canBinaryOpenSchema,
 } from './schemaCompatibility';

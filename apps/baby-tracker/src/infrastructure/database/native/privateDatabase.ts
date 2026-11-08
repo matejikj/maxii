@@ -65,26 +65,35 @@ export async function openPrivateDatabase(
     throw new EncryptedDatabaseError('INTEGRITY_FAILED', 'Injected corrupt database fault.');
   }
 
+  // Prefer a true in-memory cipher probe on device. Node contract tests cannot
+  // load expo-sqlite, so fall back to the injected opener with a safe file name.
   const assertCipher =
     options.assertCipher ??
     (async () => {
-      if (options.opener == null) {
+      try {
         const SQLite = await import('expo-sqlite');
         return assertSqlCipherAvailable(() => SQLite.openDatabaseSync(':memory:'));
-      }
-      const probe = await opener.open(':memory-cipher-probe:');
-      try {
-        const row = await probe.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version');
-        if (row?.cipher_version == null || row.cipher_version.length === 0) {
-          throw new EncryptedDatabaseError(
-            'CIPHER_UNAVAILABLE',
-            'SQLCipher is not present in this binary. Rebuild with expo-sqlite useSQLCipher enabled; refusing plaintext private storage.',
-          );
+      } catch (error) {
+        if (!options.opener) {
+          throw error;
         }
-        return row.cipher_version;
-      } finally {
-        await probe.closeAsync();
-        await opener.delete(':memory-cipher-probe:').catch(() => undefined);
+        const probeName = '__lumi_cipher_probe__';
+        const probe = await options.opener.open(probeName);
+        try {
+          const row = await probe.getFirstAsync<{ cipher_version: string }>(
+            'PRAGMA cipher_version',
+          );
+          if (row?.cipher_version == null || row.cipher_version.length === 0) {
+            throw new EncryptedDatabaseError(
+              'CIPHER_UNAVAILABLE',
+              'SQLCipher is not present in this binary. Rebuild with expo-sqlite useSQLCipher enabled; refusing plaintext private storage.',
+            );
+          }
+          return row.cipher_version;
+        } finally {
+          await probe.closeAsync();
+          await options.opener.delete(probeName).catch(() => undefined);
+        }
       }
     });
 
@@ -130,20 +139,23 @@ export async function openPrivateDatabase(
   }
 
   let connection: SqlConnection;
+  const sessionKey = new Uint8Array(key);
+  key.fill(0);
+  const applySessionKey = async (target: SqlConnection): Promise<void> => {
+    await target.execAsync(sqlCipherKeyPragma(sessionKey));
+    await target.execAsync('PRAGMA foreign_keys = ON');
+    await target.execAsync('PRAGMA journal_mode = WAL');
+  };
   try {
     connection = await opener.open(databaseName);
-    await connection.execAsync(sqlCipherKeyPragma(key));
-    await connection.execAsync('PRAGMA foreign_keys = ON');
-    await connection.execAsync('PRAGMA journal_mode = WAL');
+    await applySessionKey(connection);
   } catch (error) {
-    key.fill(0);
+    sessionKey.fill(0);
     if (error instanceof EncryptedDatabaseError) throw error;
     throw new EncryptedDatabaseError(
       'OPEN_FAILED',
       'Encrypted database rejected the key or failed during secure open.',
     );
-  } finally {
-    key.fill(0);
   }
 
   try {
@@ -152,12 +164,18 @@ export async function openPrivateDatabase(
       checkpointStore,
       databaseName,
       requireCheckpoint: true,
+      afterCheckpoint: async () => {
+        // serializeAsync can leave SQLCipher connections unreadable until re-keyed.
+        await applySessionKey(connection);
+      },
     });
     await assertMigrationChecksums(connection);
     await presence.markPresent(databaseName);
   } catch (error) {
     await connection.closeAsync().catch(() => undefined);
     throw error;
+  } finally {
+    sessionKey.fill(0);
   }
 
   return {

@@ -1,0 +1,28 @@
+LUMI Baby Tracker 0.1.0 — personal release candidate notes
+
+What this candidate is
+- Offline personal diary for one child on one install (Android / iOS / web).
+- Application ID: com.matejikj (native). Web uses the exported static shell with
+  service worker caching for restart without a network.
+- Embedded first-year content pack (signed) and full LUMI character collection.
+
+Caregiver-facing changes in this line
+- Today quick actions, diaper / sleep / feeding flows, history edit, development
+  moments, local recommendations, encrypted portable backup, local reminders,
+  and app lock when enabled.
+- No account creation. Family sync is intentionally out of scope for this build.
+
+Supported matrix (candidate)
+- Android: personally signed APK built with the local toolchain (see RELEASE.txt).
+- iOS: requires a local Apple signing identity / archive; not produced without it.
+- Web: static export + service worker; verify offline restart after a warm visit.
+
+Known limits
+- One device only — no multi-phone sync in this personal candidate.
+- Airplane / VoiceOver / TalkBack / large-font device proofs must be recorded on
+  physical hardware before calling the candidate final.
+- Store publication is a separate, explicitly authorized step.
+
+Recovery
+- Keep a verified portable export before upgrading. Older binaries refuse newer
+  diary schemas; do not overwrite a newer install with an older build.

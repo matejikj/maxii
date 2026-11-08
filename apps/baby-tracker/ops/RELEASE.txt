@@ -11,13 +11,24 @@ or store signing secrets are required for local care after install.
 
 2. Distribution build
    - Native application ID on iOS and Android: com.matejikj.
+   - After `npm run prebuild:native`, verify generated projects:
+     `npm run release:verify-native -w @maxii/baby-tracker`
+     (checks android applicationId/namespace and iOS PRODUCT_BUNDLE_IDENTIFIER).
    - export:android / export:ios only export JavaScript and assets; they do not produce an installable native release.
-   - Build a signed native release with the current Expo configuration using the local Android/Xcode toolchain (or a configured optional EAS build).
-   - Record the installable Android APK and store AAB separately; an AAB is not installed directly on a device. For iOS, record the signed archive/export or distributed TestFlight build.
-   - export:web produces the static web files; verify service worker activation and an offline restart in a supported browser.
+   - Android personal APK (local toolchain):
+     `npm run release:android -w @maxii/baby-tracker`
+     Keystore defaults to ~/.lumi-signing/personal-release.keystore (created on
+     first run). Override with LUMI_UPLOAD_STORE_FILE / _PASSWORD / _KEY_ALIAS /
+     _KEY_PASSWORD or LUMI_SIGNING_DIR. Keys never enter git.
+   - Record the installable Android APK and store AAB separately; an AAB is not installed directly on a device. For iOS, record the signed archive/export or distributed TestFlight build (requires a local Apple signing identity).
+   - export:web produces the static web files; verify with `npm run release:web`
+     (service worker activation and offline restart in a supported browser).
    - Keep signing keys and store credentials outside the repository.
    - Record the printed release evidence with the binary hash in your release log.
    - Never uninstall the previous app as an automated build step. A different application ID has separate data and needs a verified portable export/import path.
+   - Candidate checklist helper: `npm run release:candidate -w @maxii/baby-tracker`
+     (evidence print + native id verify + web export/e2e). Android APK remains a
+     separate `release:android` step so signing stays explicit.
 
 3. Progressive publish
    - Ship to an internal track first.

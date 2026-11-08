@@ -44,6 +44,7 @@ async function openTestDb(name: string, overrides: Record<string, unknown> = {})
     presence,
     checkpointStore,
     now,
+    assertCipher: async () => '4.5.0-test',
     ...overrides,
   });
   return { db, opener, keyStore, presence, checkpointStore };
@@ -154,6 +155,7 @@ test('ciphertext stays unreadable without the key and lost keys do not reset', a
     presence,
     checkpointStore,
     now,
+    assertCipher: async () => '4.5.0-test',
   });
   await first.close();
 
@@ -171,6 +173,7 @@ test('ciphertext stays unreadable without the key and lost keys do not reset', a
         presence,
         checkpointStore,
         now,
+        assertCipher: async () => '4.5.0-test',
       }),
     (error: unknown) =>
       error instanceof EncryptedDatabaseError && error.code === 'KEY_REQUIRED',
@@ -187,6 +190,12 @@ test('missing cipher and busy/full faults fail closed', async () => {
         presence: createMemoryDatabasePresence(),
         checkpointStore: createMemoryCheckpointStore(),
         now,
+        assertCipher: async () => {
+          throw new EncryptedDatabaseError(
+            'CIPHER_UNAVAILABLE',
+            'SQLCipher is not present in this binary.',
+          );
+        },
       }),
     (error: unknown) =>
       error instanceof EncryptedDatabaseError && error.code === 'CIPHER_UNAVAILABLE',
@@ -201,6 +210,7 @@ test('missing cipher and busy/full faults fail closed', async () => {
         presence: createMemoryDatabasePresence(),
         checkpointStore: createMemoryCheckpointStore(),
         now,
+        assertCipher: async () => '4.5.0-test',
         faults: createControlledFaultInjection(new Set(['storage_full'])),
       }),
     (error: unknown) => error instanceof AppError && error.details.reason === 'storage_full',
@@ -215,6 +225,7 @@ test('missing cipher and busy/full faults fail closed', async () => {
         presence: createMemoryDatabasePresence(),
         checkpointStore: createMemoryCheckpointStore(),
         now,
+        assertCipher: async () => '4.5.0-test',
         faults: createControlledFaultInjection(new Set(['storage_busy'])),
       }),
     (error: unknown) => error instanceof AppError && error.details.reason === 'storage_busy',
@@ -229,6 +240,7 @@ test('missing cipher and busy/full faults fail closed', async () => {
         presence: createMemoryDatabasePresence(),
         checkpointStore: createMemoryCheckpointStore(),
         now,
+        assertCipher: async () => '4.5.0-test',
         faults: createControlledFaultInjection(new Set(['keystore_read'])),
       }),
     (error: unknown) => error instanceof DatabaseKeyStoreError,
@@ -247,6 +259,7 @@ test('failed migration keeps checkpoint and does not advance schema', async () =
     presence,
     checkpointStore,
     now,
+    assertCipher: async () => '4.5.0-test',
   });
   assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_4);
   assert.equal(checkpointStore.records.size, 1);

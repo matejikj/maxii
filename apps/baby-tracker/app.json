@@ -22,7 +22,8 @@
           "enableFTS": true,
           "useSQLCipher": true
         }
-      ]
+      ],
+      "./plugins/withPersonalAndroidSigning.cjs"
     ],
     "ios": {
       "bundleIdentifier": "com.matejikj",

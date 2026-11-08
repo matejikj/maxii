@@ -111,6 +111,8 @@ test('key and corrupt failures never invent an empty ready profile', () => {
   );
   assert.equal(keyFail.phase, 'key_unavailable');
   assert.equal(keyFail.profile, null);
+  assert.equal(keyFail.error?.message, 'missing key');
+  assert.equal(keyFail.error?.details.nativeCode, 'READ_FAILED');
   assert.equal(presentStartupPhase(keyFail.phase).allowsCareEntry, false);
 
   const corrupt = mapBootstrapOpenError(

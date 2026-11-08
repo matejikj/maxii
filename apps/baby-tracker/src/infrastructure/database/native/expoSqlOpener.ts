@@ -35,9 +35,17 @@ export function adaptExpoDatabase(db: SQLite.SQLiteDatabase): SqlConnection {
     getAllAsync: <T>(source: string, ...params: SqlBindValue[]) =>
       target.getAllAsync<T>(source, ...params),
     withExclusiveTransactionAsync: async (task) => {
-      await target.withExclusiveTransactionAsync(async (txn) => {
-        await task(adapt(txn as unknown as SQLite.SQLiteDatabase));
-      });
+      // Prefer same-connection BEGIN/COMMIT so SQLCipher keeps the session key.
+      // Nested expo exclusive transactions have produced NOTADB on Android.
+      const adapted = adapt(target);
+      await adapted.execAsync('BEGIN IMMEDIATE');
+      try {
+        await task(adapted);
+        await adapted.execAsync('COMMIT');
+      } catch (error) {
+        await adapted.execAsync('ROLLBACK').catch(() => undefined);
+        throw error;
+      }
     },
     serializeAsync: () => target.serializeAsync(),
     closeAsync: () => target.closeAsync(),

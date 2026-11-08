@@ -72,8 +72,13 @@ export function createNativeUnitOfWorkFactory(
 
         const topics = new Set<ChangeTopic>();
         let result: T | undefined;
-        await database.connection.withExclusiveTransactionAsync(async (txn) => {
-          const uow = createRepositories(txn, topics);
+        // Use BEGIN/COMMIT on the already-keyed connection. expo-sqlite's
+        // withExclusiveTransactionAsync can lose the SQLCipher key on Android
+        // and fail with "file is not a database".
+        const conn = database.connection;
+        await conn.execAsync('BEGIN IMMEDIATE');
+        try {
+          const uow = createRepositories(conn, topics);
           result = await work(uow);
           if (options.faults?.shouldFail('storage_commit')) {
             throw new AppError('STORAGE', 'Injected commit failure', {
@@ -83,13 +88,17 @@ export function createNativeUnitOfWorkFactory(
           }
           if (topics.size > 0) {
             const publishedAtMs = options.nowMs?.() ?? Date.now();
-            await txn.runAsync(
+            await conn.runAsync(
               `INSERT INTO change_notifications (published_at_ms, topics_json) VALUES (?, ?)`,
               publishedAtMs,
               JSON.stringify([...topics]),
             );
           }
-        });
+          await conn.execAsync('COMMIT');
+        } catch (error) {
+          await conn.execAsync('ROLLBACK').catch(() => undefined);
+          throw error;
+        }
 
         if (topics.size > 0) {
           await database.changeFeed.publish([...topics], options.nowMs?.() ?? Date.now());

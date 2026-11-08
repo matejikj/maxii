@@ -97,6 +97,8 @@ export function BootstrapProvider({
 }) {
   const { services } = useCompositionRoot();
   const cached = useRef<PersonalRuntime | null>(null);
+  /** Prevents React Strict Mode from opening the SQLCipher diary twice concurrently. */
+  const openInflight = useRef<Promise<PersonalRuntime> | null>(null);
   const [result, setResult] = useState<PersonalBootstrapResult>({
     phase: 'initializing',
     profile: null,
@@ -108,41 +110,49 @@ export function BootstrapProvider({
 
   const resolveRuntime = useCallback(async () => {
     if (cached.current) return cached.current;
-    const opened = await openPersonalDiary();
-    const operationMetrics = createLocalOperationMetrics({
-      nowMs: () => services.clock.now().epochMs,
-    });
-    const wired = wirePersonalCommands(services, opened.unitOfWork, {
-      metrics: operationMetrics,
-    });
-    const overviewCache = createCareOverviewCache();
-    const readModels = wired.readModels!;
-    readModels.subscribe((topics) => {
-      if (
-        topics.includes('care') ||
-        topics.includes('sessions') ||
-        topics.includes('revisions')
-      ) {
-        overviewCache.invalidate();
-      }
-    });
-    const next: PersonalRuntime = {
-      unitOfWork: opened.unitOfWork,
-      commands: wired.commands!,
-      readModels,
-      overviewCache,
-      checkpoints: opened.checkpoints,
-      reminders: opened.reminders,
-      appLock: opened.appLock,
-      operationMetrics,
-      databaseName: opened.databaseName,
-      ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
-      ...(opened.presence ? { presence: opened.presence } : {}),
-      close: opened.close,
-      deleteDurableStore: opened.deleteDurableStore,
-    };
-    cached.current = next;
-    return next;
+    if (openInflight.current) return openInflight.current;
+    openInflight.current = (async () => {
+      const opened = await openPersonalDiary();
+      const operationMetrics = createLocalOperationMetrics({
+        nowMs: () => services.clock.now().epochMs,
+      });
+      const wired = wirePersonalCommands(services, opened.unitOfWork, {
+        metrics: operationMetrics,
+      });
+      const overviewCache = createCareOverviewCache();
+      const readModels = wired.readModels!;
+      readModels.subscribe((topics) => {
+        if (
+          topics.includes('care') ||
+          topics.includes('sessions') ||
+          topics.includes('revisions')
+        ) {
+          overviewCache.invalidate();
+        }
+      });
+      const next: PersonalRuntime = {
+        unitOfWork: opened.unitOfWork,
+        commands: wired.commands!,
+        readModels,
+        overviewCache,
+        checkpoints: opened.checkpoints,
+        reminders: opened.reminders,
+        appLock: opened.appLock,
+        operationMetrics,
+        databaseName: opened.databaseName,
+        ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
+        ...(opened.presence ? { presence: opened.presence } : {}),
+        close: opened.close,
+        deleteDurableStore: opened.deleteDurableStore,
+      };
+      cached.current = next;
+      return next;
+    })();
+    try {
+      return await openInflight.current;
+    } finally {
+      openInflight.current = null;
+    }
   }, [openPersonalDiary, services]);
 
   useEffect(() => {
@@ -184,8 +194,22 @@ export function BootstrapProvider({
       } catch (error) {
         cached.current = null;
         if (cancelled) return;
+        const mapped = mapBootstrapOpenError(error);
+        console.error('LUMI_BOOTSTRAP_FAIL', {
+          phase: mapped.phase,
+          name: error instanceof Error ? error.name : typeof error,
+          message: error instanceof Error ? error.message : String(error),
+          code:
+            error && typeof error === 'object' && 'code' in error
+              ? String((error as { code: unknown }).code)
+              : null,
+          details:
+            mapped.error && typeof mapped.error.details === 'object'
+              ? mapped.error.details
+              : null,
+        });
         setRuntime(null);
-        setResult(mapBootstrapOpenError(error));
+        setResult(mapped);
       }
     })();
     return () => {

@@ -21,6 +21,7 @@ import {
   assertSchemaCompatibleWithBinary,
   buildReleaseEvidenceManifest,
   canBinaryOpenSchema,
+  checkNativeApplicationIds,
   createLocalOperationMetrics,
   metricFieldNames,
 } from '../../src/ops/index.ts';
@@ -36,6 +37,35 @@ const CANARY_NOTE = 'CANARY_SUPPORT_NOTE_39a1';
 const CANARY_DOB = '2099-04-01';
 const zone = asTimeZoneId('Europe/Prague');
 const childId = asChildId('child_ops_1');
+
+test('native application id check accepts matejikj gradle and pbxproj pins', () => {
+  const ok = checkNativeApplicationIds({
+    androidAppGradle: `
+    namespace 'com.matejikj'
+    defaultConfig {
+        applicationId 'com.matejikj'
+    }
+`,
+    iosPbxproj: `
+				PRODUCT_BUNDLE_IDENTIFIER = com.matejikj;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.matejikj";
+`,
+  });
+  assert.equal(ok.ok, true);
+  assert.equal(ok.androidApplicationId, 'com.matejikj');
+  assert.equal(ok.iosBundleIdentifier, 'com.matejikj');
+
+  const bad = checkNativeApplicationIds({
+    androidAppGradle: `
+    namespace 'com.example.lumibabytracker'
+    defaultConfig {
+        applicationId 'com.example.lumibabytracker'
+    }
+`,
+  });
+  assert.equal(bad.ok, false);
+  assert.ok(bad.problems.some((line) => line.includes('applicationId')));
+});
 
 test('release evidence pins app, schema, catalog, pack and art versions', () => {
   const manifest = buildReleaseEvidenceManifest({

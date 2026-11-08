@@ -55,6 +55,11 @@ export async function applyPendingMigrations(
     databaseName: string;
     /** When false, refuse to start if a checkpoint cannot be created. */
     requireCheckpoint?: boolean;
+    /**
+     * SQLCipher connections can reject further SQL after serializeAsync
+     * ("file is not a database"). Callers re-apply PRAGMA key here.
+     */
+    afterCheckpoint?: () => Promise<void>;
   },
 ): Promise<MigrationResult> {
   await db.execAsync(
@@ -81,17 +86,30 @@ export async function applyPendingMigrations(
   const requireCheckpoint = options.requireCheckpoint ?? true;
   let checkpointId: string | null = null;
   if (requireCheckpoint) {
+    // First install has no diary bytes to restore. Calling serializeAsync on a
+    // freshly keyed SQLCipher connection can leave it unreadable
+    // ("file is not a database") on Android release builds.
+    const serialize =
+      current === 0
+        ? async () => new TextEncoder().encode('lumi.empty-pre-schema')
+        : () => db.serializeAsync();
     checkpointId = await options.checkpointStore.createPreMigrationCheckpoint({
       databaseName: options.databaseName,
       fromVersion: current,
-      serialize: () => db.serializeAsync(),
+      serialize,
       now: options.now,
     });
+    if (current > 0 && options.afterCheckpoint) {
+      await options.afterCheckpoint();
+    }
   }
 
   try {
     for (const migration of pending) {
-      await db.withExclusiveTransactionAsync(async (txn) => {
+      // Stay on the keyed connection. withExclusiveTransactionAsync can surface
+      // "file is not a database" with SQLCipher when the txn handle loses the key.
+      await db.execAsync('BEGIN IMMEDIATE');
+      try {
         for (const statement of migration.statements) {
           // schema_migrations bootstrap DDL is idempotent; skip re-create in v1 body.
           if (
@@ -100,15 +118,19 @@ export async function applyPendingMigrations(
           ) {
             continue;
           }
-          await txn.execAsync(statement);
+          await db.execAsync(statement);
         }
-        await txn.runAsync(
+        await db.runAsync(
           `INSERT INTO schema_migrations (version, checksum, applied_at_ms) VALUES (?, ?, ?)`,
           migration.version,
           migration.checksum,
           options.now.epochMs,
         );
-      });
+        await db.execAsync('COMMIT');
+      } catch (error) {
+        await db.execAsync('ROLLBACK').catch(() => undefined);
+        throw error;
+      }
     }
   } catch (error) {
     throw new AppError(

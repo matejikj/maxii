@@ -75,6 +75,8 @@ function createConnection(
     persistSnapshot: (state: DatabaseState) => void;
   },
 ): SqlConnection {
+  let transactionBackup: ReturnType<typeof cloneState> | null = null;
+
   const api: SqlConnection = {
     async execAsync(source) {
       assertUnlocked(state);
@@ -123,6 +125,35 @@ function createConnection(
   const originalExec = api.execAsync.bind(api);
   api.execAsync = async (source) => {
     if (await handlePragma(state, source, meta)) return;
+    const txn = source.trim().toUpperCase();
+    if (
+      txn === 'BEGIN' ||
+      txn === 'BEGIN IMMEDIATE' ||
+      txn === 'BEGIN DEFERRED' ||
+      txn === 'BEGIN EXCLUSIVE' ||
+      txn === 'BEGIN TRANSACTION'
+    ) {
+      assertUnlocked(state);
+      if (transactionBackup == null) {
+        transactionBackup = cloneState(state);
+      }
+      return;
+    }
+    if (txn === 'COMMIT' || txn === 'END' || txn === 'END TRANSACTION') {
+      assertUnlocked(state);
+      transactionBackup = null;
+      meta.persistSnapshot(state);
+      return;
+    }
+    if (txn === 'ROLLBACK' || txn === 'ROLLBACK TRANSACTION') {
+      assertUnlocked(state);
+      if (transactionBackup != null) {
+        restoreState(state, transactionBackup);
+        transactionBackup = null;
+      }
+      meta.persistSnapshot(state);
+      return;
+    }
     return originalExec(source);
   };
   const originalRun = api.runAsync.bind(api);
@@ -146,7 +177,7 @@ async function handlePragma(
   meta: { cipherAvailable: boolean },
 ): Promise<boolean> {
   const trimmed = source.trim();
-  const keyMatch = /^PRAGMA key = "x'([0-9a-fA-F]+)'"$/i.exec(trimmed);
+  const keyMatch = /^PRAGMA key = '([0-9a-fA-F]+)'$/i.exec(trimmed);
   if (keyMatch) {
     const keyHex = keyMatch[1]!.toLowerCase();
     if (!meta.cipherAvailable) {
