@@ -111,8 +111,8 @@ export function createMemoryReminderScheduler(
 }
 
 /**
- * Platform scheduler: web never promises closed-browser push. Loaded lazily so
- * Node contract tests can use the memory scheduler without React Native.
+ * Synchronous fallback used by pure Node tests. Production bootstrap awaits
+ * `createPlatformReminderSchedulerAsync` so native builds bind expo-notifications.
  */
 export function createPlatformReminderScheduler(): ReminderScheduler {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -120,8 +120,11 @@ export function createPlatformReminderScheduler(): ReminderScheduler {
   if (Platform.OS === 'web') {
     return createMemoryReminderScheduler({ platform: 'web', osLocalNotifications: false });
   }
+  // Without the native module, claim no closed-app delivery rather than fake it.
   return createMemoryReminderScheduler({
     platform: Platform.OS,
-    osLocalNotifications: true,
+    osLocalNotifications: false,
   });
 }
+
+export { createPlatformReminderSchedulerAsync } from './expoReminderScheduler';

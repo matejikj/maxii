@@ -13,6 +13,7 @@ export function AppLockGate({ children }: { children: ReactNode }) {
   const { runtime } = useBootstrap();
   const [locked, setLocked] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [fault, setFault] = useState<string | null>(null);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -20,11 +21,13 @@ export function AppLockGate({ children }: { children: ReactNode }) {
     if (!runtime) {
       setLocked(false);
       setEnabled(false);
+      setFault(null);
       return;
     }
     const status = await runtime.appLock.getStatus();
     setEnabled(status.enabled);
     setLocked(status.locked);
+    setFault(status.fault);
   }, [runtime]);
 
   useEffect(() => {
@@ -57,33 +60,53 @@ export function AppLockGate({ children }: { children: ReactNode }) {
         <LumiText variant="h1" accessibilityRole="header">
           Zámek deníku
         </LumiText>
-        <LumiText tone="muted">
-          Zadejte PIN. Zapomenutý PIN neobnoví šifrovací klíč — použijte přenosnou zálohu.
-        </LumiText>
-        <LumiInput
-          label="PIN"
-          value={pin}
-          onChangeText={setPin}
-          secureTextEntry
-          autoCapitalize="none"
-        />
-        {error ? <LumiText tone="muted">{error}</LumiText> : null}
-        <LumiButton
-          title="Odemknout"
-          fullWidth
-          onPress={() => {
-            if (!runtime) return;
-            void runtime.appLock.unlock(pin).then((ok) => {
-              if (!ok) {
-                setError('PIN nesouhlasí.');
-                return;
-              }
-              setPin('');
-              setError(null);
-              void refresh();
-            });
-          }}
-        />
+        {fault ? (
+          <>
+            <LumiText tone="muted">
+              Úložiště zámku teď není dostupné. Deník zůstává chráněný — žádný tichý přechod na
+              odemčený režim. {fault}
+            </LumiText>
+            <LumiButton
+              title="Zkusit znovu"
+              fullWidth
+              onPress={() => {
+                if (!runtime?.appLock.retryDurableStore) return;
+                setError(null);
+                void runtime.appLock.retryDurableStore().then(() => refresh());
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <LumiText tone="muted">
+              Zadejte PIN. Zapomenutý PIN neobnoví šifrovací klíč — použijte přenosnou zálohu.
+            </LumiText>
+            <LumiInput
+              label="PIN"
+              value={pin}
+              onChangeText={setPin}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            {error ? <LumiText tone="muted">{error}</LumiText> : null}
+            <LumiButton
+              title="Odemknout"
+              fullWidth
+              onPress={() => {
+                if (!runtime) return;
+                void runtime.appLock.unlock(pin).then((ok) => {
+                  if (!ok) {
+                    setError('PIN nesouhlasí.');
+                    return;
+                  }
+                  setPin('');
+                  setError(null);
+                  void refresh();
+                });
+              }}
+            />
+          </>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -13,6 +13,12 @@ import {
   type StagedPortableImport,
 } from '../../application';
 import type { LogicalCheckpointSummary } from '../../infrastructure/database/logicalCheckpointVault';
+import {
+  assertPortableBackupReadable,
+  pickPortableBackupFile,
+  portableBackupFileName,
+  shareOrDownloadPortableBackup,
+} from '../../infrastructure/files/portableBackupFiles';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 /**
@@ -27,8 +33,10 @@ export function BackupRestorePanel() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [importPassword, setImportPassword] = useState('');
   const [importPayload, setImportPayload] = useState('');
+  const [importFileName, setImportFileName] = useState<string | null>(null);
   const [exportText, setExportText] = useState<string | null>(null);
   const [csvText, setCsvText] = useState<string | null>(null);
+  const [showAdvancedPaste, setShowAdvancedPaste] = useState(false);
   const [staged, setStaged] = useState<StagedPortableImport | null>(null);
   const [rollbackId, setRollbackId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -143,7 +151,7 @@ export function BackupRestorePanel() {
           autoCapitalize="none"
         />
         <LumiButton
-          title="Vytvořit přenosnou zálohu"
+          title="Vytvořit a uložit přenosnou zálohu"
           loading={busy}
           fullWidth
           onPress={() => {
@@ -153,16 +161,36 @@ export function BackupRestorePanel() {
             }
             setBusy(true);
             setError(null);
+            const nowMs = Date.now();
             void exportSealedPortableDiary({
               unitOfWork: runtime.unitOfWork,
               password,
-              nowMs: Date.now(),
+              nowMs,
             })
-              .then((result) => {
+              .then(async (result) => {
                 setExportText(result.serialized);
-                setMessage(
-                  'Přenosná záloha je připravená ke zkopírování. Uložte ji mimo telefon.',
+                const shared = await shareOrDownloadPortableBackup(
+                  result.serialized,
+                  portableBackupFileName(nowMs),
                 );
+                if (!shared.ok) {
+                  if (shared.code === 'cancelled') {
+                    setMessage(
+                      'Sdílení bylo zrušeno. Šifrovaný obsah zůstává níže jako nouzová kopie.',
+                    );
+                  } else {
+                    setError(shared.message);
+                    setMessage(
+                      'Soubor se nepodařilo předat systému. Můžete použít nouzové zkopírování níže.',
+                    );
+                  }
+                } else {
+                  setMessage(
+                    shared.outcome === 'downloaded'
+                      ? 'Šifrovaný soubor byl stažen. Uložte jej mimo prohlížeč.'
+                      : 'Systémové sdílení bylo otevřeno. Uzavření dialogu samo neznamená, že je soubor trvale uložený.',
+                  );
+                }
                 setPassword('');
                 setPasswordConfirm('');
                 return refresh();
@@ -174,8 +202,15 @@ export function BackupRestorePanel() {
           }}
         />
         {exportText ? (
+          <LumiButton
+            title={showAdvancedPaste ? 'Skrýt nouzovou textovou kopii' : 'Nouzová textová kopie'}
+            variant="ghost"
+            onPress={() => setShowAdvancedPaste((value) => !value)}
+          />
+        ) : null}
+        {exportText && showAdvancedPaste ? (
           <LumiInput
-            label="Šifrovaný soubor (zkopírujte)"
+            label="Šifrovaný soubor (zkopírujte jen když sdílení selže)"
             value={exportText}
             onChangeText={setExportText}
             multiline
@@ -186,13 +221,57 @@ export function BackupRestorePanel() {
         <LumiText tone="muted">
           Osobní import nahrazuje celý deník, neslučuje. Před potvrzením vznikne bod návratu.
         </LumiText>
-        <LumiInput
-          label="Vložený obsah zálohy"
-          value={importPayload}
-          onChangeText={setImportPayload}
-          multiline
-          autoCapitalize="none"
+        <LumiButton
+          title="Vybrat soubor zálohy"
+          loading={busy}
+          fullWidth
+          onPress={() => {
+            setBusy(true);
+            setError(null);
+            setStaged(null);
+            void pickPortableBackupFile()
+              .then((picked) => {
+                if (!picked.ok) {
+                  if (picked.code !== 'cancelled') setError(picked.message);
+                  return;
+                }
+                assertPortableBackupReadable(picked.contents);
+                setImportPayload(picked.contents);
+                setImportFileName(picked.fileName);
+                setMessage(
+                  picked.fileName
+                    ? `Načten soubor ${picked.fileName}. Zadejte heslo a zkontrolujte.`
+                    : 'Soubor načten. Zadejte heslo a zkontrolujte.',
+                );
+              })
+              .catch((err: unknown) => {
+                setError(err instanceof Error ? err.message : 'Soubor se nepodařilo načíst');
+              })
+              .finally(() => setBusy(false));
+          }}
         />
+        {importFileName ? (
+          <LumiText tone="muted">Vybraný soubor: {importFileName}</LumiText>
+        ) : null}
+        <LumiButton
+          title={
+            showAdvancedPaste ? 'Skrýt vložení textu' : 'Nouzové vložení textu zálohy'
+          }
+          variant="ghost"
+          onPress={() => setShowAdvancedPaste((value) => !value)}
+        />
+        {showAdvancedPaste ? (
+          <LumiInput
+            label="Vložený obsah zálohy"
+            value={importPayload}
+            onChangeText={(value) => {
+              setImportPayload(value);
+              setImportFileName(null);
+            }}
+            multiline
+            autoCapitalize="none"
+          />
+        ) : null}
         <LumiInput
           label="Heslo obnovy"
           value={importPassword}
@@ -205,6 +284,10 @@ export function BackupRestorePanel() {
           loading={busy}
           fullWidth
           onPress={() => {
+            if (!importPayload.trim()) {
+              setError('Nejdřív vyberte soubor zálohy nebo vložte její obsah.');
+              return;
+            }
             setBusy(true);
             setError(null);
             setStaged(null);
@@ -250,14 +333,23 @@ export function BackupRestorePanel() {
                   return;
                 }
                 setBusy(true);
+                const nowMs = Date.now();
                 void exportSealedPortableDiary({
                   unitOfWork: runtime.unitOfWork,
                   password,
-                  nowMs: Date.now(),
+                  nowMs,
                 })
-                  .then((result) => {
+                  .then(async (result) => {
                     setExportText(result.serialized);
-                    setMessage('Současný stav je připravený jako přenosná záloha.');
+                    const shared = await shareOrDownloadPortableBackup(
+                      result.serialized,
+                      portableBackupFileName(nowMs),
+                    );
+                    setMessage(
+                      shared.ok
+                        ? 'Současný stav je připravený jako přenosná záloha.'
+                        : `Export hotov, ale předání souboru selhalo: ${shared.message}`,
+                    );
                   })
                   .catch((err: unknown) => {
                     setError(err instanceof Error ? err.message : 'Export selhal');
@@ -282,6 +374,7 @@ export function BackupRestorePanel() {
                     setRollbackId(result.rollbackCheckpointId);
                     setStaged(null);
                     setImportPayload('');
+                    setImportFileName(null);
                     setImportPassword('');
                     setMessage(
                       `Deník nahrazen (${result.restoredCareEventCount} záznamů). Můžete vrátit stav před obnovou.`,

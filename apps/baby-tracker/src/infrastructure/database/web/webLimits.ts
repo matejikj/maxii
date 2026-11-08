@@ -16,6 +16,8 @@ export const WEB_STORAGE_LIMITS = {
   /** Must stay distinct from the diary so SW cache refresh cannot wipe care data. */
   cacheDatabaseName: 'lumi-web-app-cache',
   lockDatabaseName: 'lumi-web-diary-locks',
+  /** Logical recovery points live outside the live diary so replace-import cannot erase them. */
+  checkpointDatabaseName: 'lumi-web-logical-checkpoints',
   supportedBrowsers: ['Safari (current macOS/iOS)', 'Chrome (current desktop)', 'Firefox (current desktop)'],
 } as const;
 

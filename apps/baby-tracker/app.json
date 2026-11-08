@@ -8,6 +8,14 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-secure-store",
+      "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "color": "#3A5A40",
+          "defaultChannel": "lumi-care-reminders"
+        }
+      ],
       [
         "expo-sqlite",
         {

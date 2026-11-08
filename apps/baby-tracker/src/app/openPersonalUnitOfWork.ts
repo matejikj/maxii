@@ -6,22 +6,20 @@ import {
   type ApplicationServices,
   type DispatchMetricsSink,
 } from '../application';
-import {
-  createMemoryLogicalCheckpointVault,
-  type LogicalCheckpointVault,
-} from '../infrastructure/database/logicalCheckpointVault';
+import type { LogicalCheckpointVault } from '../infrastructure/database/logicalCheckpointVault';
+import { openPlatformLogicalCheckpointVault } from '../infrastructure/database/durableLogicalCheckpointVault';
 import { PRIVATE_DATABASE_NAME } from '../infrastructure/database/native/databaseNames';
 import type { DatabaseKeyStore } from '../infrastructure/database/native/databaseKeyStoreTypes';
 import type { DatabasePresence } from '../infrastructure/database/native/databasePresence';
 import type { SqlDatabaseOpener } from '../infrastructure/database/native/sqlConnection';
 import { WEB_DIARY_DATABASE_NAME } from '../infrastructure/database/web/lumiWebDatabase';
+import { WEB_STORAGE_LIMITS } from '../infrastructure/database/web/webLimits';
 import {
-  createPlatformReminderScheduler,
+  createPlatformReminderSchedulerAsync,
   type ReminderScheduler,
 } from '../infrastructure/notifications/reminderScheduler';
 import {
-  createMemoryAppLockStore,
-  createSecureStoreAppLockStore,
+  openPlatformAppLockStore,
   type AppLockStore,
 } from '../infrastructure/security/appLockStore';
 import { resolveRemoteServicesBoundary, shouldInitializeRemoteClients } from './remoteServicesBoundary';
@@ -51,12 +49,9 @@ export async function openPersonalUnitOfWork(
     throw new Error('Remote family clients are configured but not wired in personal mode yet.');
   }
 
-  const checkpoints = createMemoryLogicalCheckpointVault();
-  const reminders = createPlatformReminderScheduler();
-  const appLock =
-    Platform.OS === 'web'
-      ? createMemoryAppLockStore()
-      : await createSecureStoreAppLockStore().catch(() => createMemoryAppLockStore());
+  const checkpoints = await openPlatformLogicalCheckpointVault();
+  const reminders = await createPlatformReminderSchedulerAsync();
+  const appLock = await openPlatformAppLockStore();
 
   if (Platform.OS === 'web') {
     const web = await import('../infrastructure/database/web');
@@ -80,6 +75,7 @@ export async function openPersonalUnitOfWork(
       deleteDurableStore: async () => {
         const Dexie = (await import('dexie')).default;
         await Dexie.delete(databaseName);
+        await Dexie.delete(WEB_STORAGE_LIMITS.checkpointDatabaseName);
       },
     };
   }

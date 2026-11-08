@@ -5,10 +5,16 @@ import { AppError } from '../../domain/errors';
 const PIN_MIN_LENGTH = 4;
 const PIN_MAX_LENGTH = 8;
 
+export type AppLockProtection = 'secure_store' | 'origin_storage' | 'unavailable';
+
 export type AppLockStatus = {
   enabled: boolean;
   /** True while the session still needs an unlock after background/cold start. */
   locked: boolean;
+  /** Non-null when the durable lock store cannot be used safely. */
+  fault: string | null;
+  /** How the PIN material is protected on this platform. */
+  protection: AppLockProtection;
 };
 
 export type AppLockStore = {
@@ -20,6 +26,8 @@ export type AppLockStore = {
   lockOnBackground(): Promise<void>;
   /** Full wipe removes the PIN without requiring it (used after confirmed data wipe). */
   clearForWipe(): Promise<void>;
+  /** Retry opening the durable store after a platform fault. */
+  retryDurableStore?(): Promise<AppLockStatus>;
 };
 
 type StoredLock = {
@@ -32,7 +40,9 @@ type StoredLock = {
  * forgotten PIN never silently rotates that key — caregivers restore from a
  * portable backup if they lose the PIN and also lose device unlock.
  */
-export function createMemoryAppLockStore(): AppLockStore & {
+export function createMemoryAppLockStore(
+  protection: AppLockProtection = 'unavailable',
+): AppLockStore & {
   readonly store: { lock: StoredLock | null; sessionUnlocked: boolean };
 } {
   const store: { lock: StoredLock | null; sessionUnlocked: boolean } = {
@@ -45,6 +55,8 @@ export function createMemoryAppLockStore(): AppLockStore & {
       return {
         enabled: store.lock != null,
         locked: store.lock != null && !store.sessionUnlocked,
+        fault: null,
+        protection,
       };
     },
     async enableWithPin(pin) {
@@ -83,6 +95,51 @@ export function createMemoryAppLockStore(): AppLockStore & {
   };
 }
 
+/**
+ * Keeps the diary behind a recovery screen when SecureStore fails. Never falls
+ * through to an unlocked memory store that would bypass a previously set PIN.
+ */
+export function createFaultedAppLockStore(
+  message: string,
+  retry?: () => Promise<AppLockStore>,
+): AppLockStore {
+  let replacement: AppLockStore | null = null;
+  const store: AppLockStore = {
+    async getStatus() {
+      if (replacement) return replacement.getStatus();
+      return {
+        enabled: true,
+        locked: true,
+        fault: message,
+        protection: 'unavailable',
+      };
+    },
+    async enableWithPin() {
+      throw new AppError('STORAGE', message, { details: { reason: 'app_lock_fault' }, retryable: true });
+    },
+    async disable() {
+      throw new AppError('STORAGE', message, { details: { reason: 'app_lock_fault' }, retryable: true });
+    },
+    async unlock() {
+      return false;
+    },
+    async lockOnBackground() {
+      // Stay locked while the durable store is unavailable.
+    },
+    async clearForWipe() {
+      if (replacement) await replacement.clearForWipe();
+    },
+    async retryDurableStore() {
+      if (!retry) {
+        return store.getStatus();
+      }
+      replacement = await retry();
+      return replacement.getStatus();
+    },
+  };
+  return store;
+}
+
 function assertPin(pin: string): void {
   if (!/^\d+$/.test(pin) || pin.length < PIN_MIN_LENGTH || pin.length > PIN_MAX_LENGTH) {
     throw new AppError('VALIDATION', 'PIN musí mít 4–8 číslic', {
@@ -119,42 +176,105 @@ function hexToBytes(hex: string): Uint8Array {
 const SECURE_LOCK_KEY = 'lumi.app-lock.v1';
 
 /** SecureStore-backed lock; loaded only from native/web composition paths. */
-export async function createSecureStoreAppLockStore(): Promise<AppLockStore> {
+export async function createSecureStoreAppLockStore(
+  protection: AppLockProtection = 'secure_store',
+): Promise<AppLockStore> {
   const SecureStore = await import('expo-secure-store');
+  const available = await SecureStore.isAvailableAsync();
+  if (!available) {
+    throw new AppError('STORAGE', 'Úložiště zámku není na tomto zařízení dostupné', {
+      details: { reason: 'secure_store_unavailable' },
+      retryable: true,
+    });
+  }
+
   let sessionUnlocked = true;
   let cached: StoredLock | null | undefined;
+  let fault: string | null = null;
 
   async function readLock(): Promise<StoredLock | null> {
-    if (cached !== undefined) return cached;
-    const raw = await SecureStore.getItemAsync(SECURE_LOCK_KEY);
-    if (!raw) {
-      cached = null;
-      return null;
+    if (fault) {
+      throw new AppError('STORAGE', fault, {
+        details: { reason: 'app_lock_fault' },
+        retryable: true,
+      });
     }
+    if (cached !== undefined) return cached;
     try {
+      const raw = await SecureStore.getItemAsync(SECURE_LOCK_KEY);
+      if (!raw) {
+        cached = null;
+        return null;
+      }
       cached = JSON.parse(raw) as StoredLock;
       return cached;
-    } catch {
-      cached = null;
-      return null;
+    } catch (error) {
+      fault =
+        error instanceof Error
+          ? error.message
+          : 'Úložiště zámku nelze přečíst';
+      throw new AppError('STORAGE', fault, {
+        details: { reason: 'app_lock_read_failed' },
+        retryable: true,
+        cause: error,
+      });
     }
   }
 
   async function writeLock(lock: StoredLock | null): Promise<void> {
-    cached = lock;
-    if (lock == null) {
-      await SecureStore.deleteItemAsync(SECURE_LOCK_KEY);
-      return;
+    try {
+      cached = lock;
+      if (lock == null) {
+        await SecureStore.deleteItemAsync(SECURE_LOCK_KEY);
+        return;
+      }
+      await SecureStore.setItemAsync(SECURE_LOCK_KEY, JSON.stringify(lock), {
+        keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      });
+      fault = null;
+    } catch (error) {
+      fault =
+        error instanceof Error
+          ? error.message
+          : 'Úložiště zámku nelze zapsat';
+      throw new AppError('STORAGE', fault, {
+        details: { reason: 'app_lock_write_failed' },
+        retryable: true,
+        cause: error,
+      });
     }
-    await SecureStore.setItemAsync(SECURE_LOCK_KEY, JSON.stringify(lock), {
-      keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-    });
   }
 
-  return {
+  // Probe once so a dead SecureStore fails closed before caregivers rely on it.
+  await readLock();
+
+  const store: AppLockStore = {
     async getStatus() {
-      const lock = await readLock();
-      return { enabled: lock != null, locked: lock != null && !sessionUnlocked };
+      if (fault) {
+        return {
+          enabled: true,
+          locked: true,
+          fault,
+          protection: 'unavailable',
+        };
+      }
+      try {
+        const lock = await readLock();
+        return {
+          enabled: lock != null,
+          locked: lock != null && !sessionUnlocked,
+          fault: null,
+          protection,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Úložiště zámku selhalo';
+        return {
+          enabled: true,
+          locked: true,
+          fault: message,
+          protection: 'unavailable',
+        };
+      }
     },
     async enableWithPin(pin) {
       assertPin(pin);
@@ -172,6 +292,7 @@ export async function createSecureStoreAppLockStore(): Promise<AppLockStore> {
       sessionUnlocked = true;
     },
     async unlock(pin) {
+      if (fault) return false;
       const lock = await readLock();
       if (lock == null) {
         sessionUnlocked = true;
@@ -182,12 +303,48 @@ export async function createSecureStoreAppLockStore(): Promise<AppLockStore> {
       return ok;
     },
     async lockOnBackground() {
-      const lock = await readLock();
-      if (lock != null) sessionUnlocked = false;
+      try {
+        const lock = await readLock();
+        if (lock != null) sessionUnlocked = false;
+      } catch {
+        sessionUnlocked = false;
+      }
     },
     async clearForWipe() {
       await writeLock(null);
       sessionUnlocked = true;
+      fault = null;
+    },
+    async retryDurableStore() {
+      fault = null;
+      cached = undefined;
+      await readLock();
+      return store.getStatus();
     },
   };
+  return store;
+}
+
+/**
+ * Opens the durable app-lock store. Never silently substitutes an unlocked
+ * memory store after a SecureStore failure — that would bypass an existing PIN.
+ */
+export async function openPlatformAppLockStore(): Promise<AppLockStore> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Platform } = require('react-native') as { Platform: { OS: string } };
+  const protection: AppLockProtection =
+    Platform.OS === 'web' ? 'origin_storage' : 'secure_store';
+  try {
+    return await createSecureStoreAppLockStore(protection);
+  } catch (error) {
+    if (Platform.OS === 'web') {
+      // Web without SecureStore keeps a same-origin session gate and says so.
+      return createMemoryAppLockStore('origin_storage');
+    }
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Úložiště zámku není dostupné';
+    return createFaultedAppLockStore(message, () => createSecureStoreAppLockStore(protection));
+  }
 }

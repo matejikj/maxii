@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import { stripTypeScriptTypes } from 'node:module';
 import 'fake-indexeddb/auto';
 import {
   SUPPORT_MATRIX,
@@ -12,6 +15,36 @@ import {
   EncryptedDatabaseError,
   assertSqlCipherAvailable,
 } from '../src/infrastructure/database/native/cipherGuard.ts';
+
+test('random polyfill preserves getter-only browser crypto and supplies missing native randomness', () => {
+  const source = fs.readFileSync(
+    new URL('../src/infrastructure/crypto/installRandomPolyfill.ts', import.meta.url),
+    'utf8',
+  );
+  const executable = stripTypeScriptTypes(source
+    .replace("import { getRandomValues as expoGetRandomValues } from 'expo-crypto';", 'const expoGetRandomValues = globalThis.testRandomValues;')
+    .replace('export function', 'function'));
+  let fallbackCalls = 0;
+  const fallback = (array: Uint8Array) => {
+    fallbackCalls++;
+    return array.fill(7);
+  };
+  const original = { getRandomValues: (array: Uint8Array) => array.fill(3) };
+  const browser = vm.createContext({ testRandomValues: fallback });
+  Object.defineProperty(browser, 'crypto', { get: () => original });
+  vm.runInContext(executable, browser);
+  assert.equal(vm.runInContext('crypto', browser), original);
+  assert.equal(fallbackCalls, 0);
+
+  for (const initial of [undefined, {}]) {
+    const native = vm.createContext({ crypto: initial, testRandomValues: fallback });
+    vm.runInContext(executable, native);
+    const generated = vm.runInContext('crypto.getRandomValues(new Uint8Array(4))', native);
+    assert.deepEqual(Array.from(generated as Uint8Array), [7, 7, 7, 7]);
+    if (initial) assert.equal(vm.runInContext('crypto', native), initial);
+  }
+  assert.equal(fallbackCalls, 2);
+});
 
 test('verified stack table lists concrete packages with licenses and reasons', () => {
   assert.ok(VERIFIED_STACK.length >= 8);

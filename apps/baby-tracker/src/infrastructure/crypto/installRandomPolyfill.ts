@@ -10,7 +10,10 @@ export function installRandomPolyfill(): void {
   if (typeof cryptoObject.getRandomValues !== 'function') {
     cryptoObject.getRandomValues = expoGetRandomValues as Crypto['getRandomValues'];
   }
-  (globalThis as { crypto: Crypto }).crypto = cryptoObject;
+  // Browsers expose crypto through a getter-only property. Preserve that object.
+  if (globalThis.crypto == null) {
+    (globalThis as { crypto: Crypto }).crypto = cryptoObject;
+  }
 }
 
 installRandomPolyfill();

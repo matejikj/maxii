@@ -41,13 +41,21 @@ export type LogicalCheckpointVault = {
   clearAll(): Promise<void>;
 };
 
-export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
-  readonly records: Map<string, LogicalCheckpointRecord>;
-} {
-  const records = new Map<string, LogicalCheckpointRecord>();
+/**
+ * Persistence backend for logical checkpoints. Production adapters must survive
+ * process death; in-memory maps are only for tests.
+ */
+export type LogicalCheckpointBackend = {
+  listRecords(): Promise<LogicalCheckpointRecord[]>;
+  putRecord(record: LogicalCheckpointRecord): Promise<void>;
+  deleteRecord(checkpointId: string): Promise<void>;
+  clearAll(): Promise<void>;
+};
 
+export function createLogicalCheckpointVault(
+  backend: LogicalCheckpointBackend,
+): LogicalCheckpointVault {
   return {
-    records,
     async create(input) {
       let archiveJson: string;
       try {
@@ -71,7 +79,8 @@ export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
         );
       }
 
-      const checkpointId = `logical_${input.kind}_${input.nowMs}_${records.size + 1}`;
+      const existing = await backend.listRecords();
+      const checkpointId = `logical_${input.kind}_${input.nowMs}_${existing.length + 1}`;
       const record: LogicalCheckpointRecord = {
         checkpointId,
         kind: input.kind,
@@ -80,28 +89,31 @@ export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
         manifest: input.archive.manifest,
         archiveJson,
       };
-      records.set(checkpointId, record);
+      await backend.putRecord(record);
 
       // Rotate only after a successful write so the last valid point survives
       // a follow-up failure (for example when free space is exhausted mid-run).
-      if (input.kind === 'daily') {
-        pruneDaily(records, DAILY_CHECKPOINT_RETENTION);
-      } else {
-        pruneKind(records, 'pre_import', PRE_IMPORT_CHECKPOINT_RETENTION);
+      const afterWrite = await backend.listRecords();
+      const toDelete =
+        input.kind === 'daily'
+          ? pruneDailyIds(afterWrite, DAILY_CHECKPOINT_RETENTION)
+          : pruneKindIds(afterWrite, 'pre_import', PRE_IMPORT_CHECKPOINT_RETENTION);
+      for (const id of toDelete) {
+        await backend.deleteRecord(id);
       }
 
       return summarize(record);
     },
     async list() {
-      return [...records.values()]
+      return (await backend.listRecords())
         .map(summarize)
         .sort((a, b) => b.createdAtMs - a.createdAtMs);
     },
     async read(checkpointId) {
-      return records.get(checkpointId) ?? null;
+      return (await backend.listRecords()).find((row) => row.checkpointId === checkpointId) ?? null;
     },
     async readArchive(checkpointId) {
-      const record = records.get(checkpointId);
+      const record = await this.read(checkpointId);
       if (record == null) {
         throw new AppError('NOT_FOUND', 'Local recovery point is not available', {
           details: { checkpointId },
@@ -110,9 +122,31 @@ export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
       return parseDiaryArchive(record.archiveJson);
     },
     async clearAll() {
+      await backend.clearAll();
+    },
+  };
+}
+
+export function createMemoryLogicalCheckpointVault(): LogicalCheckpointVault & {
+  readonly records: Map<string, LogicalCheckpointRecord>;
+  readonly backend: LogicalCheckpointBackend;
+} {
+  const records = new Map<string, LogicalCheckpointRecord>();
+  const backend: LogicalCheckpointBackend = {
+    async listRecords() {
+      return [...records.values()];
+    },
+    async putRecord(record) {
+      records.set(record.checkpointId, record);
+    },
+    async deleteRecord(checkpointId) {
+      records.delete(checkpointId);
+    },
+    async clearAll() {
       records.clear();
     },
   };
+  return Object.assign(createLogicalCheckpointVault(backend), { records, backend });
 }
 
 function summarize(record: LogicalCheckpointRecord): LogicalCheckpointSummary {
@@ -125,41 +159,32 @@ function summarize(record: LogicalCheckpointRecord): LogicalCheckpointSummary {
   };
 }
 
-function pruneDaily(
-  records: Map<string, LogicalCheckpointRecord>,
-  retain: number,
-): void {
-  const daily = [...records.values()]
+function pruneDailyIds(records: LogicalCheckpointRecord[], retain: number): string[] {
+  const daily = [...records]
     .filter((row) => row.kind === 'daily')
     .sort((a, b) => b.createdAtMs - a.createdAtMs);
-
-  // Keep one checkpoint per day key when present, then drop beyond retention.
   const keptKeys = new Set<string>();
   const keepIds = new Set<string>();
+  const remove: string[] = [];
   for (const row of daily) {
     const key = row.dayKey ?? row.checkpointId;
-    if (keptKeys.has(key)) {
-      records.delete(row.checkpointId);
-      continue;
-    }
-    if (keepIds.size >= retain) {
-      records.delete(row.checkpointId);
+    if (keptKeys.has(key) || keepIds.size >= retain) {
+      remove.push(row.checkpointId);
       continue;
     }
     keptKeys.add(key);
     keepIds.add(row.checkpointId);
   }
+  return remove;
 }
 
-function pruneKind(
-  records: Map<string, LogicalCheckpointRecord>,
+function pruneKindIds(
+  records: LogicalCheckpointRecord[],
   kind: LogicalCheckpointKind,
   retain: number,
-): void {
-  const matched = [...records.values()]
+): string[] {
+  const matched = [...records]
     .filter((row) => row.kind === kind)
     .sort((a, b) => b.createdAtMs - a.createdAtMs);
-  for (const row of matched.slice(retain)) {
-    records.delete(row.checkpointId);
-  }
+  return matched.slice(retain).map((row) => row.checkpointId);
 }

@@ -42,7 +42,12 @@ export function SettingsPanel() {
   const [dailyHour, setDailyHour] = useState(String(preferences.reminders.dailyTogetherHour));
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
-  const [lockStatus, setLockStatus] = useState({ enabled: false, locked: false });
+  const [lockStatus, setLockStatus] = useState({
+    enabled: false,
+    locked: false,
+    fault: null as string | null,
+    protection: 'unavailable' as 'secure_store' | 'origin_storage' | 'unavailable',
+  });
   const [diagnostics, setDiagnostics] = useState<string | null>(null);
   const [wipeConfirm, setWipeConfirm] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -251,7 +256,17 @@ export function SettingsPanel() {
         </LumiText>
         <LumiText tone="muted">
           Stav: {lockStatus.enabled ? (lockStatus.locked ? 'zamčeno' : 'odemčeno') : 'vypnuto'}
+          {lockStatus.protection === 'origin_storage'
+            ? ' · web: ochrana jen v rámci stejného prohlížeče/originu'
+            : lockStatus.protection === 'secure_store'
+              ? ' · systémové úložiště zařízení'
+              : ''}
         </LumiText>
+        {lockStatus.fault ? (
+          <LumiText tone="muted">
+            Úložiště zámku hlásí chybu a deník zůstává zamčený: {lockStatus.fault}
+          </LumiText>
+        ) : null}
         <LumiInput
           label="PIN (4–8 číslic)"
           value={pin}
