@@ -84,9 +84,15 @@ export type NoteCareEvent = CareEventBase & {
   body: string;
 };
 
+/** Optional caregiver reaction — missing stays unknown, never inferred. */
+export type ExperienceReaction = 'liked' | 'not_liked';
+
+/** Optional difficulty note — independent from reaction. */
+export type ExperienceDifficulty = 'easy' | 'ok' | 'hard';
+
 /**
- * Free-form play outside the activity catalog. Optional title/area; catalog
- * confirmation is a later, explicit path and must not be inferred here.
+ * Free-form play or an explicit catalog try. Opening an activity never creates
+ * this row; only a deliberate “Vyzkoušeli jsme” / free-play save does.
  */
 export type ExperienceCareEvent = CareEventBase & {
   type: 'experience';
@@ -95,6 +101,8 @@ export type ExperienceCareEvent = CareEventBase & {
   area: DevelopmentArea | null;
   activityId: string | null;
   activityRevisionId: string | null;
+  reaction: ExperienceReaction | null;
+  difficulty: ExperienceDifficulty | null;
 };
 
 /** Parental milestone observation — descriptive fact, not readiness scoring. */
@@ -345,6 +353,8 @@ export function createExperienceEvent(input: {
   activityId?: string | null;
   activityRevisionId?: string | null;
   note?: string | null;
+  reaction?: ExperienceReaction | null;
+  difficulty?: ExperienceDifficulty | null;
   recordedBy?: ActorId | null;
   createdAt: ZonedInstant;
 }): ExperienceCareEvent {
@@ -368,6 +378,8 @@ export function createExperienceEvent(input: {
     area,
     activityId,
     activityRevisionId: activityId ? (input.activityRevisionId ?? null) : null,
+    reaction: input.reaction ?? null,
+    difficulty: input.difficulty ?? null,
     note,
     recordedBy: input.recordedBy ?? null,
     createdAt: input.createdAt,

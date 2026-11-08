@@ -5,32 +5,14 @@
  */
 import {
   DEV_FIXTURE_REVISIONS,
+  LOCAL_LIBRARY_REVISIONS,
   STARTER_TOPICS,
   buildCoverageReport,
   buildPublishedCatalog,
-  sampleProductRevision,
   validateActivityRevision,
 } from '../src/content/index.ts';
 
-const productSamples = [
-  sampleProductRevision(),
-  sampleProductRevision({
-    activityId: 'act.soft-rhyme',
-    revisionId: 'act.soft-rhyme.r1',
-    title: 'Tichá říkanka',
-    ageMonths: { fromInclusive: 0, toInclusive: 12 },
-    primaryArea: 'speech',
-    relatedAreas: ['creationRhythm'],
-    topicIds: ['speech.songs'],
-    materials: [],
-    suitability: [
-      { kind: 'age_months', fromInclusive: 0, toInclusive: 12 },
-      { kind: 'materials_none' },
-    ],
-  }),
-];
-
-const all = [...DEV_FIXTURE_REVISIONS, ...productSamples];
+const all = [...DEV_FIXTURE_REVISIONS, ...LOCAL_LIBRARY_REVISIONS];
 let failed = 0;
 
 for (const [index, revision] of all.entries()) {

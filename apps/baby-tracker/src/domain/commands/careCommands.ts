@@ -14,6 +14,8 @@ import {
   type DiaperCareEvent,
   type DiaperContents,
   type ExperienceCareEvent,
+  type ExperienceDifficulty,
+  type ExperienceReaction,
   type FeedingSide,
   type FoodCareEvent,
   type GrowthCareEvent,
@@ -120,6 +122,8 @@ export type RecordExperienceCommand = CommandIntent & {
   activityId?: string | null;
   activityRevisionId?: string | null;
   note?: string | null;
+  reaction?: ExperienceReaction | null;
+  difficulty?: ExperienceDifficulty | null;
   recordedBy?: ActorId | null;
 };
 
@@ -255,6 +259,8 @@ export function buildCareEventFromCommand(
           ? { activityRevisionId: command.activityRevisionId }
           : {}),
         ...(command.note !== undefined ? { note: command.note } : {}),
+        ...(command.reaction !== undefined ? { reaction: command.reaction } : {}),
+        ...(command.difficulty !== undefined ? { difficulty: command.difficulty } : {}),
         ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),
       });
     case 'recordMilestone':

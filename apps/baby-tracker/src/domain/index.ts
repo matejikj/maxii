@@ -72,6 +72,12 @@ export {
   type WeeklyCareOverview,
 } from './projections/careOverview';
 export {
+  buildWeeklyDevelopmentGlance,
+  type WeeklyDevelopmentGlance,
+  type WeeklyGlanceStatement,
+} from './projections/weeklyDevelopmentGlance';
+
+export {
   cmToDisplay,
   displayToCm,
   displayToKg,

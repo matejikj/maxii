@@ -53,6 +53,7 @@ function MainTabs() {
             <TodayScreen
               onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
               onOpenHistoryToday={() => navigation.navigate('History')}
+              onOpenDevelopment={() => navigation.navigate('Development')}
               onOpenEvent={(eventId) =>
                 navigation.getParent()?.navigate('EventDetail', { eventId })
               }
@@ -70,7 +71,11 @@ function MainTabs() {
       <Tab.Screen name="Development" options={{ title: 'Rozvoj' }}>
         {({ navigation }) => (
           <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
-            <DevelopmentScreen />
+            <DevelopmentScreen
+              onOpenEvent={(eventId) =>
+                navigation.getParent()?.navigate('EventDetail', { eventId })
+              }
+            />
           </TabWithCompactSleep>
         )}
       </Tab.Screen>

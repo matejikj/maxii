@@ -13,6 +13,8 @@ export type CareEditPatch = {
   title?: string | null;
   description?: string;
   contents?: DiaperContents;
+  reaction?: 'liked' | 'not_liked' | null;
+  difficulty?: 'easy' | 'ok' | 'hard' | null;
 };
 
 /**
@@ -108,6 +110,9 @@ export function buildEditCareCommand(input: {
         activityId: event.activityId,
         activityRevisionId: event.activityRevisionId,
         note: patch?.note !== undefined ? patch.note : event.note,
+        reaction: patch?.reaction !== undefined ? patch.reaction : (event.reaction ?? null),
+        difficulty:
+          patch?.difficulty !== undefined ? patch.difficulty : (event.difficulty ?? null),
       };
     case 'milestone':
       return {

@@ -87,7 +87,11 @@ export function buildRecordExperienceCommand(input: {
   intentCapturedAtMs: number;
   title?: string | null;
   area?: DevelopmentArea | null;
+  activityId?: string | null;
+  activityRevisionId?: string | null;
   note?: string | null;
+  reaction?: 'liked' | 'not_liked' | null;
+  difficulty?: 'easy' | 'ok' | 'hard' | null;
   expectedRevisionId?: RevisionId;
 }): RecordExperienceCommand & { expectedRevisionId?: RevisionId } {
   return {
@@ -100,7 +104,13 @@ export function buildRecordExperienceCommand(input: {
     occurredAt: input.occurredAt,
     ...(input.title !== undefined ? { title: input.title } : {}),
     ...(input.area !== undefined ? { area: input.area } : {}),
+    ...(input.activityId !== undefined ? { activityId: input.activityId } : {}),
+    ...(input.activityRevisionId !== undefined
+      ? { activityRevisionId: input.activityRevisionId }
+      : {}),
     ...(input.note !== undefined ? { note: input.note } : {}),
+    ...(input.reaction !== undefined ? { reaction: input.reaction } : {}),
+    ...(input.difficulty !== undefined ? { difficulty: input.difficulty } : {}),
     ...(input.expectedRevisionId !== undefined
       ? { expectedRevisionId: input.expectedRevisionId }
       : {}),

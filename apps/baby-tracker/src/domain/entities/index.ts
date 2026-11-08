@@ -23,6 +23,8 @@ export {
   type DiaperCareEvent,
   type DiaperContents,
   type ExperienceCareEvent,
+  type ExperienceDifficulty,
+  type ExperienceReaction,
   type FeedingSide,
   type FoodCareEvent,
   type GrowthCareEvent,

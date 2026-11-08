@@ -110,5 +110,16 @@ export {
   type RecommendationCatalogInput,
   type RecommendationFilterInput,
 } from './recommendation';
+export {
+  META_FAVORITES_PREFIX,
+  addFavorite,
+  listFavorites,
+  removeFavorite,
+} from './favorites';
+export {
+  findTodaysExperienceForActivity,
+  isExperienceEvent,
+  loadWeeklyDevelopmentGlance,
+} from './developmentQueries';
 
 

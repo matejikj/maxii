@@ -36,3 +36,7 @@ export {
   type CoverageReport,
 } from './reporting/coverageReport';
 export { DEV_FIXTURE_REVISIONS, sampleProductRevision } from './fixtures/devFixtureSet';
+export {
+  LOCAL_LIBRARY_CONTENT_VERSION,
+  LOCAL_LIBRARY_REVISIONS,
+} from './localLibrary';

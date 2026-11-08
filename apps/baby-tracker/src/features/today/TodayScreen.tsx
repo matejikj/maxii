@@ -22,21 +22,24 @@ import { FeedingRecorder } from './FeedingRecorder';
 import { type QuickActionId } from './quickActions';
 import { NursingSessionController } from './NursingSessionController';
 import { SleepSessionController, useSleepStarter } from './SleepSessionController';
+import { TodayTogetherCard } from './TodayTogetherCard';
 import { useTodayCareModel } from './useTodayCareModel';
 
 type TodayScreenProps = {
   onOpenProfile: () => void;
   onOpenHistoryToday: () => void;
+  onOpenDevelopment?: () => void;
   onOpenEvent?: (eventId: string) => void;
 };
 
 /**
  * Care-first Today: measurement slot, four stable quick actions, last care,
- * one honest activity placeholder, and a link into today's History.
+ * shared daily development offer, and a link into today's History.
  */
 export function TodayScreen({
   onOpenProfile,
   onOpenHistoryToday,
+  onOpenDevelopment,
   onOpenEvent,
 }: TodayScreenProps) {
   const { colors, mode, ui } = useLumiTheme();
@@ -265,10 +268,18 @@ export function TodayScreen({
           )}
         </LumiCard>
 
-        <LumiCard>
-          <LumiText variant="h2">{PRODUCT_COPY.today.together}</LumiText>
-          <LumiText tone="muted">{PRODUCT_COPY.empty.activitySlot}</LumiText>
-        </LumiCard>
+        {profile ? (
+          <TodayTogetherCard
+            profile={profile}
+            sleepRunning={Boolean(model.activeSleep)}
+            onOpenDevelopment={() => onOpenDevelopment?.()}
+          />
+        ) : (
+          <LumiCard>
+            <LumiText variant="h2">{PRODUCT_COPY.today.together}</LumiText>
+            <LumiText tone="muted">{PRODUCT_COPY.empty.activitySlot}</LumiText>
+          </LumiCard>
+        )}
 
         <LumiButton
           title={PRODUCT_COPY.actions.showTodayRecords}
