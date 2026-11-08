@@ -3,6 +3,7 @@ import type { Instant } from '../../../domain/ports/clock';
 import type { SqlConnection } from './sqlConnection';
 import { SCHEMA_V1_CHECKSUM, SCHEMA_V1_STATEMENTS, SCHEMA_VERSION_1 } from './schema/v1';
 import { SCHEMA_V2_CHECKSUM, SCHEMA_V2_STATEMENTS, SCHEMA_VERSION_2 } from './schema/v2';
+import { SCHEMA_V3_CHECKSUM, SCHEMA_V3_STATEMENTS, SCHEMA_VERSION_3 } from './schema/v3';
 import type { CheckpointStore } from './checkpoint';
 
 export type Migration = {
@@ -21,6 +22,11 @@ export const MIGRATIONS: readonly Migration[] = [
     version: SCHEMA_VERSION_2,
     checksum: SCHEMA_V2_CHECKSUM,
     statements: SCHEMA_V2_STATEMENTS,
+  },
+  {
+    version: SCHEMA_VERSION_3,
+    checksum: SCHEMA_V3_CHECKSUM,
+    statements: SCHEMA_V3_STATEMENTS,
   },
 ];
 

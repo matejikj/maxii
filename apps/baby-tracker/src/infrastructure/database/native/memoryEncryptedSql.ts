@@ -275,6 +275,15 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM revisions/i.test(sql)) {
     return [...ensureTable(state, 'revisions').rows];
   }
+  if (/^SELECT payload_json FROM child_profiles$/i.test(sql) || /^SELECT \* FROM child_profiles$/i.test(sql)) {
+    return [...ensureTable(state, 'child_profiles').rows];
+  }
+  if (/FROM child_profiles/i.test(sql)) {
+    return [...ensureTable(state, 'child_profiles').rows];
+  }
+  if (/FROM app_meta/i.test(sql)) {
+    return [...ensureTable(state, 'app_meta').rows];
+  }
   return [];
 }
 
@@ -360,9 +369,11 @@ function primaryKeyMatch(tableName: string, existing: Row, next: Row): boolean {
                 ? 'operation_id'
                 : tableName === 'deletion_markers'
                   ? 'deletion_id'
-                  : tableName === 'schema_migrations'
-                    ? 'version'
-                    : null;
+                  : tableName === 'app_meta'
+                    ? 'key'
+                    : tableName === 'schema_migrations'
+                      ? 'version'
+                      : null;
   if (key == null) return false;
   return existing[key] === next[key];
 }

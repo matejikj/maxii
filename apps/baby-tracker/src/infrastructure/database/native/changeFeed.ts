@@ -4,7 +4,8 @@ export type ChangeTopic =
   | 'drafts'
   | 'revisions'
   | 'profile'
-  | 'schema';
+  | 'schema'
+  | 'meta';
 
 export type ChangeNotification = {
   seq: number;

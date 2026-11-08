@@ -22,7 +22,7 @@ import { createMemoryEncryptedSqlOpener } from '../src/infrastructure/database/n
 import { createNativeUnitOfWorkFactory } from '../src/infrastructure/database/native/nativeUnitOfWork.ts';
 import { openPrivateDatabase } from '../src/infrastructure/database/native/privateDatabase.ts';
 import { currentSchemaVersion } from '../src/infrastructure/database/native/migrations.ts';
-import { SCHEMA_VERSION_2 } from '../src/infrastructure/database/native/schema/v2.ts';
+import { SCHEMA_VERSION_3 } from '../src/infrastructure/database/native/schema/v3.ts';
 import { DATABASE_KEY_LIFECYCLE } from '../src/infrastructure/database/native/keyLifecycle.ts';
 import {
   assertExplicitPlaintextConversion,
@@ -89,7 +89,7 @@ test('private database migrates, commits care atomically, and notifies after suc
 
   const loaded = await unitOfWork.run((uow) => uow.care.getById(event.eventId));
   assert.equal(loaded?.type, 'diaper');
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_2);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_3);
   assert.equal(notifications.length, 1);
   await db.close();
 });
@@ -248,7 +248,7 @@ test('failed migration keeps checkpoint and does not advance schema', async () =
     checkpointStore,
     now,
   });
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_2);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_3);
   assert.equal(checkpointStore.records.size, 1);
 
   await assert.rejects(() =>
@@ -262,7 +262,7 @@ test('failed migration keeps checkpoint and does not advance schema', async () =
       throw new Error('boom');
     }),
   );
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_2);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_3);
   const checkpoint = await checkpointStore.restore([...checkpointStore.records.keys()][0]!);
   assert.ok(checkpoint.payload.byteLength > 0);
   await db.close();

@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { HomeScreen } from '../features/today';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StartupScreen } from '../features/shell/StartupScreen';
 import {
   runStorageProbe,
   type StorageProbeReport,
 } from '../infrastructure/verification/runStorageProbe';
 import { loadPublicAppConfig } from './config';
+import { RootNavigator } from './navigation/RootNavigator';
+import { openPersonalUnitOfWork } from './openPersonalUnitOfWork';
+import {
+  personalModeBlocksOnMissingBackend,
+  resolveRemoteServicesBoundary,
+} from './remoteServicesBoundary';
 import { AppProviders, useCompositionRoot } from './providers';
+import { BootstrapProvider, useBootstrap } from './session/BootstrapContext';
+import { HistoryTabProvider } from './session/HistoryTabContext';
 
 const config = loadPublicAppConfig();
 
-function StorageProbeHost({ children }: { children: (state: {
-  probeReport: StorageProbeReport | null;
-  probeError: string | null;
-}) => React.ReactNode }) {
+function StorageProbeHost({ children }: { children: React.ReactNode }) {
   const { logger } = useCompositionRoot();
   const [probeReport, setProbeReport] = useState<StorageProbeReport | null>(null);
   const [probeError, setProbeError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!config.storageProbeEnabled) {
-      return;
-    }
+    if (!config.storageProbeEnabled) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -31,14 +34,16 @@ function StorageProbeHost({ children }: { children: (state: {
             platform: report.platform,
             ok: report.portableBackup.roundTripOk,
           });
-          // Compact device-log marker without care payloads for evidence capture.
-          console.log('LUMI_STORAGE_PROBE_OK', JSON.stringify({
-            platform: report.platform,
-            cipherVersion: report.nativeCipher?.cipherVersion ?? null,
-            reopenedWithKeySucceeded: report.nativeCipher?.reopenedWithKeySucceeded ?? null,
-            portableBackupOk: report.portableBackup.roundTripOk,
-            limitations: report.limitations,
-          }));
+          console.log(
+            'LUMI_STORAGE_PROBE_OK',
+            JSON.stringify({
+              platform: report.platform,
+              cipherVersion: report.nativeCipher?.cipherVersion ?? null,
+              reopenedWithKeySucceeded: report.nativeCipher?.reopenedWithKeySucceeded ?? null,
+              portableBackupOk: report.portableBackup.roundTripOk,
+              limitations: report.limitations,
+            }),
+          );
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -54,16 +59,61 @@ function StorageProbeHost({ children }: { children: (state: {
     };
   }, [logger]);
 
-  return <>{children({ probeReport, probeError })}</>;
+  void probeReport;
+  void probeError;
+  return <>{children}</>;
+}
+
+function PersonalAppShell() {
+  const bootstrap = useBootstrap();
+  const remote = resolveRemoteServicesBoundary();
+  // Prove personal mode never treats missing backend as a blocking startup error.
+  void personalModeBlocksOnMissingBackend(remote);
+
+  if (
+    bootstrap.phase === 'initializing' ||
+    bootstrap.phase === 'migrating' ||
+    bootstrap.phase === 'key_unavailable' ||
+    bootstrap.phase === 'recovery_required' ||
+    bootstrap.phase === 'database_error'
+  ) {
+    const canRetry =
+      bootstrap.phase === 'key_unavailable' ||
+      bootstrap.phase === 'recovery_required' ||
+      bootstrap.phase === 'database_error';
+    return (
+      <StartupScreen
+        presentation={bootstrap.presentation}
+        errorMessage={bootstrap.errorMessage}
+        {...(canRetry ? { onRetry: bootstrap.retry } : {})}
+      />
+    );
+  }
+
+  return <RootNavigator />;
+}
+
+function BootstrappedApp() {
+  const { services } = useCompositionRoot();
+  const openUnitOfWork = useCallback(async () => {
+    const opened = await openPersonalUnitOfWork(services);
+    return opened.unitOfWork;
+  }, [services]);
+
+  return (
+    <BootstrapProvider openUnitOfWork={openUnitOfWork}>
+      <HistoryTabProvider>
+        <PersonalAppShell />
+      </HistoryTabProvider>
+    </BootstrapProvider>
+  );
 }
 
 export function AppRoot() {
   return (
     <AppProviders>
       <StorageProbeHost>
-        {({ probeReport, probeError }) => (
-          <HomeScreen probeReport={probeReport} probeError={probeError} />
-        )}
+        <BootstrappedApp />
       </StorageProbeHost>
     </AppProviders>
   );

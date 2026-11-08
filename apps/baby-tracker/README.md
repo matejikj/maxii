@@ -70,6 +70,8 @@ Webový deník je IndexedDB/Dexie (`openWebDatabase` / `createWebUnitOfWorkFacto
 
 Zápisy jdou přes `createCommandDispatcher`: entita, revize a receipt v jedné UnitOfWork, idempotentní retry, měkké smazání se sedmidenním košem a desetisekundovým Zpět. Koncepty se odkládají lokálně (`createDraftAutosave`) a do souhrnů nevstupují.
 
+Osobní start založí jeden místní profil „Miminko“ bez účtu a API. Navigace má záložky Dnes / Péče / Rozvoj / Historie; profil je v hlavičce. Chybějící backend není chybový stav.
+
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
 Sonda development buildu:

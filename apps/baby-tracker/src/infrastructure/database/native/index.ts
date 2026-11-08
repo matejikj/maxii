@@ -31,6 +31,7 @@ export type { CheckpointStore, CheckpointRecord } from './checkpoint';
 export { applyPendingMigrations, currentSchemaVersion, MIGRATIONS } from './migrations';
 export { SCHEMA_VERSION_1, SCHEMA_V1_CHECKSUM } from './schema/v1';
 export { SCHEMA_VERSION_2, SCHEMA_V2_CHECKSUM } from './schema/v2';
+export { SCHEMA_VERSION_3, SCHEMA_V3_CHECKSUM } from './schema/v3';
 export { DATABASE_KEY_LIFECYCLE } from './keyLifecycle';
 export {
   assertExplicitPlaintextConversion,

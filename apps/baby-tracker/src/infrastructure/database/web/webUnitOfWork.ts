@@ -1,8 +1,10 @@
 import type {
   ActiveSession,
+  AppMetaRepository,
   CareEvent,
   CareRepository,
   ChildId,
+  ChildProfile,
   DeletionMarker,
   Draft,
   DraftRepository,
@@ -10,6 +12,7 @@ import type {
   FaultInjection,
   OperationId,
   OperationReceipt,
+  ProfileRepository,
   Revision,
   RevisionId,
   RevisionRepository,
@@ -29,6 +32,8 @@ import {
   draftFromRow,
   draftToRow,
   encodeJson,
+  profileFromRow,
+  profileToRow,
   receiptFromRow,
   receiptToRow,
   revisionFromRow,
@@ -312,7 +317,39 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
-  return { care, sessions, drafts, revisions };
+  const profiles: ProfileRepository = {
+    async get(childId: ChildId) {
+      const row = await db.childProfiles.get(childId);
+      return row ? profileFromRow({ payload_json: row.payloadJson }) : null;
+    },
+    async list() {
+      const rows = await db.childProfiles.toArray();
+      return rows.map((row) => profileFromRow({ payload_json: row.payloadJson }));
+    },
+    async save(profile: ChildProfile) {
+      const row = profileToRow(profile);
+      await db.childProfiles.put({
+        childId: row.child_id,
+        displayName: row.display_name,
+        birthDate: row.birth_date,
+        summaryTimeZone: row.summary_time_zone,
+        payloadJson: row.payload_json,
+      });
+      topics.add('profile');
+    },
+  };
+
+  const meta: AppMetaRepository = {
+    async get(key: string) {
+      const row = await db.meta.get(key);
+      return row?.value ?? null;
+    },
+    async set(key: string, value: string) {
+      await db.meta.put({ key, value });
+    },
+  };
+
+  return { care, sessions, drafts, revisions, profiles, meta };
 }
 
 function webDeletionFromRow(row: {

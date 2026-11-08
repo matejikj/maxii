@@ -14,6 +14,8 @@ export type UnitOfWork = {
   sessions: SessionRepository;
   drafts: DraftRepository;
   revisions: RevisionRepository;
+  profiles: ProfileRepository;
+  meta: AppMetaRepository;
 };
 
 export type CareRepository = {
@@ -48,7 +50,14 @@ export type RevisionRepository = {
 
 export type ProfileRepository = {
   get(childId: ChildId): Promise<ChildProfile | null>;
+  list(): Promise<ChildProfile[]>;
   save(profile: ChildProfile): Promise<void>;
+};
+
+/** Small durable flags (welcome completed, active child). Never stores care notes. */
+export type AppMetaRepository = {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
 };
 
 export type UnitOfWorkFactory = {

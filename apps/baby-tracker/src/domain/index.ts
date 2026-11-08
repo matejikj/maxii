@@ -33,6 +33,7 @@ export {
   type SleepDaySummary,
 } from './projections/careSummaries';
 export type {
+  AppMetaRepository,
   CareRepository,
   Clock,
   DraftRepository,

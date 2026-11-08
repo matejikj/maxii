@@ -1,14 +1,17 @@
 import type {
   ActiveSession,
+  AppMetaRepository,
   CareEvent,
   CareRepository,
   ChildId,
+  ChildProfile,
   Draft,
   DraftRepository,
   EntityId,
   FaultInjection,
   OperationId,
   OperationReceipt,
+  ProfileRepository,
   Revision,
   RevisionId,
   RevisionRepository,
@@ -30,6 +33,8 @@ import {
   deletionToRow,
   draftFromRow,
   draftToRow,
+  profileFromRow,
+  profileToRow,
   receiptFromRow,
   receiptToRow,
   revisionFromRow,
@@ -298,5 +303,49 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
-  return { care, sessions, drafts, revisions };
+  const profiles: ProfileRepository = {
+    async get(childId: ChildId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        'SELECT payload_json FROM child_profiles WHERE child_id = ?',
+        childId,
+      );
+      return row ? profileFromRow(row) : null;
+    },
+    async list() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        'SELECT payload_json FROM child_profiles',
+      );
+      return rows.map(profileFromRow);
+    },
+    async save(profile: ChildProfile) {
+      const row = profileToRow(profile);
+      await txn.runAsync('DELETE FROM child_profiles WHERE child_id = ?', row.child_id);
+      await txn.runAsync(
+        `INSERT INTO child_profiles (child_id, display_name, birth_date, summary_time_zone, payload_json)
+         VALUES (?, ?, ?, ?, ?)`,
+        row.child_id,
+        row.display_name,
+        row.birth_date,
+        row.summary_time_zone,
+        row.payload_json,
+      );
+      topics.add('profile');
+    },
+  };
+
+  const meta: AppMetaRepository = {
+    async get(key: string) {
+      const row = await txn.getFirstAsync<{ value: string }>(
+        'SELECT value FROM app_meta WHERE key = ?',
+        key,
+      );
+      return row?.value ?? null;
+    },
+    async set(key: string, value: string) {
+      await txn.runAsync('DELETE FROM app_meta WHERE key = ?', key);
+      await txn.runAsync('INSERT INTO app_meta (key, value) VALUES (?, ?)', key, value);
+    },
+  };
+
+  return { care, sessions, drafts, revisions, profiles, meta };
 }
