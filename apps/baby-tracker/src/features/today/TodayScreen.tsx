@@ -13,13 +13,10 @@ import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
-import {
-  ActiveMeasurement,
-  CareActionSheet,
-  PRODUCT_COPY,
-} from '../ui';
+import { CareActionSheet, PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
 import { type QuickActionId } from './quickActions';
+import { SleepSessionController, useSleepStarter } from './SleepSessionController';
 import { useTodayCareModel } from './useTodayCareModel';
 
 type TodayScreenProps = {
@@ -45,13 +42,13 @@ export function TodayScreen({
   const childId = profile?.childId ?? null;
   const zone = asTimeZoneId(profile?.settings.summaryTimeZone ?? 'Europe/Prague');
   const model = useTodayCareModel(childId, profile?.settings.summaryTimeZone);
+  const sleepStarter = useSleepStarter(childId, zone, model.activeSleep);
   const [diaperOpen, setDiaperOpen] = useState(false);
   const [editingActions, setEditingActions] = useState(false);
-  const [infoSheet, setInfoSheet] = useState<QuickActionId | null>(null);
+  const [infoSheet, setInfoSheet] = useState<'feeding' | 'experience' | null>(null);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
   const diaperOpenerRef = useRef(null);
 
-  // Keep the clock label fresh for a running measurement without inventing sleep data.
   React.useEffect(() => {
     if (!model.activeSleep) return;
     const timer = setInterval(() => setNowMs(services.clock.now().epochMs), 1000);
@@ -69,7 +66,9 @@ export function TodayScreen({
       case 'feeding':
         return PRODUCT_COPY.actions.feeding;
       case 'sleep':
-        return PRODUCT_COPY.actions.startSleep;
+        return model.activeSleep
+          ? PRODUCT_COPY.actions.sleepRunning
+          : PRODUCT_COPY.actions.startSleep;
       case 'diaper':
         return PRODUCT_COPY.actions.diaper;
       case 'experience':
@@ -77,7 +76,7 @@ export function TodayScreen({
     }
   }
 
-  function onQuickAction(id: QuickActionId) {
+  async function onQuickAction(id: QuickActionId) {
     if (editingActions) {
       void model.reorderQuickActionEarlier(id);
       return;
@@ -86,7 +85,17 @@ export function TodayScreen({
       setDiaperOpen(true);
       return;
     }
-    setInfoSheet(id);
+    if (id === 'sleep') {
+      const result = await sleepStarter.start();
+      if (result.alreadyRunning) {
+        // Opening the existing session is intentional — never start a second sleep.
+        return;
+      }
+      return;
+    }
+    if (id === 'feeding' || id === 'experience') {
+      setInfoSheet(id);
+    }
   }
 
   const infoCopy =
@@ -95,25 +104,17 @@ export function TodayScreen({
           title: PRODUCT_COPY.sheets.unavailableFeeding,
           body: PRODUCT_COPY.empty.feedingSoon,
         }
-      : infoSheet === 'sleep'
+      : infoSheet === 'experience'
         ? {
-            title: PRODUCT_COPY.sheets.unavailableSleep,
-            body: PRODUCT_COPY.empty.sleepSoon,
+            title: PRODUCT_COPY.sheets.unavailableExperience,
+            body: PRODUCT_COPY.empty.experienceSoon,
           }
-        : infoSheet === 'experience'
-          ? {
-              title: PRODUCT_COPY.sheets.unavailableExperience,
-              body: PRODUCT_COPY.empty.experienceSoon,
-            }
-          : null;
+        : null;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.heading}>
           <View style={styles.headingText}>
             <LumiText variant="caption" tone="accent">
@@ -138,21 +139,22 @@ export function TodayScreen({
           </Pressable>
         </View>
 
-        {model.activeSleep ? (
-          <ActiveMeasurement
-            title={PRODUCT_COPY.actions.sleepRunning}
-            startedAtEpochMs={model.activeSleep.startedAt.instant.epochMs}
+        {childId ? (
+          <SleepSessionController
+            childId={childId}
+            timeZone={zone}
+            activeSleep={model.activeSleep}
             nowEpochMs={nowMs}
-            onOpen={() => setInfoSheet('sleep')}
-            onStop={() => setInfoSheet('sleep')}
           />
-        ) : (
+        ) : null}
+        {!model.activeSleep ? (
           <LumiCard>
             <LumiText variant="caption" tone="muted">
               {PRODUCT_COPY.measurement.none}
             </LumiText>
+            {sleepStarter.message ? <LumiText>{sleepStarter.message}</LumiText> : null}
           </LumiCard>
-        )}
+        ) : null}
 
         <View style={{ gap: ui.space.sm }}>
           <View style={styles.rowBetween}>
@@ -178,9 +180,10 @@ export function TodayScreen({
               const button = (
                 <LumiButton
                   title={actionTitle(id)}
-                  variant={id === 'diaper' ? 'primary' : 'secondary'}
+                  variant={id === 'diaper' || (id === 'sleep' && !model.activeSleep) ? 'primary' : 'secondary'}
                   fullWidth
-                  onPress={() => onQuickAction(id)}
+                  loading={id === 'sleep' && sleepStarter.pending}
+                  onPress={() => void onQuickAction(id)}
                   testID={`quick-${id}`}
                 />
               );

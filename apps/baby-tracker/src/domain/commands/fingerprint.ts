@@ -5,6 +5,12 @@ import type {
   RestoreCareCommand,
   SaveDraftCommand,
 } from './lifecycleCommands';
+import type {
+  AdjustSleepSessionStartCommand,
+  EndSleepSessionCommand,
+  StartSleepSessionCommand,
+  UndoEndSleepSessionCommand,
+} from './sessionCommands';
 
 /**
  * Stable request body fingerprint for idempotent retries. Same operationId with
@@ -46,6 +52,51 @@ export function fingerprintDraft(command: SaveDraftCommand): string {
     draftId: command.draft.draftId,
     updatedAtMs: command.draft.updatedAt.epochMs,
     payload: command.draft.payload,
+  });
+}
+
+export function fingerprintStartSleep(command: StartSleepSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    startedAtMs: command.startedAt.instant.epochMs,
+    timeZone: command.startedAt.timeZone,
+    monotonicStartMs: command.monotonicStartMs,
+  });
+}
+
+export function fingerprintEndSleep(command: EndSleepSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    intendedEndedAtMs: command.intendedEndedAt.instant.epochMs,
+    eventId: command.eventId,
+    careRevisionId: command.careRevisionId,
+    note: command.note ?? null,
+    approximateEnd: command.approximateEnd ?? false,
+  });
+}
+
+export function fingerprintAdjustSleepStart(command: AdjustSleepSessionStartCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    startedAtMs: command.startedAt.instant.epochMs,
+    approximateStart: command.approximateStart ?? false,
+  });
+}
+
+export function fingerprintUndoEndSleep(command: UndoEndSleepSessionCommand): string {
+  return stableStringify({
+    type: command.type,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    eventId: command.eventId,
+    expectedCareRevisionId: command.expectedCareRevisionId,
+    deletionId: command.deletionId,
   });
 }
 

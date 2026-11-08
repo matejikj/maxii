@@ -3,6 +3,7 @@ import type { Draft } from '../entities/draft';
 import type { EntityId, RevisionId } from '../ids';
 import type { CareWriteCommand } from './careCommands';
 import type { CommandIntent } from './results';
+import type { SessionCommand } from './sessionCommands';
 
 export type SoftDeleteCareCommand = CommandIntent & {
   type: 'softDeleteCare';
@@ -68,7 +69,7 @@ export type CareMutationCommand = CareWriteCommand & {
   expectedRevisionId?: RevisionId;
 };
 
-export type ApplicationCommand = CareMutationCommand | LifecycleCommand;
+export type ApplicationCommand = CareMutationCommand | LifecycleCommand | SessionCommand;
 
 export type SoftDeletedCarePayload = {
   kind: 'careEvent';

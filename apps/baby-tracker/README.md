@@ -76,6 +76,8 @@ Produktové UI skládá veřejné Lumi komponenty (`features/ui`): přímé akce
 
 Dnes propojuje `wirePersonalCommands` s plenkovým panelem (tři přímé zápisy + podrobný formulář), poslední péčí z deníku a čtyřmi upravitelnými rychlými akcemi. Historie čte stejný denní výřez; otevření panelu nic nezapisuje.
 
+Spánek: `startSleepSession` / `endSleepSession` ukládají relaci před úspěchem UI; konec drží zamýšlený čas při retry. Na Dnes je rozvinuté měření, na ostatních záložkách kompaktní pruh. Péče nabízí minulý interval a zápis bez délky.
+
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 
 Sonda development buildu:

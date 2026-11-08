@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,6 +9,7 @@ import { DevelopmentScreen } from '../../features/development/DevelopmentScreen'
 import { EventDetailScreen } from '../../features/history/EventDetailScreen';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
+import { CompactActiveSessions } from '../../features/shell/CompactActiveSessions';
 import { WelcomeScreen } from '../../features/shell/WelcomeScreen';
 import { TodayScreen } from '../../features/today/TodayScreen';
 import { useBootstrap } from '../session/BootstrapContext';
@@ -16,6 +18,23 @@ import type { MainTabParamList, RootStackParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function TabWithCompactSleep({
+  children,
+  hideCompact,
+  onOpenSleep,
+}: {
+  children: React.ReactNode;
+  hideCompact?: boolean;
+  onOpenSleep: () => void;
+}) {
+  return (
+    <View style={{ flex: 1 }}>
+      <CompactActiveSessions hidden={hideCompact === true} onOpenSleep={onOpenSleep} />
+      {children}
+    </View>
+  );
+}
 
 function MainTabs() {
   const { colors } = useLumiTheme();
@@ -30,28 +49,40 @@ function MainTabs() {
     >
       <Tab.Screen name="Today" options={{ title: 'Dnes' }}>
         {({ navigation }) => (
-          <TodayScreen
-            onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
-            onOpenHistoryToday={() => navigation.navigate('History')}
-            onOpenEvent={(eventId) =>
-              navigation.getParent()?.navigate('EventDetail', { eventId })
-            }
-          />
+          <TabWithCompactSleep hideCompact onOpenSleep={() => navigation.navigate('Today')}>
+            <TodayScreen
+              onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
+              onOpenHistoryToday={() => navigation.navigate('History')}
+              onOpenEvent={(eventId) =>
+                navigation.getParent()?.navigate('EventDetail', { eventId })
+              }
+            />
+          </TabWithCompactSleep>
         )}
       </Tab.Screen>
-      <Tab.Screen name="Care" component={CareScreen} options={{ title: 'Péče' }} />
-      <Tab.Screen
-        name="Development"
-        component={DevelopmentScreen}
-        options={{ title: 'Rozvoj' }}
-      />
+      <Tab.Screen name="Care" options={{ title: 'Péče' }}>
+        {({ navigation }) => (
+          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+            <CareScreen />
+          </TabWithCompactSleep>
+        )}
+      </Tab.Screen>
+      <Tab.Screen name="Development" options={{ title: 'Rozvoj' }}>
+        {({ navigation }) => (
+          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+            <DevelopmentScreen />
+          </TabWithCompactSleep>
+        )}
+      </Tab.Screen>
       <Tab.Screen name="History" options={{ title: 'Historie' }}>
         {({ navigation }) => (
-          <HistoryScreen
-            onOpenEvent={(eventId) =>
-              navigation.getParent()?.navigate('EventDetail', { eventId })
-            }
-          />
+          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+            <HistoryScreen
+              onOpenEvent={(eventId) =>
+                navigation.getParent()?.navigate('EventDetail', { eventId })
+              }
+            />
+          </TabWithCompactSleep>
         )}
       </Tab.Screen>
     </Tab.Navigator>

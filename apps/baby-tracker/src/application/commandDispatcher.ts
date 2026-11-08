@@ -4,13 +4,21 @@ import {
   UNDO_WINDOW_MS,
   buildCareEventFromCommand,
   commandFailed,
+  completeSessionWithDuration,
+  fingerprintAdjustSleepStart,
   fingerprintCareWrite,
   fingerprintDraft,
+  fingerprintEndSleep,
   fingerprintRestore,
   fingerprintSoftDelete,
+  fingerprintStartSleep,
+  fingerprintUndoEndSleep,
   isAppError,
   savedLocally,
+  sleepOccurrenceFromInterval,
+  startSession,
   zonedInstant,
+  type AdjustSleepSessionStartCommand,
   type ApplicationCommand,
   type CareEvent,
   type CareMutationCommand,
@@ -19,6 +27,7 @@ import {
   type CommandResult,
   type DiscardDraftCommand,
   type DraftRevisionState,
+  type EndSleepSessionCommand,
   type EntityId,
   type FaultInjection,
   type Instant,
@@ -31,11 +40,14 @@ import {
   type Revision,
   type RevisionId,
   type SaveDraftCommand,
+  type SessionRevisionState,
   type SoftDeleteCareCommand,
   type SoftDeleteRevisionState,
   type SoftDeletedCarePayload,
+  type StartSleepSessionCommand,
   type TimeZoneId,
   type UndoCreateCareCommand,
+  type UndoEndSleepSessionCommand,
   type UndoSoftDeleteCommand,
   type UnitOfWork,
   type UnitOfWorkFactory,
@@ -46,9 +58,10 @@ import type { ReadModelTopic } from './readModelInvalidation';
 
 export type UndoHandle = {
   availableUntil: Instant;
-  kind: 'undoCreateCare' | 'undoSoftDelete';
+  kind: 'undoCreateCare' | 'undoSoftDelete' | 'undoEndSleep';
   eventId: EntityId;
   basisOperationId: OperationId;
+  sessionId?: EntityId;
 };
 
 export type DispatchSuccess = Extract<CommandResult, { ok: true }> & {
@@ -93,6 +106,14 @@ export function createCommandDispatcher(deps: {
             case 'recordBottle':
             case 'recordGrowth':
               return writeCare(uow, command, deps, faults, defaultZone);
+            case 'startSleepSession':
+              return startSleepSession(uow, command, deps, faults);
+            case 'endSleepSession':
+              return endSleepSession(uow, command, deps, faults, defaultZone);
+            case 'adjustSleepSessionStart':
+              return adjustSleepSessionStart(uow, command, deps, faults);
+            case 'undoEndSleepSession':
+              return undoEndSleepSession(uow, command, deps, faults);
             case 'softDeleteCare':
               return softDeleteCare(uow, command, deps, faults);
             case 'restoreCare':
@@ -143,6 +164,243 @@ export function createCommandDispatcher(deps: {
       }
     },
   };
+}
+
+async function startSleepSession(
+  uow: UnitOfWork,
+  command: StartSleepSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const existing = await uow.sessions.getActive(command.childId, 'sleep');
+  if (existing) {
+    throw new AppError('CONFLICT', 'A local sleep session is already running', {
+      details: {
+        reason: 'active_session_exists',
+        sessionId: existing.sessionId,
+        kind: 'sleep',
+      },
+    });
+  }
+
+  const fingerprint = fingerprintStartSleep(command);
+  const completedAt = deps.clock.now();
+  const session = startSession({
+    sessionId: command.sessionId,
+    childId: command.childId,
+    kind: 'sleep',
+    startedAt: command.startedAt,
+    monotonicStartMs: command.monotonicStartMs,
+  });
+  await uow.sessions.save(session);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'start',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  // Start undo is “Upravit začátek” / open the running session — not a soft-delete.
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function endSleepSession(
+  uow: UnitOfWork,
+  command: EndSleepSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+  defaultZone: TimeZoneId,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'sleep');
+  if (!active || active.sessionId !== command.sessionId) {
+    throw new AppError('NOT_FOUND', 'Sleep session to end was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  if (active.kind !== 'sleep') {
+    throw new AppError('VALIDATION', 'Only sleep sessions use this end command', {
+      details: { reason: 'session_kind' },
+    });
+  }
+
+  // Intended end is frozen on the command — never replace with clock.now() here.
+  const completed = completeSessionWithDuration(active, command.intendedEndedAt);
+  const occurrence = sleepOccurrenceFromInterval(completed.startedAt, completed.endedAt);
+  const careCommand = {
+    type: 'recordSleep' as const,
+    operationId: command.operationId,
+    intentCapturedAt: command.intentCapturedAt,
+    eventId: command.eventId,
+    revisionId: command.careRevisionId,
+    childId: command.childId,
+    occurrence,
+    ...(command.note !== undefined ? { note: command.note } : {}),
+  };
+  const fingerprint = fingerprintEndSleep(command);
+  const completedAt = deps.clock.now();
+  const createdAt = zonedInstant(completedAt, completed.startedAt.timeZone ?? defaultZone);
+  const event = buildCareEventFromCommand(careCommand, createdAt);
+
+  await uow.care.save(event);
+  await uow.sessions.save(completed);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'end',
+    careEventId: command.eventId,
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(
+    command,
+    completedAt,
+    [command.sessionId, command.eventId],
+    [command.revisionId, command.careRevisionId],
+  );
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['care', 'sessions', 'revisions'], {
+    availableUntil: { epochMs: completedAt.epochMs + UNDO_WINDOW_MS },
+    kind: 'undoEndSleep',
+    eventId: command.eventId,
+    basisOperationId: command.operationId,
+    sessionId: command.sessionId,
+  });
+}
+
+async function adjustSleepSessionStart(
+  uow: UnitOfWork,
+  command: AdjustSleepSessionStartCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const active = await uow.sessions.getActive(command.childId, 'sleep');
+  if (!active || active.sessionId !== command.sessionId || active.status !== 'running') {
+    throw new AppError('NOT_FOUND', 'Running sleep session to edit was not found', {
+      details: { reason: 'session_missing' },
+    });
+  }
+  if (command.startedAt.instant.epochMs > deps.clock.now().epochMs) {
+    throw new AppError('VALIDATION', 'Sleep start cannot be in the future', {
+      details: { reason: 'future_start' },
+    });
+  }
+
+  const fingerprint = fingerprintAdjustSleepStart(command);
+  const completedAt = deps.clock.now();
+  const next = startSession({
+    sessionId: active.sessionId,
+    childId: active.childId,
+    kind: 'sleep',
+    startedAt: command.startedAt,
+    monotonicStartMs: active.monotonicStartMs,
+  });
+  await uow.sessions.save(next);
+  maybeFault(faults, 'storage_after_entity');
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'adjustStart',
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(command, completedAt, [command.sessionId], [command.revisionId]);
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['sessions', 'revisions'], null);
+}
+
+async function undoEndSleepSession(
+  uow: UnitOfWork,
+  command: UndoEndSleepSessionCommand,
+  deps: { clock: Clock; outbox?: OutboxPort },
+  faults: FaultInjection | undefined,
+): Promise<DispatchSuccess> {
+  const clash = await uow.sessions.getActive(command.childId, 'sleep');
+  if (clash && clash.sessionId !== command.sessionId) {
+    // Never silently replace a newer local sleep with the restored one.
+    throw new AppError('CONFLICT', 'Another local sleep session is already running', {
+      details: {
+        reason: 'active_session_exists',
+        sessionId: clash.sessionId,
+        kind: 'sleep',
+      },
+    });
+  }
+
+  const event = await uow.care.getById(command.eventId);
+  if (!event) {
+    throw new AppError('NOT_FOUND', 'Completed sleep event to undo was not found', {
+      details: { reason: 'care_missing' },
+    });
+  }
+  if (event.revisionId !== command.expectedCareRevisionId) {
+    throw new AppError('CONFLICT', 'Sleep event changed since the end was recorded', {
+      details: { reason: 'revision_conflict' },
+    });
+  }
+  const existingTrash = await uow.revisions.findDeletionByEntityId(command.eventId);
+  if (existingTrash) {
+    throw new AppError('CONFLICT', 'Sleep event is already in trash', {
+      details: { reason: 'already_deleted' },
+    });
+  }
+
+  const fingerprint = fingerprintUndoEndSleep(command);
+  const completedAt = deps.clock.now();
+  await uow.care.delete(command.eventId);
+  const restored = startSession({
+    sessionId: command.sessionId,
+    childId: command.childId,
+    kind: 'sleep',
+    startedAt: command.restoreStartedAt,
+    monotonicStartMs: command.monotonicStartMs,
+  });
+  await uow.sessions.save(restored);
+  maybeFault(faults, 'storage_after_entity');
+
+  const state: SessionRevisionState = {
+    kind: 'session',
+    fingerprint,
+    sessionId: command.sessionId,
+    childId: command.childId,
+    phase: 'undoEnd',
+    careEventId: command.eventId,
+  };
+  await uow.revisions.saveRevision(makeRevision(command, command.sessionId, completedAt, state));
+  await uow.revisions.saveDeletion({
+    deletionId: command.deletionId,
+    entityId: command.eventId,
+    entityType: event.type,
+    deletedAt: completedAt,
+    revisionId: command.revisionId,
+    retainUntil: { epochMs: completedAt.epochMs + TRASH_RETENTION_MS },
+    payload: { kind: 'careEvent', event } satisfies SoftDeletedCarePayload,
+    payloadPurged: false,
+  });
+  maybeFault(faults, 'storage_before_receipt');
+  const receipt = makeReceipt(
+    command,
+    completedAt,
+    [command.sessionId, command.eventId],
+    [command.revisionId],
+  );
+  await uow.revisions.saveReceipt(receipt);
+  await appendOutbox(deps.outbox, command.type, command.operationId, completedAt, state);
+  return success(receipt, ['care', 'sessions', 'revisions'], null);
 }
 
 async function writeCare(
@@ -469,6 +727,14 @@ function expectedFingerprint(command: ApplicationCommand): string | null {
     case 'recordBottle':
     case 'recordGrowth':
       return fingerprintCareWrite(command);
+    case 'startSleepSession':
+      return fingerprintStartSleep(command);
+    case 'endSleepSession':
+      return fingerprintEndSleep(command);
+    case 'adjustSleepSessionStart':
+      return fingerprintAdjustSleepStart(command);
+    case 'undoEndSleepSession':
+      return fingerprintUndoEndSleep(command);
     case 'softDeleteCare':
       return fingerprintSoftDelete(command);
     case 'undoCreateCare':

@@ -10,9 +10,15 @@ export type ActiveMeasurementProps = {
   onOpen: () => void;
   onStop: () => void;
   compact?: boolean;
+  stopLabel?: string;
+  openLabel?: string;
+  /** Optional clock-skew / restart honesty line under the duration. */
+  uncertaintyNote?: string | null;
+  /** Prefer unit labels (“38 min”) over ambiguous MM:SS for care readability. */
+  elapsedLabel?: string;
 };
 
-function formatElapsed(ms: number): string {
+function formatElapsedClock(ms: number): string {
   const totalSec = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(totalSec / 3600);
   const minutes = Math.floor((totalSec % 3600) / 60);
@@ -34,11 +40,15 @@ export function ActiveMeasurement({
   onOpen,
   onStop,
   compact = false,
+  stopLabel = 'Ukončit spánek',
+  openLabel = PRODUCT_COPY.actions.sleepRunning,
+  uncertaintyNote = null,
+  elapsedLabel,
 }: ActiveMeasurementProps) {
   const { ui, colors } = useLumiTheme();
   const elapsedMs = Math.max(0, nowEpochMs - startedAtEpochMs);
   const [announceElapsed, setAnnounceElapsed] = useState(false);
-  // Status block uses polite live region once; ticking digits stay outside it.
+  const display = elapsedLabel ?? formatElapsedClock(elapsedMs);
   const statusLabel = `${PRODUCT_COPY.measurement.running}. ${title}. ${PRODUCT_COPY.measurement.elapsedAvailable}`;
 
   return (
@@ -53,11 +63,11 @@ export function ActiveMeasurement({
           <LumiText variant="caption" tone="accent">
             {PRODUCT_COPY.measurement.running}
           </LumiText>
-          <LumiText variant="h2">{title}</LumiText>
+          <LumiText variant={compact ? 'label' : 'h2'}>{title}</LumiText>
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Délka ${formatElapsed(elapsedMs)}. Klepnutím zopakujete oznámení.`}
+          accessibilityLabel={`Délka ${display}. Klepnutím zopakujete oznámení.`}
           onPress={() => setAnnounceElapsed((value) => !value)}
           style={[styles.duration, { minHeight: 48, borderColor: colors.controlBorder }]}
         >
@@ -65,17 +75,17 @@ export function ActiveMeasurement({
             accessibilityLiveRegion={announceElapsed ? 'polite' : 'none'}
             variant={compact ? 'label' : 'h1'}
           >
-            {formatElapsed(elapsedMs)}
+            {display}
           </LumiText>
         </Pressable>
+        {uncertaintyNote ? (
+          <LumiText tone="muted" variant="caption">
+            {uncertaintyNote}
+          </LumiText>
+        ) : null}
         <View style={{ flexDirection: compact ? 'column' : 'row', gap: ui.space.sm }}>
-          <LumiButton
-            title={PRODUCT_COPY.actions.sleepRunning}
-            variant="secondary"
-            onPress={onOpen}
-            fullWidth={compact}
-          />
-          <LumiButton title="Ukončit spánek" onPress={onStop} fullWidth={compact} />
+          <LumiButton title={openLabel} variant="secondary" onPress={onOpen} fullWidth={compact} />
+          <LumiButton title={stopLabel} onPress={onStop} fullWidth={compact} />
         </View>
       </View>
     </LumiCard>
