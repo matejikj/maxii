@@ -1,0 +1,40 @@
+LUMI Baby Tracker — personal release and rollback (offline-capable)
+
+This runbook covers the personal app only. No family API, remote telemetry URL,
+or store signing secrets are required for local care after install.
+
+1. Staging
+   - Set EXPO_PUBLIC_LUMI_ENV=staging for a labeled build.
+   - Run typecheck, lint, test, and content:validate.
+   - Print release evidence: npm run ops:evidence -w @maxii/baby-tracker
+   - Install on a device/emulator without network if verifying airplane mode.
+
+2. Distribution build
+   - Use export:android / export:ios / export:web or a native release build.
+   - Keep signing keys and store credentials outside the repository.
+   - Record the printed release evidence with the binary hash in your release log.
+
+3. Progressive publish
+   - Ship to an internal track first.
+   - Confirm: cold start, diaper save, restore from checkpoint, diagnostics export.
+   - Only then widen the rollout.
+
+4. Migration health
+   - Opening the app applies pending migrations behind a checkpoint.
+   - If a checkpoint cannot be written, migration must refuse to start.
+   - After upgrade, confirm schemaCompatibility in the support report matches the binary.
+
+5. Rollback
+   - Do not install an older binary over a newer diary schema.
+   - The app refuses schemas newer than its native/web compatibility ceiling.
+   - Safe path: export a portable diary (or keep a checkpoint), install the matching older build, then restore if needed.
+   - Never rely on silent schema downgrades.
+
+6. Support
+   - Caregivers export a redacted support report from Settings → Diagnostika.
+   - The report never attaches the diary backup automatically.
+   - Canary note/DOB values must remain redacted in logs and the report.
+
+7. Outage of cloud tools
+   - Build/distribution tooling is not the product backend.
+   - After install, care, recommendations, history and local export work without those services.

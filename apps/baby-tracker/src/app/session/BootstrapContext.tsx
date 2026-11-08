@@ -33,6 +33,10 @@ import type { DatabaseKeyStore } from '../../infrastructure/database/native/data
 import type { DatabasePresence } from '../../infrastructure/database/native/databasePresence';
 import type { ReminderScheduler } from '../../infrastructure/notifications/reminderScheduler';
 import type { AppLockStore } from '../../infrastructure/security/appLockStore';
+import {
+  createLocalOperationMetrics,
+  type LocalOperationMetrics,
+} from '../../ops';
 import { wirePersonalCommands } from '../openPersonalUnitOfWork';
 import { useCompositionRoot } from '../providers';
 
@@ -46,6 +50,8 @@ export type PersonalRuntime = {
   checkpoints: LogicalCheckpointVault;
   reminders: ReminderScheduler;
   appLock: AppLockStore;
+  /** Allowlisted local command outcome counters for support reports. */
+  operationMetrics: LocalOperationMetrics;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -103,7 +109,12 @@ export function BootstrapProvider({
   const resolveRuntime = useCallback(async () => {
     if (cached.current) return cached.current;
     const opened = await openPersonalDiary();
-    const wired = wirePersonalCommands(services, opened.unitOfWork);
+    const operationMetrics = createLocalOperationMetrics({
+      nowMs: () => services.clock.now().epochMs,
+    });
+    const wired = wirePersonalCommands(services, opened.unitOfWork, {
+      metrics: operationMetrics,
+    });
     const overviewCache = createCareOverviewCache();
     const readModels = wired.readModels!;
     readModels.subscribe((topics) => {
@@ -123,6 +134,7 @@ export function BootstrapProvider({
       checkpoints: opened.checkpoints,
       reminders: opened.reminders,
       appLock: opened.appLock,
+      operationMetrics,
       databaseName: opened.databaseName,
       ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
       ...(opened.presence ? { presence: opened.presence } : {}),

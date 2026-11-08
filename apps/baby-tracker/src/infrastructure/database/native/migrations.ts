@@ -1,5 +1,6 @@
 import { AppError } from '../../../domain/errors';
 import type { Instant } from '../../../domain/ports/clock';
+import { assertSchemaCompatibleWithBinary } from '../../../ops/schemaCompatibility';
 import type { SqlConnection } from './sqlConnection';
 import { SCHEMA_V1_CHECKSUM, SCHEMA_V1_STATEMENTS, SCHEMA_VERSION_1 } from './schema/v1';
 import { SCHEMA_V2_CHECKSUM, SCHEMA_V2_STATEMENTS, SCHEMA_VERSION_2 } from './schema/v2';
@@ -65,6 +66,13 @@ export async function applyPendingMigrations(
   );
 
   const current = await currentSchemaVersion(db);
+  // Refuse diaries written by a newer binary before attempting unknown migrations.
+  if (current > 0) {
+    assertSchemaCompatibleWithBinary({
+      platform: 'native',
+      databaseSchemaVersion: current,
+    });
+  }
   const pending = MIGRATIONS.filter((migration) => migration.version > current);
   if (pending.length === 0) {
     return { fromVersion: current, toVersion: current, checkpointId: null };

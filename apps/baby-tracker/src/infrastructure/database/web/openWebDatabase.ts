@@ -1,6 +1,7 @@
 import { AppError } from '../../../domain/errors';
 import type { Instant } from '../../../domain/ports/clock';
 import type { FaultInjection } from '../../../domain';
+import { assertSchemaCompatibleWithBinary } from '../../../ops/schemaCompatibility';
 import {
   LumiWebDatabase,
   WEB_DIARY_DATABASE_NAME,
@@ -82,6 +83,16 @@ export async function openWebDatabase(
     await lease.acquire('migrate');
     try {
       await db.open();
+      const existingSchema = await db.meta.get('schemaVersion');
+      if (existingSchema?.value != null) {
+        const parsed = Number(existingSchema.value);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          assertSchemaCompatibleWithBinary({
+            platform: 'web',
+            databaseSchemaVersion: parsed,
+          });
+        }
+      }
       await checkpointStore.createLogicalSnapshot({
         db,
         schemaVersion: WEB_SCHEMA_VERSION,

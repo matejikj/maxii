@@ -96,6 +96,16 @@ export type CommandDispatcher = {
   dispatch(command: ApplicationCommand): Promise<DispatchResult>;
 };
 
+export type DispatchMetricsSink = {
+  record(event: {
+    operation: string;
+    ok: boolean;
+    code: string;
+    durationMs: number;
+    platform: string;
+  }): void;
+};
+
 export function createCommandDispatcher(deps: {
   unitOfWork: UnitOfWorkFactory;
   clock: Clock;
@@ -103,14 +113,19 @@ export function createCommandDispatcher(deps: {
   outbox?: OutboxPort;
   defaultTimeZone?: TimeZoneId;
   onCommitted?: (topics: readonly ReadModelTopic[]) => void;
+  /** Optional local metrics — never receives care payloads. */
+  metrics?: DispatchMetricsSink;
+  metricsPlatform?: string;
 }): CommandDispatcher {
   const faults = deps.faults;
   const defaultZone = deps.defaultTimeZone ?? asTimeZoneId('UTC');
+  const metricsPlatform = deps.metricsPlatform ?? 'unknown';
 
   return {
     async dispatch(command) {
+      const started = deps.clock.now().epochMs;
       try {
-        const outcome = await deps.unitOfWork.run(async (uow) => {
+        const outcome: DispatchResult = await deps.unitOfWork.run(async (uow) => {
           const existing = await uow.revisions.findReceipt(command.operationId);
           if (existing) {
             return replayOrConflict(uow, command, existing);
@@ -181,6 +196,12 @@ export function createCommandDispatcher(deps: {
         if (outcome.ok) {
           deps.onCommitted?.(outcome.topics);
         }
+        recordDispatchMetric(deps.metrics, {
+          operation: command.type,
+          outcome,
+          durationMs: Math.max(0, deps.clock.now().epochMs - started),
+          platform: metricsPlatform,
+        });
         return outcome;
       } catch (error) {
         const appError = isAppError(error)
@@ -189,6 +210,13 @@ export function createCommandDispatcher(deps: {
               details: { reason: 'dispatch' },
               cause: error,
             });
+        deps.metrics?.record({
+          operation: command.type,
+          ok: false,
+          code: appError.code,
+          durationMs: Math.max(0, deps.clock.now().epochMs - started),
+          platform: metricsPlatform,
+        });
         return {
           ...commandFailed(command, appError),
           topics: [],
@@ -197,6 +225,35 @@ export function createCommandDispatcher(deps: {
       }
     },
   };
+}
+
+function recordDispatchMetric(
+  metrics: DispatchMetricsSink | undefined,
+  input: {
+    operation: string;
+    outcome: DispatchResult;
+    durationMs: number;
+    platform: string;
+  },
+): void {
+  if (!metrics) return;
+  if (input.outcome.ok) {
+    metrics.record({
+      operation: input.operation,
+      ok: true,
+      code: 'savedLocally',
+      durationMs: input.durationMs,
+      platform: input.platform,
+    });
+    return;
+  }
+  metrics.record({
+    operation: input.operation,
+    ok: false,
+    code: input.outcome.error.code,
+    durationMs: input.durationMs,
+    platform: input.platform,
+  });
 }
 
 async function startSleepSession(

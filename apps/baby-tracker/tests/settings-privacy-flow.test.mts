@@ -267,6 +267,9 @@ test('diagnostics export redacts care payloads and reports technical counts', as
   });
   const serialized = JSON.stringify(snapshot);
   assert.equal(snapshot.careEventCount, 1);
+  assert.ok(snapshot.releaseEvidence);
+  assert.equal(snapshot.releaseEvidence?.signing.keysInRepository, false);
+  assert.ok(snapshot.catalogVersion);
   assert.doesNotMatch(serialized, new RegExp(CANARY));
   assert.doesNotMatch(serialized, /2025-01-01/);
   const redacted = sanitizeLogFields({ code: 'x', noteBody: CANARY, birthDate: 'x' });

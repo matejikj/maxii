@@ -1,7 +1,11 @@
 import { Platform } from 'react-native';
 import type { UnitOfWorkFactory } from '../domain';
-import { createCommandDispatcher, createReadModelInvalidator } from '../application';
-import type { ApplicationServices } from '../application';
+import {
+  createCommandDispatcher,
+  createReadModelInvalidator,
+  type ApplicationServices,
+  type DispatchMetricsSink,
+} from '../application';
 import {
   createMemoryLogicalCheckpointVault,
   type LogicalCheckpointVault,
@@ -120,6 +124,10 @@ export async function openPersonalUnitOfWork(
 export function wirePersonalCommands(
   services: ApplicationServices,
   unitOfWork: UnitOfWorkFactory,
+  options: {
+    metrics?: DispatchMetricsSink;
+    metricsPlatform?: string;
+  } = {},
 ): ApplicationServices {
   const readModels = createReadModelInvalidator();
   const commands = createCommandDispatcher({
@@ -127,6 +135,8 @@ export function wirePersonalCommands(
     clock: services.clock,
     faults: services.faults,
     onCommitted: (topics) => readModels.notifyCommitted(topics),
+    ...(options.metrics ? { metrics: options.metrics } : {}),
+    ...(options.metricsPlatform ? { metricsPlatform: options.metricsPlatform } : {}),
   });
   return {
     ...services,

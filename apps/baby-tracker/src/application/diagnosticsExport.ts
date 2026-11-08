@@ -1,11 +1,18 @@
 import type { TimelineCursor, UnitOfWorkFactory } from '../domain';
 import { sanitizeLogFields } from '../infrastructure/telemetry/logger';
+import {
+  NATIVE_SCHEMA_COMPATIBILITY,
+  buildReleaseEvidenceManifest,
+  type ReleaseEvidenceManifest,
+} from '../ops/releaseEvidence';
 
 export type DiagnosticsSnapshot = {
   exportedAtMs: number;
   platform: string;
   appVersion: string;
   schemaCompatibility: number | null;
+  catalogVersion: string | null;
+  artCollectionVersion: string | null;
   careEventCount: number;
   draftCount: number;
   deletionCount: number;
@@ -14,6 +21,7 @@ export type DiagnosticsSnapshot = {
   guideSpecies: string | null;
   remindersEnabled: boolean | null;
   appLockEnabled: boolean | null;
+  releaseEvidence: ReleaseEvidenceManifest | null;
   /** Technical codes only — never child names, notes, or DOB. */
   notes: string[];
 };
@@ -67,15 +75,23 @@ export async function buildDiagnosticsSnapshot(input: {
       motion: motion == null ? null : motion === '1',
       guide,
       remindersEnabled,
-      schemaCompatibility: 4 as number | null,
+      schemaCompatibility: NATIVE_SCHEMA_COMPATIBILITY as number | null,
     };
+  });
+
+  const releaseEvidence = buildReleaseEvidenceManifest({
+    nowMs: input.nowMs,
+    environment: 'production',
+    appVersion: input.appVersion ?? '0.1.0',
   });
 
   const snapshot: DiagnosticsSnapshot = {
     exportedAtMs: input.nowMs,
     platform: input.platform ?? 'unknown',
-    appVersion: input.appVersion ?? '0.1.0',
+    appVersion: releaseEvidence.app.version,
     schemaCompatibility: stats.schemaCompatibility,
+    catalogVersion: releaseEvidence.content.catalogVersion,
+    artCollectionVersion: releaseEvidence.art.collectionVersion,
     careEventCount: stats.careEventCount,
     draftCount: stats.draftCount,
     deletionCount: stats.deletionCount,
@@ -84,9 +100,11 @@ export async function buildDiagnosticsSnapshot(input: {
     guideSpecies: stats.guide,
     remindersEnabled: stats.remindersEnabled,
     appLockEnabled: input.appLockEnabled,
+    releaseEvidence,
     notes: [
       'Contains technical counts and preference flags only.',
       'Location, microphone and contacts are not required for core care.',
+      'Diary backups are never attached automatically.',
     ],
   };
 

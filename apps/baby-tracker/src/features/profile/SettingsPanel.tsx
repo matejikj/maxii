@@ -4,7 +4,8 @@ import { LumiButton, LumiCard, LumiInput, LumiText, useLumiMotion } from '@lumi/
 import {
   LOCAL_GUIDE_SPECIES,
   buildDiagnosticsSnapshot,
-  serializeDiagnosticsSnapshot,
+  buildSupportReport,
+  serializeSupportReport,
   type GuideSpecies,
 } from '../../application';
 import { createChildProfile } from '../../domain';
@@ -309,28 +310,36 @@ export function SettingsPanel() {
       <LumiCard>
         <LumiText variant="h3">Diagnostika</LumiText>
         <LumiText tone="muted">
-          Technické verze a počty. Neobsahuje jméno dítěte, poznámky ani datum narození.
+          Technické verze, počty a kódy lokálních operací. Neobsahuje jméno dítěte,
+          poznámky ani datum narození. Zálohu deníku nepřikládá.
         </LumiText>
         <LumiButton
-          title="Připravit diagnostiku"
+          title="Připravit support report"
           onPress={() => {
             void (async () => {
+              const nowMs = Date.now();
               const points = await runtime.checkpoints.list();
               const lock = await runtime.appLock.getStatus();
               const snapshot = await buildDiagnosticsSnapshot({
                 unitOfWork: runtime.unitOfWork,
                 checkpointCount: points.length,
                 appLockEnabled: lock.enabled,
-                nowMs: Date.now(),
+                nowMs,
                 platform: caps.platform,
               });
-              setDiagnostics(serializeDiagnosticsSnapshot(snapshot));
+              const report = buildSupportReport({
+                nowMs,
+                release: snapshot.releaseEvidence!,
+                diagnostics: snapshot,
+                localOperations: runtime.operationMetrics.snapshot(),
+              });
+              setDiagnostics(serializeSupportReport(report));
             })();
           }}
         />
         {diagnostics ? (
           <LumiInput
-            label="Diagnostika (zkopírujte)"
+            label="Support report (zkopírujte)"
             value={diagnostics}
             onChangeText={setDiagnostics}
             multiline

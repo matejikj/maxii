@@ -3,6 +3,7 @@ export {
   createCommandDispatcher,
   type CommandDispatcher,
   type DispatchFailure,
+  type DispatchMetricsSink,
   type DispatchResult,
   type DispatchSuccess,
   type UndoHandle,
@@ -96,6 +97,12 @@ export {
   serializeDiagnosticsSnapshot,
   type DiagnosticsSnapshot,
 } from './diagnosticsExport';
+export {
+  SUPPORT_REPORT_FORMAT,
+  buildSupportReport,
+  serializeSupportReport,
+  type SupportReport,
+} from './supportReport';
 export {
   META_RECOMMENDATION_SET_PREFIX,
   buildParentRecommendationContext,
