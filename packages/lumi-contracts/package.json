@@ -1,0 +1,21 @@
+{
+  "name": "@lumi/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Versioned wire schemas for the optional family service — never DB models",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.mts"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

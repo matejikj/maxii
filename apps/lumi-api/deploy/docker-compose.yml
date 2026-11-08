@@ -1,0 +1,72 @@
+# Local / single-VPS family stack (ADR 0005). Personal tracker does not need this.
+# Secrets below are development defaults — replace before any shared host.
+
+name: lumi-family
+
+services:
+  postgres:
+    image: postgres:16.10-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_only
+      POSTGRES_DB: lumi_app
+    ports:
+      - '5433:5432'
+    volumes:
+      - lumi_pg_data:/var/lib/postgresql/data
+      - ../migrations/001_family_identity.sql:/docker-entrypoint-initdb.d/001_family_identity.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d lumi_app']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks:
+      - lumi_internal
+
+  # Self-hosted OIDC candidate (Keycloak). Start separately when exercising login UI.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: ['start-dev', '--http-port=8080']
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_dev_only
+      KC_HTTP_ENABLED: 'true'
+      KC_HEALTH_ENABLED: 'true'
+    ports:
+      - '8080:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ['oidc']
+    networks:
+      - lumi_internal
+
+  api:
+    image: node:22.15.0-bookworm-slim
+    working_dir: /workspace/apps/lumi-api
+    command: ['node', '--experimental-strip-types', 'src/main.ts']
+    environment:
+      LUMI_API_HOST: 0.0.0.0
+      LUMI_API_PORT: '8787'
+      LUMI_DATABASE_URL: postgres://lumi_app:lumi_app_dev_only@postgres:5432/lumi_app
+      LUMI_OIDC_ISSUER: http://127.0.0.1:8080/realms/lumi
+      LUMI_OIDC_AUDIENCE: lumi-api
+      LUMI_TEST_HS256_SECRET: local_dev_hs256_only
+      LUMI_CORS_ORIGINS: http://127.0.0.1:8081
+    ports:
+      - '8787:8787'
+    volumes:
+      - ../../..:/workspace:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ['api']
+    networks:
+      - lumi_internal
+
+volumes:
+  lumi_pg_data:
+
+networks:
+  lumi_internal:
+    driver: bridge
