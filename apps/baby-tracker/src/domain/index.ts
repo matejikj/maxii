@@ -181,6 +181,28 @@ export {
   type JoinPreview,
 } from './family/enrollment';
 export {
+  buildAuthorshipLine,
+  buildDeleteVsEditPresentation,
+  buildDualSleepPresentation,
+  buildEditConflictPresentation,
+  previewMergedSleepInterval,
+  unresolvedSleepUnionMs,
+  type AuthorshipLine,
+  type DeleteVsEditPresentation,
+  type DualSleepMeasurement,
+  type DualSleepPresentation,
+  type EditConflictPresentation,
+  type FieldDiff,
+  type MergeSleepPreview,
+} from './family/conflictPresentation';
+export {
+  canCommitResolutionDraft,
+  createResolutionDraft,
+  markResolutionDraftCommitted,
+  refreshResolutionDraftAgainstHeads,
+  type ResolutionDraft,
+} from './family/resolutionDraft';
+export {
   applyPushReceipts,
   commitPullPage,
   createEmptySyncState,

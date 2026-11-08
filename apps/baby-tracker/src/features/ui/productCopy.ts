@@ -202,6 +202,13 @@ export const PRODUCT_COPY = {
     careSubtypes: 'Podtyp péče',
     originalDraftTime: 'Původní čas záznamu',
   },
+  family: {
+    reviewTitle: 'Ke kontrole v rodině',
+    dualSleepTitle: 'Dvě měření spánku — zkontrolujte',
+    editConflictTitle: 'Souběžná úprava — zkontrolujte',
+    noOpenConflicts: 'Teď není nic ke kontrole.',
+    conflictDoesNotBlockCare: 'Jeden konflikt neblokuje plenku, krmení ani jiné zápisy.',
+  },
   today: {
     lastCare: 'Poslední péče',
     together: 'Dnes spolu',

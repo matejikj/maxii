@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -15,13 +15,20 @@ import {
   asOperationId,
   asRevisionId,
   asTimeZoneId,
+  buildAuthorshipLine,
+  buildSyncTransferPresentation,
   type CareEvent,
   type DiaperContents,
 } from '../../domain';
 import { isOpaqueEntityId } from '../../app/navigation/linking';
+import {
+  resolveRemoteServicesBoundary,
+  shouldInitializeRemoteClients,
+} from '../../app/remoteServicesBoundary';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { useCompositionRoot } from '../../app/providers';
 import { presentCareEvent } from '../today/carePresentation';
+import { RecordProvenanceBlock } from '../family/RecordProvenanceBlock';
 import { PRODUCT_COPY, SaveFeedback, useUndoWindow, type SaveFeedbackState } from '../ui';
 import { buildEditCareCommand } from './buildEditCareCommand';
 
@@ -104,6 +111,25 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
   useUndoWindow(undoAvailable, UNDO_WINDOW_MS, () => setUndoAvailable(false));
 
   const presentation = event ? presentCareEvent(event, zone) : null;
+  const boundary = useMemo(() => resolveRemoteServicesBoundary(), []);
+  const familySyncOn =
+    shouldInitializeRemoteClients(boundary) && boundary.syncConfigured;
+  const authorship = useMemo(() => {
+    if (!event) return null;
+    const transfer = familySyncOn
+      ? buildSyncTransferPresentation({
+          pendingTransferCount: 0,
+          inFlight: false,
+          lastSuccessfulSyncAt: null,
+        })
+      : null;
+    return buildAuthorshipLine({
+      originalAuthorLabel: event.recordedBy ? String(event.recordedBy) : 'Toto zařízení',
+      lastEditorLabel: null,
+      transfer,
+      lastSuccessfulSyncAtLabel: null,
+    });
+  }, [event, familySyncOn]);
 
   async function saveEdit() {
     if (!event) return;
@@ -251,6 +277,7 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
               {event.note && event.type !== 'experience' ? (
                 <LumiText tone="muted">{event.note}</LumiText>
               ) : null}
+              {authorship ? <RecordProvenanceBlock authorship={authorship} /> : null}
 
               {editing ? (
                 <View style={{ gap: ui.space.sm }}>

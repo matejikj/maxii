@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import { createChildProfile, parseCalendarDate } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
+import { FamilyConflictsPanel } from '../family/FamilyConflictsPanel';
 import { BackupRestorePanel } from './BackupRestorePanel';
 import { SettingsPanel } from './SettingsPanel';
 
@@ -89,6 +90,7 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
           }}
         />
         <SettingsPanel />
+        <FamilyConflictsPanel />
         <BackupRestorePanel />
         <LumiButton title="Zavřít" variant="ghost" onPress={onClose} fullWidth />
       </ScrollView>

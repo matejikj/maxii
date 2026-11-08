@@ -41,6 +41,7 @@ import {
   type HistoryFilter,
   type HistorySection,
 } from '../../app/navigation/historyTabState';
+import { FamilyConflictsPanel } from '../family/FamilyConflictsPanel';
 import { presentCareEvent } from '../today/carePresentation';
 import { PRODUCT_COPY } from '../ui';
 
@@ -251,6 +252,8 @@ export function HistoryScreen({ onOpenEvent }: HistoryScreenProps) {
             ? `Zobrazený den ${state.focusDate}. Filtry zůstávají při běžném návratu zachované.`
             : 'Časová osa péče a vzpomínek. Filtry se při návratu ze záložky zachovají.'}
         </LumiText>
+
+        <FamilyConflictsPanel />
 
         <View style={styles.filters} accessibilityRole="summary">
           {SECTIONS.map((section) => (
