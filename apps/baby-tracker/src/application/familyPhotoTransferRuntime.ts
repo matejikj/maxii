@@ -38,10 +38,14 @@ export type FamilyPhotoTransferRuntime = {
 /**
  * In-process photo transfer queue. Personal mode keeps the disabled port and
  * never opens family uploads without an explicit sync session.
+ *
+ * `getPort` may change after login so the same runtime can switch from cold
+ * personal mode to an authenticated HTTP client without rebuilding UI state.
  */
 export function createFamilyPhotoTransferRuntime(input?: {
   readonly session?: FamilyPhotoTransferSession;
   readonly port?: FamilyAttachmentTransferPort;
+  readonly getPort?: () => FamilyAttachmentTransferPort;
   readonly createJobId?: (seed: string) => string;
 }): FamilyPhotoTransferRuntime {
   let session: FamilyPhotoTransferSession = input?.session ?? {
@@ -50,7 +54,10 @@ export function createFamilyPhotoTransferRuntime(input?: {
     appUserId: null,
   };
   let jobs: FamilyPhotoBlobTransferJob[] = [];
-  const port = input?.port ?? createDisabledFamilyAttachmentTransferPort();
+  const fixedPort = input?.port;
+  const getPort =
+    input?.getPort ??
+    (() => fixedPort ?? createDisabledFamilyAttachmentTransferPort());
   const createJobId = input?.createJobId ?? ((seed: string) => seed);
 
   return {
@@ -92,7 +99,7 @@ export function createFamilyPhotoTransferRuntime(input?: {
         resolveAttachment: tickInput.resolveAttachment,
         readLocalBytes: tickInput.readLocalBytes,
         writeDownloadedBytes: tickInput.writeDownloadedBytes,
-        port,
+        port: getPort(),
       });
       jobs = [...result.jobs];
       return {

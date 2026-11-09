@@ -144,6 +144,10 @@ export {
   type FamilyPhotoTransferRuntime,
 } from './familyPhotoTransferRuntime';
 export {
+  createFamilyPhotoTransferSessionBinding,
+  type FamilyPhotoTransferSessionBinding,
+} from './bindFamilyPhotoTransferSession';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

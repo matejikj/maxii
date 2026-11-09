@@ -3,13 +3,15 @@ import type {
   FamilyAttachmentTransferResult,
 } from '../../domain/attachments/familyAttachmentTransferPort';
 import { createDisabledFamilyAttachmentTransferPort } from '../../domain/attachments/familyAttachmentTransferPort';
+import type { FamilyAccessCredentials } from '../family/familyAccessCredentials';
 
 /** Matches the family API wire protocol without importing the contracts package. */
 const PROTOCOL_VERSION = 1 as const;
 
 export type HttpFamilyAttachmentTransferConfig = {
   readonly apiBaseUrl: string;
-  readonly getAccessToken: () => Promise<string | null>;
+  /** Resolves bearer or cookie+CSRF credentials for each request. */
+  readonly getAccessCredentials: () => Promise<FamilyAccessCredentials | null>;
   readonly fetchImpl?: typeof fetch;
 };
 
@@ -19,6 +21,11 @@ type ErrorBody = {
     readonly message?: string;
     readonly details?: Readonly<Record<string, string | number | boolean | null>>;
   };
+};
+
+type RequestAuth = {
+  readonly headers: Record<string, string>;
+  readonly credentials: RequestCredentials;
 };
 
 /**
@@ -32,14 +39,27 @@ export function createHttpFamilyAttachmentTransferClient(
   const fetchImpl = config.fetchImpl ?? fetch;
   const base = config.apiBaseUrl.replace(/\/$/, '');
 
-  async function authHeaders(
+  async function resolveAuth(
     extra?: Record<string, string>,
-  ): Promise<Record<string, string> | null> {
-    const token = await config.getAccessToken();
-    if (!token) return null;
+  ): Promise<RequestAuth | null> {
+    const credentials = await config.getAccessCredentials();
+    if (!credentials) return null;
+    if (credentials.kind === 'bearer') {
+      return {
+        credentials: 'same-origin',
+        headers: {
+          authorization: `Bearer ${credentials.accessToken}`,
+          ...(extra ?? {}),
+        },
+      };
+    }
     return {
-      authorization: `Bearer ${token}`,
-      ...(extra ?? {}),
+      // Cookie BFF sessions need ambient cookies plus double-submit CSRF.
+      credentials: 'include',
+      headers: {
+        'x-csrf-token': credentials.csrfToken,
+        ...(extra ?? {}),
+      },
     };
   }
 
@@ -73,14 +93,15 @@ export function createHttpFamilyAttachmentTransferClient(
 
   return {
     async getQuota({ familyId }) {
-      const headers = await authHeaders();
-      if (!headers) {
-        return { ok: false, code: 'unauthorized', message: 'Missing access token' };
+      const auth = await resolveAuth();
+      if (!auth) {
+        return { ok: false, code: 'unauthorized', message: 'Missing access credentials' };
       }
       try {
         const response = await fetchImpl(`${base}/v1/families/${familyId}/attachments/quota`, {
           method: 'GET',
-          headers,
+          headers: auth.headers,
+          credentials: auth.credentials,
         });
         if (!response.ok) return mapStatus(response.status, await readError(response));
         const json = (await response.json()) as {
@@ -104,16 +125,17 @@ export function createHttpFamilyAttachmentTransferClient(
     },
 
     async createUploadIntent(input) {
-      const headers = await authHeaders({ 'content-type': 'application/json' });
-      if (!headers) {
-        return { ok: false, code: 'unauthorized', message: 'Missing access token' };
+      const auth = await resolveAuth({ 'content-type': 'application/json' });
+      if (!auth) {
+        return { ok: false, code: 'unauthorized', message: 'Missing access credentials' };
       }
       try {
         const response = await fetchImpl(
           `${base}/v1/families/${input.familyId}/attachments/intents`,
           {
             method: 'POST',
-            headers,
+            headers: auth.headers,
+            credentials: auth.credentials,
             body: JSON.stringify({
               protocolVersion: PROTOCOL_VERSION,
               idempotencyKey: input.idempotencyKey,
@@ -149,16 +171,17 @@ export function createHttpFamilyAttachmentTransferClient(
     },
 
     async uploadRenditionBytes(input) {
-      const headers = await authHeaders({ 'content-type': 'application/octet-stream' });
-      if (!headers) {
-        return { ok: false, code: 'unauthorized', message: 'Missing access token' };
+      const auth = await resolveAuth({ 'content-type': 'application/octet-stream' });
+      if (!auth) {
+        return { ok: false, code: 'unauthorized', message: 'Missing access credentials' };
       }
       try {
         const response = await fetchImpl(
           `${base}/v1/families/${input.familyId}/attachments/intents/${input.intentId}`,
           {
             method: 'PUT',
-            headers,
+            headers: auth.headers,
+            credentials: auth.credentials,
             body: input.bytes,
           },
         );
@@ -170,16 +193,17 @@ export function createHttpFamilyAttachmentTransferClient(
     },
 
     async finalizeUpload(input) {
-      const headers = await authHeaders({ 'content-type': 'application/json' });
-      if (!headers) {
-        return { ok: false, code: 'unauthorized', message: 'Missing access token' };
+      const auth = await resolveAuth({ 'content-type': 'application/json' });
+      if (!auth) {
+        return { ok: false, code: 'unauthorized', message: 'Missing access credentials' };
       }
       try {
         const response = await fetchImpl(
           `${base}/v1/families/${input.familyId}/attachments/intents/${input.intentId}/finalize`,
           {
             method: 'POST',
-            headers,
+            headers: auth.headers,
+            credentials: auth.credentials,
             body: JSON.stringify({
               protocolVersion: PROTOCOL_VERSION,
               intentId: input.intentId,
@@ -196,14 +220,18 @@ export function createHttpFamilyAttachmentTransferClient(
     },
 
     async readRendition(input) {
-      const headers = await authHeaders();
-      if (!headers) {
-        return { ok: false, code: 'unauthorized', message: 'Missing access token' };
+      const auth = await resolveAuth();
+      if (!auth) {
+        return { ok: false, code: 'unauthorized', message: 'Missing access credentials' };
       }
       try {
         const response = await fetchImpl(
           `${base}/v1/families/${input.familyId}/attachments/${input.attachmentId}/${input.role}`,
-          { method: 'GET', headers },
+          {
+            method: 'GET',
+            headers: auth.headers,
+            credentials: auth.credentials,
+          },
         );
         if (!response.ok) return mapStatus(response.status, await readError(response));
         const buffer = new Uint8Array(await response.arrayBuffer());
@@ -224,12 +252,12 @@ export function createHttpFamilyAttachmentTransferClient(
 }
 
 /**
- * Prefer a configured API URL + token provider; otherwise keep transfers cold.
+ * Prefer a configured API URL + credential provider; otherwise keep transfers cold.
  */
 export function resolveFamilyAttachmentTransferPort(input: {
   readonly apiBaseUrl: string | null;
   readonly familySyncConfigured: boolean;
-  readonly getAccessToken: () => Promise<string | null>;
+  readonly getAccessCredentials: () => Promise<FamilyAccessCredentials | null>;
   readonly fetchImpl?: typeof fetch;
 }): FamilyAttachmentTransferPort {
   if (!input.familySyncConfigured || !input.apiBaseUrl?.trim()) {
@@ -237,7 +265,7 @@ export function resolveFamilyAttachmentTransferPort(input: {
   }
   return createHttpFamilyAttachmentTransferClient({
     apiBaseUrl: input.apiBaseUrl,
-    getAccessToken: input.getAccessToken,
-    fetchImpl: input.fetchImpl,
+    getAccessCredentials: input.getAccessCredentials,
+    ...(input.fetchImpl ? { fetchImpl: input.fetchImpl } : {}),
   });
 }

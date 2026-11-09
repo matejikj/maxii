@@ -51,10 +51,17 @@ test('browser auth port completes login, logout preserves local drafts, unknown 
   assert.equal(start.state, 'state-1');
   const session = await port.completeBrowserLogin({ code: 'abc', state: 'state-1' });
   assert.equal(session.appUserId, 'user-1');
+  assert.equal(session.transport, 'bearer');
+  assert.equal(session.accessToken, 'token');
   assert.equal((await port.currentSession())?.appUserId, 'user-1');
+  assert.deepEqual(await port.getAccessCredentials(), {
+    kind: 'bearer',
+    accessToken: 'token',
+  });
   const logout = await port.logout();
   assert.equal(logout.preservedLocalDrafts, true);
   assert.equal(await port.currentSession(), null);
+  assert.equal(await port.getAccessCredentials(), null);
   assert.ok(calls.some((item) => item.includes('/v1/auth/logout')));
 
   const unknown = createBrowserFamilyAuthPort({

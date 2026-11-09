@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiText } from '@lumi/forest-design/native';
 import {
   resolveRemoteServicesBoundary,
   shouldInitializeRemoteClients,
 } from '../../app/remoteServicesBoundary';
+import { BootstrapContext } from '../../app/session/BootstrapContext';
 import {
   createBrowserFamilyAuthPort,
 } from '../../infrastructure/family/browserFamilyAuthPort';
@@ -27,6 +28,7 @@ function defaultRedirectUri(): string {
 export function FamilyAccountPanel() {
   const boundary = useMemo(() => resolveRemoteServicesBoundary(), []);
   const enabled = shouldInitializeRemoteClients(boundary);
+  const bootstrap = useContext(BootstrapContext);
   const [session, setSession] = useState<FamilyAuthSession | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,16 +43,24 @@ export function FamilyAccountPanel() {
     });
   }, [boundary.apiBaseUrl, enabled]);
 
+  const applySessionToTransfers = useCallback(
+    (value: FamilyAuthSession | null) => {
+      setSession(value);
+      bootstrap?.runtime?.bindPhotoTransferAuth(value);
+    },
+    [bootstrap?.runtime],
+  );
+
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
     void auth.currentSession().then((value) => {
-      if (!cancelled) setSession(value);
+      if (!cancelled) applySessionToTransfers(value);
     });
     return () => {
       cancelled = true;
     };
-  }, [auth, enabled]);
+  }, [auth, enabled, applySessionToTransfers]);
 
   const onLogin = useCallback(() => {
     setBusy(true);
@@ -82,14 +92,14 @@ export function FamilyAccountPanel() {
     void auth
       .logout()
       .then(() => {
-        setSession(null);
+        applySessionToTransfers(null);
         setMessage('Odhlášeno. Neodeslané místní koncepty zůstávají v tomto zařízení.');
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Odhlášení selhalo');
       })
       .finally(() => setBusy(false));
-  }, [auth]);
+  }, [auth, applySessionToTransfers]);
 
   if (!enabled) return null;
 

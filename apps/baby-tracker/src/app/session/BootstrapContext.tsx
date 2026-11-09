@@ -60,6 +60,12 @@ export type PersonalRuntime = {
   attachments: import('../../domain/attachments').AttachmentServices | null;
   /** Family photo transfer queue — cold/disabled while personal mode has no sync. */
   photoTransfer: import('../../application/familyPhotoTransferRuntime').FamilyPhotoTransferRuntime;
+  /** Push login/logout into the transfer queue (no-op when sync env is unset). */
+  bindPhotoTransferAuth: (
+    session: import('../../infrastructure/family/familyAuthPort').FamilyAuthSession | null,
+  ) => void;
+  /** Select the family whose photos may upload/download. */
+  bindPhotoTransferFamily: (familyId: string | null) => void;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -103,7 +109,7 @@ export type BootstrapContextValue = {
   retry: () => void;
 };
 
-const BootstrapContext = createContext<BootstrapContextValue | null>(null);
+export const BootstrapContext = createContext<BootstrapContextValue | null>(null);
 
 export function BootstrapProvider({
   children,
@@ -150,9 +156,14 @@ export function BootstrapProvider({
         }
       });
       const attachmentModule = await import('../../infrastructure/attachments/createPersonalAttachmentServices');
-      const { createFamilyPhotoTransferRuntime } = await import(
-        '../../application/familyPhotoTransferRuntime'
+      const { createFamilyPhotoTransferSessionBinding } = await import(
+        '../../application/bindFamilyPhotoTransferSession'
       );
+      const { resolveRemoteServicesBoundary } = await import('../remoteServicesBoundary');
+      // Binding stays cold unless EXPO_PUBLIC_LUMI_SYNC_ENABLED and a login exist.
+      const photoTransferBinding = createFamilyPhotoTransferSessionBinding({
+        boundary: resolveRemoteServicesBoundary(),
+      });
       const next: PersonalRuntime = {
         unitOfWork: opened.unitOfWork,
         commands: wired.commands!,
@@ -164,8 +175,9 @@ export function BootstrapProvider({
           unitOfWork: opened.unitOfWork,
           ...(opened.webDb ? { webDb: opened.webDb } : {}),
         }),
-        // Personal builds stay offline until family sync is explicitly configured.
-        photoTransfer: createFamilyPhotoTransferRuntime(),
+        photoTransfer: photoTransferBinding.runtime,
+        bindPhotoTransferAuth: photoTransferBinding.bindAuthSession,
+        bindPhotoTransferFamily: photoTransferBinding.bindActiveFamily,
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,

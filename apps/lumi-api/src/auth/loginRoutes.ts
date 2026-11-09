@@ -159,6 +159,8 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       appUserId: session.appUserId,
       expiresAt: new Date(session.expiresAtMs).toISOString(),
       transport: 'cookie',
+      // CSRF cookie is HttpOnly; clients keep this value in memory for headers.
+      csrfToken: session.csrfToken,
     };
   });
 

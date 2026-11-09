@@ -1,4 +1,9 @@
-import type { FamilyAuthPort, FamilyAuthSession } from './familyAuthPort.ts';
+import type { FamilyAccessCredentials } from './familyAccessCredentials';
+import {
+  credentialsFromFamilyAuthSession,
+  type FamilyAuthPort,
+  type FamilyAuthSession,
+} from './familyAuthPort';
 
 export type BrowserFamilyAuthConfig = {
   readonly apiBaseUrl: string;
@@ -80,10 +85,16 @@ export function createBrowserFamilyAuthPort(
       const body = (await response.json()) as {
         appUserId: string;
         expiresAt: string;
+        transport?: 'bearer' | 'cookie';
+        accessToken?: string;
+        csrfToken?: string;
       };
       memorySession = {
         appUserId: body.appUserId,
         accessTokenExpiresAt: body.expiresAt,
+        transport: body.transport === 'cookie' ? 'cookie' : 'bearer',
+        accessToken: typeof body.accessToken === 'string' ? body.accessToken : null,
+        csrfToken: typeof body.csrfToken === 'string' ? body.csrfToken : null,
       };
       return memorySession;
     },
@@ -107,12 +118,41 @@ export function createBrowserFamilyAuthPort(
       const body = (await response.json()) as {
         appUserId: string;
         expiresAt: string;
+        csrfToken?: string;
       };
       memorySession = {
         appUserId: body.appUserId,
         accessTokenExpiresAt: body.expiresAt,
+        transport: 'cookie',
+        accessToken: null,
+        csrfToken: typeof body.csrfToken === 'string' ? body.csrfToken : null,
       };
       return memorySession;
+    },
+
+    getAccessCredentials: async (): Promise<FamilyAccessCredentials | null> => {
+      const session = await (async () => {
+        if (memorySession) return memorySession;
+        if (config.transport !== 'cookie') return null;
+        const response = await fetchImpl(`${config.apiBaseUrl}/v1/auth/session`, {
+          credentials: 'include',
+        });
+        if (!response.ok) return null;
+        const body = (await response.json()) as {
+          appUserId: string;
+          expiresAt: string;
+          csrfToken?: string;
+        };
+        memorySession = {
+          appUserId: body.appUserId,
+          accessTokenExpiresAt: body.expiresAt,
+          transport: 'cookie',
+          accessToken: null,
+          csrfToken: typeof body.csrfToken === 'string' ? body.csrfToken : null,
+        };
+        return memorySession;
+      })();
+      return credentialsFromFamilyAuthSession(session);
     },
   };
 }

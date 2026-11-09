@@ -268,7 +268,7 @@ test('HTTP transfer client maps quota conflicts and stays disabled without API U
   const disabled = resolveFamilyAttachmentTransferPort({
     apiBaseUrl: null,
     familySyncConfigured: false,
-    getAccessToken: async () => 'tok',
+    getAccessCredentials: async () => ({ kind: 'bearer', accessToken: 'tok' }),
   });
   const blocked = await disabled.createUploadIntent({
     familyId: 'f',
@@ -284,12 +284,18 @@ test('HTTP transfer client maps quota conflicts and stays disabled without API U
   if (blocked.ok) return;
   assert.equal(blocked.code, 'not_configured');
 
-  const calls: string[] = [];
+  const calls: Array<{ method: string; auth?: string; csrf?: string; credentials?: RequestCredentials }> =
+    [];
   const client = createHttpFamilyAttachmentTransferClient({
     apiBaseUrl: 'https://api.example.test',
-    getAccessToken: async () => 'bearer-token',
+    getAccessCredentials: async () => ({ kind: 'bearer', accessToken: 'bearer-token' }),
     fetchImpl: async (url, init) => {
-      calls.push(`${init?.method ?? 'GET'} ${String(url)}`);
+      const headers = new Headers(init?.headers);
+      calls.push({
+        method: `${init?.method ?? 'GET'} ${String(url)}`,
+        auth: headers.get('authorization') ?? undefined,
+        credentials: init?.credentials,
+      });
       return new Response(
         JSON.stringify({
           error: {
@@ -315,5 +321,32 @@ test('HTTP transfer client maps quota conflicts and stays disabled without API U
   assert.equal(quota.ok, false);
   if (quota.ok) return;
   assert.equal(quota.code, 'quota');
-  assert.match(calls[0]!, /POST .*\/attachments\/intents/);
+  assert.match(calls[0]!.method, /POST .*\/attachments\/intents/);
+  assert.equal(calls[0]!.auth, 'Bearer bearer-token');
+
+  const cookieCalls: Array<{ csrf?: string | null; credentials?: RequestCredentials }> = [];
+  const cookieClient = createHttpFamilyAttachmentTransferClient({
+    apiBaseUrl: 'https://api.example.test',
+    getAccessCredentials: async () => ({ kind: 'cookie', csrfToken: 'csrf-secret' }),
+    fetchImpl: async (_url, init) => {
+      const headers = new Headers(init?.headers);
+      cookieCalls.push({
+        csrf: headers.get('x-csrf-token'),
+        credentials: init?.credentials,
+      });
+      return new Response(
+        JSON.stringify({
+          remainingBytes: 1,
+          usedBytes: 0,
+          reservedBytes: 0,
+          budgetBytes: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    },
+  });
+  const cookieQuota = await cookieClient.getQuota({ familyId: 'fam_1' });
+  assert.equal(cookieQuota.ok, true);
+  assert.equal(cookieCalls[0]!.csrf, 'csrf-secret');
+  assert.equal(cookieCalls[0]!.credentials, 'include');
 });

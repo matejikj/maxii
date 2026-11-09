@@ -90,6 +90,9 @@ test('login rejects unknown redirect URIs and completes PKCE cookie session', as
   });
   assert.equal(session.statusCode, 200);
   assert.equal(session.json().appUserId, callback.json().appUserId);
+  assert.equal(session.json().transport, 'cookie');
+  assert.equal(typeof session.json().csrfToken, 'string');
+  assert.equal(session.json().csrfToken, callback.json().csrfToken);
 
   const logout = await app.inject({
     method: 'POST',
