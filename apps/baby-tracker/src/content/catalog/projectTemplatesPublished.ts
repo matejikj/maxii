@@ -309,6 +309,15 @@ export const PROJECT_COHORT_8_11_PACK = {
   offlineEmbedded: true,
 } as const;
 
+/** Second caregiver-facing cohort pack — four offline templates for ages 12–14. */
+export const PROJECT_COHORT_12_14_PACK = {
+  packId: 'project-templates.12-14.v1',
+  cohort: '12-14' as const,
+  contentVersion: PROJECT_TEMPLATES_CONTENT_VERSION,
+  revisionIds: listProjectTemplatesByCohort('12-14').map((row) => row.revisionId),
+  offlineEmbedded: true,
+} as const;
+
 export type ProjectCohortAvailability = {
   cohort: ProjectTemplateRevision['cohort'];
   offlineEmbedded: boolean;
@@ -335,6 +344,16 @@ export function describeProjectCohortAvailability(
         'Čtyři ověřené šablony 8–11 let jsou součástí instalace. Fungují bez účtu a bez sítě.',
     };
   }
+  if (cohort === '12-14') {
+    return {
+      cohort,
+      offlineEmbedded: true,
+      templateCount: templates.length,
+      revisionIds: templates.map((row) => row.revisionId),
+      detail:
+        'Čtyři ověřené šablony 12–14 let jsou v instalaci. Nabízejí více vlastní volby a porovnání variant — bez účtu a bez sítě.',
+    };
+  }
   return {
     cohort,
     offlineEmbedded: true,
@@ -343,4 +362,16 @@ export function describeProjectCohortAvailability(
     detail:
       'Šablony jsou místně dostupné jako pečovatelský náhled. Soukromý dětský účet zatím není aktivní.',
   };
+}
+
+/** Local discovery search over published template titles and themes. */
+export function searchPublishedProjectTemplates(query: string): ProjectTemplateRevision[] {
+  const needle = query.trim().toLocaleLowerCase('cs');
+  if (!needle) return [...PROJECT_TEMPLATES_PUBLISHED];
+  return PROJECT_TEMPLATES_PUBLISHED.filter((row) => {
+    const haystack = `${row.title} ${row.theme} ${row.intent} ${row.cohort}`.toLocaleLowerCase(
+      'cs',
+    );
+    return haystack.includes(needle);
+  });
 }

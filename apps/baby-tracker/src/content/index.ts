@@ -66,11 +66,13 @@ export {
 } from './catalog/productPublished';
 export {
   PROJECT_COHORT_8_11_PACK,
+  PROJECT_COHORT_12_14_PACK,
   PROJECT_TEMPLATES_CONTENT_VERSION,
   PROJECT_TEMPLATES_PUBLISHED,
   describeProjectCohortAvailability,
   findProjectTemplateRevision,
   listProjectTemplatesByCohort,
+  searchPublishedProjectTemplates,
   type ProjectCohortAvailability,
 } from './catalog/projectTemplatesPublished';
 export * from './pack';

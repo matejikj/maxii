@@ -11,11 +11,14 @@ import {
   isChildPrivateModeActive,
   listTodayActiveProjects,
   markProjectStep,
+  normalizeProjectRow,
   transitionProjectStatus,
   updateProjectReflection,
+  updateProjectVariantNotes,
   type ActorId,
   type ChildId,
   type EntityId,
+  type FamilyGuidedBlankStyle,
   type IdGenerator,
   type Instant,
   type Project,
@@ -23,6 +26,7 @@ import {
   type ProjectStep,
   type ProjectTemplateRevision,
   type ProjectTemplateRevisionId,
+  type ProjectVariantNotes,
   type UnitOfWorkFactory,
 } from '../domain';
 import {
@@ -30,7 +34,9 @@ import {
   findProjectTemplateRevision,
   listProjectTemplatesByCohort,
   PROJECT_COHORT_8_11_PACK,
+  PROJECT_COHORT_12_14_PACK,
   PROJECT_TEMPLATES_PUBLISHED,
+  searchPublishedProjectTemplates,
 } from '../content/catalog/projectTemplatesPublished';
 
 export type FamilyGuidedProjectView = {
@@ -38,6 +44,7 @@ export type FamilyGuidedProjectView = {
   scopeLabel: string;
   templateTitle: string | null;
   nextStepText: string | null;
+  cohort: ProjectTemplateRevision['cohort'] | 'blank';
 };
 
 export type FamilyGuidedShelfView = {
@@ -56,10 +63,10 @@ function caregiverAccess(project: Project, principalAppUserId: ActorId | null) {
     project.scope === 'familyGuided' &&
     project.creatorAppUserId == null &&
     project.ownerAppUserId == null;
+  const principalKind =
+    namedOwner || personalLocalOwner ? ('owner' as const) : ('other_adult_caregiver' as const);
   return {
-    principalKind: (namedOwner || personalLocalOwner
-      ? 'owner'
-      : 'other_adult_caregiver') as const,
+    principalKind,
     principalAppUserId,
     childPrivateModeActive: isChildPrivateModeActive(),
     project,
@@ -67,14 +74,16 @@ function caregiverAccess(project: Project, principalAppUserId: ActorId | null) {
 }
 
 function toView(project: Project): FamilyGuidedProjectView {
-  const template = project.templateRevisionId
-    ? findProjectTemplateRevision(project.templateRevisionId)
+  const normalized = normalizeProjectRow(project);
+  const template = normalized.templateRevisionId
+    ? findProjectTemplateRevision(normalized.templateRevisionId)
     : null;
   return {
-    project,
-    scopeLabel: describeScopeForCaregiver(project.scope),
+    project: normalized,
+    scopeLabel: describeScopeForCaregiver(normalized.scope),
     templateTitle: template?.title ?? null,
-    nextStepText: currentProjectStep(project)?.text ?? null,
+    nextStepText: currentProjectStep(normalized)?.text ?? null,
+    cohort: template?.cohort ?? 'blank',
   };
 }
 
@@ -94,6 +103,23 @@ export function describeFamilyGuidedCohort8to11Availability() {
 
 export function familyGuidedCohort8to11Pack() {
   return PROJECT_COHORT_8_11_PACK;
+}
+
+/** Verified 12–14 cohort — more own choice and variant comparison. */
+export function listFamilyGuidedTemplatesForCohort12to14(): ProjectTemplateRevision[] {
+  return listProjectTemplatesByCohort('12-14');
+}
+
+export function describeFamilyGuidedCohort12to14Availability() {
+  return describeProjectCohortAvailability('12-14');
+}
+
+export function familyGuidedCohort12to14Pack() {
+  return PROJECT_COHORT_12_14_PACK;
+}
+
+export function searchFamilyGuidedTemplates(query: string): ProjectTemplateRevision[] {
+  return searchPublishedProjectTemplates(query);
 }
 
 export async function listFamilyGuidedProjectsForChild(
@@ -183,6 +209,7 @@ export async function createFamilyGuidedBlankIdea(input: {
   childId: ChildId;
   title: string;
   intent?: string;
+  style?: FamilyGuidedBlankStyle;
   creatorAppUserId?: ActorId | null;
   familyId?: string | null;
 }): Promise<FamilyGuidedProjectView> {
@@ -194,6 +221,7 @@ export async function createFamilyGuidedBlankIdea(input: {
     familyId: input.familyId ?? null,
     title: input.title,
     ...(input.intent != null ? { intent: input.intent } : {}),
+    style: input.style ?? 'simple',
     now: input.now,
     createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),
   });
@@ -282,8 +310,39 @@ export async function saveFamilyGuidedProjectReflection(input: {
     }
     assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
     const next = updateProjectReflection(
-      current,
+      normalizeProjectRow(current),
       input.reflection,
+      asRevisionId(input.ids.createId('rev')),
+      input.now,
+    );
+    await uow.projects.save(next);
+    return toView(next);
+  });
+}
+
+/**
+ * Save two compared options on the live project. Does not publish a share and
+ * does not change privacy — caregivers still choose an explicit share body.
+ */
+export async function saveFamilyGuidedVariantNotes(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  projectId: EntityId;
+  notes: ProjectVariantNotes | null;
+  principalAppUserId?: ActorId | null;
+}): Promise<FamilyGuidedProjectView> {
+  return input.unitOfWork.run(async (uow) => {
+    const current = await uow.projects.getById(input.projectId);
+    if (!current || current.scope !== 'familyGuided') {
+      throw new AppError('NOT_FOUND', 'Family project was not found', {
+        details: { reason: 'project_missing' },
+      });
+    }
+    assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
+    const next = updateProjectVariantNotes(
+      normalizeProjectRow(current),
+      input.notes,
       asRevisionId(input.ids.createId('rev')),
       input.now,
     );

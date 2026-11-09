@@ -186,9 +186,22 @@ export const PRODUCT_COPY = {
     familyShelfClosed: 'Uzavřené',
     startFamilyProject: 'Začít společný projekt',
     startOwnIdea: 'Vlastní nápad',
+    startOwnIdeaWithVariants: 'Vlastní nápad se dvěma variantami',
     cohort8to11Templates: 'Šablony 8–11 let',
     cohort8to11Offline:
       'Čtyři ověřené šablony jsou v instalaci. Fungují bez účtu a bez sítě.',
+    cohort12to14Templates: 'Šablony 12–14 let',
+    cohort12to14Offline:
+      'Čtyři ověřené šablony 12–14 let jsou v instalaci. Více vlastní volby a porovnání variant — bez změny sdílení.',
+    searchTemplates: 'Hledat šablony',
+    variantNotesTitle: 'Dvě možné varianty',
+    variantNotesHint:
+      'Porovnání zůstává u projektu. Do ukázky se dostane jen to, co výslovně zveřejníte.',
+    variantOptionA: 'Varianta A',
+    variantOptionB: 'Varianta B',
+    variantChosenNote: 'Proč / otevřená otázka (volitelné)',
+    saveVariants: 'Uložit varianty',
+    clearVariants: 'Vymazat varianty',
     pauseFamilyProject: 'Odložit',
     closeFamilyProject: 'Uzavřít',
     resumeFamilyProject: 'Pokračovat',

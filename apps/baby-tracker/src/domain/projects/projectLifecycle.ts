@@ -9,6 +9,7 @@ import {
   type ProjectStep,
   type ProjectTemplateRevision,
   type ProjectTemplateRevisionId,
+  type ProjectVariantNotes,
 } from './types';
 
 function assertTitle(title: string): string {
@@ -85,14 +86,18 @@ export function createFamilyGuidedProject(input: {
     status: 'active',
     steps: stepsFromTemplate(input.template, input.createStepId),
     reflection: null,
+    variantNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
 }
 
+export type FamilyGuidedBlankStyle = 'simple' | 'variants';
+
 /**
  * Caregiver-led blank idea — equal to a template start, without claiming a
  * private child workspace. Starter steps stay short and optional to skip later.
+ * `variants` offers more own choice for older cohorts without changing privacy.
  */
 export function createFamilyGuidedBlankProject(input: {
   projectId: EntityId;
@@ -102,14 +107,22 @@ export function createFamilyGuidedBlankProject(input: {
   familyId: string | null;
   title: string;
   intent?: string;
+  style?: FamilyGuidedBlankStyle;
   now: Instant;
   createStepId: (index: number) => EntityId;
 }): Project {
-  const starterTexts = [
-    'Domluvíme první malý krok.',
-    'Zkusíme to spolu vlastním tempem.',
-    'Vybereme, co chceme uchovat.',
-  ] as const;
+  const starterTexts =
+    input.style === 'variants'
+      ? ([
+          'Sepíšeme dvě možné varianty vlastního zadání.',
+          'Porovnáme je bez žebříčku správných odpovědí.',
+          'Vybereme další krok nebo otevřenou otázku.',
+        ] as const)
+      : ([
+          'Domluvíme první malý krok.',
+          'Zkusíme to spolu vlastním tempem.',
+          'Vybereme, co chceme uchovat.',
+        ] as const);
   const steps: ProjectStep[] = starterTexts.map((text, index) => ({
     stepId: input.createStepId(index),
     order: index,
@@ -130,6 +143,7 @@ export function createFamilyGuidedBlankProject(input: {
     status: 'active',
     steps,
     reflection: null,
+    variantNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
@@ -178,6 +192,7 @@ export function createChildPrivateProject(input: {
     status: 'idea',
     steps,
     reflection: null,
+    variantNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
@@ -226,6 +241,63 @@ export function updateProjectReflection(
     reflection,
     revisionId,
     updatedAt: now,
+  };
+}
+
+function assertVariantOption(label: string, value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new AppError('VALIDATION', `${label} is required`, {
+      details: { reason: 'empty_variant_option' },
+    });
+  }
+  if (trimmed.length > PROJECT_LIMITS.variantOptionMaxChars) {
+    throw new AppError('VALIDATION', `${label} is too long`, {
+      details: { reason: 'variant_option_length' },
+    });
+  }
+  return trimmed;
+}
+
+/**
+ * Store two optional solutions on the live project. Share snapshots still need
+ * an explicit published body — variants never leak by themselves.
+ */
+export function updateProjectVariantNotes(
+  project: Project,
+  notes: ProjectVariantNotes | null,
+  revisionId: RevisionId,
+  now: Instant,
+): Project {
+  if (notes == null) {
+    return { ...project, variantNotes: null, revisionId, updatedAt: now };
+  }
+  const optionA = assertVariantOption('Variant A', notes.optionA);
+  const optionB = assertVariantOption('Variant B', notes.optionB);
+  const chosenNote = notes.chosenNote?.trim() || null;
+  if (chosenNote != null && chosenNote.length > PROJECT_LIMITS.reflectionMaxChars) {
+    throw new AppError('VALIDATION', 'Variant note is too long', {
+      details: { reason: 'variant_chosen_length' },
+    });
+  }
+  return {
+    ...project,
+    variantNotes: { optionA, optionB, chosenNote },
+    revisionId,
+    updatedAt: now,
+  };
+}
+
+/** Live variant notes are never implied by a share — only the frozen body. */
+export function shareIncludesLiveVariantNotes(): false {
+  return false;
+}
+
+/** Older payload rows may omit variantNotes — treat missing as null. */
+export function normalizeProjectRow(project: Project): Project {
+  return {
+    ...project,
+    variantNotes: project.variantNotes ?? null,
   };
 }
 

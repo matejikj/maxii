@@ -48,6 +48,17 @@ export type ProjectStep = {
   status: ProjectStepStatus;
 };
 
+/**
+ * Optional comparison of two ideas for older cohorts. Lives on the project
+ * itself — never auto-published into a share snapshot.
+ */
+export type ProjectVariantNotes = {
+  optionA: string;
+  optionB: string;
+  /** Why one option feels better, or an open question — not a grade. */
+  chosenNote: string | null;
+};
+
 export type Project = {
   projectId: EntityId;
   revisionId: RevisionId;
@@ -65,6 +76,8 @@ export type Project = {
   steps: ProjectStep[];
   /** Optional reflection — empty means intentionally skipped, not missing data. */
   reflection: string | null;
+  /** Dual-option notes for 12–14 style choice; omitted on older stored rows. */
+  variantNotes: ProjectVariantNotes | null;
   createdAt: Instant;
   updatedAt: Instant;
 };
@@ -149,5 +162,6 @@ export const PROJECT_LIMITS = {
   shareBodyMaxBytes: 24 * 1024,
   commentMaxChars: 1_000,
   suggestionNoteMaxChars: 1_000,
+  variantOptionMaxChars: 1_000,
   todayActiveProjects: 3,
 } as const;

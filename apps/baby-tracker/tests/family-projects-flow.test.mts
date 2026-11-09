@@ -15,14 +15,19 @@ import {
   createFamilyGuidedBlankIdea,
   createFamilyGuidedProjectFromTemplate,
   describeFamilyGuidedCohort8to11Availability,
+  describeFamilyGuidedCohort12to14Availability,
   exportProjectsForFamilyArchive,
   familyGuidedCohort8to11Pack,
+  familyGuidedCohort12to14Pack,
   listFamilyGuidedProjectShelves,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
   listFamilyGuidedTemplatesForCohort8to11,
+  listFamilyGuidedTemplatesForCohort12to14,
   listTodayFamilyGuidedProjects,
   saveFamilyGuidedProjectReflection,
+  saveFamilyGuidedVariantNotes,
+  searchFamilyGuidedTemplates,
   updateFamilyGuidedProjectStatus,
 } from '../src/application/index.ts';
 import { PROJECT_TEMPLATES_PUBLISHED } from '../src/content/catalog/projectTemplatesPublished.ts';
@@ -230,5 +235,61 @@ test('8-11 cohort templates and blank idea support caregiver shelves without chi
   const today = await listTodayFamilyGuidedProjects(ctx.unitOfWork, { childId });
   assert.equal(today.length, 1);
   assert.equal(today[0]!.project.title, 'Vlastní papírový most');
+  await ctx.close();
+});
+
+test('12-14 cohort templates, search, and variant notes stay local without share leak', async () => {
+  assert.equal(listFamilyGuidedTemplatesForCohort12to14().length, 4);
+  assert.equal(familyGuidedCohort12to14Pack().offlineEmbedded, true);
+  assert.match(describeFamilyGuidedCohort12to14Availability().detail, /variant/);
+  assert.equal(searchFamilyGuidedTemplates('12-14').length, 4);
+
+  const ctx = await openNative('family-12-14.db');
+  const fromTemplate = await createFamilyGuidedProjectFromTemplate({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock },
+    childId,
+    templateRevisionId: listFamilyGuidedTemplatesForCohort12to14()[0]!.revisionId,
+  });
+  assert.equal(fromTemplate.cohort, '12-14');
+  assert.equal(fromTemplate.project.variantNotes, null);
+
+  const blank = await createFamilyGuidedBlankIdea({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 1 },
+    childId,
+    title: 'Dva směry vlastního nápadu',
+    style: 'variants',
+  });
+  assert.match(blank.nextStepText ?? '', /variant/i);
+
+  const withNotes = await saveFamilyGuidedVariantNotes({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 2 },
+    projectId: blank.project.projectId,
+    notes: {
+      optionA: 'Varianta papír',
+      optionB: 'Varianta dřevo',
+      chosenNote: 'Zatím otevřená otázka',
+    },
+  });
+  assert.equal(withNotes.project.variantNotes?.optionA, 'Varianta papír');
+  assert.equal(withNotes.project.variantNotes?.optionB, 'Varianta dřevo');
+
+  const cleared = await saveFamilyGuidedVariantNotes({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 3 },
+    projectId: blank.project.projectId,
+    notes: null,
+  });
+  assert.equal(cleared.project.variantNotes, null);
+
+  const shelves = await listFamilyGuidedProjectShelves(ctx.unitOfWork, { childId });
+  assert.equal(shelves.active.length, 2);
+  assert.ok(shelves.active.some((row) => row.project.projectId === fromTemplate.project.projectId));
   await ctx.close();
 });

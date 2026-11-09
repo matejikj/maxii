@@ -6,6 +6,7 @@ export {
   type ParentSuggestionStatus,
   type PortfolioItem,
   type Project,
+  type ProjectVariantNotes,
   type ProjectCohort,
   type ProjectScope,
   type ProjectStatus,
@@ -36,9 +37,13 @@ export {
   groupProjectsByStatus,
   listTodayActiveProjects,
   markProjectStep,
+  normalizeProjectRow,
   planPrivateTakeoverCopy,
+  shareIncludesLiveVariantNotes,
   transitionProjectStatus,
   updateProjectReflection,
+  updateProjectVariantNotes,
+  type FamilyGuidedBlankStyle,
   type ProjectStatusGroups,
 } from './projectLifecycle';
 export {
