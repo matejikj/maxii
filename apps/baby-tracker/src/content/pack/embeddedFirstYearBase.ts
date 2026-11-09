@@ -82,6 +82,8 @@ export const EMBEDDED_FIRST_YEAR_BASE_MANIFEST = {
   ],
   "capabilities": [
     "art.collection.v1",
+    "art.studio.v1",
+    "art.appearance-styles.v1",
     "art.semantic-states.v1",
     "art.signature-actions.v1",
     "art.static-fallback.v1",
@@ -105,7 +107,21 @@ export const EMBEDDED_FIRST_YEAR_BASE_MANIFEST = {
     "art.prop.book",
     "art.prop.blocks",
     "art.prop.leaf",
-    "art.prop.scarfProp"
+    "art.prop.scarfProp",
+    "art.prop.routeMap",
+    "art.prop.bridgePieces",
+    "art.prop.notebook",
+    "art.prop.pencil",
+    "art.prop.patternTiles",
+    "art.prop.displayStand",
+    "studio.planPath",
+    "studio.tryAlternatePath",
+    "studio.bridgeSpan",
+    "studio.testBridge",
+    "studio.sketchPlan",
+    "studio.compareNotes",
+    "studio.arrangePattern",
+    "studio.presentCreation"
   ],
   "files": [
     {
@@ -119,11 +135,11 @@ export const EMBEDDED_FIRST_YEAR_BASE_MANIFEST = {
       "logicalId": "art/capabilities.json",
       "kind": "json",
       "mime": "application/json",
-      "byteLength": 604,
-      "sha256": "a03037e3c2bb564b672b172b9853b710d0200f7050a27bf0ab6187b0f0c33304"
+      "byteLength": 1060,
+      "sha256": "3bc7556f98c03887b5a453741f2f5cb62733d7dbe3a2138752d4659fa49da54c"
     }
   ],
-  "totalBytes": 161269,
+  "totalBytes": 161725,
   "createdAt": "2026-11-08T18:00:00+01:00"
 } as const satisfies ContentPackManifest;
 
@@ -131,5 +147,5 @@ export const EMBEDDED_FIRST_YEAR_BASE_SIGNATURE = {
   "format": "lumi.content-pack-signature.v1",
   "algorithm": "Ed25519",
   "keyId": "lumi-content-ed25519-v1",
-  "signature": "uvidD5iEstPtQLzWaI0eJGtTW7-kAWgLrLEeS0477Z1YKHbPGCIW7_SRupKBmZiR2sZPAnXEGUw052zqptZzDg"
+  "signature": "AhrPbnYsZ5HJStOgCopiU71SxWrkxVXoGig89uHBOQVE0fb5qP7XLvwM-zkoPn0_pMKGyTXQ9qYSqeBcPaPqCQ"
 } as const satisfies ContentPackSignature;

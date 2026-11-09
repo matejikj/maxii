@@ -6,9 +6,11 @@ import {
   useLumiMotion,
 } from '@lumi/forest-design/native';
 import {
-  LUMI_MOTION_PROFILE,
+  isStudioActionId,
   resolveCompanionPresentation,
   resolveCollectionSpecies,
+  studioSettleDelayMs,
+  type CharacterAppearanceStyle,
   type CharacterExpression,
   type CharacterMotion,
   type CharacterSemanticState,
@@ -22,6 +24,10 @@ type GuideCompanionProps = {
   semantic?: CharacterSemanticState | null;
   /** Species-specific catalog action id (or legacy rabbit recognition). */
   signatureAction?: string | null;
+  /** Workshop action — only animates in the Dílna look for owning species. */
+  studioAction?: string | null;
+  appearanceStyle?: CharacterAppearanceStyle;
+  installedCapabilities?: readonly string[] | null;
   /** @deprecated Prefer signatureAction; kept for rabbit pilot call sites. */
   recognition?: RecognitionAction | null;
   expression?: CharacterExpression;
@@ -84,6 +90,9 @@ export function GuideCompanion({
   species: speciesInput,
   semantic = null,
   signatureAction = null,
+  studioAction = null,
+  appearanceStyle = 'forest',
+  installedCapabilities = null,
   recognition = null,
   expression = 'happy',
   motion = 'idle',
@@ -103,15 +112,30 @@ export function GuideCompanion({
         species,
         semantic,
         signatureAction,
+        studioAction,
+        appearanceStyle,
+        installedCapabilities,
         recognition,
         expression,
         motion,
         animate: canAnimate && playing,
       }),
-    [species, semantic, signatureAction, recognition, expression, motion, canAnimate, playing],
+    [
+      species,
+      semantic,
+      signatureAction,
+      studioAction,
+      appearanceStyle,
+      installedCapabilities,
+      recognition,
+      expression,
+      motion,
+      canAnimate,
+      playing,
+    ],
   );
 
-  const presentationKey = `${species}:${base.signatureActionId ?? ''}:${base.semantic ?? ''}:${base.settlesToCalm}:${base.animate}`;
+  const presentationKey = `${species}:${base.signatureActionId ?? ''}:${base.studioActionId ?? ''}:${base.semantic ?? ''}:${base.settlesToCalm}:${base.animate}:${appearanceStyle}`;
   const [activeKey, setActiveKey] = useState(presentationKey);
   const [settled, setSettled] = useState(false);
 
@@ -125,24 +149,34 @@ export function GuideCompanion({
     if (!base.settlesToCalm || !base.animate) return;
     const handle = setTimeout(() => {
       setSettled(true);
-    }, LUMI_MOTION_PROFILE.timing.recognitionMs + 80);
+    }, studioSettleDelayMs(isStudioActionId(base.studioActionId) ? base.studioActionId : null));
     return () => clearTimeout(handle);
-  }, [presentationKey, base.settlesToCalm, base.animate]);
+  }, [presentationKey, base.settlesToCalm, base.animate, base.studioActionId]);
 
   const resolved = settled
     ? resolveCompanionPresentation({
         species,
         semantic: 'calm',
+        appearanceStyle,
         animate: canAnimate && playing,
       })
     : base;
+
+  const styleProps = {
+    appearanceStyle: resolved.appearanceStyle,
+    ...(resolved.props.length > 0
+      ? { props: resolved.props, prop: resolved.prop ?? undefined }
+      : resolved.prop
+        ? { prop: resolved.prop }
+        : {}),
+  };
 
   const character = !resolved.animate ? (
     <LumiCharacter
       species={resolved.species}
       pose={resolved.pose}
       expression={resolved.expression}
-      {...(resolved.prop ? { prop: resolved.prop } : {})}
+      {...styleProps}
       width={width}
       height={height}
     />
@@ -153,7 +187,7 @@ export function GuideCompanion({
       expression={resolved.expression}
       motion={resolved.motion}
       playing={playing}
-      {...(resolved.prop ? { prop: resolved.prop } : {})}
+      {...styleProps}
       {...(celebrationKey === undefined ? {} : { celebrationKey })}
       width={width}
       height={height}

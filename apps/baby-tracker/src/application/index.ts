@@ -68,7 +68,9 @@ export {
 } from './diaryBackup';
 export {
   DEFAULT_REMINDER_PREFERENCES,
+  LOCAL_APPEARANCE_STYLES,
   LOCAL_GUIDE_SPECIES,
+  META_APPEARANCE_STYLE,
   META_BACKUP_HINT_SHOWN,
   META_CHARACTER_MOTION,
   META_GUIDE_SPECIES,
@@ -78,10 +80,12 @@ export {
   markBackupHintShown,
   saveGrowthDisplayUnits,
   saveReminderPreferences,
+  setAppearanceStyle,
   setCharacterMotionEnabled,
   setGuideSpecies,
   shouldShowBackupHint,
   updateSummaryTimeZone,
+  type AppearanceStyle,
   type GuideSpecies,
   type PersonalPreferences,
   type ReminderPreferences,

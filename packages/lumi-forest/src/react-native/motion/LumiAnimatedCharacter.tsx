@@ -93,7 +93,8 @@ function CelebrationStars({ progress, active }: { progress: SharedValue<number>;
  * App / screen visibility or Reduce Motion cancel every infinite animation.
  */
 export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
-  species, pose = 'sitting', expression, accessories, proportions, prop, motion = 'idle',
+  species, pose = 'sitting', expression, accessories, proportions, prop, props, appearanceStyle,
+  motion = 'idle',
   playing = true, celebrationKey, width = 150, height = 162, style, testID, frame = 'standalone',
 }: LumiAnimatedCharacterProps) {
   const blueprint = CHARACTER_BLUEPRINTS[species];
@@ -103,7 +104,9 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
     ...(accessories === undefined ? {} : { accessories }),
     ...(proportions === undefined ? {} : { proportions }),
     ...(prop == null ? {} : { prop }),
-  }), [blueprint, pose, expression, accessories, proportions, prop]);
+    ...(props == null ? {} : { props }),
+    ...(appearanceStyle === undefined ? {} : { appearanceStyle }),
+  }), [blueprint, pose, expression, accessories, proportions, prop, props, appearanceStyle]);
   const { canAnimate } = useLumiMotion();
   const active = canAnimate && playing && motion !== 'still';
   const blinkEnabled = active && shouldBlink(motion, expression ?? 'neutral', pose);
@@ -115,6 +118,8 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
   const lift = useSharedValue(0);
   const burst = useSharedValue(0);
   const previousCelebration = useRef(celebrationKey);
+  // Workshop one-shots stay inside the shared recognition window budget × ~2.
+  const studioMs = Math.min(2400, Math.max(1600, timing.recognitionMs * 2));
 
   useEffect(() => {
     cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
@@ -157,6 +162,25 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
         }),
       );
     }
+    if (motion === 'studio') {
+      // One-shot workshop gesture: mild lean + ear perk, never an infinite loop.
+      ears.value = withSequence(
+        withTiming(amplitude.perkEarDegrees * 0.7, {
+          duration: studioMs * 0.35, easing: out, reduceMotion: ReduceMotion.System,
+        }),
+        withTiming(0, {
+          duration: studioMs * 0.65, easing: smooth, reduceMotion: ReduceMotion.System,
+        }),
+      );
+      tilt.value = withSequence(
+        withTiming(amplitude.tiltHeadDegrees * 0.8, {
+          duration: studioMs * 0.4, easing: out, reduceMotion: ReduceMotion.System,
+        }),
+        withTiming(0, {
+          duration: studioMs * 0.6, easing: smooth, reduceMotion: ReduceMotion.System,
+        }),
+      );
+    }
     if (motion === 'sleeping') {
       float.value = withRepeat(withTiming(-amplitude.floatPx, {
         duration: timing.floatHalfCycleMs, easing: smooth, reduceMotion: ReduceMotion.System,
@@ -166,7 +190,7 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
       cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
       cancelAnimation(tilt); cancelAnimation(float);
     };
-  }, [active, blinkEnabled, motion, species, blink, breath, ears, tilt, float]);
+  }, [active, blinkEnabled, motion, species, blink, breath, ears, tilt, float, studioMs]);
 
   useEffect(() => {
     if (previousCelebration.current === celebrationKey) return;

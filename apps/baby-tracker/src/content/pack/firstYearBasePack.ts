@@ -14,6 +14,8 @@ export function buildFirstYearBaseFiles(): ContentPackFileBytes[] {
   };
   const capabilitiesPayload = {
     collectionVersion: meta.collectionVersion,
+    studioCollectionVersion: 'lumi.characters.studio.v1',
+    appearanceStyles: ['forest', 'workshop', 'restrained'],
     capabilities: listInstalledArtCapabilities(),
   };
   return [

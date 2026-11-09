@@ -150,6 +150,7 @@ export function TodayScreen({
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <GuideCompanion
                 species={preferences.guideSpecies}
+                appearanceStyle={preferences.appearanceStyle}
                 semantic="listening"
                 celebrationKey={celebrationKey}
                 width={72}

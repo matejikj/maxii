@@ -29,7 +29,7 @@ export function shouldAnimate(state: MotionState): boolean {
 }
 
 export function shouldBlink(motion: CharacterMotion, expression: string, pose: string): boolean {
-  return (motion === 'idle' || motion === 'perk')
+  return (motion === 'idle' || motion === 'perk' || motion === 'studio')
     && expression !== 'sleepy'
     && pose !== 'sleeping';
 }

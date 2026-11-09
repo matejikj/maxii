@@ -1,5 +1,5 @@
 /** Animation vocabulary. No React Native, worklets or clock access in core. */
-export type CharacterMotion = 'idle' | 'sleeping' | 'still' | 'perk' | 'tilt';
+export type CharacterMotion = 'idle' | 'sleeping' | 'still' | 'perk' | 'tilt' | 'studio';
 export type AnimationChannel = 'blink' | 'breathe' | 'leftEar' | 'rightEar' | 'float' | 'celebrate';
 export type MotionState = Readonly<{
   enabled: boolean;

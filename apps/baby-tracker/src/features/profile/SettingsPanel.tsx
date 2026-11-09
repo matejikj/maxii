@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiMotion } from '@lumi/forest-design/native';
 import {
+  LOCAL_APPEARANCE_STYLES,
   LOCAL_GUIDE_SPECIES,
   buildDiagnosticsSnapshot,
   buildSupportReport,
   serializeSupportReport,
+  type AppearanceStyle,
   type GuideSpecies,
 } from '../../application';
 import { createChildProfile } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { FamilyAccountPanel } from './FamilyAccountPanel';
+import { GuideCompanion } from '../shell/GuideCompanion';
 
 const GUIDE_LABELS: Record<GuideSpecies, string> = {
   rabbit: 'Lumi (králík)',
@@ -24,6 +27,12 @@ const GUIDE_LABELS: Record<GuideSpecies, string> = {
   fawn: 'Runi (koloušek)',
 };
 
+const STYLE_LABELS: Record<AppearanceStyle, string> = {
+  forest: 'Les',
+  workshop: 'Dílna',
+  restrained: 'Střídmý',
+};
+
 /**
  * Grouped personal settings: units/zone, appearance, single motion switch,
  * optional reminders, optional app lock, diagnostics and full wipe.
@@ -34,6 +43,7 @@ export function SettingsPanel() {
     preferences,
     setMotionEnabled,
     setGuide,
+    setAppearance,
     setReminders,
     setUnits,
     setTimeZone,
@@ -154,6 +164,32 @@ export function SettingsPanel() {
             title={`${GUIDE_LABELS[species]}${preferences.guideSpecies === species ? ' · zvoleno' : ''}`}
             variant={preferences.guideSpecies === species ? 'primary' : 'ghost'}
             onPress={() => void setGuide(species)}
+          />
+        ))}
+      </LumiCard>
+
+      <LumiCard>
+        <LumiText variant="h3">Vzhled průvodce</LumiText>
+        <LumiText tone="muted">
+          Les zůstává bezpečným základem. Dílna a Střídmý jsou volba vzhledu, ne věkové
+          zamknutí. Stažení se nevyžaduje — sada je součástí instalace.
+        </LumiText>
+        <View style={{ alignItems: 'center', marginVertical: 8 }}>
+          <GuideCompanion
+            species={preferences.guideSpecies}
+            appearanceStyle={preferences.appearanceStyle}
+            semantic="calm"
+            visible={false}
+            width={96}
+            height={104}
+          />
+        </View>
+        {LOCAL_APPEARANCE_STYLES.map((style) => (
+          <LumiButton
+            key={style}
+            title={`${STYLE_LABELS[style]}${preferences.appearanceStyle === style ? ' · zvoleno' : ''}`}
+            variant={preferences.appearanceStyle === style ? 'primary' : 'ghost'}
+            onPress={() => void setAppearance(style)}
           />
         ))}
       </LumiCard>

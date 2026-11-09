@@ -53,8 +53,8 @@ export type StudioActionDefinition = {
 };
 
 /**
- * Eight workshop actions for four known guides. Motion timelines arrive later;
- * each entry already carries a full static pose + prop composition.
+ * Eight workshop actions for four known guides. Each entry carries a full
+ * static pose plus a bounded one-shot motion recipe resolved in studioMotion.
  */
 export const STUDIO_ACTIONS: Readonly<Record<StudioActionId, StudioActionDefinition>> = {
   planPath: {

@@ -13,10 +13,12 @@ import {
   markBackupHintShown,
   saveGrowthDisplayUnits,
   saveReminderPreferences,
+  setAppearanceStyle,
   setCharacterMotionEnabled,
   setGuideSpecies,
   shouldShowBackupHint,
   updateSummaryTimeZone,
+  type AppearanceStyle,
   type GuideSpecies,
   type PersonalPreferences,
   type ReminderPreferences,
@@ -30,6 +32,7 @@ type PreferencesContextValue = {
   refresh: () => Promise<void>;
   setMotionEnabled: (enabled: boolean) => Promise<void>;
   setGuide: (species: GuideSpecies) => Promise<void>;
+  setAppearance: (style: AppearanceStyle) => Promise<void>;
   setReminders: (prefs: ReminderPreferences) => Promise<void>;
   setUnits: (units: {
     weightUnit: WeightDisplayUnit;
@@ -80,6 +83,11 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         if (!runtime) return;
         await setGuideSpecies(runtime.unitOfWork, species);
         setPreferences((current) => ({ ...current, guideSpecies: species }));
+      },
+      async setAppearance(style) {
+        if (!runtime) return;
+        await setAppearanceStyle(runtime.unitOfWork, style);
+        setPreferences((current) => ({ ...current, appearanceStyle: style }));
       },
       async setReminders(prefs) {
         if (!runtime) return;
