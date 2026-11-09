@@ -23,6 +23,14 @@
           "useSQLCipher": true
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LUMI potřebuje přístup jen k fotografiím, které sami vyberete pro deník.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       "./plugins/withPersonalAndroidSigning.cjs"
     ],
     "ios": {

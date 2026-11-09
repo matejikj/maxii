@@ -107,6 +107,7 @@ export type {
   UnitOfWork,
   UnitOfWorkFactory,
 } from './ports';
+export * from './attachments';
 export {
   DIARY_ARCHIVE_FORMAT,
   DIARY_ARCHIVE_MAX_COMPAT,

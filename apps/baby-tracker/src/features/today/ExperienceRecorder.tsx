@@ -24,6 +24,8 @@ import {
   useUndoWindow,
   type SaveFeedbackState,
 } from '../ui';
+import { PhotoAttachmentsField } from '../care/PhotoAttachmentsField';
+import type { PhotoAttachment, PickedPhotoCandidate } from '../../domain/attachments';
 import { formatWallDateTime, parseWallDateTime } from './recordDiaperIntent';
 import {
   DEVELOPMENT_AREA_OPTIONS,
@@ -73,6 +75,8 @@ export function ExperienceRecorder({
   const [savedIds, setSavedIds] = useState<MomentIntentIds | null>(null);
   const [savedRevisionId, setSavedRevisionId] = useState<string | null>(null);
   const [savedEventId, setSavedEventId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<PhotoAttachment[]>([]);
+  const [pendingPhotos, setPendingPhotos] = useState<PickedPhotoCandidate[]>([]);
   const retryRef = useRef<null | (() => Promise<void>)>(null);
   const draftIds = useRef({
     draftId: asEntityId(services.ids.createId('draft')),
@@ -104,11 +108,36 @@ export function ExperienceRecorder({
     setSavedIds(null);
     setSavedRevisionId(null);
     setSavedEventId(null);
+    setAttachments([]);
+    setPendingPhotos([]);
     draftIds.current = {
       draftId: asEntityId(services.ids.createId('draft')),
       originalMs: services.clock.now().epochMs,
       formType: kind === 'play' ? 'experience' : kind === 'milestone' ? 'milestone' : 'note',
     };
+  }
+
+  async function attachPendingAfterSave(
+    eventId: string,
+    hostEventType: 'note' | 'milestone' | 'experience',
+  ) {
+    if (!runtime.attachments || pendingPhotos.length === 0) return;
+    const { attachPhotosToSavedEvent } = await import('../../application/attachPhotos');
+    const imported = await attachPhotosToSavedEvent(runtime.attachments, {
+      childId,
+      eventId: asEntityId(eventId),
+      hostEventType,
+      candidates: pendingPhotos,
+      nowMs: services.clock.now().epochMs,
+      createId: (prefix) => services.ids.createId(prefix),
+    });
+    setAttachments((current) => [...current, ...imported.attached]);
+    setPendingPhotos([]);
+    if (imported.failed.length > 0) {
+      setFeedbackMessage(
+        `Záznam je uložený. ${imported.failed.length} fotografií se nepodařilo připravit.`,
+      );
+    }
   }
 
   useEffect(() => {
@@ -206,6 +235,7 @@ export function ExperienceRecorder({
     setFeedback('saved');
     onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.noteSaved);
+    await attachPendingAfterSave(ids.eventId, 'note');
   }
 
   async function commitMilestone(expectedRevisionId?: string) {
@@ -249,6 +279,7 @@ export function ExperienceRecorder({
     setFeedback('saved');
     onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.milestoneSaved);
+    await attachPendingAfterSave(ids.eventId, 'milestone');
   }
 
   async function commitPlay(expectedRevisionId?: string) {
@@ -294,6 +325,7 @@ export function ExperienceRecorder({
     setFeedback('saved');
     onSavedLocally?.();
     setFeedbackMessage(PRODUCT_COPY.feedback.experienceSaved);
+    await attachPendingAfterSave(ids.eventId, 'experience');
   }
 
   async function onUndo() {
@@ -410,6 +442,18 @@ export function ExperienceRecorder({
           onChangeText={setTitle}
         />
         <NoteField value={note} onChangeText={setNote} label={PRODUCT_COPY.fields.optionalNote} />
+        <PhotoAttachmentsField
+          childId={childId}
+          eventId={savedEventId ? asEntityId(savedEventId) : null}
+          hostEventType="experience"
+          services={runtime.attachments}
+          createId={(prefix) => services.ids.createId(prefix)}
+          nowMs={() => services.clock.now().epochMs}
+          attachments={attachments}
+          onChange={setAttachments}
+          pendingCandidates={pendingPhotos}
+          onPendingCandidatesChange={setPendingPhotos}
+        />
       </CareActionSheet>
 
       <CareActionSheet
@@ -443,6 +487,18 @@ export function ExperienceRecorder({
           label={PRODUCT_COPY.fields.milestoneBody}
           {...(fieldError !== undefined ? { error: fieldError } : {})}
         />
+        <PhotoAttachmentsField
+          childId={childId}
+          eventId={savedEventId ? asEntityId(savedEventId) : null}
+          hostEventType="milestone"
+          services={runtime.attachments}
+          createId={(prefix) => services.ids.createId(prefix)}
+          nowMs={() => services.clock.now().epochMs}
+          attachments={attachments}
+          onChange={setAttachments}
+          pendingCandidates={pendingPhotos}
+          onPendingCandidatesChange={setPendingPhotos}
+        />
       </CareActionSheet>
 
       <CareActionSheet
@@ -475,6 +531,18 @@ export function ExperienceRecorder({
           onChangeText={setBody}
           label={PRODUCT_COPY.fields.noteBody}
           {...(fieldError !== undefined ? { error: fieldError } : {})}
+        />
+        <PhotoAttachmentsField
+          childId={childId}
+          eventId={savedEventId ? asEntityId(savedEventId) : null}
+          hostEventType="note"
+          services={runtime.attachments}
+          createId={(prefix) => services.ids.createId(prefix)}
+          nowMs={() => services.clock.now().epochMs}
+          attachments={attachments}
+          onChange={setAttachments}
+          pendingCandidates={pendingPhotos}
+          onPendingCandidatesChange={setPendingPhotos}
         />
       </CareActionSheet>
     </>

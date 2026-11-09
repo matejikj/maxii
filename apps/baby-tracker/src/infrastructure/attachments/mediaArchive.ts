@@ -1,0 +1,173 @@
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
+import { z } from 'zod';
+import type { PhotoAttachment } from '../../domain/attachments';
+import {
+  openPortableBackup,
+  parsePortableBackup,
+  sealPortableBackup,
+  serializePortableBackup,
+  type Argon2idParams,
+  type PortableBackupEnvelope,
+} from '../crypto/portableBackup';
+
+/**
+ * Companion media archive for diary photos. Each rendition stays a separately
+ * sealed envelope so payloads are never stuffed into one giant JSON AEAD blob.
+ * Full libsodium secretstream remains a future binding once proven in-runtime.
+ */
+export const MEDIA_ARCHIVE_FORMAT = 'lumi.portable-media.v1' as const;
+
+const mediaManifestSchema = z.object({
+  format: z.literal(MEDIA_ARCHIVE_FORMAT),
+  createdAtMs: z.number().int().nonnegative(),
+  attachments: z.array(
+    z.object({
+      attachmentId: z.string().min(1),
+      childId: z.string().min(1),
+      eventId: z.string().min(1),
+      hostEventType: z.enum(['note', 'milestone', 'experience']),
+      orderIndex: z.number().int().nonnegative(),
+      caption: z.string().nullable(),
+      createdAtMs: z.number().int().nonnegative(),
+      renditions: z.array(
+        z.object({
+          renditionId: z.string().min(1),
+          role: z.enum(['display', 'thumbnail']),
+          mime: z.literal('image/jpeg'),
+          width: z.number().int().positive(),
+          height: z.number().int().positive(),
+          byteLength: z.number().int().positive(),
+          sha256: z.string().regex(/^[0-9a-f]{64}$/i),
+          normalizationVersion: z.string().min(1),
+          blobPath: z.string().min(1),
+        }),
+      ),
+    }),
+  ),
+});
+
+export type MediaArchiveManifest = z.infer<typeof mediaManifestSchema>;
+
+export type MediaArchiveBundle = {
+  manifestEnvelope: PortableBackupEnvelope;
+  blobs: Record<string, PortableBackupEnvelope>;
+};
+
+export async function buildMediaArchiveBundle(input: {
+  attachments: PhotoAttachment[];
+  readBlob: (blobKey: string) => Promise<Uint8Array>;
+  password: string;
+  createdAtMs: number;
+  argonParams?: Argon2idParams;
+}): Promise<MediaArchiveBundle> {
+  const blobs: Record<string, PortableBackupEnvelope> = {};
+  const manifestAttachments: MediaArchiveManifest['attachments'] = [];
+
+  for (const attachment of input.attachments) {
+    if (attachment.deletedAtMs != null) continue;
+    const renditions: MediaArchiveManifest['attachments'][number]['renditions'] = [];
+    for (const rendition of attachment.renditions) {
+      if (rendition.availability !== 'durable') continue;
+      const bytes = await input.readBlob(rendition.blobKey);
+      if (bytesToHex(sha256(bytes)) !== rendition.sha256) {
+        throw new Error(`Digest mismatch for ${rendition.blobKey}`);
+      }
+      const blobPath = `${attachment.attachmentId}/${rendition.role}.jpg.sealed.json`;
+      blobs[blobPath] = sealPortableBackup(bytes, input.password, input.argonParams);
+      renditions.push({
+        renditionId: rendition.renditionId,
+        role: rendition.role,
+        mime: 'image/jpeg',
+        width: rendition.width,
+        height: rendition.height,
+        byteLength: rendition.byteLength,
+        sha256: rendition.sha256,
+        normalizationVersion: rendition.normalizationVersion,
+        blobPath,
+      });
+    }
+    if (renditions.length === 0) continue;
+    manifestAttachments.push({
+      attachmentId: attachment.attachmentId,
+      childId: attachment.childId,
+      eventId: attachment.eventId,
+      hostEventType: attachment.hostEventType,
+      orderIndex: attachment.orderIndex,
+      caption: attachment.caption,
+      createdAtMs: attachment.createdAtMs,
+      renditions,
+    });
+  }
+
+  const manifest: MediaArchiveManifest = {
+    format: MEDIA_ARCHIVE_FORMAT,
+    createdAtMs: input.createdAtMs,
+    attachments: manifestAttachments,
+  };
+  const manifestEnvelope = sealPortableBackup(
+    utf8ToBytes(`${JSON.stringify(manifest)}\n`),
+    input.password,
+    input.argonParams,
+  );
+  return { manifestEnvelope, blobs };
+}
+
+export function openMediaArchiveBundle(
+  bundle: MediaArchiveBundle,
+  password: string,
+): {
+  manifest: MediaArchiveManifest;
+  blobs: Record<string, Uint8Array>;
+} {
+  const manifestBytes = openPortableBackup(bundle.manifestEnvelope, password);
+  const parsed = mediaManifestSchema.safeParse(JSON.parse(new TextDecoder().decode(manifestBytes)));
+  if (!parsed.success) {
+    throw new Error('Invalid media archive manifest');
+  }
+  const opened: Record<string, Uint8Array> = {};
+  for (const [path, envelope] of Object.entries(bundle.blobs)) {
+    opened[path] = openPortableBackup(parsePortableBackup(serializePortableBackup(envelope)), password);
+  }
+  for (const attachment of parsed.data.attachments) {
+    for (const rendition of attachment.renditions) {
+      const bytes = opened[rendition.blobPath];
+      if (!bytes) throw new Error(`Missing media blob ${rendition.blobPath}`);
+      if (bytes.byteLength !== rendition.byteLength) {
+        throw new Error(`Media blob length mismatch for ${rendition.blobPath}`);
+      }
+      if (bytesToHex(sha256(bytes)).toLowerCase() !== rendition.sha256.toLowerCase()) {
+        throw new Error(`Media blob digest mismatch for ${rendition.blobPath}`);
+      }
+    }
+  }
+  return { manifest: parsed.data, blobs: opened };
+}
+
+export function serializeMediaArchiveBundle(bundle: MediaArchiveBundle): string {
+  return `${JSON.stringify({
+    format: MEDIA_ARCHIVE_FORMAT,
+    manifestEnvelope: bundle.manifestEnvelope,
+    blobs: bundle.blobs,
+  })}\n`;
+}
+
+export function parseMediaArchiveBundle(raw: string): MediaArchiveBundle {
+  const parsed = JSON.parse(raw) as {
+    format?: string;
+    manifestEnvelope: PortableBackupEnvelope;
+    blobs: Record<string, PortableBackupEnvelope>;
+  };
+  if (parsed.format !== MEDIA_ARCHIVE_FORMAT) {
+    throw new Error('Unsupported media archive format');
+  }
+  return {
+    manifestEnvelope: parsePortableBackup(serializePortableBackup(parsed.manifestEnvelope)),
+    blobs: Object.fromEntries(
+      Object.entries(parsed.blobs).map(([path, envelope]) => [
+        path,
+        parsePortableBackup(serializePortableBackup(envelope)),
+      ]),
+    ),
+  };
+}

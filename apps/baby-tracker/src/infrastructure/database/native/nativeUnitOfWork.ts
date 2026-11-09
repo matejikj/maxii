@@ -26,7 +26,7 @@ import type {
   DeletionMarker,
 } from '../../../domain';
 import { AppError } from '../../../domain/errors';
-import { SCHEMA_VERSION_4 } from './schema/v4';
+import { SCHEMA_VERSION_5 } from './schema/v5';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
@@ -508,7 +508,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return assembleDiaryArchive({
         createdAtMs: input.createdAtMs,
-        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_4,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_5,
         profiles: profilesList,
         careEvents,
         sessions: await sessions.listAll(),

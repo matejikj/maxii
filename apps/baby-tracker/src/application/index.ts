@@ -138,5 +138,6 @@ export {
   isExperienceEvent,
   loadWeeklyDevelopmentGlance,
 } from './developmentQueries';
+export { attachPhotosToSavedEvent } from './attachPhotos';
 
 

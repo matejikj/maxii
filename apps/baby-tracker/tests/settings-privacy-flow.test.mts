@@ -194,7 +194,7 @@ test('full wipe removes canary care data, checkpoints, reminders and keys', asyn
     dayKey: '2023-11-14',
     nowMs: native.clock,
     archive: await native.unitOfWork.run((uow) =>
-      uow.diary.capture({ createdAtMs: native.clock, schemaCompatibility: 4 }),
+      uow.diary.capture({ createdAtMs: native.clock, schemaCompatibility: 5 }),
     ),
   });
   native.reminders.state.permission = 'granted';

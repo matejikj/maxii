@@ -52,6 +52,8 @@ export type PersonalRuntime = {
   appLock: AppLockStore;
   /** Allowlisted local command outcome counters for support reports. */
   operationMetrics: LocalOperationMetrics;
+  /** Optional local photo import for notes/milestones/experiences. */
+  attachments: import('../../domain/attachments').AttachmentServices | null;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -130,6 +132,7 @@ export function BootstrapProvider({
           overviewCache.invalidate();
         }
       });
+      const attachmentModule = await import('../../infrastructure/attachments/createPersonalAttachmentServices');
       const next: PersonalRuntime = {
         unitOfWork: opened.unitOfWork,
         commands: wired.commands!,
@@ -137,6 +140,7 @@ export function BootstrapProvider({
         overviewCache,
         checkpoints: opened.checkpoints,
         reminders: opened.reminders,
+        attachments: attachmentModule.createPersonalAttachmentServices(),
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,

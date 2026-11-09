@@ -35,7 +35,7 @@ test('diary archive compare counts newer local care without merging', () => {
   });
   const current = createDiaryArchive({
     createdAtMs: 3_000,
-    schemaCompatibility: 4,
+    schemaCompatibility: 5,
     profiles: [],
     careEvents: [older, newer],
     sessions: [],
@@ -47,7 +47,7 @@ test('diary archive compare counts newer local care without merging', () => {
   });
   const incoming = createDiaryArchive({
     createdAtMs: 1_500,
-    schemaCompatibility: 4,
+    schemaCompatibility: 5,
     profiles: [],
     careEvents: [older],
     sessions: [],

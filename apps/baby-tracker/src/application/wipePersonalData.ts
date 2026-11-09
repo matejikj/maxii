@@ -36,7 +36,7 @@ export async function wipePersonalData(deps: PersonalWipeDeps): Promise<Personal
   // Empty replace clears live rows even if file delete is delayed/failing.
   const empty = createDiaryArchive({
     createdAtMs: deps.nowMs,
-    schemaCompatibility: 4,
+    schemaCompatibility: 5,
     profiles: [],
     careEvents: [],
     sessions: [],

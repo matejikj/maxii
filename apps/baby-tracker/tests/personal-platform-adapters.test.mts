@@ -38,7 +38,7 @@ import { randomBytes } from '@noble/hashes/utils.js';
 function sampleArchive(nowMs: number) {
   return createDiaryArchive({
     createdAtMs: nowMs,
-    schemaCompatibility: 4,
+    schemaCompatibility: 5,
     profiles: [
       {
         childId: asChildId('child_platform_1'),
