@@ -127,6 +127,7 @@ export function createWebUnitOfWorkFactory(
             runtime.db.projects,
             runtime.db.portfolioItems,
             runtime.db.shareSnapshots,
+            runtime.db.parentSuggestions,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
