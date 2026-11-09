@@ -1,0 +1,6 @@
+{
+  "format": "lumi.content-pack-signature.v1",
+  "algorithm": "Ed25519",
+  "keyId": "lumi-content-ed25519-v1",
+  "signature": "3Kyf4kZ3dDBgOE8akqi11qtPnM8RaDgUe2TABaOgLVtIkO1UJAO4d1cDaKI-1kqH2N8GccjmI-dGMERm7hyxCA"
+}

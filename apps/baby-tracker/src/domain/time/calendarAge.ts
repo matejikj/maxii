@@ -17,10 +17,10 @@ import { asTimeZoneId } from './zonedTime';
 export const FIRST_CONTENT_MAX_EXCLUSIVE_YEARS = 1;
 
 /**
- * Combined install-local recommendable window after preschool 2–5 publication:
- * birth through the day before the fifth birthday (completed months 0–59).
+ * Combined install-local recommendable window after primary 5–8 publication:
+ * birth through the day before the eighth birthday (completed months 0–95).
  */
-export const PUBLISHED_CONTENT_MAX_EXCLUSIVE_YEARS = 5;
+export const PUBLISHED_CONTENT_MAX_EXCLUSIVE_YEARS = 8;
 
 export type CalendarAge = {
   years: number;

@@ -56,6 +56,10 @@ export {
   PRESCHOOL_2_5_PUBLISHED_REVISIONS,
 } from './catalog/preschool25Published';
 export {
+  PRIMARY_5_8_PUBLISHED_CONTENT_VERSION,
+  PRIMARY_5_8_PUBLISHED_REVISIONS,
+} from './catalog/primary58Published';
+export {
   PRODUCT_PUBLISHED_CONTENT_VERSION,
   PRODUCT_PUBLISHED_REVISIONS,
   PRODUCT_SUPPORTED_AGE_MONTHS,
@@ -77,3 +81,7 @@ export {
   PRESCHOOL_2_5_DRAFT_CONTENT_VERSION,
   PRESCHOOL_2_5_DRAFT_REVISIONS,
 } from './drafts/preschool25Drafts';
+export {
+  PRIMARY_5_8_DRAFT_CONTENT_VERSION,
+  PRIMARY_5_8_DRAFT_REVISIONS,
+} from './drafts/primary58Drafts';

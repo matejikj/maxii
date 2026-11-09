@@ -44,11 +44,29 @@ test('first content window ends the day before the first birthday', () => {
   );
 });
 
-test('published content window covers preschool ages until the fifth birthday', () => {
-  const birth = parseCalendarDate('2021-11-08');
+test('published content window covers primary ages until the eighth birthday', () => {
+  const birth = parseCalendarDate('2018-11-08');
   assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2023-11-08')), true);
   assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-07')), true);
   assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-08')), false);
+});
+
+test('published content window respects fifth birthday boundary for age-band splits', () => {
+  const birth = parseCalendarDate('2021-11-08');
+  // Day before fifth birthday is still inside the combined 0–8 published window.
+  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-07')), true);
+  assert.equal(
+    isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-07'), {
+      maxExclusiveYears: 5,
+    }),
+    true,
+  );
+  assert.equal(
+    isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-08'), {
+      maxExclusiveYears: 5,
+    }),
+    false,
+  );
 });
 
 test('DST spring gap rejects or shifts explicitly', () => {

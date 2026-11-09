@@ -79,3 +79,12 @@ export {
   EMBEDDED_PRESCHOOL_2_5_MANIFEST,
   EMBEDDED_PRESCHOOL_2_5_SIGNATURE,
 } from './embeddedPreschool25';
+export {
+  PRIMARY_5_8_PACK_ID,
+  buildPrimary58Files,
+  buildPrimary58Manifest,
+} from './primary58Pack';
+export {
+  EMBEDDED_PRIMARY_5_8_MANIFEST,
+  EMBEDDED_PRIMARY_5_8_SIGNATURE,
+} from './embeddedPrimary58';

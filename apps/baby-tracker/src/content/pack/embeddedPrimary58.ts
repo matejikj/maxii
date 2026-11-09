@@ -1,0 +1,108 @@
+/**
+ * Signed primary 5–8 content pack envelope. Payload bytes are rebuilt from the
+ * published catalog so ages 60–95 stay offline without remote URLs.
+ */
+import type { ContentPackManifest, ContentPackSignature } from './types';
+
+export const EMBEDDED_PRIMARY_5_8_MANIFEST = {
+  "format": "lumi.content-pack.v1",
+  "packId": "lumi.primary-5-8.content",
+  "kind": "content",
+  "generation": 1,
+  "readerVersion": "lumi.content-reader.v1",
+  "catalogVersion": "primary-5-8.v1",
+  "collectionVersion": "lumi.characters.collection.v1",
+  "rulesVersion": "lumi.recommendation.rules.v2",
+  "language": "cs",
+  "ageMonths": {
+    "fromInclusive": 60,
+    "toInclusive": 95
+  },
+  "activityRevisionIds": [
+    "primary-plan-with-two-choices.r1",
+    "primary-ordinary-object-story.r1",
+    "primary-own-move-sequence.r1",
+    "primary-sound-map-on-paper.r1",
+    "primary-two-step-plan.r1",
+    "primary-measure-with-paper-strip.r1",
+    "primary-three-panel-comic.r1",
+    "primary-prepare-my-work-place.r1",
+    "primary-explain-with-role-swap.r1",
+    "primary-two-story-versions.r1",
+    "primary-together-ball-route.r1",
+    "primary-plant-observation-page.r1",
+    "primary-question-for-paper-bridge.r1",
+    "primary-same-amount-new-layout.r1",
+    "primary-create-and-change-pattern.r1",
+    "primary-choose-next-small-session.r1",
+    "primary-opinion-and-reason.r1",
+    "primary-instructions-for-builder.r1",
+    "primary-route-by-own-plan.r1",
+    "primary-see-and-infer.r1",
+    "primary-one-change-two-attempts.r1",
+    "primary-share-into-groups.r1",
+    "primary-small-book-own-topic.r1",
+    "primary-pause-and-leave-a-note.r1"
+  ],
+  "capabilities": [
+    "art.collection.v1",
+    "art.studio.v1",
+    "art.appearance-styles.v1",
+    "art.semantic-states.v1",
+    "art.signature-actions.v1",
+    "art.static-fallback.v1",
+    "art.props.v1",
+    "art.species.rabbit",
+    "art.species.bear",
+    "art.species.fox",
+    "art.species.otter",
+    "art.species.hedgehog",
+    "art.species.owl",
+    "art.species.squirrel",
+    "art.species.fawn",
+    "art.semantic.calm",
+    "art.semantic.greeting",
+    "art.semantic.listening",
+    "art.semantic.curiosity",
+    "art.semantic.pointContent",
+    "art.semantic.rest",
+    "art.semantic.gentleJoy",
+    "art.semantic.static",
+    "art.prop.book",
+    "art.prop.blocks",
+    "art.prop.leaf",
+    "art.prop.scarfProp",
+    "art.prop.routeMap",
+    "art.prop.bridgePieces",
+    "art.prop.notebook",
+    "art.prop.pencil",
+    "art.prop.patternTiles",
+    "art.prop.displayStand",
+    "studio.planPath",
+    "studio.tryAlternatePath",
+    "studio.bridgeSpan",
+    "studio.testBridge",
+    "studio.sketchPlan",
+    "studio.compareNotes",
+    "studio.arrangePattern",
+    "studio.presentCreation"
+  ],
+  "files": [
+    {
+      "logicalId": "catalog/primary-5-8.json",
+      "kind": "json",
+      "mime": "application/json",
+      "byteLength": 75445,
+      "sha256": "1e5082cd74eba940ec5d957393c4d46dc31454a44dc0d8124cd7e763175ad884"
+    }
+  ],
+  "totalBytes": 75445,
+  "createdAt": "2026-11-09T03:00:00+01:00"
+} as const satisfies ContentPackManifest;
+
+export const EMBEDDED_PRIMARY_5_8_SIGNATURE = {
+  "format": "lumi.content-pack-signature.v1",
+  "algorithm": "Ed25519",
+  "keyId": "lumi-content-ed25519-v1",
+  "signature": "3Kyf4kZ3dDBgOE8akqi11qtPnM8RaDgUe2TABaOgLVtIkO1UJAO4d1cDaKI-1kqH2N8GccjmI-dGMERm7hyxCA"
+} as const satisfies ContentPackSignature;

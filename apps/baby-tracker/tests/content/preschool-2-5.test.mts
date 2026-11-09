@@ -31,7 +31,7 @@ test('preschool 2–5 drafts and published set validate with monthly coverage', 
     supportedAgeTo: 59,
   });
   assert.equal(coverage.gaps.filter((gap) => gap.code === 'age_gap').length, 0);
-  assert.ok(PRODUCT_PUBLISHED_REVISIONS.length >= 108);
+  assert.ok(PRODUCT_PUBLISHED_REVISIONS.length >= 132);
 });
 
 test('safeMarkMaking gates preschool mark-making and unknown stays ineligible', () => {

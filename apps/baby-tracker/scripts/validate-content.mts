@@ -11,6 +11,8 @@ import {
   LOCAL_LIBRARY_REVISIONS,
   PRESCHOOL_2_5_DRAFT_REVISIONS,
   PRESCHOOL_2_5_PUBLISHED_REVISIONS,
+  PRIMARY_5_8_DRAFT_REVISIONS,
+  PRIMARY_5_8_PUBLISHED_REVISIONS,
   PRODUCT_PUBLISHED_REVISIONS,
   STARTER_TOPICS,
   TODDLER_1_2_DRAFT_REVISIONS,
@@ -24,10 +26,12 @@ import {
 const firstYearDrafts = [...FIRST_YEAR_DRAFT_REVISIONS];
 const toddlerDrafts = [...TODDLER_1_2_DRAFT_REVISIONS];
 const preschoolDrafts = [...PRESCHOOL_2_5_DRAFT_REVISIONS];
-const drafts = [...firstYearDrafts, ...toddlerDrafts, ...preschoolDrafts];
+const primaryDrafts = [...PRIMARY_5_8_DRAFT_REVISIONS];
+const drafts = [...firstYearDrafts, ...toddlerDrafts, ...preschoolDrafts, ...primaryDrafts];
 const publishedFirstYear = [...FIRST_YEAR_PUBLISHED_REVISIONS];
 const publishedToddler = [...TODDLER_1_2_PUBLISHED_REVISIONS];
 const publishedPreschool = [...PRESCHOOL_2_5_PUBLISHED_REVISIONS];
+const publishedPrimary = [...PRIMARY_5_8_PUBLISHED_REVISIONS];
 const all = [
   ...DEV_FIXTURE_REVISIONS,
   ...LOCAL_LIBRARY_REVISIONS,
@@ -36,6 +40,7 @@ const all = [
   ...publishedFirstYear,
   ...publishedToddler,
   ...publishedPreschool,
+  ...publishedPrimary,
 ];
 let failed = 0;
 
@@ -91,6 +96,12 @@ if (publishedPreschoolCount !== 24) {
   );
 }
 
+const publishedPrimaryCount = publishedPrimary.filter((revision) => isRecommendable(revision)).length;
+if (publishedPrimaryCount !== 24) {
+  failed += 1;
+  console.error(`primary 5–8 published recommendable count: ${publishedPrimaryCount} (expected 24)`);
+}
+
 const birthdayLeak = [...firstYearDrafts, ...publishedFirstYear].filter(
   (revision) => revision.ageMonths.toInclusive >= 12,
 ).length;
@@ -115,6 +126,14 @@ if (preschoolAgeLeak > 0) {
   console.error(`preschool age window leak: ${preschoolAgeLeak}`);
 }
 
+const primaryAgeLeak = [...primaryDrafts, ...publishedPrimary].filter(
+  (revision) => revision.ageMonths.fromInclusive < 60 || revision.ageMonths.toInclusive > 95,
+).length;
+if (primaryAgeLeak > 0) {
+  failed += 1;
+  console.error(`primary age window leak: ${primaryAgeLeak}`);
+}
+
 const firstYearCoverage = buildCoverageReport(publishedFirstYear, {
   supportedAgeFrom: 0,
   supportedAgeTo: 11,
@@ -127,9 +146,13 @@ const preschoolCoverage = buildCoverageReport(publishedPreschool, {
   supportedAgeFrom: 24,
   supportedAgeTo: 59,
 });
+const primaryCoverage = buildCoverageReport(publishedPrimary, {
+  supportedAgeFrom: 60,
+  supportedAgeTo: 95,
+});
 const productCoverage = buildCoverageReport([...PRODUCT_PUBLISHED_REVISIONS], {
   supportedAgeFrom: 0,
-  supportedAgeTo: 59,
+  supportedAgeTo: 95,
 });
 
 if (toddlerCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
@@ -139,6 +162,10 @@ if (toddlerCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
 if (preschoolCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
   failed += 1;
   console.error('preschool coverage has empty months', preschoolCoverage.gaps);
+}
+if (primaryCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
+  failed += 1;
+  console.error('primary coverage has empty months', primaryCoverage.gaps);
 }
 if (productCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
   failed += 1;
@@ -155,6 +182,14 @@ if (safeMarkMaking.length < 2) {
   console.error('expected safeMarkMaking-gated toddler and preschool activities');
 }
 
+const shortProjectLike = publishedPrimary.filter(
+  (revision) => revision.duration.kind === 'minutes' && revision.duration.minutes === 10,
+);
+if (shortProjectLike.length < 1) {
+  failed += 1;
+  console.error('expected at least one 10-minute primary short project activity');
+}
+
 console.log(
   JSON.stringify(
     {
@@ -165,13 +200,16 @@ console.log(
       publishedFirstYear: publishedFirstYearCount,
       publishedToddler12: publishedToddlerCount,
       publishedPreschool25: publishedPreschoolCount,
+      publishedPrimary58: publishedPrimaryCount,
       productPublished: PRODUCT_PUBLISHED_REVISIONS.length,
       recommendable: catalog.recommendable.length,
       firstYearCoverageGaps: firstYearCoverage.gaps.map((gap) => gap.code),
       toddlerCoverageGaps: toddlerCoverage.gaps.map((gap) => gap.code),
       preschoolCoverageGaps: preschoolCoverage.gaps.map((gap) => gap.code),
+      primaryCoverageGaps: primaryCoverage.gaps.map((gap) => gap.code),
       productCoverageGaps: productCoverage.gaps.map((gap) => gap.code),
       safeMarkMakingGated: safeMarkMaking.length,
+      primaryTenMinute: shortProjectLike.length,
       failed,
     },
     null,
