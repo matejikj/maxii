@@ -29,6 +29,11 @@ export {
   serializeMediaArchiveBundle,
 } from './mediaArchive';
 export type { MediaArchiveBundle, MediaArchiveManifest } from './mediaArchive';
+export {
+  createHttpFamilyAttachmentTransferClient,
+  resolveFamilyAttachmentTransferPort,
+} from './httpFamilyAttachmentTransferClient';
+export type { HttpFamilyAttachmentTransferConfig } from './httpFamilyAttachmentTransferClient';
 
 /** Lazy Expo/RN adapters — keep Node contract tests off the React Native bundle. */
 export async function loadExpoPhotoPicker() {

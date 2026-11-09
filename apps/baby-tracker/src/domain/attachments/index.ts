@@ -73,6 +73,16 @@ export type {
   FamilyPhotoTransferSession,
 } from './familyPhotoTransferPlanner';
 export {
+  createDisabledFamilyAttachmentTransferPort,
+} from './familyAttachmentTransferPort';
+export type {
+  FamilyAttachmentTransferPort,
+  FamilyAttachmentTransferResult,
+  FamilyAttachmentUploadIntent,
+} from './familyAttachmentTransferPort';
+export { runFamilyPhotoTransferTick } from './familyPhotoTransferWorker';
+export type { FamilyPhotoTransferTickResult } from './familyPhotoTransferWorker';
+export {
   classifyPhotoExportCompleteness,
   decideSoleOwnCopyRelease,
   planRecoverableCacheEviction,
