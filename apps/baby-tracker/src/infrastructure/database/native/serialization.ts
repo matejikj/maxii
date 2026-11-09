@@ -8,6 +8,7 @@ import type {
   Revision,
   SessionRecord,
 } from '../../../domain';
+import { normalizeChildProfile } from '../../../domain/entities/childProfile';
 import { careSortAtMs } from '../../../domain/projections/careTime';
 
 export { careSortAtMs };
@@ -57,7 +58,7 @@ export function profileToRow(profile: ChildProfile) {
 }
 
 export function profileFromRow(row: { payload_json: string }): ChildProfile {
-  return decodeJson<ChildProfile>(row.payload_json);
+  return normalizeChildProfile(decodeJson<ChildProfile>(row.payload_json));
 }
 
 export function sessionToRow(session: SessionRecord | ActiveSession) {

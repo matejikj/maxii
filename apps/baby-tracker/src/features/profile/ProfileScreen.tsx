@@ -6,6 +6,7 @@ import { createChildProfile, parseCalendarDate } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { FamilyConflictsPanel } from '../family/FamilyConflictsPanel';
 import { BackupRestorePanel } from './BackupRestorePanel';
+import { ChildrenPanel } from './ChildrenPanel';
 import { SettingsPanel } from './SettingsPanel';
 
 type ProfileScreenProps = {
@@ -89,6 +90,7 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
             }
           }}
         />
+        <ChildrenPanel />
         <SettingsPanel />
         <FamilyConflictsPanel />
         <BackupRestorePanel />

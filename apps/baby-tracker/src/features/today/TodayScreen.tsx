@@ -14,6 +14,7 @@ import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
 import { BackupHintBanner } from '../shell/BackupHintBanner';
+import { ChildSwitcher } from '../shell/ChildSwitcher';
 import { GuideCompanion } from '../shell/GuideCompanion';
 import { PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
@@ -55,6 +56,9 @@ export function TodayScreen({
   const [diaperOpen, setDiaperOpen] = useState(false);
   const [feedingOpen, setFeedingOpen] = useState(false);
   const [experienceOpen, setExperienceOpen] = useState(false);
+  /** Capture child at sheet open so a mid-form context switch cannot rewrite the draft. */
+  const [formChildId, setFormChildId] = useState(childId);
+  const [formChildName, setFormChildName] = useState(childName);
   const [editingActions, setEditingActions] = useState(false);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
   const [celebrationKey, setCelebrationKey] = useState(0);
@@ -62,6 +66,13 @@ export function TodayScreen({
   const celebrateLocalSave = useCallback(() => {
     setCelebrationKey((value) => value + 1);
   }, []);
+
+  function openBoundForm(setter: (open: boolean) => void) {
+    if (!childId) return;
+    setFormChildId(childId);
+    setFormChildName(childName);
+    setter(true);
+  }
 
   React.useEffect(() => {
     if (!model.activeSleep && !model.activeNursing) return;
@@ -98,11 +109,11 @@ export function TodayScreen({
       return;
     }
     if (id === 'diaper') {
-      setDiaperOpen(true);
+      openBoundForm(setDiaperOpen);
       return;
     }
     if (id === 'feeding') {
-      setFeedingOpen(true);
+      openBoundForm(setFeedingOpen);
       return;
     }
     if (id === 'sleep') {
@@ -115,7 +126,7 @@ export function TodayScreen({
       return;
     }
     if (id === 'experience') {
-      setExperienceOpen(true);
+      openBoundForm(setExperienceOpen);
     }
   }
 
@@ -140,6 +151,7 @@ export function TodayScreen({
             <LumiText tone="muted">
               {model.calendarDate ? model.calendarDate : 'Místní deník bez účtu'}
             </LumiText>
+            <ChildSwitcher />
           </View>
           <Pressable
             accessibilityRole="button"
@@ -243,10 +255,19 @@ export function TodayScreen({
           </View>
         </View>
 
-        {childId ? (
+        {diaperOpen || feedingOpen || experienceOpen ? (
+          <LumiText tone="muted" variant="caption">
+            Zápis pro {formChildName}
+            {formChildId && childId && formChildId !== childId
+              ? ' — aktivní dítě v hlavičce je jiné; tento formulář zůstává u původního.'
+              : ''}
+          </LumiText>
+        ) : null}
+
+        {formChildId ? (
           <>
             <DiaperRecorder
-              childId={childId}
+              childId={formChildId}
               timeZone={zone}
               open={diaperOpen}
               onClose={() => setDiaperOpen(false)}
@@ -255,16 +276,18 @@ export function TodayScreen({
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
             <FeedingRecorder
-              childId={childId}
+              childId={formChildId}
               timeZone={zone}
               open={feedingOpen}
               onClose={() => setFeedingOpen(false)}
-              activeNursing={model.activeNursing}
+              activeNursing={
+                formChildId === childId ? model.activeNursing : null
+              }
               onSavedLocally={celebrateLocalSave}
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
             <ExperienceRecorder
-              childId={childId}
+              childId={formChildId}
               timeZone={zone}
               open={experienceOpen}
               onClose={() => setExperienceOpen(false)}

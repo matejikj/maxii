@@ -139,5 +139,21 @@ export {
   loadWeeklyDevelopmentGlance,
 } from './developmentQueries';
 export { attachPhotosToSavedEvent } from './attachPhotos';
+export {
+  buildEditCareCommand,
+  type CareEditPatch,
+} from './careEdit';
+export {
+  addChildProfile,
+  archiveChildProfile,
+  buildReassignCareChildCommand,
+  captureScopedDiaryArchive,
+  loadMultiChildWorkspace,
+  rebuildSearchAfterReassign,
+  switchActiveChild,
+  updateChildProfileFields,
+  wipeSingleChildDiaryScope,
+  type MultiChildWorkspaceSnapshot,
+} from './multiChildWorkspace';
 
 

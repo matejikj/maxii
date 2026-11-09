@@ -2,6 +2,8 @@ import {
   AppError,
   createChildProfile,
   isAppError,
+  normalizeChildProfile,
+  resolveActiveChildProfile,
   type ChildId,
   type ChildProfile,
   type Clock,
@@ -24,8 +26,8 @@ export type PersonalBootstrapResult = {
 };
 
 /**
- * Ensures exactly one local child for personal mode. Concurrent or repeated
- * starts reuse the existing profile instead of minting a second Miminko.
+ * Ensures at least one local child. Repeated starts reuse existing profiles and
+ * the stored active child id — they never mint a second Miminko automatically.
  */
 export async function ensurePersonalChildProfile(
   unitOfWork: UnitOfWorkFactory,
@@ -37,9 +39,10 @@ export async function ensurePersonalChildProfile(
   },
 ): Promise<ChildProfile> {
   return unitOfWork.run(async (uow) => {
-    const existing = await uow.profiles.list();
+    const existing = (await uow.profiles.list()).map(normalizeChildProfile);
     if (existing.length > 0) {
-      const profile = existing[0]!;
+      const activeId = await uow.meta.get(META_ACTIVE_CHILD_ID);
+      const profile = resolveActiveChildProfile(existing, activeId)!;
       await uow.meta.set(META_ACTIVE_CHILD_ID, profile.childId);
       await uow.meta.set(META_BOOTSTRAP_COMPLETED, String(deps.clock.now().epochMs));
       return profile;
@@ -49,7 +52,7 @@ export async function ensurePersonalChildProfile(
     const activeId = await uow.meta.get(META_ACTIVE_CHILD_ID);
     if (activeId) {
       const byMeta = await uow.profiles.get(asChildId(activeId));
-      if (byMeta) return byMeta;
+      if (byMeta) return normalizeChildProfile(byMeta);
     }
 
     const childId = asChildId(deps.ids.createId('child'));
@@ -90,8 +93,17 @@ export async function updatePersonalProfile(
         details: { reason: 'profile_missing' },
       });
     }
-    await uow.profiles.save(profile);
-    return profile;
+    const normalizedCurrent = normalizeChildProfile(current);
+    const saved = createChildProfile({
+      childId: profile.childId,
+      displayName: profile.displayName,
+      birthDate: profile.birthDate,
+      summaryTimeZone: profile.settings.summaryTimeZone,
+      status: normalizedCurrent.status,
+      archivedAtMs: normalizedCurrent.archivedAtMs,
+    });
+    await uow.profiles.save(saved);
+    return saved;
   });
 }
 

@@ -9,12 +9,16 @@ import React, {
   type ReactNode,
 } from 'react';
 import {
+  addChildProfile as persistAddedChildProfile,
+  archiveChildProfile as persistArchivedChildProfile,
   ensurePersonalChildProfile,
   ensureDailyLogicalCheckpoint,
+  loadMultiChildWorkspace,
   mapBootstrapOpenError,
   markWelcomeCompleted,
   readWelcomePending,
   resolveDefaultTimeZone,
+  switchActiveChild as persistActiveChildSwitch,
   updatePersonalProfile,
   wipePersonalData,
   type PersonalBootstrapResult,
@@ -27,7 +31,7 @@ import type {
 } from '../../application';
 import { createCareOverviewCache } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
-import type { ChildProfile, UnitOfWorkFactory } from '../../domain';
+import type { ChildId, ChildProfile, UnitOfWorkFactory } from '../../domain';
 import type { LogicalCheckpointVault } from '../../infrastructure/database/logicalCheckpointVault';
 import type { DatabaseKeyStore } from '../../infrastructure/database/native/databaseKeyStoreTypes';
 import type { DatabasePresence } from '../../infrastructure/database/native/databasePresence';
@@ -77,6 +81,10 @@ export type OpenPersonalDiary = () => Promise<{
 export type BootstrapContextValue = {
   phase: StartupPhase;
   profile: ChildProfile | null;
+  /** All local profiles including archived ones used for history/export labels. */
+  profiles: ChildProfile[];
+  /** Active profiles offered in the header switcher. */
+  activeProfiles: ChildProfile[];
   welcomePending: boolean;
   errorMessage: string | null;
   presentation: ReturnType<typeof presentStartupPhase>;
@@ -84,6 +92,10 @@ export type BootstrapContextValue = {
   runtime: PersonalRuntime | null;
   skipWelcome: () => Promise<void>;
   saveProfile: (profile: ChildProfile) => Promise<void>;
+  switchChild: (childId: ChildId) => Promise<void>;
+  addChild: (input: { displayName: string; birthDate?: ChildProfile['birthDate'] }) => Promise<ChildProfile>;
+  archiveChild: (childId: ChildId) => Promise<void>;
+  refreshChildren: () => Promise<void>;
   /** Confirmed full local wipe; restarts bootstrap for a clean first launch. */
   wipeAllLocalData: () => Promise<PersonalWipeResult>;
   retry: () => void;
@@ -108,6 +120,8 @@ export function BootstrapProvider({
     welcomePending: false,
     error: null,
   });
+  const [profiles, setProfiles] = useState<ChildProfile[]>([]);
+  const [activeProfiles, setActiveProfiles] = useState<ChildProfile[]>([]);
   const [runtime, setRuntime] = useState<PersonalRuntime | null>(null);
   const [attempt, setAttempt] = useState(0);
 
@@ -163,6 +177,22 @@ export function BootstrapProvider({
     }
   }, [openPersonalDiary, services]);
 
+  const applyWorkspace = useCallback(
+    (workspace: Awaited<ReturnType<typeof loadMultiChildWorkspace>>) => {
+      setProfiles(workspace.profiles);
+      setActiveProfiles(workspace.activeProfiles);
+      if (workspace.activeChild) {
+        setResult((current) => ({ ...current, profile: workspace.activeChild }));
+      }
+    },
+    [],
+  );
+
+  const refreshChildren = useCallback(async () => {
+    const personal = await resolveRuntime();
+    applyWorkspace(await loadMultiChildWorkspace(personal.unitOfWork));
+  }, [applyWorkspace, resolveRuntime]);
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -172,6 +202,8 @@ export function BootstrapProvider({
         welcomePending: false,
         error: null,
       });
+      setProfiles([]);
+      setActiveProfiles([]);
       setRuntime(null);
       try {
         // Fresh attempt may need a new open after a hard failure.
@@ -192,10 +224,14 @@ export function BootstrapProvider({
           timeZone: profile.settings.summaryTimeZone,
         });
         if (cancelled) return;
+        const workspace = await loadMultiChildWorkspace(personal.unitOfWork);
+        if (cancelled) return;
         setRuntime(personal);
+        setProfiles(workspace.profiles);
+        setActiveProfiles(workspace.activeProfiles);
         setResult({
           phase: welcomePending ? 'welcome' : 'ready',
-          profile,
+          profile: workspace.activeChild ?? profile,
           welcomePending,
           error: null,
         });
@@ -217,6 +253,8 @@ export function BootstrapProvider({
               : null,
         });
         setRuntime(null);
+        setProfiles([]);
+        setActiveProfiles([]);
         setResult(mapped);
       }
     })();
@@ -240,8 +278,56 @@ export function BootstrapProvider({
       const personal = await resolveRuntime();
       const saved = await updatePersonalProfile(personal.unitOfWork, profile);
       setResult((current) => ({ ...current, profile: saved }));
+      applyWorkspace(await loadMultiChildWorkspace(personal.unitOfWork));
     },
-    [resolveRuntime],
+    [applyWorkspace, resolveRuntime],
+  );
+
+  const switchChild = useCallback(
+    async (childId: ChildId) => {
+      const personal = await resolveRuntime();
+      const next = await persistActiveChildSwitch(personal.unitOfWork, childId);
+      personal.overviewCache.invalidate();
+      setResult((current) => ({ ...current, profile: next }));
+      applyWorkspace(await loadMultiChildWorkspace(personal.unitOfWork));
+      personal.readModels.notifyCommitted(['profile', 'care', 'sessions']);
+    },
+    [applyWorkspace, resolveRuntime],
+  );
+
+  const addChild = useCallback(
+    async (input: { displayName: string; birthDate?: ChildProfile['birthDate'] }) => {
+      const personal = await resolveRuntime();
+      const zone = result.profile?.settings.summaryTimeZone ?? resolveDefaultTimeZone();
+      const created = await persistAddedChildProfile(personal.unitOfWork, {
+        ids: services.ids,
+        displayName: input.displayName,
+        birthDate: input.birthDate ?? null,
+        summaryTimeZone: zone,
+        activate: true,
+      });
+      personal.overviewCache.invalidate();
+      setResult((current) => ({ ...current, profile: created }));
+      applyWorkspace(await loadMultiChildWorkspace(personal.unitOfWork));
+      personal.readModels.notifyCommitted(['profile', 'care', 'sessions']);
+      return created;
+    },
+    [applyWorkspace, resolveRuntime, result.profile?.settings.summaryTimeZone, services.ids],
+  );
+
+  const archiveChild = useCallback(
+    async (childId: ChildId) => {
+      const personal = await resolveRuntime();
+      const archived = await persistArchivedChildProfile(personal.unitOfWork, {
+        childId,
+        archivedAtMs: services.clock.now().epochMs,
+      });
+      personal.overviewCache.invalidate();
+      setResult((current) => ({ ...current, profile: archived.activeChild }));
+      applyWorkspace(await loadMultiChildWorkspace(personal.unitOfWork));
+      personal.readModels.notifyCommitted(['profile', 'care', 'sessions']);
+    },
+    [applyWorkspace, resolveRuntime, services.clock],
   );
 
   const wipeAllLocalData = useCallback(async () => {
@@ -260,6 +346,8 @@ export function BootstrapProvider({
     });
     cached.current = null;
     setRuntime(null);
+    setProfiles([]);
+    setActiveProfiles([]);
     setResult({
       phase: 'initializing',
       profile: null,
@@ -274,16 +362,34 @@ export function BootstrapProvider({
     () => ({
       phase: result.phase,
       profile: result.profile,
+      profiles,
+      activeProfiles,
       welcomePending: result.welcomePending,
       errorMessage: result.error?.message ?? null,
       presentation: presentStartupPhase(result.phase),
       runtime,
       skipWelcome,
       saveProfile,
+      switchChild,
+      addChild,
+      archiveChild,
+      refreshChildren,
       wipeAllLocalData,
       retry: () => setAttempt((n) => n + 1),
     }),
-    [result, runtime, saveProfile, skipWelcome, wipeAllLocalData],
+    [
+      activeProfiles,
+      addChild,
+      archiveChild,
+      profiles,
+      refreshChildren,
+      result,
+      runtime,
+      saveProfile,
+      skipWelcome,
+      switchChild,
+      wipeAllLocalData,
+    ],
   );
 
   return <BootstrapContext.Provider value={value}>{children}</BootstrapContext.Provider>;

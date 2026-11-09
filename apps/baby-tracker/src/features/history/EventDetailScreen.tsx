@@ -18,8 +18,13 @@ import {
   buildAuthorshipLine,
   buildSyncTransferPresentation,
   type CareEvent,
+  type ChildId,
   type DiaperContents,
 } from '../../domain';
+import {
+  buildReassignCareChildCommand,
+  rebuildSearchAfterReassign,
+} from '../../application';
 import { isOpaqueEntityId } from '../../app/navigation/linking';
 import {
   resolveRemoteServicesBoundary,
@@ -43,7 +48,7 @@ type EventDetailScreenProps = {
  */
 export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) {
   const { colors, ui } = useLumiTheme();
-  const { profile } = useBootstrap();
+  const { profile, profiles, activeProfiles } = useBootstrap();
   const runtime = usePersonalRuntime();
   const { services } = useCompositionRoot();
   const zone = asTimeZoneId(profile?.settings.summaryTimeZone ?? 'Europe/Prague');
@@ -51,6 +56,7 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
   const [event, setEvent] = useState<CareEvent | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [reassigning, setReassigning] = useState(false);
   const [body, setBody] = useState('');
   const [note, setNote] = useState('');
   const [title, setTitle] = useState('');
@@ -161,6 +167,45 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
     await reload();
   }
 
+  async function reassignToChild(targetChildId: ChildId) {
+    if (!event) return;
+    const fromChildId = event.childId;
+    const intentMs = services.clock.now().epochMs;
+    let command;
+    try {
+      command = buildReassignCareChildCommand({
+        event,
+        targetChildId,
+        profiles,
+        operationId: services.ids.createId('op'),
+        revisionId: services.ids.createId('rev'),
+        intentCapturedAtMs: intentMs,
+      });
+    } catch (error) {
+      setFeedback('error');
+      setFeedbackMessage(error instanceof Error ? error.message : PRODUCT_COPY.feedback.saveFailed);
+      return;
+    }
+    setFeedback('pending');
+    const result = await runtime.commands.dispatch(command);
+    if (!result.ok) {
+      setFeedback('error');
+      setFeedbackMessage(PRODUCT_COPY.feedback.saveFailed);
+      return;
+    }
+    await rebuildSearchAfterReassign(runtime.unitOfWork, fromChildId, targetChildId);
+    setFeedback('saved');
+    setFeedbackMessage('Záznam byl přesunut k jinému dítěti. Autorství zůstalo zachované.');
+    setReassigning(false);
+    await reload();
+  }
+
+  const eventChildName =
+    event == null
+      ? null
+      : profiles.find((row) => row.childId === event.childId)?.displayName ?? 'Dítě';
+  const reassignTargets = activeProfiles.filter((row) => row.childId !== event?.childId);
+
   function confirmDelete() {
     if (!event || !presentation) return;
     Alert.alert(
@@ -245,6 +290,7 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
           ) : presentation && event ? (
             <View style={{ gap: ui.space.sm }}>
               <LumiText variant="h2">{presentation.title}</LumiText>
+              <LumiText tone="muted">Dítě: {eventChildName}</LumiText>
               <LumiText>{presentation.detail}</LumiText>
               {event.type === 'sleep' || event.type === 'nursing' ? (
                 <LumiText tone="muted">
@@ -352,6 +398,24 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
         {event && !editing ? (
           <View style={styles.actions}>
             <LumiButton title={PRODUCT_COPY.actions.edit} onPress={() => setEditing(true)} fullWidth />
+            {reassignTargets.length > 0 ? (
+              <LumiButton
+                title={reassigning ? 'Zrušit přesun' : 'Přesunout k jinému dítěti'}
+                variant="secondary"
+                onPress={() => setReassigning((value) => !value)}
+                fullWidth
+              />
+            ) : null}
+            {reassigning
+              ? reassignTargets.map((child) => (
+                  <LumiButton
+                    key={child.childId}
+                    title={`Přesunout k ${child.displayName}`}
+                    onPress={() => void reassignToChild(child.childId)}
+                    fullWidth
+                  />
+                ))
+              : null}
             <LumiButton title={PRODUCT_COPY.actions.delete} onPress={confirmDelete} fullWidth />
           </View>
         ) : null}

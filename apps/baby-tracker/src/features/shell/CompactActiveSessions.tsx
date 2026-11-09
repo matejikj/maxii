@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LumiText, useLumiTheme } from '@lumi/forest-design/native';
-import type { ActiveSession } from '../../domain';
+import {
+  listActiveSessionsForStrip,
+  type ActiveSessionStripItem,
+} from '../../domain';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { useCompositionRoot } from '../../app/providers';
 import { PRODUCT_COPY } from '../ui';
@@ -15,90 +18,46 @@ type CompactActiveSessionsProps = {
 };
 
 /**
- * Compact strip above tab content for non-Today screens. Never duplicates the
- * expanded Today measurement on the same view. Sleep and nursing can both show.
+ * Compact strip above tab content for non-Today screens. Names the child on
+ * every running measurement so two timers never look interchangeable.
  */
 export function CompactActiveSessions({ hidden = false, onOpenSleep }: CompactActiveSessionsProps) {
   const { colors, ui } = useLumiTheme();
-  const { profile } = useBootstrap();
+  const { profiles, switchChild } = useBootstrap();
   const runtime = usePersonalRuntime();
   const { services } = useCompositionRoot();
-  const [sleep, setSleep] = useState<ActiveSession | null>(null);
-  const [nursing, setNursing] = useState<ActiveSession | null>(null);
+  const [items, setItems] = useState<ActiveSessionStripItem[]>([]);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
 
   useEffect(() => {
     let cancelled = false;
-    const childId = profile?.childId;
     async function load() {
-      if (!childId) {
-        if (!cancelled) {
-          setSleep(null);
-          setNursing(null);
-        }
-        return;
-      }
-      const [activeSleep, activeNursing] = await Promise.all([
-        runtime.unitOfWork.run((uow) => uow.sessions.getActive(childId, 'sleep')),
-        runtime.unitOfWork.run((uow) => uow.sessions.getActive(childId, 'nursing')),
-      ]);
-      if (!cancelled) {
-        setSleep(activeSleep);
-        setNursing(activeNursing);
-      }
+      const sessions = await runtime.unitOfWork.run((uow) => uow.sessions.listAll());
+      const next = listActiveSessionsForStrip({ sessions, profiles });
+      if (!cancelled) setItems(next);
     }
     queueMicrotask(() => {
       if (!cancelled) void load();
     });
     const unsubscribe = runtime.readModels.subscribe((topics) => {
-      if (topics.includes('sessions')) void load();
+      if (topics.includes('sessions') || topics.includes('profile')) void load();
     });
     return () => {
       cancelled = true;
       unsubscribe();
     };
-  }, [profile?.childId, runtime.readModels, runtime.unitOfWork]);
+  }, [profiles, runtime.readModels, runtime.unitOfWork]);
 
   useEffect(() => {
-    if (hidden || (!sleep && !nursing)) return;
+    if (hidden || items.length === 0) return;
     const timer = setInterval(() => setNowMs(services.clock.now().epochMs), 1000);
     return () => clearInterval(timer);
-  }, [hidden, nursing, services.clock, sleep]);
+  }, [hidden, items.length, services.clock]);
 
-  if (hidden || (!sleep && !nursing)) return null;
-
-  const sleepElapsed =
-    sleep != null
-      ? formatElapsedUnits(Math.max(0, nowMs - sleep.startedAt.instant.epochMs))
-      : null;
-  const nursingElapsed =
-    nursing != null
-      ? formatElapsedUnits(
-          nursingElapsedMs({
-            status: nursing.status === 'paused' ? 'paused' : 'running',
-            activeSegments: nursing.activeSegments,
-            ...(nursing.status === 'running'
-              ? { currentSegmentStartedAtMs: nursing.currentSegmentStartedAtMs }
-              : {}),
-            nowMs,
-          }),
-        )
-      : null;
+  if (hidden || items.length === 0) return null;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={[
-        sleepElapsed
-          ? `${PRODUCT_COPY.actions.sleepRunning}, ${sleepElapsed}`
-          : null,
-        nursingElapsed
-          ? `${PRODUCT_COPY.actions.nursingRunning}, ${nursingElapsed}`
-          : null,
-      ]
-        .filter(Boolean)
-        .join('. ')}
-      onPress={onOpenSleep}
+    <View
       style={[
         styles.bar,
         {
@@ -110,30 +69,50 @@ export function CompactActiveSessions({ hidden = false, onOpenSleep }: CompactAc
         },
       ]}
     >
-      <View style={{ gap: 2, flexShrink: 1 }}>
-        {sleepElapsed ? (
-          <LumiText variant="label">
-            {PRODUCT_COPY.actions.sleepRunning} · {sleepElapsed}
-          </LumiText>
-        ) : null}
-        {nursingElapsed ? (
-          <LumiText variant="label">
-            {nursing?.status === 'paused'
-              ? PRODUCT_COPY.actions.nursingPaused
-              : PRODUCT_COPY.actions.nursingRunning}{' '}
-            · {nursingElapsed}
-          </LumiText>
-        ) : null}
+      <View style={{ gap: 4, flex: 1 }}>
+        {items.map((item) => {
+          const session = item.session;
+          const kindLabel =
+            session.kind === 'sleep'
+              ? PRODUCT_COPY.actions.sleepRunning
+              : session.status === 'paused'
+                ? PRODUCT_COPY.actions.nursingPaused
+                : PRODUCT_COPY.actions.nursingRunning;
+          const elapsed =
+            session.kind === 'sleep' && session.status === 'running'
+              ? formatElapsedUnits(Math.max(0, nowMs - session.startedAt.instant.epochMs))
+              : session.kind === 'nursing' &&
+                  (session.status === 'running' || session.status === 'paused')
+                ? formatElapsedUnits(
+                    nursingElapsedMs({
+                      status: session.status === 'paused' ? 'paused' : 'running',
+                      activeSegments: session.activeSegments,
+                      ...(session.status === 'running'
+                        ? { currentSegmentStartedAtMs: session.currentSegmentStartedAtMs }
+                        : {}),
+                      nowMs,
+                    }),
+                  )
+                : '—';
+          return (
+            <Pressable
+              key={session.sessionId}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.displayName}: ${kindLabel}, ${elapsed}`}
+              onPress={() => {
+                void switchChild(item.childId).then(onOpenSleep);
+              }}
+              style={{ minHeight: 44, justifyContent: 'center' }}
+            >
+              <LumiText variant="label">
+                {item.displayName} · {kindLabel} · {elapsed}
+              </LumiText>
+            </Pressable>
+          );
+        })}
       </View>
-      <View style={{ flex: 1 }} />
-      <LumiText tone="accent">
-        {sleep && nursing
-          ? 'Otevřít'
-          : sleep
-            ? PRODUCT_COPY.actions.endSleep
-            : PRODUCT_COPY.actions.endNursing}
-      </LumiText>
-    </Pressable>
+      <LumiText tone="accent">Otevřít</LumiText>
+    </View>
   );
 }
 

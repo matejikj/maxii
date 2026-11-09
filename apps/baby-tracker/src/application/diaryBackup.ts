@@ -2,10 +2,12 @@ import {
   DIARY_ARCHIVE_MAX_COMPAT,
   compareDiaryArchives,
   careEventsToPrivateCsv,
+  filterDiaryArchiveByScope,
   filterExportableMeta,
   parseDiaryArchive,
   type DiaryArchive,
   type DiaryArchiveCompare,
+  type DiaryExportScope,
   type UnitOfWorkFactory,
 } from '../domain';
 import { AppError } from '../domain/errors';
@@ -114,8 +116,14 @@ export async function exportSealedPortableDiary(input: {
   password: string;
   nowMs: number;
   argonParams?: Argon2idParams;
+  /**
+   * Default exports every local child. One-child scope must never silently
+   * include another profile's care rows.
+   */
+  scope?: DiaryExportScope;
 }): Promise<{ serialized: string; envelope: PortableBackupEnvelope; exportedAtMs: number }> {
-  const archive = await captureArchive(input.unitOfWork, input.nowMs);
+  const full = await captureArchive(input.unitOfWork, input.nowMs);
+  const archive = filterDiaryArchiveByScope(full, input.scope ?? { kind: 'all_children' });
   const plaintext = new TextEncoder().encode(JSON.stringify(archive));
   const envelope = sealPortableBackup(
     plaintext,

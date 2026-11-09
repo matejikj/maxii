@@ -1,7 +1,10 @@
 export {
   createChildProfile,
+  isActiveChildProfile,
+  normalizeChildProfile,
   type ChildProfile,
   type ChildProfileSettings,
+  type ChildProfileStatus,
 } from './childProfile';
 export {
   assertMeasuredQuantity,

@@ -258,3 +258,19 @@ export {
   type GraphRevision,
   type TombstoneRecord,
 } from './sync/causality';
+export {
+  assertDraftChildUnchanged,
+  assertSingleChildMigrationPreserved,
+  bindOpenFormToChild,
+  filterDiaryArchiveByScope,
+  listActiveChildProfiles,
+  listActiveSessionsForStrip,
+  planAddChildProfile,
+  planArchiveChildProfile,
+  planCareEventReassignment,
+  planSwitchActiveChild,
+  resolveActiveChildProfile,
+  type ActiveSessionStripItem,
+  type ChildContextBinding,
+  type DiaryExportScope,
+} from './multiChild/workspace';

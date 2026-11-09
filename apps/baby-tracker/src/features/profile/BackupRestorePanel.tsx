@@ -31,9 +31,10 @@ import { RemoteBackupStatusCard } from '../family/RemoteBackupStatusCard';
  * future remote backup as distinct product concepts — never one green "backed up".
  */
 export function BackupRestorePanel() {
-  const { runtime, profile } = useBootstrap();
+  const { runtime, profile, activeProfiles } = useBootstrap();
   const [points, setPoints] = useState<LogicalCheckpointSummary[]>([]);
   const [lastExportAtMs, setLastExportAtMs] = useState<number | null>(null);
+  const [exportScope, setExportScope] = useState<'all' | 'active'>('all');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [importPassword, setImportPassword] = useState('');
@@ -143,6 +144,15 @@ export function BackupRestorePanel() {
         ) : (
           <LumiText tone="muted">Zatím nebyl vytvořen žádný přenosný export.</LumiText>
         )}
+        {activeProfiles.length > 1 ? (
+          <View style={styles.row}>
+            <LumiButton
+              title={exportScope === 'all' ? 'Rozsah: všechna děti' : 'Rozsah: jen aktivní dítě'}
+              variant="secondary"
+              onPress={() => setExportScope((value) => (value === 'all' ? 'active' : 'all'))}
+            />
+          </View>
+        ) : null}
         <LumiInput
           label="Heslo obnovy"
           value={password}
@@ -176,6 +186,10 @@ export function BackupRestorePanel() {
               unitOfWork: runtime.unitOfWork,
               password,
               nowMs,
+              scope:
+                exportScope === 'active'
+                  ? { kind: 'one_child', childId: profile.childId }
+                  : { kind: 'all_children' },
             })
               .then(async (result) => {
                 setExportText(result.serialized);
