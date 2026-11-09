@@ -3,7 +3,9 @@ import { test } from 'node:test';
 import {
   FAMILY_ATTACHMENT_QUOTA,
   authorizeFamilyAttachmentAction,
+  decideAttachmentMutationAgainstErasure,
   isDisposableAttachmentCopy,
+  planAttachmentEraseGeneration,
   planFamilyAttachmentReservation,
 } from '../src/attachments.ts';
 
@@ -47,6 +49,37 @@ test('only cache copies are disposable; own/pending/pinned stay durable', () => 
   assert.equal(isDisposableAttachmentCopy('own'), false);
   assert.equal(isDisposableAttachmentCopy('pending'), false);
   assert.equal(isDisposableAttachmentCopy('pinned'), false);
+});
+
+test('erase generations advance and block mutations after deletion', () => {
+  assert.equal(
+    planAttachmentEraseGeneration({
+      recordedEraseGeneration: null,
+      requestedEraseGeneration: 1,
+    }).ok,
+    true,
+  );
+  assert.equal(
+    planAttachmentEraseGeneration({
+      recordedEraseGeneration: 1,
+      requestedEraseGeneration: 1,
+    }).ok,
+    false,
+  );
+  assert.equal(
+    decideAttachmentMutationAgainstErasure({
+      recordedEraseGeneration: null,
+      action: 'finalize',
+    }).allow,
+    true,
+  );
+  assert.equal(
+    decideAttachmentMutationAgainstErasure({
+      recordedEraseGeneration: 2,
+      action: 'finalize',
+    }).allow,
+    false,
+  );
 });
 
 test('attachment tombstone stays admin-only while caregivers may upload and read', () => {

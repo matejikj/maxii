@@ -110,6 +110,51 @@ export function isDisposableAttachmentCopy(kind: 'own' | 'pending' | 'pinned' | 
 }
 
 /**
+ * Erase generations block late uploads, retries, and restores from re-publishing
+ * a deleted photo. A missing ledger entry means the attachment is still live.
+ */
+export function decideAttachmentMutationAgainstErasure(input: {
+  readonly recordedEraseGeneration: number | null;
+  readonly action: 'create_intent' | 'upload' | 'finalize' | 'read' | 'restore_publish';
+}):
+  | { readonly allow: true }
+  | { readonly allow: false; readonly reason: 'erased' } {
+  if (
+    input.recordedEraseGeneration != null &&
+    Number.isFinite(input.recordedEraseGeneration) &&
+    input.recordedEraseGeneration > 0
+  ) {
+    return { allow: false, reason: 'erased' };
+  }
+  void input.action;
+  return { allow: true };
+}
+
+/**
+ * Tombstone writes must advance the erase generation so older phones cannot
+ * overwrite a newer deletion with a stale generation stamp.
+ */
+export function planAttachmentEraseGeneration(input: {
+  readonly recordedEraseGeneration: number | null;
+  readonly requestedEraseGeneration: number;
+}):
+  | { readonly ok: true; readonly eraseGeneration: number }
+  | { readonly ok: false; readonly reason: 'invalid_generation' | 'stale_generation' } {
+  if (
+    !Number.isFinite(input.requestedEraseGeneration) ||
+    !Number.isInteger(input.requestedEraseGeneration) ||
+    input.requestedEraseGeneration < 1
+  ) {
+    return { ok: false, reason: 'invalid_generation' };
+  }
+  const recorded = input.recordedEraseGeneration ?? 0;
+  if (input.requestedEraseGeneration <= recorded) {
+    return { ok: false, reason: 'stale_generation' };
+  }
+  return { ok: true, eraseGeneration: input.requestedEraseGeneration };
+}
+
+/**
  * Caregivers may upload/read for records they can already access. Admins manage
  * family-wide erase; membership alone never opens another family's objects.
  */

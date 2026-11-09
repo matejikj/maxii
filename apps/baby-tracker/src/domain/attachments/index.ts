@@ -67,3 +67,14 @@ export type {
   PhotoExportCompleteness,
   SoleOwnReleaseDecision,
 } from './attachmentCachePolicy';
+export {
+  ATTACHMENT_TRASH_RETENTION_MS,
+  attachmentTrashRetainUntilMs,
+  filterRestoredAttachmentsAgainstErasure,
+  planAttachmentPayloadPurge,
+} from './attachmentErasurePolicy';
+export type {
+  AttachmentPurgeCandidate,
+  AttachmentPurgeDecision,
+  AttachmentRestoreFilterResult,
+} from './attachmentErasurePolicy';

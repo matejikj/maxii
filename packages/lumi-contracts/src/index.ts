@@ -120,7 +120,9 @@ export type {
 export {
   FAMILY_ATTACHMENT_QUOTA,
   authorizeFamilyAttachmentAction,
+  decideAttachmentMutationAgainstErasure,
   isDisposableAttachmentCopy,
+  planAttachmentEraseGeneration,
   planFamilyAttachmentReservation,
 } from './attachments.ts';
 export type {

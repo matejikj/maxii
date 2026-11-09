@@ -337,3 +337,81 @@ test('caregiver cannot tombstone; admin tombstone blocks later reads', async () 
   });
   assert.equal(missing.statusCode, 404);
 });
+
+test('tombstone cancels in-flight upload and blocks late finalize revival', async () => {
+  const objects = createMemoryAttachmentObjectStore();
+  const quota = createFamilyAttachmentQuotaLedger({
+    budgetBytes: 10_000,
+    pendingReservationBudgetBytes: 10_000,
+  });
+  const service = createFamilyAttachmentService({ objects, quota });
+  const bytes = tinyJpeg(5);
+  const digest = sha256Hex(bytes);
+  const created = await service.createIntent({
+    familyId: 'fam_erase',
+    appUserId: 'user_1',
+    membership: { active: true, role: 'caregiver' },
+    attachmentId: 'att_erase',
+    childId: 'child_1',
+    eventId: 'note_1',
+    role: 'display',
+    expectedBytes: bytes.byteLength,
+    expectedSha256: digest,
+    nowMs: 1_000,
+    idempotencyKey: 'erase-1',
+  });
+  assert.equal(created.ok, true);
+  if (!created.ok) return;
+  await service.uploadBytes({
+    intentId: created.response.intentId,
+    appUserId: 'user_1',
+    membership: { active: true, role: 'caregiver' },
+    bytes,
+    nowMs: 1_100,
+  });
+
+  const erased = await service.tombstone({
+    familyId: 'fam_erase',
+    attachmentId: 'att_erase',
+    membership: { active: true, role: 'admin' },
+    eraseGeneration: 1,
+    nowMs: 1_200,
+  });
+  assert.equal(erased.ok, true);
+  assert.equal(quota.view('fam_erase').reservedBytes, 0);
+  assert.equal(service.recordedEraseGeneration('fam_erase', 'att_erase'), 1);
+
+  const lateFinalize = await service.finalize({
+    intentId: created.response.intentId,
+    appUserId: 'user_1',
+    membership: { active: true, role: 'caregiver' },
+    sha256: digest,
+    byteLength: bytes.byteLength,
+    nowMs: 1_300,
+  });
+  assert.equal(lateFinalize.ok, false);
+
+  const retryIntent = await service.createIntent({
+    familyId: 'fam_erase',
+    appUserId: 'user_1',
+    membership: { active: true, role: 'caregiver' },
+    attachmentId: 'att_erase',
+    childId: 'child_1',
+    eventId: 'note_1',
+    role: 'display',
+    expectedBytes: bytes.byteLength,
+    expectedSha256: digest,
+    nowMs: 1_400,
+    idempotencyKey: 'erase-retry',
+  });
+  assert.equal(retryIntent.ok, false);
+
+  const staleTomb = await service.tombstone({
+    familyId: 'fam_erase',
+    attachmentId: 'att_erase',
+    membership: { active: true, role: 'admin' },
+    eraseGeneration: 1,
+    nowMs: 1_500,
+  });
+  assert.equal(staleTomb.ok, false);
+});

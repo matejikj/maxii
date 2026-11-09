@@ -3,6 +3,8 @@ import {
   FAMILY_ATTACHMENT_QUOTA,
   LUMI_API_PROTOCOL_VERSION,
   authorizeFamilyAttachmentAction,
+  decideAttachmentMutationAgainstErasure,
+  planAttachmentEraseGeneration,
   type AttachmentRenditionRole,
   type FamilyAttachmentFinalizeResponse,
   type FamilyAttachmentQuotaView,
@@ -58,6 +60,16 @@ export function createFamilyAttachmentService(input: {
   const intents = new Map<string, AttachmentIntentRecord>();
   const idempotency = new Map<string, string>();
   const activatedKeys = new Map<string, { familyId: string; attachmentId: string; role: AttachmentRenditionRole; objectKey: string; byteLength: number; sha256: string }>();
+  /** Newer erase generations win over late uploads, retries, and restored dumps. */
+  const erasures = new Map<string, { eraseGeneration: number; erasedAtMs: number }>();
+
+  function erasureKey(familyId: string, attachmentId: string): string {
+    return `${familyId}:${attachmentId}`;
+  }
+
+  function recordedEraseGeneration(familyId: string, attachmentId: string): number | null {
+    return erasures.get(erasureKey(familyId, attachmentId))?.eraseGeneration ?? null;
+  }
 
   function authorize(
     membership: AttachmentMembership,
@@ -70,10 +82,25 @@ export function createFamilyAttachmentService(input: {
     });
   }
 
+  async function cancelOpenIntentsForAttachment(familyId: string, attachmentId: string) {
+    for (const [intentId, intent] of intents) {
+      if (intent.familyId !== familyId || intent.attachmentId !== attachmentId) continue;
+      if (intent.finalized) {
+        intents.delete(intentId);
+        continue;
+      }
+      await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
+      await input.objects.deleteStaging(intent.objectKey);
+      intents.delete(intentId);
+    }
+  }
+
   return {
     quotaView(familyId: string): FamilyAttachmentQuotaView {
       return input.quota.view(familyId);
     },
+
+    recordedEraseGeneration,
 
     async createIntent(
       create: CreateIntentInput,
@@ -84,6 +111,18 @@ export function createFamilyAttachmentService(input: {
       const gate = authorize(create.membership, 'upload');
       if (!gate.allow) {
         return { ok: false, code: 'forbidden', message: 'Attachment upload is not allowed' };
+      }
+      const againstErasure = decideAttachmentMutationAgainstErasure({
+        recordedEraseGeneration: recordedEraseGeneration(create.familyId, create.attachmentId),
+        action: 'create_intent',
+      });
+      if (!againstErasure.allow) {
+        return {
+          ok: false,
+          code: 'conflict',
+          message: 'Attachment was erased and cannot accept new uploads',
+          details: { reason: againstErasure.reason },
+        };
       }
       if (create.role === 'display' && create.expectedBytes > FAMILY_ATTACHMENT_QUOTA.displayMaxBytes) {
         return { ok: false, code: 'validation', message: 'Display rendition exceeds size limit' };
@@ -181,6 +220,16 @@ export function createFamilyAttachmentService(input: {
       if (!intent || intent.appUserId !== inputUpload.appUserId) {
         return { ok: false, code: 'not_found', message: 'Upload intent was not found' };
       }
+      const againstErasure = decideAttachmentMutationAgainstErasure({
+        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        action: 'upload',
+      });
+      if (!againstErasure.allow) {
+        await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
+        await input.objects.deleteStaging(intent.objectKey);
+        intents.delete(intent.intentId);
+        return { ok: false, code: 'conflict', message: 'Attachment was erased before upload completed' };
+      }
       if (intent.expiresAtMs <= inputUpload.nowMs) {
         await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
         intents.delete(intent.intentId);
@@ -224,6 +273,20 @@ export function createFamilyAttachmentService(input: {
       if (!intent || intent.appUserId !== inputFinalize.appUserId) {
         return { ok: false, code: 'not_found', message: 'Upload intent was not found' };
       }
+      const againstErasure = decideAttachmentMutationAgainstErasure({
+        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        action: 'finalize',
+      });
+      if (!againstErasure.allow) {
+        await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
+        await input.objects.deleteStaging(intent.objectKey);
+        intents.delete(intent.intentId);
+        return {
+          ok: false,
+          code: 'conflict',
+          message: 'Attachment was erased and cannot be activated',
+        };
+      }
       if (intent.finalized) {
         return {
           ok: true,
@@ -247,6 +310,21 @@ export function createFamilyAttachmentService(input: {
         inputFinalize.sha256.toLowerCase() !== intent.expectedSha256
       ) {
         return { ok: false, code: 'validation', message: 'Finalize digest does not match intent' };
+      }
+      // Last check before publish — erasure during staging must not activate.
+      const stillLive = decideAttachmentMutationAgainstErasure({
+        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        action: 'finalize',
+      });
+      if (!stillLive.allow) {
+        await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
+        await input.objects.deleteStaging(intent.objectKey);
+        intents.delete(intent.intentId);
+        return {
+          ok: false,
+          code: 'conflict',
+          message: 'Attachment was erased and cannot be activated',
+        };
       }
       const activated = await input.objects.activate(intent.objectKey);
       if (!activated) {
@@ -284,6 +362,13 @@ export function createFamilyAttachmentService(input: {
       if (!gate.allow) {
         return { ok: false as const, code: 'forbidden' as const, message: 'Attachment read is not allowed' };
       }
+      const againstErasure = decideAttachmentMutationAgainstErasure({
+        recordedEraseGeneration: recordedEraseGeneration(inputRead.familyId, inputRead.attachmentId),
+        action: 'read',
+      });
+      if (!againstErasure.allow) {
+        return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
+      }
       const meta = activatedKeys.get(
         `${inputRead.familyId}:${inputRead.attachmentId}:${inputRead.role}`,
       );
@@ -313,12 +398,30 @@ export function createFamilyAttachmentService(input: {
       readonly attachmentId: string;
       readonly membership: AttachmentMembership;
       readonly eraseGeneration: number;
+      readonly nowMs?: number;
     }) {
       const gate = authorize(inputTomb.membership, 'tombstone');
       if (!gate.allow) {
         return { ok: false as const, code: 'forbidden' as const, message: 'Attachment erase is not allowed' };
       }
-      void inputTomb.eraseGeneration;
+      const planned = planAttachmentEraseGeneration({
+        recordedEraseGeneration: recordedEraseGeneration(
+          inputTomb.familyId,
+          inputTomb.attachmentId,
+        ),
+        requestedEraseGeneration: inputTomb.eraseGeneration,
+      });
+      if (!planned.ok) {
+        return {
+          ok: false as const,
+          code: 'conflict' as const,
+          message:
+            planned.reason === 'stale_generation'
+              ? 'Erase generation is stale'
+              : 'Erase generation is invalid',
+        };
+      }
+      await cancelOpenIntentsForAttachment(inputTomb.familyId, inputTomb.attachmentId);
       const removed = await input.objects.tombstoneByAttachment({
         familyId: inputTomb.familyId,
         attachmentId: inputTomb.attachmentId,
@@ -331,7 +434,11 @@ export function createFamilyAttachmentService(input: {
           activatedKeys.delete(key);
         }
       }
-      return { ok: true as const, removed };
+      erasures.set(erasureKey(inputTomb.familyId, inputTomb.attachmentId), {
+        eraseGeneration: planned.eraseGeneration,
+        erasedAtMs: inputTomb.nowMs ?? Date.now(),
+      });
+      return { ok: true as const, removed, eraseGeneration: planned.eraseGeneration };
     },
 
     async cleanupExpiredIntents(nowMs: number): Promise<number> {
