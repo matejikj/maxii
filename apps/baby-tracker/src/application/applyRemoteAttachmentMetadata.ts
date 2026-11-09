@@ -10,6 +10,7 @@ import {
   type FamilyPhotoTransferSession,
   type PhotoAttachment,
   type RemoteAttachmentMetadataEntry,
+  type ThumbnailPrefetchCandidate,
 } from '../domain/attachments';
 import { asAttachmentId } from '../domain/attachments';
 
@@ -26,20 +27,21 @@ export type ApplyRemoteAttachmentMetadataResult = {
 export type FamilyPhotoTransferDownloadQueue = {
   readonly getSession: () => FamilyPhotoTransferSession;
   readonly getJobs: () => readonly FamilyPhotoBlobTransferJob[];
-  readonly enqueueRemoteDownloads: (input: {
-    readonly remoteAttachments: readonly PhotoAttachment[];
+  readonly enqueueThumbnailPrefetch: (input: {
+    readonly candidates: readonly ThumbnailPrefetchCandidate[];
     readonly localAttachments: readonly PhotoAttachment[];
+    readonly nowMs: number;
   }) => {
     readonly queued: number;
-    readonly placeholders: readonly PhotoAttachment[];
+    readonly plannedBytes: number;
   };
   readonly replaceJobs: (jobs: readonly FamilyPhotoBlobTransferJob[]) => void;
 };
 
 /**
  * Applies attachment.upsert / attachment.tombstone metadata pulled over family
- * sync. Creates missing placeholders and queues downloads without embedding
- * JPEG bytes in the inbox payload.
+ * sync. Creates missing placeholders and prefetches recent thumbnails only —
+ * full display bytes wait for open, pin, or conscious download.
  */
 export async function applyRemoteAttachmentMetadata(input: {
   readonly entries: readonly RemoteAttachmentMetadataEntry[];
@@ -125,18 +127,17 @@ export async function applyRemoteAttachmentMetadata(input: {
   }
 
   if (remoteLive.length > 0) {
-    const queued = input.transfer.enqueueRemoteDownloads({
-      remoteAttachments: remoteLive,
+    // Freshly synced metadata counts as recent for the 30-day prefetch window.
+    const candidates: ThumbnailPrefetchCandidate[] = remoteLive.map((attachment) => ({
+      attachment,
+      referenceAtMs: input.nowMs,
+    }));
+    const queued = input.transfer.enqueueThumbnailPrefetch({
+      candidates,
       localAttachments: localForPlan,
+      nowMs: input.nowMs,
     });
     downloadJobsQueued = queued.queued;
-    for (const placeholder of queued.placeholders) {
-      const current = await input.attachments.repository.getById(placeholder.attachmentId);
-      if (!current) {
-        await input.attachments.repository.save(placeholder);
-        placeholdersSaved += 1;
-      }
-    }
   }
 
   return {

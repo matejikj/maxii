@@ -3,6 +3,7 @@ import {
   isolateTransfersOnSessionChange,
   labelForAttachmentTransfer,
   planDownloadJobsForRemoteMetadata,
+  planThumbnailPrefetchJobs,
   planUploadJobsForLocalAttachments,
   runFamilyPhotoTransferTick,
   shouldEnqueueFamilyPhotoTransfers,
@@ -11,6 +12,7 @@ import {
   type FamilyPhotoTransferLabel,
   type FamilyPhotoTransferSession,
   type PhotoAttachment,
+  type ThumbnailPrefetchCandidate,
 } from '../domain/attachments';
 
 export type FamilyPhotoTransferRuntime = {
@@ -18,13 +20,28 @@ export type FamilyPhotoTransferRuntime = {
   readonly getJobs: () => readonly FamilyPhotoBlobTransferJob[];
   readonly setSession: (session: FamilyPhotoTransferSession) => void;
   readonly enqueueLocalUploads: (attachments: readonly PhotoAttachment[]) => void;
-  /** Queue downloads for remote metadata that lacks local bytes. */
+  /**
+   * Queue missing display+thumbnail downloads for keep-offline / conscious
+   * full fetches. Does not run on ordinary metadata sync.
+   */
   readonly enqueueRemoteDownloads: (input: {
     readonly remoteAttachments: readonly PhotoAttachment[];
     readonly localAttachments: readonly PhotoAttachment[];
   }) => {
     readonly queued: number;
     readonly placeholders: readonly PhotoAttachment[];
+  };
+  /**
+   * Prefetch recent thumbnails within the dedicated cache budget. Never queues
+   * full display copies — those stay on open/pin/conscious download.
+   */
+  readonly enqueueThumbnailPrefetch: (input: {
+    readonly candidates: readonly ThumbnailPrefetchCandidate[];
+    readonly localAttachments: readonly PhotoAttachment[];
+    readonly nowMs: number;
+  }) => {
+    readonly queued: number;
+    readonly plannedBytes: number;
   };
   /** Replace the in-memory job list after cancel/isolation updates. */
   readonly replaceJobs: (next: readonly FamilyPhotoBlobTransferJob[]) => void;
@@ -110,6 +127,23 @@ export function createFamilyPhotoTransferRuntime(input?: {
         jobs = [...jobs, ...planned.jobs];
       }
       return { queued: planned.jobs.length, placeholders: planned.placeholders };
+    },
+    enqueueThumbnailPrefetch({ candidates, localAttachments, nowMs }) {
+      if (!shouldEnqueueFamilyPhotoTransfers(session)) {
+        return { queued: 0, plannedBytes: 0 };
+      }
+      const planned = planThumbnailPrefetchJobs({
+        session,
+        candidates,
+        localAttachments,
+        existingJobs: jobs,
+        createJobId,
+        nowMs,
+      });
+      if (planned.jobs.length > 0) {
+        jobs = [...jobs, ...planned.jobs];
+      }
+      return { queued: planned.jobs.length, plannedBytes: planned.plannedBytes };
     },
     replaceJobs(next) {
       jobs = [...next];

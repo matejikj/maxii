@@ -75,7 +75,7 @@ test('sync inbox mapper keeps only attachment upsert/tombstone kinds', () => {
   assert.equal(mapped[1]?.kind, 'attachment.tombstone');
 });
 
-test('remote metadata upsert saves missing placeholders and queues downloads', async () => {
+test('remote metadata upsert saves placeholders and prefetches thumbnail only', async () => {
   const attachments = services();
   const transfer = createFamilyPhotoTransferRuntime();
   transfer.setSession({
@@ -93,14 +93,15 @@ test('remote metadata upsert saves missing placeholders and queues downloads', a
 
   assert.equal(result.personalCold, false);
   assert.equal(result.appliedUpserts, 1);
-  assert.equal(result.downloadJobsQueued, 2);
+  assert.equal(result.downloadJobsQueued, 1);
   assert.equal(result.placeholdersSaved, 1);
 
   const saved = await attachments.repository.getById(asAttachmentId('att_remote'));
   assert.ok(saved);
   assert.equal(saved!.renditions.every((row) => row.availability === 'missing'), true);
-  assert.equal(transfer.getJobs().length, 2);
-  assert.equal(transfer.getJobs().every((job) => job.kind === 'download'), true);
+  assert.equal(transfer.getJobs().length, 1);
+  assert.equal(transfer.getJobs()[0]?.role, 'thumbnail');
+  assert.equal(transfer.getJobs()[0]?.kind, 'download');
   assert.equal(
     transfer.labelFor({ attachment: saved!, remoteActivated: true }),
     'missing_download',
@@ -139,7 +140,8 @@ test('tombstone soft-deletes and cancels open download jobs; erase blocks resurr
     transfer,
     nowMs: 1_000,
   });
-  assert.equal(transfer.getJobs().length, 2);
+  assert.equal(transfer.getJobs().length, 1);
+  assert.equal(transfer.getJobs()[0]?.role, 'thumbnail');
 
   const tombstoned = await applyRemoteAttachmentMetadata({
     entries: [
@@ -231,8 +233,9 @@ test('family sync tick applies fresh attachment inbox entries into download jobs
 
   assert.equal(result.sync.pulled, 2);
   assert.equal(result.attachments.appliedUpserts, 1);
-  assert.equal(result.attachments.downloadJobsQueued, 2);
+  assert.equal(result.attachments.downloadJobsQueued, 1);
   assert.equal(kicked, 1);
+  assert.equal(transfer.getJobs()[0]?.role, 'thumbnail');
   const saved = await attachments.repository.getById(asAttachmentId('att_inbox'));
   assert.equal(saved?.renditions[0]?.availability, 'missing');
 });

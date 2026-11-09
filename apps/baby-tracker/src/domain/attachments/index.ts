@@ -77,7 +77,9 @@ export {
   cancelTransferJob,
   isolateTransfersOnSessionChange,
   labelForAttachmentTransfer,
+  occupiedThumbnailPrefetchBytes,
   planDownloadJobsForRemoteMetadata,
+  planThumbnailPrefetchJobs,
   planUploadJobsForLocalAttachments,
   selectTransferJobsToStart,
   shouldEnqueueFamilyPhotoTransfers,
@@ -87,6 +89,7 @@ export type {
   FamilyPhotoBlobTransferKind,
   FamilyPhotoBlobTransferState,
   FamilyPhotoTransferSession,
+  ThumbnailPrefetchCandidate,
 } from './familyPhotoTransferPlanner';
 export {
   createDisabledFamilyAttachmentTransferPort,

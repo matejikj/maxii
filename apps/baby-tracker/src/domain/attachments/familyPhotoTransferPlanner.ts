@@ -151,8 +151,8 @@ export function planUploadJobsForLocalAttachments(input: {
 }
 
 /**
- * Remote metadata without local bytes becomes a download job and a truthful
- * missing label — the care text remains usable meanwhile.
+ * Queue download jobs for missing remote renditions. Used for keep-offline and
+ * conscious full downloads — not for automatic album hydration on cellular.
  */
 export function planDownloadJobsForRemoteMetadata(input: {
   readonly session: FamilyPhotoTransferSession;
@@ -160,6 +160,8 @@ export function planDownloadJobsForRemoteMetadata(input: {
   readonly localAttachments: readonly PhotoAttachment[];
   readonly existingJobs: readonly FamilyPhotoBlobTransferJob[];
   readonly createJobId: (seed: string) => string;
+  /** Limit roles when only a subset should transfer (default: display + thumbnail). */
+  readonly roles?: readonly RenditionRole[];
 }): {
   readonly jobs: readonly FamilyPhotoBlobTransferJob[];
   readonly placeholders: readonly PhotoAttachment[];
@@ -168,6 +170,7 @@ export function planDownloadJobsForRemoteMetadata(input: {
     return { jobs: [], placeholders: [] };
   }
   const familyId = input.session.activeFamilyId!;
+  const allowedRoles = new Set(input.roles ?? (['display', 'thumbnail'] as const));
   const localById = new Map(input.localAttachments.map((row) => [row.attachmentId, row]));
   const existingKeys = new Set(
     input.existingJobs
@@ -194,12 +197,9 @@ export function planDownloadJobsForRemoteMetadata(input: {
     if (needsPlaceholder) placeholders.push(base);
 
     for (const rendition of base.renditions) {
+      if (!allowedRoles.has(rendition.role)) continue;
       const localRendition = local?.renditions.find((row) => row.renditionId === rendition.renditionId);
-      const hasBytes =
-        localRendition?.availability === 'durable' ||
-        localRendition?.availability === 'cache' ||
-        localRendition?.availability === 'pending';
-      if (hasBytes) continue;
+      if (renditionHasLocalBytes(localRendition?.availability)) continue;
       const key = `${remote.attachmentId}:${rendition.renditionId}`;
       if (existingKeys.has(key)) continue;
       jobs.push({
@@ -218,6 +218,149 @@ export function planDownloadJobsForRemoteMetadata(input: {
     }
   }
   return { jobs, placeholders };
+}
+
+export type ThumbnailPrefetchCandidate = {
+  readonly attachment: PhotoAttachment;
+  /** Capture or sync time used for the recent-window gate. */
+  readonly referenceAtMs: number;
+};
+
+/**
+ * Bytes already counting against the thumbnail prefetch slice: recoverable
+ * cache copies plus open thumbnail download jobs that will land in cache.
+ */
+export function occupiedThumbnailPrefetchBytes(input: {
+  readonly localAttachments: readonly PhotoAttachment[];
+  readonly existingJobs?: readonly FamilyPhotoBlobTransferJob[];
+}): number {
+  let total = 0;
+  for (const attachment of input.localAttachments) {
+    for (const rendition of attachment.renditions) {
+      if (rendition.role !== 'thumbnail') continue;
+      if (rendition.availability === 'cache' || rendition.availability === 'pending') {
+        total += rendition.byteLength;
+      }
+    }
+  }
+  for (const job of input.existingJobs ?? []) {
+    if (job.kind !== 'download' || job.role !== 'thumbnail') continue;
+    if (job.state === 'cancelled' || job.state === 'isolated' || job.state === 'succeeded') continue;
+    total += job.byteLength;
+  }
+  return total;
+}
+
+function renditionHasLocalBytes(
+  availability: PhotoAttachment['renditions'][number]['availability'] | undefined,
+): boolean {
+  return (
+    availability === 'durable' || availability === 'cache' || availability === 'pending'
+  );
+}
+
+/**
+ * Prefetch recent thumbnails only — never full display copies. Stays inside the
+ * dedicated prefetch budget so automatic sync cannot fill the device album.
+ */
+export function planThumbnailPrefetchJobs(input: {
+  readonly session: FamilyPhotoTransferSession;
+  readonly candidates: readonly ThumbnailPrefetchCandidate[];
+  readonly localAttachments: readonly PhotoAttachment[];
+  readonly existingJobs: readonly FamilyPhotoBlobTransferJob[];
+  readonly createJobId: (seed: string) => string;
+  readonly nowMs: number;
+  readonly occupiedBytes?: number;
+  readonly budgetBytes?: number;
+  readonly windowDays?: number;
+}): {
+  readonly jobs: readonly FamilyPhotoBlobTransferJob[];
+  readonly plannedBytes: number;
+  readonly skippedOutsideWindow: number;
+  readonly skippedBudget: number;
+} {
+  if (!shouldEnqueueFamilyPhotoTransfers(input.session)) {
+    return { jobs: [], plannedBytes: 0, skippedOutsideWindow: 0, skippedBudget: 0 };
+  }
+
+  const familyId = input.session.activeFamilyId!;
+  const budget = input.budgetBytes ?? ATTACHMENT_LIMITS.thumbnailPrefetchBudgetBytes;
+  const windowMs =
+    (input.windowDays ?? ATTACHMENT_LIMITS.thumbnailPrefetchWindowDays) *
+    24 *
+    60 *
+    60 *
+    1000;
+  const occupied =
+    input.occupiedBytes ??
+    occupiedThumbnailPrefetchBytes({
+      localAttachments: input.localAttachments,
+      existingJobs: input.existingJobs,
+    });
+  let remaining = Math.max(0, budget - occupied);
+
+  const localById = new Map(input.localAttachments.map((row) => [row.attachmentId, row]));
+  const existingKeys = new Set(
+    input.existingJobs
+      .filter((job) => job.kind === 'download' && job.state !== 'cancelled' && job.state !== 'isolated')
+      .map((job) => `${job.attachmentId}:${job.renditionId}`),
+  );
+
+  const sorted = [...input.candidates]
+    .filter((row) => row.attachment.deletedAtMs == null)
+    .sort((a, b) => b.referenceAtMs - a.referenceAtMs);
+
+  const jobs: FamilyPhotoBlobTransferJob[] = [];
+  let plannedBytes = 0;
+  let skippedOutsideWindow = 0;
+  let skippedBudget = 0;
+
+  for (const candidate of sorted) {
+    if (
+      candidate.referenceAtMs > input.nowMs ||
+      input.nowMs - candidate.referenceAtMs > windowMs
+    ) {
+      skippedOutsideWindow += 1;
+      continue;
+    }
+
+    const remote = candidate.attachment;
+    const thumb = remote.renditions.find((row) => row.role === 'thumbnail');
+    if (!thumb) continue;
+
+    const local = localById.get(remote.attachmentId);
+    const localThumb =
+      local?.renditions.find((row) => row.renditionId === thumb.renditionId) ??
+      local?.renditions.find((row) => row.role === 'thumbnail');
+    if (renditionHasLocalBytes(localThumb?.availability)) continue;
+
+    const key = `${remote.attachmentId}:${thumb.renditionId}`;
+    if (existingKeys.has(key)) continue;
+
+    if (thumb.byteLength > remaining) {
+      skippedBudget += 1;
+      continue;
+    }
+
+    jobs.push({
+      jobId: input.createJobId(`dl_${key}`),
+      familyId,
+      attachmentId: remote.attachmentId,
+      renditionId: thumb.renditionId,
+      role: 'thumbnail',
+      kind: 'download',
+      sha256: thumb.sha256,
+      byteLength: thumb.byteLength,
+      state: 'queued',
+      attemptCount: 0,
+      lastErrorCode: null,
+    });
+    existingKeys.add(key);
+    remaining -= thumb.byteLength;
+    plannedBytes += thumb.byteLength;
+  }
+
+  return { jobs, plannedBytes, skippedOutsideWindow, skippedBudget };
 }
 
 /**
