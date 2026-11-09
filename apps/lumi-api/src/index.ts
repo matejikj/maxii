@@ -40,6 +40,12 @@ export { loadFamilyReleaseGateFromDeploy } from './ops/loadFamilyReleaseGate.ts'
 export { runFamilySecurityMatrix } from './ops/familySecurityMatrix.ts';
 export { runManagedMigrationLocalDrill } from './ops/managedMigrationLocalDrill.ts';
 export { runRemoteBackupNewDeviceDrill } from './backup/remoteBackupNewDeviceDrill.ts';
+export { createMemoryAttachmentObjectStore } from './attachments/objectStore.ts';
+export { createFamilyAttachmentQuotaLedger } from './attachments/quotaLedger.ts';
+export {
+  createFamilyAttachmentService,
+  sha256Hex,
+} from './attachments/attachmentService.ts';
 
 export {
   MemorySyncStore,

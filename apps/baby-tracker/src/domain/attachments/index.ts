@@ -47,3 +47,11 @@ export type {
   PhotoProcessor,
   PrivateAttachmentBlobStore,
 } from './ports';
+export {
+  detectFamilyPhotoCountConflict,
+  presentFamilyPhotoTransferLabel,
+} from './familyTransfer';
+export type {
+  FamilyPhotoConflictKind,
+  FamilyPhotoTransferLabel,
+} from './familyTransfer';

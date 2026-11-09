@@ -13,6 +13,9 @@ export const ATTACHMENT_LIMITS = {
   thumbnailMaxBytes: 160 * 1024,
   captionMaxChars: 160,
   recoverableCacheBudgetBytes: 256 * 1024 * 1024,
+  /** Default family remote budget — enforced on the API, mirrored for UI copy. */
+  familyRemoteBudgetBytes: 1 * 1024 * 1024 * 1024,
+  familyPendingReservationBudgetBytes: 64 * 1024 * 1024,
   normalizationVersion: 'lumi.photo-normalize.v1',
 } as const;
 

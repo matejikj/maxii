@@ -117,3 +117,19 @@ export type {
   RemoteBackupStatusResponse,
   RemoteBackupTopology,
 } from './backup.ts';
+export {
+  FAMILY_ATTACHMENT_QUOTA,
+  authorizeFamilyAttachmentAction,
+  isDisposableAttachmentCopy,
+  planFamilyAttachmentReservation,
+} from './attachments.ts';
+export type {
+  AttachmentRenditionRole,
+  FamilyAttachmentFinalizeRequest,
+  FamilyAttachmentFinalizeResponse,
+  FamilyAttachmentQuotaView,
+  FamilyAttachmentReadResponse,
+  FamilyAttachmentTombstoneRequest,
+  FamilyAttachmentUploadIntentRequest,
+  FamilyAttachmentUploadIntentResponse,
+} from './attachments.ts';

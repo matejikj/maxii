@@ -23,9 +23,13 @@ import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
 import { registerSyncRoutes } from './syncRoutes.ts';
 import { registerBackupRoutes } from './backupRoutes.ts';
+import { registerAttachmentRoutes } from './attachmentRoutes.ts';
 import { registerOpsRoutes } from './opsRoutes.ts';
 import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
+import { createMemoryAttachmentObjectStore } from '../attachments/objectStore.ts';
+import { createFamilyAttachmentQuotaLedger } from '../attachments/quotaLedger.ts';
+import { createFamilyAttachmentService } from '../attachments/attachmentService.ts';
 import {
   classifyFamilyOpsPath,
   createFamilyOpsMetrics,
@@ -43,6 +47,7 @@ export type CreatedApi = {
   readonly oidc: OidcTokenExchanger;
   readonly backups: ReturnType<typeof createMemoryBackupRepository>;
   readonly erasureRegistry: ReturnType<typeof createMemoryErasureRegistry>;
+  readonly attachments: ReturnType<typeof createFamilyAttachmentService>;
   readonly metrics: FamilyOpsMetrics;
 };
 
@@ -54,6 +59,10 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const oidc = new OidcTokenExchanger(config);
   const backups = createMemoryBackupRepository();
   const erasureRegistry = createMemoryErasureRegistry();
+  const attachments = createFamilyAttachmentService({
+    objects: createMemoryAttachmentObjectStore(),
+    quota: createFamilyAttachmentQuotaLedger(),
+  });
   const backupStatusByFamily = new Map<
     string,
     {
@@ -77,6 +86,22 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     requestTimeout: config.requestTimeoutMs,
   });
 
+  // Family photo uploads are opaque JPEG bytes, not JSON diary payloads.
+  app.addContentTypeParser(
+    'application/octet-stream',
+    { parseAs: 'buffer' },
+    (_request, body, done) => {
+      done(null, body);
+    },
+  );
+  app.addContentTypeParser(
+    'image/jpeg',
+    { parseAs: 'buffer' },
+    (_request, body, done) => {
+      done(null, body);
+    },
+  );
+
   registerAuthRoutes(app, { config, store, sessions, oidc });
   registerFamilyRoutes(app, { config, store, tokens, sessions });
   registerSyncRoutes(app, { config, store, sync, tokens, sessions });
@@ -88,6 +113,13 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     backups,
     erasureRegistry,
     backupStatusByFamily,
+  });
+  registerAttachmentRoutes(app, {
+    config,
+    store,
+    tokens,
+    sessions,
+    attachments,
   });
   registerOpsRoutes(app, {
     config,
@@ -282,5 +314,16 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     return { ok: true };
   });
 
-  return { app, store, sync, tokens, sessions, oidc, backups, erasureRegistry, metrics };
+  return {
+    app,
+    store,
+    sync,
+    tokens,
+    sessions,
+    oidc,
+    backups,
+    erasureRegistry,
+    attachments,
+    metrics,
+  };
 }
