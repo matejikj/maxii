@@ -13,6 +13,7 @@
     "security:matrix": "bash ./deploy/family-security-matrix.sh",
     "migration:drill": "bash ./deploy/managed-migration-local-drill.sh",
     "backup:new-device-drill": "bash ./deploy/remote-backup-new-device-drill.sh",
+    "attachment:locator-drill": "bash ./deploy/attachment-locator-migration-drill.sh",
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },

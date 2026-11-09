@@ -49,6 +49,14 @@ export {
 export { createS3CompatibleClient } from './attachments/s3CompatibleClient.ts';
 export { createR2AttachmentObjectStore } from './attachments/r2AttachmentObjectStore.ts';
 export { resolveAttachmentObjectStore } from './attachments/resolveAttachmentObjectStore.ts';
+export {
+  migrateAttachmentObjectLocators,
+} from './attachments/attachmentObjectLocatorMigration.ts';
+export type {
+  AttachmentObjectLocator,
+  AttachmentLocatorMigrationResult,
+} from './attachments/attachmentObjectLocatorMigration.ts';
+export { runAttachmentLocatorMigrationDrill } from './attachments/attachmentLocatorMigrationDrill.ts';
 
 export {
   MemorySyncStore,

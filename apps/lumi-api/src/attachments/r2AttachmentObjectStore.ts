@@ -106,5 +106,14 @@ export function createR2AttachmentObjectStore(input: {
       await input.client.deleteObject(stagingKey(objectKey));
       if (row && !row.activated) meta.delete(objectKey);
     },
+
+    async purgeActivated(objectKey) {
+      const row = meta.get(objectKey);
+      if (!row || !row.activated || row.erased) return false;
+      await input.client.deleteObject(activeKey(objectKey));
+      await input.client.deleteObject(stagingKey(objectKey));
+      meta.delete(objectKey);
+      return true;
+    },
   };
 }

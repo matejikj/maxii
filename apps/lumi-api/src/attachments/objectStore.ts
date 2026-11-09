@@ -28,6 +28,11 @@ export type AttachmentObjectStorePort = {
     attachmentId: string;
   }): Promise<number>;
   deleteStaging(objectKey: string): Promise<void>;
+  /**
+   * Remove an activated object after a verified locator cutover. Staging-only
+   * rows stay on deleteStaging; erased tombstones are left for retention policy.
+   */
+  purgeActivated(objectKey: string): Promise<boolean>;
 };
 
 /**
@@ -81,6 +86,12 @@ export function createMemoryAttachmentObjectStore(): AttachmentObjectStorePort {
     async deleteStaging(objectKey) {
       const row = objects.get(objectKey);
       if (row && !row.activated) objects.delete(objectKey);
+    },
+    async purgeActivated(objectKey) {
+      const row = objects.get(objectKey);
+      if (!row || !row.activated || row.erased) return false;
+      objects.delete(objectKey);
+      return true;
     },
   };
 }
