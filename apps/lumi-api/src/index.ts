@@ -38,6 +38,7 @@ export {
 } from './ops/familyReleaseGate.ts';
 export { loadFamilyReleaseGateFromDeploy } from './ops/loadFamilyReleaseGate.ts';
 export { runFamilySecurityMatrix } from './ops/familySecurityMatrix.ts';
+export { runManagedMigrationLocalDrill } from './ops/managedMigrationLocalDrill.ts';
 
 export {
   MemorySyncStore,

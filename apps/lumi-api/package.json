@@ -11,6 +11,7 @@
     "ops:readiness": "bash ./deploy/ops-readiness.sh",
     "release:gate": "bash ./deploy/family-release-gate.sh",
     "security:matrix": "bash ./deploy/family-security-matrix.sh",
+    "migration:drill": "bash ./deploy/managed-migration-local-drill.sh",
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },
