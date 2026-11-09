@@ -30,6 +30,18 @@ export type ApiConfig = {
   readonly opsBearerToken: string | null;
   /** Independent uptime probe configured outside this VPS. */
   readonly offHostProbeConfigured: boolean;
+  /**
+   * Optional private attachment object store (Cloudflare R2 / S3-compatible).
+   * Unset keeps the in-memory fixture so personal and CI boots stay offline.
+   */
+  readonly attachmentObjectStore: {
+    readonly provider: 'memory' | 'r2';
+    readonly endpoint: string | null;
+    readonly region: string | null;
+    readonly bucket: string | null;
+    readonly accessKeyId: string | null;
+    readonly secretAccessKey: string | null;
+  };
 };
 
 function readList(value: string | undefined): readonly string[] {
@@ -79,5 +91,13 @@ export function loadApiConfig(
     workerPollMs: Number.isFinite(workerPollMs) ? workerPollMs : 1_000,
     opsBearerToken: env.LUMI_OPS_BEARER_TOKEN?.trim() || null,
     offHostProbeConfigured: env.LUMI_OFF_HOST_PROBE_CONFIGURED === '1',
+    attachmentObjectStore: {
+      provider: env.LUMI_ATTACHMENT_STORE === 'r2' ? 'r2' : 'memory',
+      endpoint: env.LUMI_R2_ENDPOINT?.trim() || null,
+      region: env.LUMI_R2_REGION?.trim() || 'auto',
+      bucket: env.LUMI_R2_BUCKET?.trim() || null,
+      accessKeyId: env.LUMI_R2_ACCESS_KEY_ID?.trim() || null,
+      secretAccessKey: env.LUMI_R2_SECRET_ACCESS_KEY?.trim() || null,
+    },
   };
 }

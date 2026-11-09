@@ -46,6 +46,9 @@ export {
   createFamilyAttachmentService,
   sha256Hex,
 } from './attachments/attachmentService.ts';
+export { createS3CompatibleClient } from './attachments/s3CompatibleClient.ts';
+export { createR2AttachmentObjectStore } from './attachments/r2AttachmentObjectStore.ts';
+export { resolveAttachmentObjectStore } from './attachments/resolveAttachmentObjectStore.ts';
 
 export {
   MemorySyncStore,

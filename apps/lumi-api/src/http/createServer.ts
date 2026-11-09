@@ -27,9 +27,9 @@ import { registerAttachmentRoutes } from './attachmentRoutes.ts';
 import { registerOpsRoutes } from './opsRoutes.ts';
 import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
-import { createMemoryAttachmentObjectStore } from '../attachments/objectStore.ts';
 import { createFamilyAttachmentQuotaLedger } from '../attachments/quotaLedger.ts';
 import { createFamilyAttachmentService } from '../attachments/attachmentService.ts';
+import { resolveAttachmentObjectStore } from '../attachments/resolveAttachmentObjectStore.ts';
 import {
   classifyFamilyOpsPath,
   createFamilyOpsMetrics,
@@ -59,8 +59,9 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const oidc = new OidcTokenExchanger(config);
   const backups = createMemoryBackupRepository();
   const erasureRegistry = createMemoryErasureRegistry();
+  const attachmentObjects = resolveAttachmentObjectStore(config);
   const attachments = createFamilyAttachmentService({
-    objects: createMemoryAttachmentObjectStore(),
+    objects: attachmentObjects.store,
     quota: createFamilyAttachmentQuotaLedger(),
   });
   const backupStatusByFamily = new Map<

@@ -55,3 +55,15 @@ export type {
   FamilyPhotoConflictKind,
   FamilyPhotoTransferLabel,
 } from './familyTransfer';
+export {
+  classifyPhotoExportCompleteness,
+  decideSoleOwnCopyRelease,
+  planRecoverableCacheEviction,
+} from './attachmentCachePolicy';
+export type {
+  CacheEvictionPlan,
+  LocalPhotoCopyKind,
+  LocalPhotoCopyRecord,
+  PhotoExportCompleteness,
+  SoleOwnReleaseDecision,
+} from './attachmentCachePolicy';
