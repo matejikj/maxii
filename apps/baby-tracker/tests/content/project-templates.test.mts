@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  PROJECT_COHORT_8_11_PACK,
   PROJECT_TEMPLATES_CONTENT_VERSION,
   PROJECT_TEMPLATES_PUBLISHED,
+  describeProjectCohortAvailability,
   listProjectTemplatesByCohort,
 } from '../../src/content/catalog/projectTemplatesPublished.ts';
 import { PROJECT_LIMITS } from '../../src/domain/index.ts';
@@ -13,6 +15,8 @@ test('publishes exactly twelve project templates across three cohorts', () => {
   assert.equal(listProjectTemplatesByCohort('8-11').length, 4);
   assert.equal(listProjectTemplatesByCohort('12-14').length, 4);
   assert.equal(listProjectTemplatesByCohort('15-17').length, 4);
+  assert.equal(PROJECT_COHORT_8_11_PACK.revisionIds.length, 4);
+  assert.equal(describeProjectCohortAvailability('8-11').offlineEmbedded, true);
 });
 
 test('each published template keeps three steps and length limits', () => {

@@ -299,3 +299,48 @@ export function findProjectTemplateRevision(
 ): ProjectTemplateRevision | null {
   return PROJECT_TEMPLATES_PUBLISHED.find((row) => row.revisionId === revisionId) ?? null;
 }
+
+/** First caregiver-facing cohort pack — four offline templates for ages 8–11. */
+export const PROJECT_COHORT_8_11_PACK = {
+  packId: 'project-templates.8-11.v1',
+  cohort: '8-11' as const,
+  contentVersion: PROJECT_TEMPLATES_CONTENT_VERSION,
+  revisionIds: listProjectTemplatesByCohort('8-11').map((row) => row.revisionId),
+  offlineEmbedded: true,
+} as const;
+
+export type ProjectCohortAvailability = {
+  cohort: ProjectTemplateRevision['cohort'];
+  offlineEmbedded: boolean;
+  templateCount: number;
+  revisionIds: readonly string[];
+  detail: string;
+};
+
+/**
+ * Truthful availability for caregiver discovery. Later cohorts stay listed as
+ * published offline content without claiming a child account or age lock.
+ */
+export function describeProjectCohortAvailability(
+  cohort: ProjectTemplateRevision['cohort'],
+): ProjectCohortAvailability {
+  const templates = listProjectTemplatesByCohort(cohort);
+  if (cohort === '8-11') {
+    return {
+      cohort,
+      offlineEmbedded: true,
+      templateCount: templates.length,
+      revisionIds: templates.map((row) => row.revisionId),
+      detail:
+        'Čtyři ověřené šablony 8–11 let jsou součástí instalace. Fungují bez účtu a bez sítě.',
+    };
+  }
+  return {
+    cohort,
+    offlineEmbedded: true,
+    templateCount: templates.length,
+    revisionIds: templates.map((row) => row.revisionId),
+    detail:
+      'Šablony jsou místně dostupné jako pečovatelský náhled. Soukromý dětský účet zatím není aktivní.',
+  };
+}

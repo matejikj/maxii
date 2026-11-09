@@ -156,14 +156,20 @@ export {
   type MultiChildWorkspaceSnapshot,
 } from './multiChildWorkspace';
 export {
+  createFamilyGuidedBlankIdea,
   createFamilyGuidedProjectFromTemplate,
+  describeFamilyGuidedCohort8to11Availability,
+  familyGuidedCohort8to11Pack,
+  listFamilyGuidedProjectShelves,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
+  listFamilyGuidedTemplatesForCohort8to11,
   listTodayFamilyGuidedProjects,
   markFamilyGuidedProjectStep,
   saveFamilyGuidedProjectReflection,
   updateFamilyGuidedProjectStatus,
   type FamilyGuidedProjectView,
+  type FamilyGuidedShelfView,
 } from './familyGuidedProjects';
 export {
   addPortfolioSelection,

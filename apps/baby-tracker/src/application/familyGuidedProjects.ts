@@ -3,8 +3,11 @@ import {
   asEntityId,
   asRevisionId,
   assertProjectAccess,
+  createFamilyGuidedBlankProject,
   createFamilyGuidedProject,
+  currentProjectStep,
   describeScopeForCaregiver,
+  groupProjectsByStatus,
   isChildPrivateModeActive,
   listTodayActiveProjects,
   markProjectStep,
@@ -23,7 +26,10 @@ import {
   type UnitOfWorkFactory,
 } from '../domain';
 import {
+  describeProjectCohortAvailability,
   findProjectTemplateRevision,
+  listProjectTemplatesByCohort,
+  PROJECT_COHORT_8_11_PACK,
   PROJECT_TEMPLATES_PUBLISHED,
 } from '../content/catalog/projectTemplatesPublished';
 
@@ -31,6 +37,13 @@ export type FamilyGuidedProjectView = {
   project: Project;
   scopeLabel: string;
   templateTitle: string | null;
+  nextStepText: string | null;
+};
+
+export type FamilyGuidedShelfView = {
+  active: FamilyGuidedProjectView[];
+  paused: FamilyGuidedProjectView[];
+  closed: FamilyGuidedProjectView[];
 };
 
 function caregiverAccess(project: Project, principalAppUserId: ActorId | null) {
@@ -61,12 +74,26 @@ function toView(project: Project): FamilyGuidedProjectView {
     project,
     scopeLabel: describeScopeForCaregiver(project.scope),
     templateTitle: template?.title ?? null,
+    nextStepText: currentProjectStep(project)?.text ?? null,
   };
 }
 
 /** Published templates available offline for caregiver-led shared projects. */
 export function listFamilyGuidedTemplates(): ProjectTemplateRevision[] {
   return [...PROJECT_TEMPLATES_PUBLISHED];
+}
+
+/** First verified 8–11 cohort — primary discovery for caregiver-led starts. */
+export function listFamilyGuidedTemplatesForCohort8to11(): ProjectTemplateRevision[] {
+  return listProjectTemplatesByCohort('8-11');
+}
+
+export function describeFamilyGuidedCohort8to11Availability() {
+  return describeProjectCohortAvailability('8-11');
+}
+
+export function familyGuidedCohort8to11Pack() {
+  return PROJECT_COHORT_8_11_PACK;
 }
 
 export async function listFamilyGuidedProjectsForChild(
@@ -91,6 +118,19 @@ export async function listTodayFamilyGuidedProjects(
 ): Promise<FamilyGuidedProjectView[]> {
   const all = await listFamilyGuidedProjectsForChild(unitOfWork, input);
   return listTodayActiveProjects(all.map((view) => view.project)).map(toView);
+}
+
+export async function listFamilyGuidedProjectShelves(
+  unitOfWork: UnitOfWorkFactory,
+  input: { childId: ChildId; principalAppUserId?: ActorId | null },
+): Promise<FamilyGuidedShelfView> {
+  const all = await listFamilyGuidedProjectsForChild(unitOfWork, input);
+  const grouped = groupProjectsByStatus(all.map((view) => view.project));
+  return {
+    active: grouped.active.map(toView),
+    paused: grouped.paused.map(toView),
+    closed: grouped.closed.map(toView),
+  };
 }
 
 export async function createFamilyGuidedProjectFromTemplate(input: {
@@ -119,6 +159,40 @@ export async function createFamilyGuidedProjectFromTemplate(input: {
     familyId: input.familyId ?? null,
     template,
     ...(input.title != null ? { title: input.title } : {}),
+    ...(input.intent != null ? { intent: input.intent } : {}),
+    now: input.now,
+    createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),
+  });
+
+  assertProjectAccess(
+    'create',
+    caregiverAccess(project, input.creatorAppUserId ?? null),
+  );
+
+  await input.unitOfWork.run(async (uow) => {
+    await uow.projects.save(project);
+  });
+  return toView(project);
+}
+
+/** Blank own idea — same familyGuided scope as a template start. */
+export async function createFamilyGuidedBlankIdea(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  childId: ChildId;
+  title: string;
+  intent?: string;
+  creatorAppUserId?: ActorId | null;
+  familyId?: string | null;
+}): Promise<FamilyGuidedProjectView> {
+  const project = createFamilyGuidedBlankProject({
+    projectId: asEntityId(input.ids.createId('proj')),
+    revisionId: asRevisionId(input.ids.createId('rev')),
+    childId: input.childId,
+    creatorAppUserId: input.creatorAppUserId ?? null,
+    familyId: input.familyId ?? null,
+    title: input.title,
     ...(input.intent != null ? { intent: input.intent } : {}),
     now: input.now,
     createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),

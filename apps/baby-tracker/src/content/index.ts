@@ -65,10 +65,13 @@ export {
   PRODUCT_SUPPORTED_AGE_MONTHS,
 } from './catalog/productPublished';
 export {
+  PROJECT_COHORT_8_11_PACK,
   PROJECT_TEMPLATES_CONTENT_VERSION,
   PROJECT_TEMPLATES_PUBLISHED,
+  describeProjectCohortAvailability,
   findProjectTemplateRevision,
   listProjectTemplatesByCohort,
+  type ProjectCohortAvailability,
 } from './catalog/projectTemplatesPublished';
 export * from './pack';
 export {

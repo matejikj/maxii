@@ -30,12 +30,16 @@ export {
 } from './privacy';
 export {
   createChildPrivateProject,
+  createFamilyGuidedBlankProject,
   createFamilyGuidedProject,
+  currentProjectStep,
+  groupProjectsByStatus,
   listTodayActiveProjects,
   markProjectStep,
   planPrivateTakeoverCopy,
   transitionProjectStatus,
   updateProjectReflection,
+  type ProjectStatusGroups,
 } from './projectLifecycle';
 export {
   CHILD_PRIVATE_MODE_GATES,

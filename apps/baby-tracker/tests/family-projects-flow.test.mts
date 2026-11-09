@@ -12,10 +12,17 @@ import {
 } from '../src/domain/index.ts';
 import {
   addPortfolioSelection,
+  createFamilyGuidedBlankIdea,
   createFamilyGuidedProjectFromTemplate,
+  describeFamilyGuidedCohort8to11Availability,
   exportProjectsForFamilyArchive,
+  familyGuidedCohort8to11Pack,
+  listFamilyGuidedProjectShelves,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
+  listFamilyGuidedTemplatesForCohort8to11,
+  listTodayFamilyGuidedProjects,
+  saveFamilyGuidedProjectReflection,
   updateFamilyGuidedProjectStatus,
 } from '../src/application/index.ts';
 import { PROJECT_TEMPLATES_PUBLISHED } from '../src/content/catalog/projectTemplatesPublished.ts';
@@ -172,5 +179,56 @@ test('portfolio selection persists and family export omits childPrivate rows', a
     exported.projects.some((row) => row.title === 'Tajný'),
     false,
   );
+  await ctx.close();
+});
+
+test('8-11 cohort templates and blank idea support caregiver shelves without child mode', async () => {
+  assert.equal(listFamilyGuidedTemplatesForCohort8to11().length, 4);
+  assert.equal(familyGuidedCohort8to11Pack().offlineEmbedded, true);
+  assert.match(describeFamilyGuidedCohort8to11Availability().detail, /instalace/);
+
+  const ctx = await openNative('family-8-11.db');
+  const fromTemplate = await createFamilyGuidedProjectFromTemplate({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock },
+    childId,
+    templateRevisionId: listFamilyGuidedTemplatesForCohort8to11()[0]!.revisionId,
+  });
+  const blank = await createFamilyGuidedBlankIdea({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 1 },
+    childId,
+    title: 'Vlastní papírový most',
+    intent: 'Zkusit jiný tvar',
+  });
+  assert.equal(blank.project.templateRevisionId, null);
+  assert.ok(blank.nextStepText);
+
+  await saveFamilyGuidedProjectReflection({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 2 },
+    projectId: blank.project.projectId,
+    reflection: null,
+  });
+
+  await updateFamilyGuidedProjectStatus({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 3 },
+    projectId: fromTemplate.project.projectId,
+    nextStatus: 'paused',
+  });
+
+  const shelves = await listFamilyGuidedProjectShelves(ctx.unitOfWork, { childId });
+  assert.equal(shelves.active.length, 1);
+  assert.equal(shelves.paused.length, 1);
+  assert.equal(shelves.active[0]!.project.projectId, blank.project.projectId);
+
+  const today = await listTodayFamilyGuidedProjects(ctx.unitOfWork, { childId });
+  assert.equal(today.length, 1);
+  assert.equal(today[0]!.project.title, 'Vlastní papírový most');
   await ctx.close();
 });

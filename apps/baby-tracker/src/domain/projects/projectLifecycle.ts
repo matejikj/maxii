@@ -91,6 +91,51 @@ export function createFamilyGuidedProject(input: {
 }
 
 /**
+ * Caregiver-led blank idea — equal to a template start, without claiming a
+ * private child workspace. Starter steps stay short and optional to skip later.
+ */
+export function createFamilyGuidedBlankProject(input: {
+  projectId: EntityId;
+  revisionId: RevisionId;
+  childId: ChildId;
+  creatorAppUserId: ActorId | null;
+  familyId: string | null;
+  title: string;
+  intent?: string;
+  now: Instant;
+  createStepId: (index: number) => EntityId;
+}): Project {
+  const starterTexts = [
+    'Domluvíme první malý krok.',
+    'Zkusíme to spolu vlastním tempem.',
+    'Vybereme, co chceme uchovat.',
+  ] as const;
+  const steps: ProjectStep[] = starterTexts.map((text, index) => ({
+    stepId: input.createStepId(index),
+    order: index,
+    text,
+    status: 'pending' as const,
+  }));
+  return {
+    projectId: input.projectId,
+    revisionId: input.revisionId,
+    scope: 'familyGuided',
+    childId: input.childId,
+    ownerAppUserId: input.creatorAppUserId,
+    creatorAppUserId: input.creatorAppUserId,
+    familyId: input.familyId,
+    templateRevisionId: null,
+    title: assertTitle(input.title),
+    intent: assertIntent(input.intent ?? ''),
+    status: 'active',
+    steps,
+    reflection: null,
+    createdAt: input.now,
+    updatedAt: input.now,
+  };
+}
+
+/**
  * Child-private create stays available in the domain but activation is gated
  * separately — callers must refuse when child mode is inactive.
  */
@@ -247,6 +292,33 @@ export function listTodayActiveProjects(projects: readonly Project[]): Project[]
   return projects
     .filter((project) => project.status === 'active' || project.status === 'idea')
     .slice(0, PROJECT_LIMITS.todayActiveProjects);
+}
+
+/** First pending step — caregivers continue one concrete action, never a score. */
+export function currentProjectStep(project: Project): ProjectStep | null {
+  return project.steps.find((step) => step.status === 'pending') ?? null;
+}
+
+export type ProjectStatusGroups = {
+  active: Project[];
+  paused: Project[];
+  closed: Project[];
+};
+
+/**
+ * Simple status shelves for caregiver project lists. Archived stays out of the
+ * everyday shelves so closed work is not confused with soft pause.
+ */
+export function groupProjectsByStatus(projects: readonly Project[]): ProjectStatusGroups {
+  const active: Project[] = [];
+  const paused: Project[] = [];
+  const closed: Project[] = [];
+  for (const project of projects) {
+    if (project.status === 'active' || project.status === 'idea') active.push(project);
+    else if (project.status === 'paused') paused.push(project);
+    else if (project.status === 'closed' || project.status === 'archived') closed.push(project);
+  }
+  return { active, paused, closed };
 }
 
 export type { ProjectTemplateRevisionId };
