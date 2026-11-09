@@ -29,7 +29,7 @@ Sync transport: `POST /v1/families/:id/sync/push` and `GET /v1/families/:id/sync
 
 Remote backup / recovery: `GET /v1/families/:id/backup-status`, admin `POST /v1/families/:id/recovery/preview`, tenant-scoped archive read, and admin erasure that persists the off-host erasure registry **before** soft-delete. Ops path uses logical `pg_dump` + restic (`deploy/backup-restic.sh`); never copy live PGDATA. Restore order is in `deploy/restore-runbook.txt`.
 
-Family ops (technical counters only): `GET /v1/ops/metrics` and `GET /v1/ops/alerts` require `LUMI_OPS_BEARER_TOKEN`. Alerts assume an **off-host** uptime probe (`LUMI_OFF_HOST_PROBE_CONFIGURED=1` when configured); monitoring that lives only on the same VPS cannot detect total host loss. Runbooks: `deploy/family-ops-runbook.txt`, `deploy/incident-runbooks.txt`, `deploy/migration-cutover-runbook.txt`. Software checklist: `./deploy/ops-readiness.sh`. Named on-call and live restore drills stay in `operations-owners.json` until filled.
+Family ops (technical counters only): `GET /v1/ops/metrics` and `GET /v1/ops/alerts` require `LUMI_OPS_BEARER_TOKEN`. Alerts assume an **off-host** uptime probe (`LUMI_OFF_HOST_PROBE_CONFIGURED=1` when configured); monitoring that lives only on the same VPS cannot detect total host loss. Runbooks: `deploy/family-ops-runbook.txt`, `deploy/incident-runbooks.txt`, `deploy/migration-cutover-runbook.txt`. Software checklist: `./deploy/ops-readiness.sh`. Family release candidate gate: `./deploy/family-release-gate.sh` (also `npm run release:gate`) — stays closed until live drills and the evidence pack in `operations-owners.json` are filled. Named on-call and live restore drills stay in `operations-owners.json` until filled.
 
 ## Single-VPS overlay
 

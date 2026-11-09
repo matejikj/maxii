@@ -202,6 +202,7 @@ test('deploy runbooks and ops-readiness script exist', () => {
     'migration-cutover-runbook.txt',
     'alert-channels.example.json',
     'ops-readiness.sh',
+    'family-release-gate.sh',
     'restore-runbook.txt',
   ]) {
     assert.equal(existsSync(join(deploy, name)), true, name);

@@ -8,6 +8,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.mts",
+    "ops:readiness": "bash ./deploy/ops-readiness.sh",
+    "release:gate": "bash ./deploy/family-release-gate.sh",
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },

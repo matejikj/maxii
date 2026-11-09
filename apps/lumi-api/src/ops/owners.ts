@@ -39,6 +39,22 @@ export type OperationsOwnersDocument = {
     readonly livePgDataCopyForbidden: boolean;
     readonly erasureRegistryMustPrecedeServerConfirm: boolean;
   };
+  /**
+   * Paths/commits proving family release acceptance work. Null slots keep the
+   * release gate closed — unit tests alone cannot fill them.
+   */
+  readonly familyReleaseEvidence: {
+    readonly twoPhoneOfflineSync: string | null;
+    readonly longDisconnectedReplica: string | null;
+    readonly conflictMatrix: string | null;
+    readonly independentSecurityReview: string | null;
+    readonly remoteBackupNewDeviceRestore: string | null;
+    readonly parentTransferLabels: string | null;
+    readonly operatorLegalPack: string | null;
+    readonly vpsHostMeasurements: string | null;
+    readonly managedMigrationLocalDrill: string | null;
+    readonly personalColdRegression: string | null;
+  };
 };
 
 const UNASSIGNED = 'UNASSIGNED';
@@ -72,6 +88,9 @@ export function parseOperationsOwners(raw: unknown): OperationsOwnersDocument {
   const working = isRecord(raw.workingTargets) ? raw.workingTargets : {};
   const drills = isRecord(raw.liveDrillEvidence) ? raw.liveDrillEvidence : {};
   const backup = isRecord(raw.backup) ? raw.backup : {};
+  const releaseEvidence = isRecord(raw.familyReleaseEvidence)
+    ? raw.familyReleaseEvidence
+    : {};
 
   return {
     schemaVersion: readNumber(raw.schemaVersion, 1),
@@ -112,6 +131,24 @@ export function parseOperationsOwners(raw: unknown): OperationsOwnersDocument {
       livePgDataCopyForbidden: backup.livePgDataCopyForbidden !== false,
       erasureRegistryMustPrecedeServerConfirm:
         backup.erasureRegistryMustPrecedeServerConfirm !== false,
+    },
+    familyReleaseEvidence: {
+      twoPhoneOfflineSync: readNullableString(releaseEvidence.twoPhoneOfflineSync),
+      longDisconnectedReplica: readNullableString(releaseEvidence.longDisconnectedReplica),
+      conflictMatrix: readNullableString(releaseEvidence.conflictMatrix),
+      independentSecurityReview: readNullableString(
+        releaseEvidence.independentSecurityReview,
+      ),
+      remoteBackupNewDeviceRestore: readNullableString(
+        releaseEvidence.remoteBackupNewDeviceRestore,
+      ),
+      parentTransferLabels: readNullableString(releaseEvidence.parentTransferLabels),
+      operatorLegalPack: readNullableString(releaseEvidence.operatorLegalPack),
+      vpsHostMeasurements: readNullableString(releaseEvidence.vpsHostMeasurements),
+      managedMigrationLocalDrill: readNullableString(
+        releaseEvidence.managedMigrationLocalDrill,
+      ),
+      personalColdRegression: readNullableString(releaseEvidence.personalColdRegression),
     },
   };
 }

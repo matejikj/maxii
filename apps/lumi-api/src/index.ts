@@ -33,6 +33,12 @@ export {
 export { parseOperationsOwners, isAssigned } from './ops/owners.ts';
 export { evaluateFamilyOpsReadiness } from './ops/familyOpsReadiness.ts';
 export {
+  emptyFamilyReleaseEvidence,
+  evaluateFamilyReleaseGate,
+} from './ops/familyReleaseGate.ts';
+export { loadFamilyReleaseGateFromDeploy } from './ops/loadFamilyReleaseGate.ts';
+
+export {
   MemorySyncStore,
   hashSyncPayload,
   encodeCursor,

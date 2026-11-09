@@ -80,5 +80,17 @@
     "oidc": ["keycloak_self_hosted", "future_supabase_otp"],
     "database": ["postgres_self_hosted", "future_supabase_postgres"],
     "apiRuntime": ["compose_on_vps", "future_render"]
+  },
+  "familyReleaseEvidence": {
+    "twoPhoneOfflineSync": null,
+    "longDisconnectedReplica": null,
+    "conflictMatrix": null,
+    "independentSecurityReview": null,
+    "remoteBackupNewDeviceRestore": null,
+    "parentTransferLabels": null,
+    "operatorLegalPack": null,
+    "vpsHostMeasurements": null,
+    "managedMigrationLocalDrill": null,
+    "personalColdRegression": null
   }
 }
