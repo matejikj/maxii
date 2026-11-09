@@ -182,6 +182,12 @@ export {
   type JoinPreview,
 } from './family/enrollment';
 export {
+  runPersonalToFamilyMigrationDrill,
+  type PersonalDiarySnapshot,
+  type PersonalToFamilyMigrationDeps,
+  type PersonalToFamilyMigrationReport,
+} from './family/personalToFamilyMigration';
+export {
   buildAuthorshipLine,
   buildDeleteVsEditPresentation,
   buildDualSleepPresentation,
