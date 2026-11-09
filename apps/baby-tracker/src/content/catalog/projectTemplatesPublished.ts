@@ -318,6 +318,15 @@ export const PROJECT_COHORT_12_14_PACK = {
   offlineEmbedded: true,
 } as const;
 
+/** Third caregiver-facing cohort pack — four offline templates for ages 15–17. */
+export const PROJECT_COHORT_15_17_PACK = {
+  packId: 'project-templates.15-17.v1',
+  cohort: '15-17' as const,
+  contentVersion: PROJECT_TEMPLATES_CONTENT_VERSION,
+  revisionIds: listProjectTemplatesByCohort('15-17').map((row) => row.revisionId),
+  offlineEmbedded: true,
+} as const;
+
 export type ProjectCohortAvailability = {
   cohort: ProjectTemplateRevision['cohort'];
   offlineEmbedded: boolean;
@@ -352,6 +361,16 @@ export function describeProjectCohortAvailability(
       revisionIds: templates.map((row) => row.revisionId),
       detail:
         'Čtyři ověřené šablony 12–14 let jsou v instalaci. Nabízejí více vlastní volby a porovnání variant — bez účtu a bez sítě.',
+    };
+  }
+  if (cohort === '15-17') {
+    return {
+      cohort,
+      offlineEmbedded: true,
+      templateCount: templates.length,
+      revisionIds: templates.map((row) => row.revisionId),
+      detail:
+        'Čtyři ověřené šablony 15–17 let jsou v instalaci. Vlastní zadání a práce se zdrojem — bez účtu, bez sítě a bez automatického převodu rodinné historie.',
     };
   }
   return {

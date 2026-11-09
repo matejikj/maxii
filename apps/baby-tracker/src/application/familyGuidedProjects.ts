@@ -13,7 +13,9 @@ import {
   markProjectStep,
   normalizeProjectRow,
   transitionProjectStatus,
+  presentSelfManagementPreparation,
   updateProjectReflection,
+  updateProjectSourceNotes,
   updateProjectVariantNotes,
   type ActorId,
   type ChildId,
@@ -22,6 +24,7 @@ import {
   type IdGenerator,
   type Instant,
   type Project,
+  type ProjectSourceNotes,
   type ProjectStatus,
   type ProjectStep,
   type ProjectTemplateRevision,
@@ -35,6 +38,7 @@ import {
   listProjectTemplatesByCohort,
   PROJECT_COHORT_8_11_PACK,
   PROJECT_COHORT_12_14_PACK,
+  PROJECT_COHORT_15_17_PACK,
   PROJECT_TEMPLATES_PUBLISHED,
   searchPublishedProjectTemplates,
 } from '../content/catalog/projectTemplatesPublished';
@@ -116,6 +120,24 @@ export function describeFamilyGuidedCohort12to14Availability() {
 
 export function familyGuidedCohort12to14Pack() {
   return PROJECT_COHORT_12_14_PACK;
+}
+
+/** Verified 15–17 cohort — own brief, sources, and self-management preparation. */
+export function listFamilyGuidedTemplatesForCohort15to17(): ProjectTemplateRevision[] {
+  return listProjectTemplatesByCohort('15-17');
+}
+
+export function describeFamilyGuidedCohort15to17Availability() {
+  return describeProjectCohortAvailability('15-17');
+}
+
+export function familyGuidedCohort15to17Pack() {
+  return PROJECT_COHORT_15_17_PACK;
+}
+
+/** Truthful preview of later self-management — never a silent family-history handoff. */
+export function describeFamilyGuidedSelfManagementPreparation() {
+  return presentSelfManagementPreparation();
 }
 
 export function searchFamilyGuidedTemplates(query: string): ProjectTemplateRevision[] {
@@ -341,6 +363,37 @@ export async function saveFamilyGuidedVariantNotes(input: {
     }
     assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
     const next = updateProjectVariantNotes(
+      normalizeProjectRow(current),
+      input.notes,
+      asRevisionId(input.ids.createId('rev')),
+      input.now,
+    );
+    await uow.projects.save(next);
+    return toView(next);
+  });
+}
+
+/**
+ * Save one research/source card on the live project. Does not publish a share
+ * and never upgrades an offline note into a confirmed online offer.
+ */
+export async function saveFamilyGuidedSourceNotes(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  projectId: EntityId;
+  notes: ProjectSourceNotes | null;
+  principalAppUserId?: ActorId | null;
+}): Promise<FamilyGuidedProjectView> {
+  return input.unitOfWork.run(async (uow) => {
+    const current = await uow.projects.getById(input.projectId);
+    if (!current || current.scope !== 'familyGuided') {
+      throw new AppError('NOT_FOUND', 'Family project was not found', {
+        details: { reason: 'project_missing' },
+      });
+    }
+    assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
+    const next = updateProjectSourceNotes(
       normalizeProjectRow(current),
       input.notes,
       asRevisionId(input.ids.createId('rev')),

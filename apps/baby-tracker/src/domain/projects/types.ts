@@ -59,6 +59,20 @@ export type ProjectVariantNotes = {
   chosenNote: string | null;
 };
 
+/**
+ * Optional research card for older cohorts. Offline prep stays unverified —
+ * never presented as a confirmed offer, deadline, or admission.
+ */
+export type ProjectSourceNotes = {
+  question: string;
+  sourceLabel: string;
+  checkedOn: string | null;
+  supportedClaim: string;
+  openQuestion: string | null;
+  /** True only when the caregiver recorded an online check; never inferred. */
+  verifiedOnline: boolean;
+};
+
 export type Project = {
   projectId: EntityId;
   revisionId: RevisionId;
@@ -78,6 +92,8 @@ export type Project = {
   reflection: string | null;
   /** Dual-option notes for 12–14 style choice; omitted on older stored rows. */
   variantNotes: ProjectVariantNotes | null;
+  /** Source/research notes for 15–17 style work; omitted on older stored rows. */
+  sourceNotes: ProjectSourceNotes | null;
   createdAt: Instant;
   updatedAt: Instant;
 };
@@ -163,5 +179,6 @@ export const PROJECT_LIMITS = {
   commentMaxChars: 1_000,
   suggestionNoteMaxChars: 1_000,
   variantOptionMaxChars: 1_000,
+  sourceFieldMaxChars: 1_000,
   todayActiveProjects: 3,
 } as const;

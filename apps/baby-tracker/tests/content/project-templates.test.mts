@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
   PROJECT_COHORT_8_11_PACK,
   PROJECT_COHORT_12_14_PACK,
+  PROJECT_COHORT_15_17_PACK,
   PROJECT_TEMPLATES_CONTENT_VERSION,
   PROJECT_TEMPLATES_PUBLISHED,
   describeProjectCohortAvailability,
@@ -19,9 +20,12 @@ test('publishes exactly twelve project templates across three cohorts', () => {
   assert.equal(listProjectTemplatesByCohort('15-17').length, 4);
   assert.equal(PROJECT_COHORT_8_11_PACK.revisionIds.length, 4);
   assert.equal(PROJECT_COHORT_12_14_PACK.revisionIds.length, 4);
+  assert.equal(PROJECT_COHORT_15_17_PACK.revisionIds.length, 4);
   assert.equal(describeProjectCohortAvailability('8-11').offlineEmbedded, true);
   assert.equal(describeProjectCohortAvailability('12-14').offlineEmbedded, true);
+  assert.equal(describeProjectCohortAvailability('15-17').offlineEmbedded, true);
   assert.equal(searchPublishedProjectTemplates('12-14').length, 4);
+  assert.equal(searchPublishedProjectTemplates('15-17').length, 4);
 });
 
 test('each published template keeps three steps and length limits', () => {

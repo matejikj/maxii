@@ -76,3 +76,47 @@ export function presentChildPrivateModeStatus(
     blockers,
   };
 }
+
+export type SelfManagementPreparation = {
+  /** True only when a verified child workspace can host its own data screen. */
+  screenAvailable: boolean;
+  headline: string;
+  detail: string;
+  previewItems: readonly string[];
+  /** Age or payment never silently copies another family's private history. */
+  familyHistoryAutoTransfer: false;
+};
+
+/**
+ * Preparation for a later “My data and access” screen. While child-private mode
+ * is inactive this stays a truthful preview — not a fake private control panel.
+ */
+export function presentSelfManagementPreparation(
+  overrides: Partial<typeof CHILD_PRIVATE_MODE_GATES> = {},
+): SelfManagementPreparation {
+  const childStatus = presentChildPrivateModeStatus(overrides);
+  const previewItems = [
+    'Vlastní portfolio a výslovně sdílené ukázky',
+    'Členství a aktivní přístupy',
+    'Obnova vlastního přístupu',
+    'Možnost převzít jen vybrané historické údaje po ověření',
+  ] as const;
+  if (childStatus.active) {
+    return {
+      screenAvailable: true,
+      headline: 'Moje data a přístupy',
+      detail:
+        'Vlastní prostor je aktivní. Převzetí cizí rodinné historie není automatické a vyžaduje samostatné ověření.',
+      previewItems,
+      familyHistoryAutoTransfer: false,
+    };
+  }
+  return {
+    screenAvailable: false,
+    headline: 'Příprava samostatné správy',
+    detail:
+      'Náhled budoucí obrazovky „Moje data a přístupy“. Bez ověřeného dětského účtu zůstává pečovatelský režim — platba ani věk nepřevedou cizí rodinnou historii.',
+    previewItems,
+    familyHistoryAutoTransfer: false,
+  };
+}

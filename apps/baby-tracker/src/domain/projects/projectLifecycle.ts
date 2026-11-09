@@ -9,6 +9,7 @@ import {
   type ProjectStep,
   type ProjectTemplateRevision,
   type ProjectTemplateRevisionId,
+  type ProjectSourceNotes,
   type ProjectVariantNotes,
 } from './types';
 
@@ -87,17 +88,40 @@ export function createFamilyGuidedProject(input: {
     steps: stepsFromTemplate(input.template, input.createStepId),
     reflection: null,
     variantNotes: null,
+    sourceNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
 }
 
-export type FamilyGuidedBlankStyle = 'simple' | 'variants';
+export type FamilyGuidedBlankStyle = 'simple' | 'variants' | 'ownBrief';
+
+function blankStarterTexts(style: FamilyGuidedBlankStyle): readonly [string, string, string] {
+  if (style === 'variants') {
+    return [
+      'Sepíšeme dvě možné varianty vlastního zadání.',
+      'Porovnáme je bez žebříčku správných odpovědí.',
+      'Vybereme další krok nebo otevřenou otázku.',
+    ];
+  }
+  if (style === 'ownBrief') {
+    return [
+      'Vymezíme vlastní výsledek, důvod a co do projektu nepatří.',
+      'Zvolíme první malý krok a koho můžeme požádat o podporu.',
+      'Po pokusu zvolíme pokračovat, změnit zadání, odložit nebo uzavřít.',
+    ];
+  }
+  return [
+    'Domluvíme první malý krok.',
+    'Zkusíme to spolu vlastním tempem.',
+    'Vybereme, co chceme uchovat.',
+  ];
+}
 
 /**
  * Caregiver-led blank idea — equal to a template start, without claiming a
  * private child workspace. Starter steps stay short and optional to skip later.
- * `variants` offers more own choice for older cohorts without changing privacy.
+ * `variants` and `ownBrief` offer more own choice without changing privacy.
  */
 export function createFamilyGuidedBlankProject(input: {
   projectId: EntityId;
@@ -111,19 +135,7 @@ export function createFamilyGuidedBlankProject(input: {
   now: Instant;
   createStepId: (index: number) => EntityId;
 }): Project {
-  const starterTexts =
-    input.style === 'variants'
-      ? ([
-          'Sepíšeme dvě možné varianty vlastního zadání.',
-          'Porovnáme je bez žebříčku správných odpovědí.',
-          'Vybereme další krok nebo otevřenou otázku.',
-        ] as const)
-      : ([
-          'Domluvíme první malý krok.',
-          'Zkusíme to spolu vlastním tempem.',
-          'Vybereme, co chceme uchovat.',
-        ] as const);
-  const steps: ProjectStep[] = starterTexts.map((text, index) => ({
+  const steps: ProjectStep[] = blankStarterTexts(input.style ?? 'simple').map((text, index) => ({
     stepId: input.createStepId(index),
     order: index,
     text,
@@ -144,6 +156,7 @@ export function createFamilyGuidedBlankProject(input: {
     steps,
     reflection: null,
     variantNotes: null,
+    sourceNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
@@ -193,6 +206,7 @@ export function createChildPrivateProject(input: {
     steps,
     reflection: null,
     variantNotes: null,
+    sourceNotes: null,
     createdAt: input.now,
     updatedAt: input.now,
   };
@@ -293,11 +307,69 @@ export function shareIncludesLiveVariantNotes(): false {
   return false;
 }
 
-/** Older payload rows may omit variantNotes — treat missing as null. */
+function assertSourceField(label: string, value: string, allowEmpty = false): string {
+  const trimmed = value.trim();
+  if (!allowEmpty && !trimmed) {
+    throw new AppError('VALIDATION', `${label} is required`, {
+      details: { reason: 'empty_source_field' },
+    });
+  }
+  if (trimmed.length > PROJECT_LIMITS.sourceFieldMaxChars) {
+    throw new AppError('VALIDATION', `${label} is too long`, {
+      details: { reason: 'source_field_length' },
+    });
+  }
+  return trimmed;
+}
+
+/**
+ * Store one research/source card on the live project. Shares still need an
+ * explicit published body — source notes never leak by themselves.
+ */
+export function updateProjectSourceNotes(
+  project: Project,
+  notes: ProjectSourceNotes | null,
+  revisionId: RevisionId,
+  now: Instant,
+): Project {
+  if (notes == null) {
+    return { ...project, sourceNotes: null, revisionId, updatedAt: now };
+  }
+  const question = assertSourceField('Question', notes.question);
+  const sourceLabel = assertSourceField('Source', notes.sourceLabel);
+  const supportedClaim = assertSourceField('Supported claim', notes.supportedClaim);
+  const openQuestion = notes.openQuestion?.trim()
+    ? assertSourceField('Open question', notes.openQuestion, true)
+    : null;
+  const checkedOn = notes.checkedOn?.trim()
+    ? assertSourceField('Checked on', notes.checkedOn, true)
+    : null;
+  return {
+    ...project,
+    sourceNotes: {
+      question,
+      sourceLabel,
+      checkedOn,
+      supportedClaim,
+      openQuestion,
+      verifiedOnline: notes.verifiedOnline === true,
+    },
+    revisionId,
+    updatedAt: now,
+  };
+}
+
+/** Live source notes are never implied by a share — only the frozen body. */
+export function shareIncludesLiveSourceNotes(): false {
+  return false;
+}
+
+/** Older payload rows may omit newer optional fields — treat missing as null. */
 export function normalizeProjectRow(project: Project): Project {
   return {
     ...project,
     variantNotes: project.variantNotes ?? null,
+    sourceNotes: project.sourceNotes ?? null,
   };
 }
 

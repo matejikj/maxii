@@ -187,12 +187,16 @@ export const PRODUCT_COPY = {
     startFamilyProject: 'Začít společný projekt',
     startOwnIdea: 'Vlastní nápad',
     startOwnIdeaWithVariants: 'Vlastní nápad se dvěma variantami',
+    startOwnBrief: 'Vlastní zadání',
     cohort8to11Templates: 'Šablony 8–11 let',
     cohort8to11Offline:
       'Čtyři ověřené šablony jsou v instalaci. Fungují bez účtu a bez sítě.',
     cohort12to14Templates: 'Šablony 12–14 let',
     cohort12to14Offline:
       'Čtyři ověřené šablony 12–14 let jsou v instalaci. Více vlastní volby a porovnání variant — bez změny sdílení.',
+    cohort15to17Templates: 'Šablony 15–17 let',
+    cohort15to17Offline:
+      'Čtyři ověřené šablony 15–17 let jsou v instalaci. Vlastní zadání a zdroje — bez automatického převodu rodinné historie.',
     searchTemplates: 'Hledat šablony',
     variantNotesTitle: 'Dvě možné varianty',
     variantNotesHint:
@@ -202,6 +206,19 @@ export const PRODUCT_COPY = {
     variantChosenNote: 'Proč / otevřená otázka (volitelné)',
     saveVariants: 'Uložit varianty',
     clearVariants: 'Vymazat varianty',
+    sourceNotesTitle: 'Práce se zdrojem',
+    sourceNotesHint:
+      'Záznam zůstává u projektu. Bez sítě jde o přípravu otázky — ne o potvrzenou nabídku ani termín.',
+    sourceQuestion: 'Otázka',
+    sourceLabel: 'Zdroj / pozorování',
+    sourceCheckedOn: 'Datum kontroly (volitelné)',
+    sourceSupportedClaim: 'Co podklad skutečně podporuje',
+    sourceOpenQuestion: 'Co zůstává neověřené (volitelné)',
+    sourceVerifiedOnline: 'Online ověření zaznamenáno',
+    sourceUnverifiedOffline: 'Zatím jen místní příprava',
+    saveSourceNotes: 'Uložit zdroj',
+    clearSourceNotes: 'Vymazat zdroj',
+    selfManagementTitle: 'Příprava samostatné správy',
     pauseFamilyProject: 'Odložit',
     closeFamilyProject: 'Uzavřít',
     resumeFamilyProject: 'Pokračovat',

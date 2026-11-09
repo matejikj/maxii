@@ -16,16 +16,21 @@ import {
   createFamilyGuidedProjectFromTemplate,
   describeFamilyGuidedCohort8to11Availability,
   describeFamilyGuidedCohort12to14Availability,
+  describeFamilyGuidedCohort15to17Availability,
+  describeFamilyGuidedSelfManagementPreparation,
   exportProjectsForFamilyArchive,
   familyGuidedCohort8to11Pack,
   familyGuidedCohort12to14Pack,
+  familyGuidedCohort15to17Pack,
   listFamilyGuidedProjectShelves,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
   listFamilyGuidedTemplatesForCohort8to11,
   listFamilyGuidedTemplatesForCohort12to14,
+  listFamilyGuidedTemplatesForCohort15to17,
   listTodayFamilyGuidedProjects,
   saveFamilyGuidedProjectReflection,
+  saveFamilyGuidedSourceNotes,
   saveFamilyGuidedVariantNotes,
   searchFamilyGuidedTemplates,
   updateFamilyGuidedProjectStatus,
@@ -287,6 +292,69 @@ test('12-14 cohort templates, search, and variant notes stay local without share
     notes: null,
   });
   assert.equal(cleared.project.variantNotes, null);
+
+  const shelves = await listFamilyGuidedProjectShelves(ctx.unitOfWork, { childId });
+  assert.equal(shelves.active.length, 2);
+  assert.ok(shelves.active.some((row) => row.project.projectId === fromTemplate.project.projectId));
+  await ctx.close();
+});
+
+test('15-17 cohort templates, own brief, source notes, and self-management preview', async () => {
+  assert.equal(listFamilyGuidedTemplatesForCohort15to17().length, 4);
+  assert.equal(familyGuidedCohort15to17Pack().offlineEmbedded, true);
+  assert.match(describeFamilyGuidedCohort15to17Availability().detail, /zdroj/);
+  assert.equal(searchFamilyGuidedTemplates('15-17').length, 4);
+
+  const prep = describeFamilyGuidedSelfManagementPreparation();
+  assert.equal(prep.screenAvailable, false);
+  assert.equal(prep.familyHistoryAutoTransfer, false);
+
+  const ctx = await openNative('family-15-17.db');
+  const fromTemplate = await createFamilyGuidedProjectFromTemplate({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock },
+    childId,
+    templateRevisionId: listFamilyGuidedTemplatesForCohort15to17()[0]!.revisionId,
+  });
+  assert.equal(fromTemplate.cohort, '15-17');
+  assert.equal(fromTemplate.project.sourceNotes, null);
+
+  const blank = await createFamilyGuidedBlankIdea({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 1 },
+    childId,
+    title: 'Vlastní krátké zadání',
+    style: 'ownBrief',
+  });
+  assert.match(blank.nextStepText ?? '', /vlastní výsledek/i);
+
+  const withSource = await saveFamilyGuidedSourceNotes({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 2 },
+    projectId: blank.project.projectId,
+    notes: {
+      question: 'Co chci ověřit?',
+      sourceLabel: 'Lokální příprava bez sítě',
+      checkedOn: null,
+      supportedClaim: 'Zatím jen otázka',
+      openQuestion: 'Bez online kontroly',
+      verifiedOnline: false,
+    },
+  });
+  assert.equal(withSource.project.sourceNotes?.verifiedOnline, false);
+  assert.equal(withSource.project.sourceNotes?.sourceLabel, 'Lokální příprava bez sítě');
+
+  const cleared = await saveFamilyGuidedSourceNotes({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock + 3 },
+    projectId: blank.project.projectId,
+    notes: null,
+  });
+  assert.equal(cleared.project.sourceNotes, null);
 
   const shelves = await listFamilyGuidedProjectShelves(ctx.unitOfWork, { childId });
   assert.equal(shelves.active.length, 2);

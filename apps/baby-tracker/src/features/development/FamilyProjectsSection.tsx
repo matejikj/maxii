@@ -8,16 +8,20 @@ import {
   createFamilyGuidedProjectFromTemplate,
   describeFamilyGuidedCohort8to11Availability,
   describeFamilyGuidedCohort12to14Availability,
+  describeFamilyGuidedCohort15to17Availability,
+  describeFamilyGuidedSelfManagementPreparation,
   listFamilyGuidedProjectShelves,
   listFamilyGuidedTemplates,
   listFamilyGuidedTemplatesForCohort8to11,
   listFamilyGuidedTemplatesForCohort12to14,
+  listFamilyGuidedTemplatesForCohort15to17,
   listParentSuggestionsForAuthor,
   listPortfolioSelections,
   listTodayFamilyGuidedProjects,
   markFamilyGuidedProjectStep,
   proposeParentSuggestion,
   saveFamilyGuidedProjectReflection,
+  saveFamilyGuidedSourceNotes,
   saveFamilyGuidedVariantNotes,
   searchFamilyGuidedTemplates,
   startSuggestionAsFamilyGuided,
@@ -36,7 +40,8 @@ type FamilyProjectsSectionProps = {
 };
 
 type ShelfKey = 'active' | 'paused' | 'closed';
-type CohortPick = '8-11' | '12-14';
+type CohortPick = '8-11' | '12-14' | '15-17';
+type BlankStyle = 'simple' | 'variants' | 'ownBrief';
 
 /**
  * Caregiver-led shared projects on the parent Development tab. Child-private
@@ -54,6 +59,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const [today, setToday] = useState<FamilyGuidedProjectView[]>([]);
   const [templates8to11, setTemplates8to11] = useState<ProjectTemplateRevision[]>([]);
   const [templates12to14, setTemplates12to14] = useState<ProjectTemplateRevision[]>([]);
+  const [templates15to17, setTemplates15to17] = useState<ProjectTemplateRevision[]>([]);
   const [allTemplates, setAllTemplates] = useState<ProjectTemplateRevision[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [suggestions, setSuggestions] = useState<AuthorSuggestionView[]>([]);
@@ -62,7 +68,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const [templateQuery, setTemplateQuery] = useState('');
   const [picking, setPicking] = useState(false);
   const [blanking, setBlanking] = useState(false);
-  const [blankStyle, setBlankStyle] = useState<'simple' | 'variants'>('simple');
+  const [blankStyle, setBlankStyle] = useState<BlankStyle>('simple');
   const [blankTitle, setBlankTitle] = useState('');
   const [blankIntent, setBlankIntent] = useState('');
   const [proposing, setProposing] = useState(false);
@@ -71,11 +77,19 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const [variantA, setVariantA] = useState('');
   const [variantB, setVariantB] = useState('');
   const [variantChosen, setVariantChosen] = useState('');
+  const [sourceQuestion, setSourceQuestion] = useState('');
+  const [sourceLabel, setSourceLabel] = useState('');
+  const [sourceCheckedOn, setSourceCheckedOn] = useState('');
+  const [sourceClaim, setSourceClaim] = useState('');
+  const [sourceOpen, setSourceOpen] = useState('');
+  const [sourceVerified, setSourceVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const cohort8Availability = useMemo(() => describeFamilyGuidedCohort8to11Availability(), []);
   const cohort12Availability = useMemo(() => describeFamilyGuidedCohort12to14Availability(), []);
+  const cohort15Availability = useMemo(() => describeFamilyGuidedCohort15to17Availability(), []);
+  const selfManagement = useMemo(() => describeFamilyGuidedSelfManagementPreparation(), []);
 
   const reload = useCallback(async () => {
     if (!runtime?.unitOfWork) return;
@@ -83,6 +97,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     setToday(await listTodayFamilyGuidedProjects(runtime.unitOfWork, { childId }));
     setTemplates8to11(listFamilyGuidedTemplatesForCohort8to11());
     setTemplates12to14(listFamilyGuidedTemplatesForCohort12to14());
+    setTemplates15to17(listFamilyGuidedTemplatesForCohort15to17());
     setAllTemplates(listFamilyGuidedTemplates());
     setPortfolio(await listPortfolioSelections(runtime.unitOfWork, childId));
     setSuggestions(
@@ -108,12 +123,24 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     setVariantA(selected?.project.variantNotes?.optionA ?? '');
     setVariantB(selected?.project.variantNotes?.optionB ?? '');
     setVariantChosen(selected?.project.variantNotes?.chosenNote ?? '');
+    setSourceQuestion(selected?.project.sourceNotes?.question ?? '');
+    setSourceLabel(selected?.project.sourceNotes?.sourceLabel ?? '');
+    setSourceCheckedOn(selected?.project.sourceNotes?.checkedOn ?? '');
+    setSourceClaim(selected?.project.sourceNotes?.supportedClaim ?? '');
+    setSourceOpen(selected?.project.sourceNotes?.openQuestion ?? '');
+    setSourceVerified(selected?.project.sourceNotes?.verifiedOnline ?? false);
   }, [
     selected?.project.projectId,
     selected?.project.reflection,
     selected?.project.variantNotes?.optionA,
     selected?.project.variantNotes?.optionB,
     selected?.project.variantNotes?.chosenNote,
+    selected?.project.sourceNotes?.question,
+    selected?.project.sourceNotes?.sourceLabel,
+    selected?.project.sourceNotes?.checkedOn,
+    selected?.project.sourceNotes?.supportedClaim,
+    selected?.project.sourceNotes?.openQuestion,
+    selected?.project.sourceNotes?.verifiedOnline,
   ]);
 
   async function startFromTemplate(template: ProjectTemplateRevision) {
@@ -264,6 +291,36 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     }
   }
 
+  async function saveSources(clear: boolean) {
+    if (!runtime?.unitOfWork || !selected) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await saveFamilyGuidedSourceNotes({
+        unitOfWork: runtime.unitOfWork,
+        ids: services.ids,
+        now: services.clock.now(),
+        projectId: selected.project.projectId,
+        notes: clear
+          ? null
+          : {
+              question: sourceQuestion,
+              sourceLabel,
+              checkedOn: sourceCheckedOn.trim() || null,
+              supportedClaim: sourceClaim,
+              openQuestion: sourceOpen.trim() || null,
+              verifiedOnline: sourceVerified,
+            },
+      });
+      setSelectedId(updated.project.projectId);
+      await reload();
+    } catch {
+      setError('Zdroj se nepodařilo uložit.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function addCurrentToPortfolio() {
     if (!runtime?.unitOfWork || !selected) return;
     setBusy(true);
@@ -394,7 +451,11 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   if (blanking) {
     return (
       <LumiCard testID="family-blank-idea">
-        <LumiText variant="h2">{PRODUCT_COPY.development.startOwnIdea}</LumiText>
+        <LumiText variant="h2">
+          {blankStyle === 'ownBrief'
+            ? PRODUCT_COPY.development.startOwnBrief
+            : PRODUCT_COPY.development.startOwnIdea}
+        </LumiText>
         <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <LumiButton
@@ -406,6 +467,11 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             title={PRODUCT_COPY.development.startOwnIdeaWithVariants}
             variant={blankStyle === 'variants' ? 'primary' : 'ghost'}
             onPress={() => setBlankStyle('variants')}
+          />
+          <LumiButton
+            title={PRODUCT_COPY.development.startOwnBrief}
+            variant={blankStyle === 'ownBrief' ? 'primary' : 'ghost'}
+            onPress={() => setBlankStyle('ownBrief')}
           />
         </View>
         <LumiInput
@@ -432,19 +498,30 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   }
 
   if (picking) {
-    const cohortTemplates = cohortPick === '8-11' ? templates8to11 : templates12to14;
+    const cohortTemplates =
+      cohortPick === '8-11'
+        ? templates8to11
+        : cohortPick === '12-14'
+          ? templates12to14
+          : templates15to17;
     const cohortDetail =
-      cohortPick === '8-11' ? cohort8Availability.detail : cohort12Availability.detail;
+      cohortPick === '8-11'
+        ? cohort8Availability.detail
+        : cohortPick === '12-14'
+          ? cohort12Availability.detail
+          : cohort15Availability.detail;
+    const cohortTitle =
+      cohortPick === '8-11'
+        ? PRODUCT_COPY.development.cohort8to11Templates
+        : cohortPick === '12-14'
+          ? PRODUCT_COPY.development.cohort12to14Templates
+          : PRODUCT_COPY.development.cohort15to17Templates;
     const searched = templateQuery.trim()
       ? searchFamilyGuidedTemplates(templateQuery)
       : cohortTemplates;
     return (
       <LumiCard testID="family-projects-picker">
-        <LumiText variant="h2">
-          {cohortPick === '8-11'
-            ? PRODUCT_COPY.development.cohort8to11Templates
-            : PRODUCT_COPY.development.cohort12to14Templates}
-        </LumiText>
+        <LumiText variant="h2">{cohortTitle}</LumiText>
         <LumiText tone="muted">{cohortDetail}</LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <LumiButton
@@ -460,6 +537,14 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             variant={cohortPick === '12-14' ? 'primary' : 'ghost'}
             onPress={() => {
               setCohortPick('12-14');
+              setTemplateQuery('');
+            }}
+          />
+          <LumiButton
+            title={PRODUCT_COPY.development.cohort15to17Templates}
+            variant={cohortPick === '15-17' ? 'primary' : 'ghost'}
+            onPress={() => {
+              setCohortPick('15-17');
               setTemplateQuery('');
             }}
           />
@@ -506,6 +591,16 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
           onPress={() => {
             setPicking(false);
             setBlankStyle('variants');
+            setBlanking(true);
+          }}
+          disabled={busy}
+        />
+        <LumiButton
+          title={PRODUCT_COPY.development.startOwnBrief}
+          variant="secondary"
+          onPress={() => {
+            setPicking(false);
+            setBlankStyle('ownBrief');
             setBlanking(true);
           }}
           disabled={busy}
@@ -603,6 +698,62 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             />
           </View>
         </View>
+        <View style={{ gap: ui.space.xs }} testID="family-project-sources">
+          <LumiText variant="h2">{PRODUCT_COPY.development.sourceNotesTitle}</LumiText>
+          <LumiText tone="muted">{PRODUCT_COPY.development.sourceNotesHint}</LumiText>
+          <LumiInput
+            label={PRODUCT_COPY.development.sourceQuestion}
+            value={sourceQuestion}
+            onChangeText={setSourceQuestion}
+            multiline
+          />
+          <LumiInput
+            label={PRODUCT_COPY.development.sourceLabel}
+            value={sourceLabel}
+            onChangeText={setSourceLabel}
+            multiline
+          />
+          <LumiInput
+            label={PRODUCT_COPY.development.sourceCheckedOn}
+            value={sourceCheckedOn}
+            onChangeText={setSourceCheckedOn}
+          />
+          <LumiInput
+            label={PRODUCT_COPY.development.sourceSupportedClaim}
+            value={sourceClaim}
+            onChangeText={setSourceClaim}
+            multiline
+          />
+          <LumiInput
+            label={PRODUCT_COPY.development.sourceOpenQuestion}
+            value={sourceOpen}
+            onChangeText={setSourceOpen}
+            multiline
+          />
+          <LumiButton
+            title={
+              sourceVerified
+                ? PRODUCT_COPY.development.sourceVerifiedOnline
+                : PRODUCT_COPY.development.sourceUnverifiedOffline
+            }
+            variant={sourceVerified ? 'primary' : 'ghost'}
+            onPress={() => setSourceVerified((value) => !value)}
+          />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <LumiButton
+              title={PRODUCT_COPY.development.saveSourceNotes}
+              variant="secondary"
+              onPress={() => void saveSources(false)}
+              disabled={busy}
+            />
+            <LumiButton
+              title={PRODUCT_COPY.development.clearSourceNotes}
+              variant="secondary"
+              onPress={() => void saveSources(true)}
+              disabled={busy}
+            />
+          </View>
+        </View>
         <View style={{ gap: ui.space.xs }}>
           <LumiText tone="muted">{PRODUCT_COPY.development.portfolioPrivateNote}</LumiText>
           {selectedPortfolio.length === 0 ? (
@@ -680,6 +831,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
         <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
         <LumiText tone="muted">{PRODUCT_COPY.development.cohort8to11Offline}</LumiText>
         <LumiText tone="muted">{PRODUCT_COPY.development.cohort12to14Offline}</LumiText>
+        <LumiText tone="muted">{PRODUCT_COPY.development.cohort15to17Offline}</LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {(
             [
@@ -742,7 +894,32 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
           }}
           disabled={busy || !runtime?.unitOfWork}
         />
+        <LumiButton
+          title={PRODUCT_COPY.development.startOwnBrief}
+          variant="secondary"
+          onPress={() => {
+            setBlankStyle('ownBrief');
+            setBlanking(true);
+          }}
+          disabled={busy || !runtime?.unitOfWork}
+        />
         {error ? <LumiText tone="muted">{error}</LumiText> : null}
+      </LumiCard>
+
+      <LumiCard testID="self-management-prep">
+        <LumiText variant="h2">{PRODUCT_COPY.development.selfManagementTitle}</LumiText>
+        <LumiText tone="muted">{selfManagement.headline}</LumiText>
+        <LumiText tone="muted">{selfManagement.detail}</LumiText>
+        {selfManagement.previewItems.map((item) => (
+          <LumiText key={item} tone="muted">
+            · {item}
+          </LumiText>
+        ))}
+        {!selfManagement.familyHistoryAutoTransfer ? (
+          <LumiText tone="muted">
+            Cizí rodinná historie se nepřevádí automaticky.
+          </LumiText>
+        ) : null}
       </LumiCard>
 
       <LumiCard testID="parent-suggestions-section">
