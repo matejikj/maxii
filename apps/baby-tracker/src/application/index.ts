@@ -179,6 +179,15 @@ export {
   type ReleaseDurablePhotoCopyResult,
 } from './managePhotoStorage';
 export {
+  cancelTransferJobsForAttachment,
+  purgeExpiredPhotoPayloads,
+  restorePhotoAttachment,
+  softDeletePhotoAttachment,
+  type PurgeExpiredPhotoPayloadsResult,
+  type RestorePhotoAttachmentResult,
+  type SoftDeletePhotoAttachmentResult,
+} from './softDeletePhotoAttachment';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

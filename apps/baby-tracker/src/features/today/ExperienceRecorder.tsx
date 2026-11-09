@@ -10,7 +10,12 @@ import {
   createDraft,
   touchDraft,
 } from '../../domain';
-import { createDraftAutosave, setAttachmentOfflinePin } from '../../application';
+import {
+  createDraftAutosave,
+  restorePhotoAttachment,
+  setAttachmentOfflinePin,
+  softDeletePhotoAttachment,
+} from '../../application';
 import { resolveRemoteServicesBoundary } from '../../app/remoteServicesBoundary';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
@@ -119,6 +124,45 @@ export function ExperienceRecorder({
       }
     },
     [runtime.attachments, runtime.photoTransfer, runtime.photoTransferLoop],
+  );
+
+  const onSoftDeleteAttachment = useCallback(
+    async (attachment: PhotoAttachment) => {
+      if (!runtime.attachments) return;
+      const deleted = await softDeletePhotoAttachment({
+        attachmentId: attachment.attachmentId,
+        attachments: runtime.attachments,
+        nowMs: services.clock.now().epochMs,
+        transferJobs: runtime.photoTransfer.getJobs(),
+        replaceTransferJobs: (next) => runtime.photoTransfer.replaceJobs(next),
+      });
+      if (!deleted) throw new Error('photo_soft_delete_failed');
+    },
+    [runtime.attachments, runtime.photoTransfer, services.clock],
+  );
+
+  const onUndoSoftDeleteAttachment = useCallback(
+    async (attachmentId: string) => {
+      if (!runtime.attachments) return false;
+      const restored = await restorePhotoAttachment({
+        attachmentId,
+        attachments: runtime.attachments,
+        nowMs: services.clock.now().epochMs,
+      });
+      if (!restored.ok) return false;
+      setAttachments((prev) => {
+        if (prev.some((row) => row.attachmentId === restored.attachment.attachmentId)) {
+          return prev.map((row) =>
+            row.attachmentId === restored.attachment.attachmentId
+              ? restored.attachment
+              : row,
+          );
+        }
+        return [...prev, restored.attachment].sort((a, b) => a.orderIndex - b.orderIndex);
+      });
+      return true;
+    },
+    [runtime.attachments, services.clock],
   );
 
   function resetFields(kind: MomentKind | 'picker') {
@@ -489,6 +533,8 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onSoftDeleteAttachment={onSoftDeleteAttachment}
+          onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
       </CareActionSheet>
 
@@ -542,6 +588,8 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onSoftDeleteAttachment={onSoftDeleteAttachment}
+          onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
       </CareActionSheet>
 
@@ -595,6 +643,8 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onSoftDeleteAttachment={onSoftDeleteAttachment}
+          onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
       </CareActionSheet>
     </>

@@ -41,6 +41,12 @@ export type PhotoAttachmentsFieldProps = {
   enableOfflinePin?: boolean;
   transferJobs?: readonly FamilyPhotoBlobTransferJob[];
   onToggleOfflinePin?: (attachment: PhotoAttachment, pinned: boolean) => Promise<void> | void;
+  /**
+   * Soft-delete a saved photo into trash. Pending picks are dropped locally
+   * without trash. Personal mode never needs a backend for remove/undo.
+   */
+  onSoftDeleteAttachment?: (attachment: PhotoAttachment) => Promise<void> | void;
+  onUndoSoftDeleteAttachment?: (attachmentId: string) => Promise<boolean> | boolean;
 };
 
 /**
@@ -63,11 +69,15 @@ export function PhotoAttachmentsField({
   enableOfflinePin = false,
   transferJobs = [],
   onToggleOfflinePin,
+  onSoftDeleteAttachment,
+  onUndoSoftDeleteAttachment,
 }: PhotoAttachmentsFieldProps) {
   const { ui } = useLumiTheme();
   const [busy, setBusy] = useState(false);
   const [pinBusyId, setPinBusyId] = useState<string | null>(null);
+  const [removeBusyId, setRemoveBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
   const remaining = ATTACHMENT_LIMITS.maxPerEvent - attachments.length - pendingCandidates.length;
 
   async function pickMore() {
@@ -145,8 +155,35 @@ export function PhotoAttachmentsField({
               {status}
               {attachment.caption ? ` — ${attachment.caption}` : ''}
             </LumiText>
-            {enableOfflinePin ? (
-              <View style={{ gap: ui.space.xs }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: ui.space.xs }}>
+              {onSoftDeleteAttachment ? (
+                <LumiButton
+                  title="Odebrat fotku"
+                  variant="ghost"
+                  disabled={busy || removeBusyId === attachment.attachmentId}
+                  onPress={() => {
+                    setRemoveBusyId(attachment.attachmentId);
+                    setMessage(null);
+                    void Promise.resolve(onSoftDeleteAttachment(attachment))
+                      .then(() => {
+                        onChange(
+                          attachments.filter(
+                            (row) => row.attachmentId !== attachment.attachmentId,
+                          ),
+                        );
+                        setLastRemovedId(attachment.attachmentId);
+                        setMessage(
+                          'Fotka je v koši na 7 dní. Zpět obnoví místní kopii, pokud ještě nevypršela lhůta.',
+                        );
+                      })
+                      .catch(() => {
+                        setMessage('Fotku se nepodařilo odebrat.');
+                      })
+                      .finally(() => setRemoveBusyId(null));
+                  }}
+                />
+              ) : null}
+              {enableOfflinePin ? (
                 <LumiButton
                   title={
                     attachment.offlinePinned
@@ -167,25 +204,56 @@ export function PhotoAttachmentsField({
                       .finally(() => setPinBusyId(null));
                   }}
                 />
-                {pinReadiness.label ? (
-                  <LumiText variant="caption" tone="muted">
-                    {pinReadiness.label}
-                  </LumiText>
-                ) : (
-                  <LumiText variant="caption" tone="muted">
-                    Přepínač sám nestačí — offline je hotové až po ověřené kopii v zařízení.
-                  </LumiText>
-                )}
-              </View>
+              ) : null}
+            </View>
+            {enableOfflinePin ? (
+              pinReadiness.label ? (
+                <LumiText variant="caption" tone="muted">
+                  {pinReadiness.label}
+                </LumiText>
+              ) : (
+                <LumiText variant="caption" tone="muted">
+                  Přepínač sám nestačí — offline je hotové až po ověřené kopii v zařízení.
+                </LumiText>
+              )
             ) : null}
           </View>
         );
       })}
       {pendingCandidates.map((candidate, index) => (
-        <LumiText key={`${candidate.sourceUri}-${index}`} variant="body">
-          Záznam uložený — fotka se připravuje
-        </LumiText>
+        <View key={`${candidate.sourceUri}-${index}`} style={{ gap: ui.space.xs }}>
+          <LumiText variant="body">Záznam uložený — fotka se připravuje</LumiText>
+          <LumiButton
+            title="Zrušit výběr"
+            variant="ghost"
+            disabled={busy}
+            onPress={() => {
+              onPendingCandidatesChange(
+                pendingCandidates.filter((_, pendingIndex) => pendingIndex !== index),
+              );
+            }}
+          />
+        </View>
       ))}
+      {lastRemovedId && onUndoSoftDeleteAttachment ? (
+        <LumiButton
+          title="Zpět — obnovit fotku"
+          variant="secondary"
+          disabled={busy}
+          onPress={() => {
+            const attachmentId = lastRemovedId;
+            void Promise.resolve(onUndoSoftDeleteAttachment(attachmentId)).then((ok) => {
+              if (!ok) {
+                setMessage('Obnova už není dostupná — lhůta koše vypršela nebo bajty chybí.');
+                setLastRemovedId(null);
+                return;
+              }
+              setLastRemovedId(null);
+              setMessage('Fotka je znovu v záznamu.');
+            });
+          }}
+        />
+      ) : null}
       <LumiButton
         title={busy ? 'Připravuji…' : remaining > 0 ? 'Přidat fotky' : 'Maximum 6 fotek'}
         onPress={() => {

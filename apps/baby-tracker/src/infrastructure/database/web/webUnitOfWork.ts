@@ -536,6 +536,12 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
         .filter((row) => row.deletedAtMs == null)
         .map((row) => withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment));
     },
+    async listSoftDeleted() {
+      const rows = await db.photoAttachments.filter((row) => row.deletedAtMs != null).toArray();
+      return rows
+        .map((row) => withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment))
+        .sort((a, b) => (a.deletedAtMs ?? 0) - (b.deletedAtMs ?? 0));
+    },
     async getById(attachmentId) {
       const row = await db.photoAttachments.get(attachmentId);
       return row

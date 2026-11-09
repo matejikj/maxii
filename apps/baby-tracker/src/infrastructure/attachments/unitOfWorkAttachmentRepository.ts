@@ -15,6 +15,9 @@ export function createUnitOfWorkAttachmentRepository(
     listAll() {
       return unitOfWork.run((uow) => uow.attachments.listAll());
     },
+    listSoftDeleted() {
+      return unitOfWork.run((uow) => uow.attachments.listSoftDeleted());
+    },
     getById(attachmentId) {
       return unitOfWork.run((uow) => uow.attachments.getById(attachmentId));
     },

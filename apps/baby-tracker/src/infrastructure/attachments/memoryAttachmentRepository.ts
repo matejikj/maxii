@@ -21,6 +21,11 @@ export function createMemoryAttachmentRepository(): AttachmentRepository {
         .filter((row) => row.deletedAtMs == null)
         .sort((a, b) => a.createdAtMs - b.createdAtMs || a.orderIndex - b.orderIndex);
     },
+    async listSoftDeleted() {
+      return [...attachments.values()]
+        .filter((row) => row.deletedAtMs != null)
+        .sort((a, b) => (a.deletedAtMs ?? 0) - (b.deletedAtMs ?? 0));
+    },
     async getById(attachmentId) {
       return attachments.get(attachmentId) ?? null;
     },

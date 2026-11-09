@@ -58,6 +58,12 @@ export function createFileAttachmentRepository(): AttachmentRepository {
         .filter((row) => row.deletedAtMs == null)
         .sort((a, b) => a.createdAtMs - b.createdAtMs || a.orderIndex - b.orderIndex);
     },
+    async listSoftDeleted() {
+      const snapshot = await load();
+      return snapshot.attachments
+        .filter((row) => row.deletedAtMs != null)
+        .sort((a, b) => (a.deletedAtMs ?? 0) - (b.deletedAtMs ?? 0));
+    },
     async getById(attachmentId) {
       const snapshot = await load();
       return snapshot.attachments.find((row) => row.attachmentId === attachmentId) ?? null;
