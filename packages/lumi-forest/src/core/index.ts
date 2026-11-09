@@ -40,6 +40,13 @@ export {
   primaryStudioProp,
   resolveStudioAction,
   summarizeStudioComplexity,
+  planNextCollectionExpansion,
+  publishCurrentCharacterCollections,
+  resolvePublishedAppearanceStyle,
+  studioActionsPublishedForSpecies,
+  countCharacterVectorNodes,
+  measureForestSittingNodes,
+  measureStudioSceneComplexity,
   COLLECTION_BACKGROUND_FIXTURES,
   COLLECTION_EXTREME_PROPORTIONS,
   COLLECTION_POSE_EXPRESSION_FIXTURES,
@@ -74,6 +81,8 @@ export type {
   StudioActionDefinition,
   StudioActionId,
   StudioPropId,
+  CharacterCollectionPublication,
+  StudioComplexityReport,
 } from './characters';
 export { CHARACTER_ARTWORK } from './characters/artwork';
 export { planDecorations, DECORATION_SLOTS } from './engine/decorations';

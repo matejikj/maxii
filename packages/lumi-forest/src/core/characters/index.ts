@@ -65,6 +65,19 @@ export {
   summarizeStudioComplexity,
 } from './studioCollection';
 export {
+  planNextCollectionExpansion,
+  publishCurrentCharacterCollections,
+  resolvePublishedAppearanceStyle,
+  studioActionsPublishedForSpecies,
+} from './collectionPublication';
+export type { CharacterCollectionPublication } from './collectionPublication';
+export {
+  countCharacterVectorNodes,
+  measureForestSittingNodes,
+  measureStudioSceneComplexity,
+} from './complexity';
+export type { StudioComplexityReport } from './complexity';
+export {
   COLLECTION_BACKGROUND_FIXTURES,
   COLLECTION_EXTREME_PROPORTIONS,
   COLLECTION_POSE_EXPRESSION_FIXTURES,

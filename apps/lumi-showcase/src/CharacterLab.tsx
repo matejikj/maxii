@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import {
+  CHARACTER_APPEARANCE_STYLES,
   CHARACTER_BLUEPRINTS, CHARACTER_COLLECTION, CHARACTER_SEMANTIC_STATES,
   LUMI_ANIMALS, LumiBlueprintCharacter, LumiCharacter,
   RABBIT_ANATOMY_BASELINE, SELECTED_RABBIT_ART_VARIANT, buildRabbitArtVariants,
+  listStudioActionsForSpecies,
   resolveSemanticPresentation,
+  type CharacterAppearanceStyle,
   type LumiAnimal, type CharacterPose, type CharacterExpression,
   type CharacterAccessory, type CharacterProportions, type CharacterSemanticState,
 } from '@lumi/forest-design';
@@ -12,10 +15,16 @@ import {
 const EXPRESSIONS: readonly CharacterExpression[] = ['neutral', 'happy', 'curious', 'sleepy'];
 const POSES: readonly CharacterPose[] = ['sitting', 'standing'];
 const ACCESSORIES: readonly CharacterAccessory[] = ['bow', 'flower', 'scarf', 'star'];
+const STYLE_LABELS: Record<CharacterAppearanceStyle, string> = {
+  forest: 'Les',
+  workshop: 'Dílna',
+  restrained: 'Střídmý',
+};
 
 export function CharacterLab() {
   const { width } = useWindowDimensions();
   const [species, setSpecies] = useState<LumiAnimal>('rabbit');
+  const [appearanceStyle, setAppearanceStyle] = useState<CharacterAppearanceStyle>('forest');
   const [accessory, setAccessory] = useState<CharacterAccessory | 'none'>('none');
   const [bigHead, setBigHead] = useState(false);
   const [longEars, setLongEars] = useState(false);
@@ -64,6 +73,65 @@ export function CharacterLab() {
           </Pressable>
         ))}
       </ScrollView>
+      <Text style={styles.smallHeading}>VZHLED · LES / DÍLNA / STŘÍDMÝ</Text>
+      <Text style={styles.subtitle}>
+        Neutrální náhled bez produktových dat. Dílna je volba vzhledu, ne věkové zamknutí.
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        {CHARACTER_APPEARANCE_STYLES.map((style) => (
+          <Pressable
+            key={style}
+            testID={`character-style-${style}`}
+            onPress={() => setAppearanceStyle(style)}
+            style={[styles.chip, appearanceStyle === style && styles.chipActive]}
+          >
+            <Text style={[styles.chipText, appearanceStyle === style && styles.chipTextActive]}>
+              {STYLE_LABELS[style]}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <View style={styles.gallery}>
+        {CHARACTER_APPEARANCE_STYLES.map((style) => (
+          <View key={style} testID={`character-style-preview-${species}-${style}`}
+            style={[styles.tile, { width: cardWidth }, appearanceStyle === style && styles.pilotSelected]}>
+            <LumiCharacter
+              species={species}
+              pose="sitting"
+              expression="happy"
+              appearanceStyle={style}
+              width={cardWidth - 18}
+              height={140}
+            />
+            <Text style={styles.variantLabel}>{STYLE_LABELS[style]}</Text>
+            <Text style={styles.poseLabel}>{style}</Text>
+          </View>
+        ))}
+      </View>
+      {listStudioActionsForSpecies(species).length > 0 ? (
+        <>
+          <Text style={styles.smallHeading}>DÍLNA · STATICKÉ AKCE</Text>
+          <View style={styles.gallery}>
+            {listStudioActionsForSpecies(species).map((action) => (
+              <View key={action.id} testID={`character-studio-${species}-${action.id}`}
+                style={[styles.tile, { width: cardWidth }]}>
+                <LumiCharacter
+                  species={species}
+                  pose={action.pose}
+                  expression={action.expression}
+                  appearanceStyle="workshop"
+                  props={action.props}
+                  prop={action.props[0]}
+                  width={cardWidth - 18}
+                  height={140}
+                />
+                <Text style={styles.variantLabel}>{action.labelCs}</Text>
+                <Text style={styles.poseLabel}>{action.props.join(' + ')}</Text>
+              </View>
+            ))}
+          </View>
+        </>
+      ) : null}
       <Text style={styles.smallHeading}>DOPLNĚK</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         {(['none', ...ACCESSORIES] as const).map(item => (
@@ -91,6 +159,7 @@ export function CharacterLab() {
           <View key={`${pose}-${expression}`} testID={`character-variant-${species}-${pose}-${expression}`}
             style={[styles.tile, { width: cardWidth }]}>
             <LumiCharacter species={species} pose={pose} expression={expression}
+              appearanceStyle={appearanceStyle}
               accessories={selectedAccessories} {...(proportions === undefined ? {} : { proportions })}
               width={cardWidth - 18} height={140}/>
             <Text style={styles.variantLabel}>{expression}</Text>
