@@ -13,6 +13,7 @@ import {
   type PhotoAttachment,
 } from '../domain/attachments';
 import type { ActorId } from '../domain';
+import { guardPhotoImportSpace } from './guardPhotoImportSpace';
 
 /**
  * Import picked photos after the host care event has already been saved.
@@ -24,6 +25,23 @@ export async function attachPhotosToSavedEvent(
 ): Promise<AttachPhotosResult> {
   const existing = await services.repository.listForEvent(input.eventId);
   assertRemainingPhotoSlots(existing.length, input.candidates.length);
+
+  const space = await guardPhotoImportSpace({
+    attachments: services,
+    sourceByteLengths: input.candidates.map((row) => row.byteLength),
+  });
+  if (!space.allow) {
+    // Refuse the whole batch when free space is known to be short — never wipe
+    // diary text. Callers can offer a smaller selection or cache cleanup.
+    return {
+      attached: [],
+      failed: input.candidates.map((_, index) => ({
+        index,
+        code: 'photo_insufficient_space',
+        message: space.message,
+      })),
+    };
+  }
 
   const attached: PhotoAttachment[] = [];
   const failed: AttachPhotosResult['failed'] = [];

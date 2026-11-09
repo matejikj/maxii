@@ -42,11 +42,26 @@ export type {
   AttachmentServices,
   AttachPhotosInput,
   AttachPhotosResult,
+  DeviceFreeSpaceProbe,
   PhotoPicker,
   PhotoPickerResult,
   PhotoProcessor,
   PrivateAttachmentBlobStore,
 } from './ports';
+export {
+  decidePhotoImportSpaceGate,
+  estimatePhotoImportReserveBytes,
+  estimateWorstCasePhotoImportReserveBytes,
+} from './photoImportSpacePolicy';
+export type { PhotoImportSpaceDecision } from './photoImportSpacePolicy';
+export {
+  estimateFamilyPhotoCapacityModel,
+  presentPhotoCapacityModelSummary,
+} from './photoCapacityModel';
+export type {
+  PhotoCapacityCountRow,
+  PhotoCapacityModel,
+} from './photoCapacityModel';
 export {
   detectFamilyPhotoCountConflict,
   presentFamilyPhotoTransferLabel,

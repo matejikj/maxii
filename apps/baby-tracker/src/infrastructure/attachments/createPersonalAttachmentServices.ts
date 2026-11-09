@@ -13,6 +13,8 @@ import { createMemoryAttachmentRepository } from './memoryAttachmentRepository';
 import { createMemoryPrivateAttachmentStore } from './memoryPrivateAttachmentStore';
 import { createSyntheticPhotoProcessor } from './syntheticPhotoProcessor';
 import { createUnitOfWorkAttachmentRepository } from './unitOfWorkAttachmentRepository';
+import { createDeviceFreeSpaceProbe } from './deviceFreeSpaceProbe';
+import { createFixedFreeSpaceProbe } from './fixedFreeSpaceProbe';
 
 /**
  * Personal offline photo services. Native keeps sealed JPEG files under the
@@ -48,12 +50,14 @@ export function createPersonalAttachmentServices(input?: {
         ? createDexiePrivateAttachmentStore({ key })
         : createMemoryPrivateAttachmentStore({ key }),
     repository,
+    freeSpace: createDeviceFreeSpaceProbe(),
   };
 }
 
 /** In-memory sealed store + synthetic codec for Node contract tests. */
 export function createTestAttachmentServices(input?: {
   blobKey?: Uint8Array;
+  freeBytes?: number | null;
 }): AttachmentServices {
   const key = input?.blobKey ?? randomBytes(32);
   return {
@@ -65,5 +69,6 @@ export function createTestAttachmentServices(input?: {
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
+    freeSpace: createFixedFreeSpaceProbe(input?.freeBytes ?? null),
   };
 }

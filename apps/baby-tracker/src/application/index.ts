@@ -187,6 +187,7 @@ export {
   type RestorePhotoAttachmentResult,
   type SoftDeletePhotoAttachmentResult,
 } from './softDeletePhotoAttachment';
+export { guardPhotoImportSpace } from './guardPhotoImportSpace';
 export {
   buildEditCareCommand,
   type CareEditPatch,

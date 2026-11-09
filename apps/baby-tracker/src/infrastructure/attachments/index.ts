@@ -55,3 +55,6 @@ export async function loadDexieAttachmentRepository() {
 export async function loadClearAttachmentStorage() {
   return import('./clearAttachmentStorage');
 }
+export async function loadDeviceFreeSpaceProbe() {
+  return import('./deviceFreeSpaceProbe');
+}

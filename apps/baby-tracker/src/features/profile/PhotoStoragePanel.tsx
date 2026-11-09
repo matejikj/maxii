@@ -6,6 +6,10 @@ import {
   loadPhotoStorageSnapshot,
   releaseDurableOwnPhotoCopy,
 } from '../../application';
+import {
+  estimateFamilyPhotoCapacityModel,
+  presentPhotoCapacityModelSummary,
+} from '../../domain/attachments';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 /**
@@ -17,6 +21,9 @@ export function PhotoStoragePanel() {
   const [protectedLabel, setProtectedLabel] = useState('Trvalé / připnuté fotky: …');
   const [cacheLabel, setCacheLabel] = useState('Obnovitelná cache: …');
   const [cacheCopyCount, setCacheCopyCount] = useState(0);
+  const [capacitySummary] = useState(() =>
+    presentPhotoCapacityModelSummary(estimateFamilyPhotoCapacityModel()),
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,6 +67,10 @@ export function PhotoStoragePanel() {
       </LumiText>
       <LumiText>{protectedLabel}</LumiText>
       <LumiText>{cacheLabel}</LumiText>
+      <LumiText tone="muted">
+        Plánovací kapacita (bajty/requesty, bez měny — ceny doplní provoz při nasazení):
+      </LumiText>
+      <LumiText tone="muted">{capacitySummary}</LumiText>
 
       <LumiButton
         title="Vyčistit staženou cache"

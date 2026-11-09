@@ -15,6 +15,7 @@ import {
   type PickedPhotoCandidate,
 } from '../../domain/attachments';
 import { attachPhotosToSavedEvent } from '../../application/attachPhotos';
+import { guardPhotoImportSpace } from '../../application/guardPhotoImportSpace';
 import type { ChildId, EntityId } from '../../domain';
 
 export type PhotoAttachmentsFieldProps = {
@@ -85,6 +86,17 @@ export function PhotoAttachmentsField({
     setBusy(true);
     setMessage(null);
     try {
+      // Worst-case probe before opening the system picker — refuse when free
+      // space is known to be below one full-size import.
+      const preflight = await guardPhotoImportSpace({
+        attachments: services,
+        candidateCount: Math.max(1, remaining),
+      });
+      if (!preflight.allow) {
+        setMessage(preflight.message);
+        return;
+      }
+
       const result = await services.picker.pickPhotos({ remainingSlots: remaining });
       if (result.status === 'cancelled') return;
       if (result.status === 'unavailable') {
@@ -112,8 +124,12 @@ export function PhotoAttachmentsField({
           onLocalAttachmentsCommitted?.(imported.attached);
         }
         if (imported.failed.length > 0) {
+          const spaceMessage = imported.failed.find(
+            (row) => row.code === 'photo_insufficient_space',
+          )?.message;
           setMessage(
-            `Záznam je uložený. ${imported.failed.length} fotografií se nepodařilo připravit.`,
+            spaceMessage ??
+              `Záznam je uložený. ${imported.failed.length} fotografií se nepodařilo připravit.`,
           );
         }
       } else {

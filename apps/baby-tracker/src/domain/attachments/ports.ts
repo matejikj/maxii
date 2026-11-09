@@ -73,9 +73,18 @@ export type AttachPhotosResult = {
   failed: Array<{ index: number; code: string; message: string }>;
 };
 
+/**
+ * Optional free-space probe used before photo import. Null means unknown —
+ * never invent a successful reservation from a missing probe.
+ */
+export type DeviceFreeSpaceProbe = {
+  probeFreeBytes(): Promise<number | null>;
+};
+
 export type AttachmentServices = {
   picker: PhotoPicker;
   processor: PhotoProcessor;
   blobs: PrivateAttachmentBlobStore;
   repository: AttachmentRepository;
+  freeSpace?: DeviceFreeSpaceProbe;
 };
