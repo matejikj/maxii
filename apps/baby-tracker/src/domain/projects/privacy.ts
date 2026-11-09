@@ -96,11 +96,21 @@ export function evaluateProjectAccess(
     return { allowed: true, reason: 'family_guided_admin' };
   }
   if (ctx.principalKind === 'other_adult_caregiver' || ctx.principalKind === 'owner') {
-    if (action === 'read' || action === 'list' || action === 'count') {
+    if (
+      action === 'read' ||
+      action === 'list' ||
+      action === 'count' ||
+      action === 'export'
+    ) {
       return { allowed: true, reason: 'family_guided_caregiver_read' };
     }
     if (action === 'create') {
       return { allowed: true, reason: 'family_guided_caregiver_own' };
+    }
+    if (action === 'share_publish' || action === 'share_revoke') {
+      // Family-guided work is already shared with caregivers; snapshot publish
+      // remains an owner-gated childPrivate action.
+      return { allowed: false, reason: 'denied_share_write' };
     }
     if (ctx.principalKind === 'owner') {
       return { allowed: true, reason: 'family_guided_caregiver_own' };

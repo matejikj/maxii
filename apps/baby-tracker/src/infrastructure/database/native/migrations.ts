@@ -8,6 +8,7 @@ import { SCHEMA_V3_CHECKSUM, SCHEMA_V3_STATEMENTS, SCHEMA_VERSION_3 } from './sc
 import { SCHEMA_V4_CHECKSUM, SCHEMA_V4_STATEMENTS, SCHEMA_VERSION_4 } from './schema/v4';
 import { SCHEMA_V5_CHECKSUM, SCHEMA_V5_STATEMENTS, SCHEMA_VERSION_5 } from './schema/v5';
 import { SCHEMA_V6_CHECKSUM, SCHEMA_V6_STATEMENTS, SCHEMA_VERSION_6 } from './schema/v6';
+import { SCHEMA_V7_CHECKSUM, SCHEMA_V7_STATEMENTS, SCHEMA_VERSION_7 } from './schema/v7';
 import type { CheckpointStore } from './checkpoint';
 
 export type Migration = {
@@ -46,6 +47,11 @@ export const MIGRATIONS: readonly Migration[] = [
     version: SCHEMA_VERSION_6,
     checksum: SCHEMA_V6_CHECKSUM,
     statements: SCHEMA_V6_STATEMENTS,
+  },
+  {
+    version: SCHEMA_VERSION_7,
+    checksum: SCHEMA_V7_CHECKSUM,
+    statements: SCHEMA_V7_STATEMENTS,
   },
 ];
 

@@ -16,7 +16,7 @@ import { EMBEDDED_PRESCHOOL_2_5_SIGNATURE } from '../content/pack/embeddedPresch
 import { PRIMARY_5_8_PACK_ID } from '../content/pack/primary58Pack';
 import { EMBEDDED_PRIMARY_5_8_SIGNATURE } from '../content/pack/embeddedPrimary58';
 import { WEB_SCHEMA_VERSION } from '../infrastructure/database/web/lumiWebDatabase';
-import { SCHEMA_VERSION_6 } from '../infrastructure/database/native/schema/v6';
+import { SCHEMA_VERSION_7 } from '../infrastructure/database/native/schema/v7';
 import { RECOMMENDATION_RULES_VERSION } from '../domain/recommendation/types';
 
 /**
@@ -26,7 +26,7 @@ import { RECOMMENDATION_RULES_VERSION } from '../domain/recommendation/types';
 export const RELEASE_EVIDENCE_FORMAT = 'lumi.release-evidence.v1' as const;
 
 /** Highest DB schema this binary knows how to open safely. */
-export const NATIVE_SCHEMA_COMPATIBILITY = SCHEMA_VERSION_6;
+export const NATIVE_SCHEMA_COMPATIBILITY = SCHEMA_VERSION_7;
 export const WEB_SCHEMA_COMPATIBILITY = WEB_SCHEMA_VERSION;
 
 /** Stable application id for iOS and Android personal installs. */

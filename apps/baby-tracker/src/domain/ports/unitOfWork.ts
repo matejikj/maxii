@@ -6,7 +6,11 @@ import type { ChildProfile } from '../entities/childProfile';
 import type { Draft } from '../entities/draft';
 import type { DeletionMarker, OperationReceipt, Revision } from '../entities/revision';
 import type { ChildId, EntityId, OperationId, RevisionId } from '../ids';
-import type { ProjectRepository } from '../projects/ports';
+import type {
+  PortfolioRepository,
+  ProjectRepository,
+  ShareRepository,
+} from '../projects/ports';
 import type { TimelineCursor } from '../projections/historyQuery';
 
 /**
@@ -31,6 +35,10 @@ export type UnitOfWork = {
    * with diary replace/wipe so projects never survive a full personal erase.
    */
   projects: ProjectRepository;
+  /** Explicit portfolio selections — private until a share snapshot is published. */
+  portfolio: PortfolioRepository;
+  /** Immutable share snapshots with named audiences and revoke state. */
+  shares: ShareRepository;
   /** Personal replace/export helpers stay inside the same private DB boundary. */
   diary: DiarySnapshotRepository;
 };

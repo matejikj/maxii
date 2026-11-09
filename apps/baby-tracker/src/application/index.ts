@@ -165,5 +165,13 @@ export {
   updateFamilyGuidedProjectStatus,
   type FamilyGuidedProjectView,
 } from './familyGuidedProjects';
+export {
+  addPortfolioSelection,
+  exportProjectsForFamilyArchive,
+  listPortfolioSelections,
+  publishProjectShare,
+  readShareAsRecipient,
+  revokeProjectShare,
+} from './projectPortfolioShares';
 
 

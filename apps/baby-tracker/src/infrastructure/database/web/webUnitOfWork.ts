@@ -30,7 +30,14 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
-import type { Project, ProjectRepository } from '../../../domain/projects';
+import type {
+  PortfolioItem,
+  PortfolioRepository,
+  Project,
+  ProjectRepository,
+  ShareRepository,
+  ShareSnapshot,
+} from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
 import {
   compareCareTimelineDesc,
@@ -116,6 +123,8 @@ export function createWebUnitOfWorkFactory(
             runtime.db.photoAttachments,
             runtime.db.photoAttachmentJobs,
             runtime.db.projects,
+            runtime.db.portfolioItems,
+            runtime.db.shareSnapshots,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
@@ -611,6 +620,110 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
+  const portfolio: PortfolioRepository = {
+    async getById(portfolioItemId) {
+      const row = await db.portfolioItems.get(portfolioItemId);
+      return row ? (JSON.parse(row.payloadJson) as PortfolioItem) : null;
+    },
+    async save(item) {
+      await db.portfolioItems.put({
+        portfolioItemId: item.portfolioItemId,
+        projectId: item.projectId,
+        childId: item.childId,
+        ownerAppUserId: item.ownerAppUserId,
+        createdAtMs: item.createdAt.epochMs,
+        payloadJson: JSON.stringify(item),
+      });
+      topics.add('portfolio');
+    },
+    async delete(portfolioItemId) {
+      await db.portfolioItems.delete(portfolioItemId);
+      topics.add('portfolio');
+    },
+    async listByChild(childId) {
+      const rows = await db.portfolioItems
+        .where('childId')
+        .equals(childId)
+        .reverse()
+        .sortBy('createdAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as PortfolioItem);
+    },
+    async listByProject(projectId) {
+      const rows = await db.portfolioItems
+        .where('projectId')
+        .equals(projectId)
+        .reverse()
+        .sortBy('createdAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as PortfolioItem);
+    },
+    async listAll() {
+      const rows = await db.portfolioItems.orderBy('createdAtMs').reverse().toArray();
+      return rows.map((row) => JSON.parse(row.payloadJson) as PortfolioItem);
+    },
+    async deleteByChild(childId) {
+      const rows = await db.portfolioItems.where('childId').equals(childId).toArray();
+      await db.portfolioItems.where('childId').equals(childId).delete();
+      if (rows.length > 0) topics.add('portfolio');
+      return rows.length;
+    },
+    async clearAll() {
+      await db.portfolioItems.clear();
+      topics.add('portfolio');
+    },
+  };
+
+  const shares: ShareRepository = {
+    async getById(shareId) {
+      const row = await db.shareSnapshots.get(shareId);
+      return row ? (JSON.parse(row.payloadJson) as ShareSnapshot) : null;
+    },
+    async save(share) {
+      await db.shareSnapshots.put({
+        shareId: share.shareId,
+        sourceProjectId: share.sourceProjectId,
+        ownerAppUserId: share.ownerAppUserId,
+        revokedAtMs: share.revokedAt?.epochMs ?? null,
+        createdAtMs: share.createdAt.epochMs,
+        payloadJson: JSON.stringify(share),
+      });
+      topics.add('shares');
+    },
+    async listByOwner(ownerAppUserId) {
+      const rows = await db.shareSnapshots
+        .where('ownerAppUserId')
+        .equals(ownerAppUserId)
+        .reverse()
+        .sortBy('createdAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as ShareSnapshot);
+    },
+    async listBySourceProject(projectId) {
+      const rows = await db.shareSnapshots
+        .where('sourceProjectId')
+        .equals(projectId)
+        .reverse()
+        .sortBy('createdAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as ShareSnapshot);
+    },
+    async listAll() {
+      const rows = await db.shareSnapshots.orderBy('createdAtMs').reverse().toArray();
+      return rows.map((row) => JSON.parse(row.payloadJson) as ShareSnapshot);
+    },
+    async revokeAllForProject(projectId, revokedAtMs) {
+      const rows = await this.listBySourceProject(projectId);
+      let count = 0;
+      for (const share of rows) {
+        if (share.revokedAt != null) continue;
+        await this.save({ ...share, revokedAt: { epochMs: revokedAtMs } });
+        count += 1;
+      }
+      return count;
+    },
+    async clearAll() {
+      await db.shareSnapshots.clear();
+      topics.add('shares');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -647,6 +760,8 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.deletionMarkers.clear();
       await db.photoAttachmentJobs.clear();
       await db.photoAttachments.clear();
+      await db.shareSnapshots.clear();
+      await db.portfolioItems.clear();
       await db.projects.clear();
       await db.childProfiles.clear();
       await db.meta.clear();
@@ -681,10 +796,25 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       topics.add('profile');
       topics.add('attachments');
       topics.add('projects');
+      topics.add('portfolio');
+      topics.add('shares');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, projects, diary };
+  return {
+    care,
+    sessions,
+    drafts,
+    revisions,
+    profiles,
+    meta,
+    search,
+    attachments,
+    projects,
+    portfolio,
+    shares,
+    diary,
+  };
 }
 
 async function listWebCarePage(

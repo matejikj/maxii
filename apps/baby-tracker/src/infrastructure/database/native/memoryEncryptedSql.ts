@@ -467,6 +467,55 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
         return String(b.project_id).localeCompare(String(a.project_id));
       });
   }
+  const portfolioByChild =
+    /^SELECT .+ FROM portfolio_items WHERE child_id = \? ORDER BY created_at_ms DESC(?:, portfolio_item_id DESC)?$/i.exec(
+      sql,
+    );
+  if (portfolioByChild) {
+    return ensureTable(state, 'portfolio_items')
+      .rows.filter((row) => row.child_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.created_at_ms) - Number(a.created_at_ms));
+  }
+  const portfolioByProject =
+    /^SELECT .+ FROM portfolio_items WHERE project_id = \? ORDER BY created_at_ms DESC(?:, portfolio_item_id DESC)?$/i.exec(
+      sql,
+    );
+  if (portfolioByProject) {
+    return ensureTable(state, 'portfolio_items')
+      .rows.filter((row) => row.project_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.created_at_ms) - Number(a.created_at_ms));
+  }
+  if (/^SELECT portfolio_item_id FROM portfolio_items WHERE child_id = \?$/i.test(sql)) {
+    return ensureTable(state, 'portfolio_items').rows.filter((row) => row.child_id === params[0]);
+  }
+  if (/FROM portfolio_items/i.test(sql)) {
+    return [...ensureTable(state, 'portfolio_items').rows];
+  }
+  const sharesByOwner =
+    /^SELECT .+ FROM share_snapshots WHERE owner_app_user_id = \? ORDER BY created_at_ms DESC(?:, share_id DESC)?$/i.exec(
+      sql,
+    );
+  if (sharesByOwner) {
+    return ensureTable(state, 'share_snapshots')
+      .rows.filter((row) => row.owner_app_user_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.created_at_ms) - Number(a.created_at_ms));
+  }
+  const sharesBySource =
+    /^SELECT .+ FROM share_snapshots WHERE source_project_id = \? ORDER BY created_at_ms DESC(?:, share_id DESC)?$/i.exec(
+      sql,
+    );
+  if (sharesBySource) {
+    return ensureTable(state, 'share_snapshots')
+      .rows.filter((row) => row.source_project_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.created_at_ms) - Number(a.created_at_ms));
+  }
+  if (/FROM share_snapshots/i.test(sql)) {
+    return [...ensureTable(state, 'share_snapshots').rows];
+  }
   return [];
 }
 

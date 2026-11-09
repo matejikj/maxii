@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
-import type { ChildId, ProjectTemplateRevision } from '../../domain';
+import type { ChildId, PortfolioItem, ProjectTemplateRevision } from '../../domain';
 import {
+  addPortfolioSelection,
   createFamilyGuidedProjectFromTemplate,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
+  listPortfolioSelections,
   markFamilyGuidedProjectStep,
   updateFamilyGuidedProjectStatus,
   type FamilyGuidedProjectView,
@@ -28,6 +30,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const runtime = usePersonalRuntime();
   const [projects, setProjects] = useState<FamilyGuidedProjectView[]>([]);
   const [templates, setTemplates] = useState<ProjectTemplateRevision[]>([]);
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [picking, setPicking] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     const rows = await listFamilyGuidedProjectsForChild(runtime.unitOfWork, { childId });
     setProjects(rows);
     setTemplates(listFamilyGuidedTemplates());
+    setPortfolio(await listPortfolioSelections(runtime.unitOfWork, childId));
   }, [childId, runtime?.unitOfWork]);
 
   useEffect(() => {
@@ -113,6 +117,27 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     }
   }
 
+  async function addCurrentToPortfolio() {
+    if (!runtime?.unitOfWork || !selected) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await addPortfolioSelection({
+        unitOfWork: runtime.unitOfWork,
+        ids: services.ids,
+        now: services.clock.now(),
+        projectId: selected.project.projectId,
+        title: selected.project.title,
+        description: selected.project.intent,
+      });
+      await reload();
+    } catch {
+      setError('Výtvor se nepodařilo uložit do portfolia.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (picking) {
     return (
       <LumiCard testID="family-projects-picker">
@@ -147,6 +172,9 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
 
   if (selected) {
     const pending = selected.project.steps.find((step) => step.status === 'pending');
+    const selectedPortfolio = portfolio.filter(
+      (item) => item.projectId === selected.project.projectId,
+    );
     return (
       <LumiCard testID="family-project-detail">
         <LumiText variant="h2">{selected.project.title}</LumiText>
@@ -165,6 +193,22 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
         ) : (
           <LumiText tone="muted">Všechny kroky jsou vyzkoušené nebo přeskočené.</LumiText>
         )}
+        <View style={{ gap: ui.space.xs }}>
+          <LumiText tone="muted">{PRODUCT_COPY.development.portfolioPrivateNote}</LumiText>
+          {selectedPortfolio.length === 0 ? (
+            <LumiText tone="muted">{PRODUCT_COPY.development.portfolioEmpty}</LumiText>
+          ) : (
+            selectedPortfolio.map((item) => (
+              <LumiText key={item.portfolioItemId}>{item.title}</LumiText>
+            ))
+          )}
+          <LumiButton
+            title={PRODUCT_COPY.development.addToPortfolio}
+            variant="secondary"
+            onPress={() => void addCurrentToPortfolio()}
+            disabled={busy}
+          />
+        </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {selected.project.status === 'paused' || selected.project.status === 'closed' ? (
             <LumiButton

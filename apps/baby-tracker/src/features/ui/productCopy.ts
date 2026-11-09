@@ -184,6 +184,10 @@ export const PRODUCT_COPY = {
     closeFamilyProject: 'Uzavřít',
     resumeFamilyProject: 'Pokračovat',
     markStepTried: 'Vyzkoušeno',
+    addToPortfolio: 'Vybrat do portfolia',
+    portfolioEmpty: 'Zatím není vybraný výtvor.',
+    portfolioPrivateNote: 'Výběr zůstává soukromý, dokud výslovně neukážete ukázku.',
+
     draftBadge: 'Návrh — zatím nevydáno',
     draftPreviewNote:
       'Pracovní náhled. Do denní nabídky vstupují jen vydané aktivity po odborné kontrole.',

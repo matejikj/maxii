@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  asActorId,
   asChildId,
+  asEntityId,
+  asRevisionId,
+  createChildPrivateProject,
   createChildProfile,
   createDiaryArchive,
   isChildPrivateModeActive,
 } from '../src/domain/index.ts';
 import {
+  addPortfolioSelection,
   createFamilyGuidedProjectFromTemplate,
+  exportProjectsForFamilyArchive,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
   updateFamilyGuidedProjectStatus,
@@ -20,7 +26,7 @@ import { createMemoryEncryptedSqlOpener } from '../src/infrastructure/database/n
 import { createNativeUnitOfWorkFactory } from '../src/infrastructure/database/native/nativeUnitOfWork.ts';
 import { openPrivateDatabase } from '../src/infrastructure/database/native/privateDatabase.ts';
 import { currentSchemaVersion } from '../src/infrastructure/database/native/migrations.ts';
-import { SCHEMA_VERSION_6 } from '../src/infrastructure/database/native/schema/v6.ts';
+import { SCHEMA_VERSION_7 } from '../src/infrastructure/database/native/schema/v7.ts';
 
 const childId = asChildId('child_proj_1');
 const clock = Date.UTC(2026, 10, 9, 12, 0, 0);
@@ -56,9 +62,9 @@ async function openNative(name: string) {
   return { db, unitOfWork, ids, close: () => db.close() };
 }
 
-test('schema v6 opens and familyGuided projects persist across reload', async () => {
+test('schema v7 opens and familyGuided projects persist across reload', async () => {
   const ctx = await openNative('family-projects.db');
-  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_6);
+  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_7);
   assert.equal(isChildPrivateModeActive(), false);
   assert.equal(listFamilyGuidedTemplates().length, 12);
 
@@ -103,7 +109,7 @@ test('diary replace clears local projects so wipe cannot leave residues', async 
 
   const empty = createDiaryArchive({
     createdAtMs: clock,
-    schemaCompatibility: 6,
+    schemaCompatibility: 7,
     profiles: [],
     careEvents: [],
     sessions: [],
@@ -117,5 +123,54 @@ test('diary replace clears local projects so wipe cannot leave residues', async 
     await uow.diary.replace(empty);
   });
   assert.equal((await listFamilyGuidedProjectsForChild(ctx.unitOfWork, { childId })).length, 0);
+  await ctx.close();
+});
+
+test('portfolio selection persists and family export omits childPrivate rows', async () => {
+  const ctx = await openNative('family-portfolio.db');
+  const template = PROJECT_TEMPLATES_PUBLISHED[2]!;
+  const created = await createFamilyGuidedProjectFromTemplate({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock },
+    childId,
+    templateRevisionId: template.revisionId,
+  });
+  const item = await addPortfolioSelection({
+    unitOfWork: ctx.unitOfWork,
+    ids: ctx.ids,
+    now: { epochMs: clock },
+    projectId: created.project.projectId,
+    title: created.project.title,
+  });
+  assert.equal(item.visibility, 'private');
+
+  await ctx.unitOfWork.run(async (uow) => {
+    const privateProject = createChildPrivateProject({
+      projectId: asEntityId('proj_secret'),
+      revisionId: asRevisionId('rev_secret'),
+      childId,
+      ownerAppUserId: asActorId('child_user'),
+      template: PROJECT_TEMPLATES_PUBLISHED[0]!,
+      title: 'Tajný',
+      intent: 'Nemá být v rodinném exportu',
+      now: { epochMs: clock },
+      createStepId: (index) => asEntityId(`sec_${index}`),
+      childPrivateModeActive: true,
+    });
+    // Persist even though product UI keeps child mode inactive — export must still filter.
+    await uow.projects.save(privateProject);
+  });
+
+  const exported = await exportProjectsForFamilyArchive({
+    unitOfWork: ctx.unitOfWork,
+    principalKind: 'other_adult_admin',
+    principalAppUserId: asActorId('admin_1'),
+  });
+  assert.equal(exported.projects.every((row) => row.scope === 'familyGuided'), true);
+  assert.equal(
+    exported.projects.some((row) => row.title === 'Tajný'),
+    false,
+  );
   await ctx.close();
 });

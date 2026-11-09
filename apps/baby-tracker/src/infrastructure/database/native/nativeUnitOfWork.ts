@@ -30,9 +30,16 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
-import type { Project, ProjectRepository } from '../../../domain/projects';
+import type {
+  PortfolioItem,
+  PortfolioRepository,
+  Project,
+  ProjectRepository,
+  ShareRepository,
+  ShareSnapshot,
+} from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
-import { SCHEMA_VERSION_6 } from './schema/v6';
+import { SCHEMA_VERSION_7 } from './schema/v7';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
@@ -632,6 +639,129 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
+  const portfolio: PortfolioRepository = {
+    async getById(portfolioItemId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM portfolio_items WHERE portfolio_item_id = ?`,
+        portfolioItemId,
+      );
+      return row ? (JSON.parse(row.payload_json) as PortfolioItem) : null;
+    },
+    async save(item) {
+      await txn.runAsync(
+        'DELETE FROM portfolio_items WHERE portfolio_item_id = ?',
+        item.portfolioItemId,
+      );
+      await txn.runAsync(
+        `INSERT INTO portfolio_items (portfolio_item_id, project_id, child_id, owner_app_user_id, created_at_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?)`,
+        item.portfolioItemId,
+        item.projectId,
+        item.childId,
+        item.ownerAppUserId,
+        item.createdAt.epochMs,
+        JSON.stringify(item),
+      );
+      topics.add('portfolio');
+    },
+    async delete(portfolioItemId) {
+      await txn.runAsync(
+        'DELETE FROM portfolio_items WHERE portfolio_item_id = ?',
+        portfolioItemId,
+      );
+      topics.add('portfolio');
+    },
+    async listByChild(childId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM portfolio_items WHERE child_id = ? ORDER BY created_at_ms DESC, portfolio_item_id DESC`,
+        childId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as PortfolioItem);
+    },
+    async listByProject(projectId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM portfolio_items WHERE project_id = ? ORDER BY created_at_ms DESC, portfolio_item_id DESC`,
+        projectId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as PortfolioItem);
+    },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM portfolio_items ORDER BY created_at_ms DESC, portfolio_item_id DESC`,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as PortfolioItem);
+    },
+    async deleteByChild(childId) {
+      const rows = await txn.getAllAsync<{ portfolio_item_id: string }>(
+        `SELECT portfolio_item_id FROM portfolio_items WHERE child_id = ?`,
+        childId,
+      );
+      await txn.runAsync('DELETE FROM portfolio_items WHERE child_id = ?', childId);
+      if (rows.length > 0) topics.add('portfolio');
+      return rows.length;
+    },
+    async clearAll() {
+      await txn.runAsync('DELETE FROM portfolio_items');
+      topics.add('portfolio');
+    },
+  };
+
+  const shares: ShareRepository = {
+    async getById(shareId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM share_snapshots WHERE share_id = ?`,
+        shareId,
+      );
+      return row ? (JSON.parse(row.payload_json) as ShareSnapshot) : null;
+    },
+    async save(share) {
+      await txn.runAsync('DELETE FROM share_snapshots WHERE share_id = ?', share.shareId);
+      await txn.runAsync(
+        `INSERT INTO share_snapshots (share_id, source_project_id, owner_app_user_id, revoked_at_ms, created_at_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?)`,
+        share.shareId,
+        share.sourceProjectId,
+        share.ownerAppUserId,
+        share.revokedAt?.epochMs ?? null,
+        share.createdAt.epochMs,
+        JSON.stringify(share),
+      );
+      topics.add('shares');
+    },
+    async listByOwner(ownerAppUserId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM share_snapshots WHERE owner_app_user_id = ? ORDER BY created_at_ms DESC, share_id DESC`,
+        ownerAppUserId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ShareSnapshot);
+    },
+    async listBySourceProject(projectId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM share_snapshots WHERE source_project_id = ? ORDER BY created_at_ms DESC, share_id DESC`,
+        projectId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ShareSnapshot);
+    },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM share_snapshots ORDER BY created_at_ms DESC, share_id DESC`,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ShareSnapshot);
+    },
+    async revokeAllForProject(projectId, revokedAtMs) {
+      const rows = await this.listBySourceProject(projectId);
+      let count = 0;
+      for (const share of rows) {
+        if (share.revokedAt != null) continue;
+        await this.save({ ...share, revokedAt: { epochMs: revokedAtMs } });
+        count += 1;
+      }
+      return count;
+    },
+    async clearAll() {
+      await txn.runAsync('DELETE FROM share_snapshots');
+      topics.add('shares');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -647,7 +777,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return assembleDiaryArchive({
         createdAtMs: input.createdAtMs,
-        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_6,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_7,
         profiles: profilesList,
         careEvents,
         sessions: await sessions.listAll(),
@@ -668,6 +798,8 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM deletion_markers');
       await txn.runAsync('DELETE FROM photo_attachment_jobs');
       await txn.runAsync('DELETE FROM photo_attachments');
+      await txn.runAsync('DELETE FROM share_snapshots');
+      await txn.runAsync('DELETE FROM portfolio_items');
       await txn.runAsync('DELETE FROM projects');
       await txn.runAsync('DELETE FROM child_profiles');
       await txn.runAsync('DELETE FROM app_meta');
@@ -702,10 +834,25 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       topics.add('profile');
       topics.add('attachments');
       topics.add('projects');
+      topics.add('portfolio');
+      topics.add('shares');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, projects, diary };
+  return {
+    care,
+    sessions,
+    drafts,
+    revisions,
+    profiles,
+    meta,
+    search,
+    attachments,
+    projects,
+    portfolio,
+    shares,
+    diary,
+  };
 }
 
 async function listCarePage(

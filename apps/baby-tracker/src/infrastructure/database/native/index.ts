@@ -35,6 +35,7 @@ export { SCHEMA_VERSION_3, SCHEMA_V3_CHECKSUM } from './schema/v3';
 export { SCHEMA_VERSION_4, SCHEMA_V4_CHECKSUM } from './schema/v4';
 export { SCHEMA_VERSION_5, SCHEMA_V5_CHECKSUM } from './schema/v5';
 export { SCHEMA_VERSION_6, SCHEMA_V6_CHECKSUM } from './schema/v6';
+export { SCHEMA_VERSION_7, SCHEMA_V7_CHECKSUM } from './schema/v7';
 export { DATABASE_KEY_LIFECYCLE } from './keyLifecycle';
 export {
   assertExplicitPlaintextConversion,

@@ -40,4 +40,25 @@ export {
   childPrivateModeBlockers,
   isChildPrivateModeActive,
 } from './childMode';
-export type { ProjectRepository } from './ports';
+export {
+  planShareSnapshot,
+  presentShareToRecipient,
+  publishShareSnapshot,
+  restoreMustNotRepublishShare,
+  revokeShareSnapshot,
+  type ShareDraft,
+} from './shareLifecycle';
+export {
+  createPortfolioItem,
+  listPortfolioForChild,
+} from './portfolioLifecycle';
+export {
+  filterPortfolioForFamilyExport,
+  filterProjectsForFamilyExport,
+  filterSharesForRequester,
+} from './exportFilter';
+export type {
+  PortfolioRepository,
+  ProjectRepository,
+  ShareRepository,
+} from './ports';
