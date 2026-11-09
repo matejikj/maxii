@@ -50,6 +50,7 @@ export type {
 export {
   detectFamilyPhotoCountConflict,
   presentFamilyPhotoTransferLabel,
+  presentPhotoParentStatus,
 } from './familyTransfer';
 export type {
   FamilyPhotoConflictKind,

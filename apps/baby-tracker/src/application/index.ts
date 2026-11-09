@@ -140,6 +140,10 @@ export {
 } from './developmentQueries';
 export { attachPhotosToSavedEvent } from './attachPhotos';
 export {
+  createFamilyPhotoTransferRuntime,
+  type FamilyPhotoTransferRuntime,
+} from './familyPhotoTransferRuntime';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

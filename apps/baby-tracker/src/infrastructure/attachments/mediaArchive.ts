@@ -1,7 +1,11 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { z } from 'zod';
-import type { PhotoAttachment } from '../../domain/attachments';
+import {
+  classifyPhotoExportCompleteness,
+  type PhotoAttachment,
+  type PhotoExportCompleteness,
+} from '../../domain/attachments';
 import {
   openPortableBackup,
   parsePortableBackup,
@@ -21,6 +25,10 @@ export const MEDIA_ARCHIVE_FORMAT = 'lumi.portable-media.v1' as const;
 const mediaManifestSchema = z.object({
   format: z.literal(MEDIA_ARCHIVE_FORMAT),
   createdAtMs: z.number().int().nonnegative(),
+  // Legacy archives without the field stay incomplete — never upgrade the claim.
+  completeness: z
+    .enum(['full_photo_backup', 'incomplete_photo_export'])
+    .default('incomplete_photo_export'),
   attachments: z.array(
     z.object({
       attachmentId: z.string().min(1),
@@ -52,7 +60,34 @@ export type MediaArchiveManifest = z.infer<typeof mediaManifestSchema>;
 export type MediaArchiveBundle = {
   manifestEnvelope: PortableBackupEnvelope;
   blobs: Record<string, PortableBackupEnvelope>;
+  completeness: PhotoExportCompleteness;
 };
+
+/**
+ * Decide whether every live attachment has a durable display copy ready for
+ * a full photographic backup claim.
+ */
+export function assessMediaArchiveCompleteness(
+  attachments: readonly PhotoAttachment[],
+): PhotoExportCompleteness {
+  const expected = attachments
+    .filter((row) => row.deletedAtMs == null)
+    .map((row) => row.attachmentId);
+  const included = attachments
+    .filter(
+      (row) =>
+        row.deletedAtMs == null &&
+        row.renditions.some(
+          (rendition) =>
+            rendition.role === 'display' && rendition.availability === 'durable',
+        ),
+    )
+    .map((row) => row.attachmentId);
+  return classifyPhotoExportCompleteness({
+    expectedAttachmentIds: expected,
+    includedAttachmentIds: included,
+  });
+}
 
 export async function buildMediaArchiveBundle(input: {
   attachments: PhotoAttachment[];
@@ -60,7 +95,17 @@ export async function buildMediaArchiveBundle(input: {
   password: string;
   createdAtMs: number;
   argonParams?: Argon2idParams;
+  /**
+   * Partial archives stay usable for text recovery but must be requested
+   * explicitly — never labeled as a full photographic backup by default.
+   */
+  allowIncomplete?: boolean;
 }): Promise<MediaArchiveBundle> {
+  const completeness = assessMediaArchiveCompleteness(input.attachments);
+  if (!completeness.complete && !input.allowIncomplete) {
+    throw new Error('incomplete_photo_export');
+  }
+
   const blobs: Record<string, PortableBackupEnvelope> = {};
   const manifestAttachments: MediaArchiveManifest['attachments'] = [];
 
@@ -103,6 +148,7 @@ export async function buildMediaArchiveBundle(input: {
   const manifest: MediaArchiveManifest = {
     format: MEDIA_ARCHIVE_FORMAT,
     createdAtMs: input.createdAtMs,
+    completeness: completeness.label,
     attachments: manifestAttachments,
   };
   const manifestEnvelope = sealPortableBackup(
@@ -110,7 +156,7 @@ export async function buildMediaArchiveBundle(input: {
     input.password,
     input.argonParams,
   );
-  return { manifestEnvelope, blobs };
+  return { manifestEnvelope, blobs, completeness };
 }
 
 export function openMediaArchiveBundle(
@@ -119,6 +165,7 @@ export function openMediaArchiveBundle(
 ): {
   manifest: MediaArchiveManifest;
   blobs: Record<string, Uint8Array>;
+  completeness: PhotoExportCompleteness;
 } {
   const manifestBytes = openPortableBackup(bundle.manifestEnvelope, password);
   const parsed = mediaManifestSchema.safeParse(JSON.parse(new TextDecoder().decode(manifestBytes)));
@@ -141,7 +188,15 @@ export function openMediaArchiveBundle(
       }
     }
   }
-  return { manifest: parsed.data, blobs: opened };
+  const completeness: PhotoExportCompleteness =
+    parsed.data.completeness === 'full_photo_backup'
+      ? { complete: true, label: 'full_photo_backup' }
+      : {
+          complete: false,
+          label: 'incomplete_photo_export',
+          missingAttachmentIds: [],
+        };
+  return { manifest: parsed.data, blobs: opened, completeness };
 }
 
 export function serializeMediaArchiveBundle(bundle: MediaArchiveBundle): string {
@@ -169,5 +224,7 @@ export function parseMediaArchiveBundle(raw: string): MediaArchiveBundle {
         parsePortableBackup(serializePortableBackup(envelope)),
       ]),
     ),
+    // Wire format omits the live assessment; open() re-reads the sealed label.
+    completeness: { complete: false, label: 'incomplete_photo_export', missingAttachmentIds: [] },
   };
 }

@@ -453,6 +453,10 @@ export function ExperienceRecorder({
           onChange={setAttachments}
           pendingCandidates={pendingPhotos}
           onPendingCandidatesChange={setPendingPhotos}
+          transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
+          onLocalAttachmentsCommitted={(rows) => {
+            runtime.photoTransfer.enqueueLocalUploads(rows);
+          }}
         />
       </CareActionSheet>
 
@@ -498,6 +502,10 @@ export function ExperienceRecorder({
           onChange={setAttachments}
           pendingCandidates={pendingPhotos}
           onPendingCandidatesChange={setPendingPhotos}
+          transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
+          onLocalAttachmentsCommitted={(rows) => {
+            runtime.photoTransfer.enqueueLocalUploads(rows);
+          }}
         />
       </CareActionSheet>
 
@@ -543,6 +551,10 @@ export function ExperienceRecorder({
           onChange={setAttachments}
           pendingCandidates={pendingPhotos}
           onPendingCandidatesChange={setPendingPhotos}
+          transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
+          onLocalAttachmentsCommitted={(rows) => {
+            runtime.photoTransfer.enqueueLocalUploads(rows);
+          }}
         />
       </CareActionSheet>
     </>

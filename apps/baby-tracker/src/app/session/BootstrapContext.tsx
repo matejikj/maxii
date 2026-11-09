@@ -58,6 +58,8 @@ export type PersonalRuntime = {
   operationMetrics: LocalOperationMetrics;
   /** Optional local photo import for notes/milestones/experiences. */
   attachments: import('../../domain/attachments').AttachmentServices | null;
+  /** Family photo transfer queue — cold/disabled while personal mode has no sync. */
+  photoTransfer: import('../../application/familyPhotoTransferRuntime').FamilyPhotoTransferRuntime;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -148,6 +150,9 @@ export function BootstrapProvider({
         }
       });
       const attachmentModule = await import('../../infrastructure/attachments/createPersonalAttachmentServices');
+      const { createFamilyPhotoTransferRuntime } = await import(
+        '../../application/familyPhotoTransferRuntime'
+      );
       const next: PersonalRuntime = {
         unitOfWork: opened.unitOfWork,
         commands: wired.commands!,
@@ -159,6 +164,8 @@ export function BootstrapProvider({
           unitOfWork: opened.unitOfWork,
           ...(opened.webDb ? { webDb: opened.webDb } : {}),
         }),
+        // Personal builds stay offline until family sync is explicitly configured.
+        photoTransfer: createFamilyPhotoTransferRuntime(),
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,

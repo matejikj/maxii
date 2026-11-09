@@ -58,3 +58,24 @@ export function presentFamilyPhotoTransferLabel(input: {
   if (input.localDurable) return 'local_only';
   return 'missing_download';
 }
+
+/**
+ * Parent-facing Czech copy for photo readiness. Keeps personal wording when
+ * family sync is off and never invents peer delivery.
+ */
+export function presentPhotoParentStatus(input: {
+  readonly localLabel: 'preparing' | 'local' | 'missing' | 'failed';
+  readonly transferLabel: FamilyPhotoTransferLabel | null;
+}): string {
+  if (input.localLabel === 'preparing') return 'Záznam uložený — fotka se připravuje';
+  if (input.localLabel === 'failed') return 'Fotku se nepodařilo připravit';
+  if (input.transferLabel === 'quota_waiting') {
+    return 'Fotka uložená v zařízení — čeká na volné místo v rodinné kvótě';
+  }
+  if (input.transferLabel === 'waiting_to_send') return 'Čeká na odeslání';
+  if (input.transferLabel === 'sending') return 'Odesílám fotografii…';
+  if (input.transferLabel === 'available_to_family') return 'Dostupná i ostatním';
+  if (input.transferLabel === 'missing_download') return 'Fotka není stažená';
+  if (input.localLabel === 'local') return 'Fotka uložená v zařízení';
+  return 'Fotka není dostupná';
+}

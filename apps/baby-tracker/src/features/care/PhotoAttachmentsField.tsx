@@ -4,7 +4,9 @@ import { LumiButton, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   ATTACHMENT_LIMITS,
   localAvailabilityLabel,
+  presentPhotoParentStatus,
   type AttachmentServices,
+  type FamilyPhotoTransferLabel,
   type PhotoAttachment,
   type PickedPhotoCandidate,
 } from '../../domain/attachments';
@@ -24,6 +26,13 @@ export type PhotoAttachmentsFieldProps = {
   /** Keeps pending picks so text can save first, then photos attach. */
   pendingCandidates: PickedPhotoCandidate[];
   onPendingCandidatesChange: (next: PickedPhotoCandidate[]) => void;
+  /**
+   * Optional family transfer label per attachment. Personal mode omits this and
+   * keeps the local-only wording.
+   */
+  transferLabelFor?: (attachment: PhotoAttachment) => FamilyPhotoTransferLabel | null;
+  /** Called after local photos are confirmed so family uploads can enqueue. */
+  onLocalAttachmentsCommitted?: (attachments: PhotoAttachment[]) => void;
 };
 
 /**
@@ -41,6 +50,8 @@ export function PhotoAttachmentsField({
   onChange,
   pendingCandidates,
   onPendingCandidatesChange,
+  transferLabelFor,
+  onLocalAttachmentsCommitted,
 }: PhotoAttachmentsFieldProps) {
   const { ui } = useLumiTheme();
   const [busy, setBusy] = useState(false);
@@ -72,8 +83,12 @@ export function PhotoAttachmentsField({
           nowMs: nowMs(),
           createId,
         });
-        onChange([...attachments, ...imported.attached]);
+        const nextAttachments = [...attachments, ...imported.attached];
+        onChange(nextAttachments);
         onPendingCandidatesChange([]);
+        if (imported.attached.length > 0) {
+          onLocalAttachmentsCommitted?.(imported.attached);
+        }
         if (imported.failed.length > 0) {
           setMessage(
             `Záznam je uložený. ${imported.failed.length} fotografií se nepodařilo připravit.`,
@@ -94,15 +109,19 @@ export function PhotoAttachmentsField({
         Uložíme menší kopii. Originál ve vašich Fotkách zůstane.
       </LumiText>
       {attachments.map((attachment) => {
-        const label = localAvailabilityLabel({
+        const localLabel = localAvailabilityLabel({
           importState: 'linked',
           hasDurableDisplay: attachment.renditions.some(
             (item) => item.role === 'display' && item.availability === 'durable',
           ),
         });
+        const status = presentPhotoParentStatus({
+          localLabel,
+          transferLabel: transferLabelFor?.(attachment) ?? null,
+        });
         return (
           <LumiText key={attachment.attachmentId} variant="body">
-            {label === 'local' ? 'Fotka uložená v zařízení' : 'Fotka není dostupná'}
+            {status}
             {attachment.caption ? ` — ${attachment.caption}` : ''}
           </LumiText>
         );

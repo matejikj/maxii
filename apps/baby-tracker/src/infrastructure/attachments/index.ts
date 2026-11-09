@@ -23,6 +23,7 @@ export {
 } from './attachmentBlobDatabase';
 export {
   MEDIA_ARCHIVE_FORMAT,
+  assessMediaArchiveCompleteness,
   buildMediaArchiveBundle,
   openMediaArchiveBundle,
   parseMediaArchiveBundle,
