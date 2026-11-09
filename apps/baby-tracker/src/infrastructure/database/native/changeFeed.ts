@@ -9,7 +9,8 @@ export type ChangeTopic =
   | 'attachments'
   | 'projects'
   | 'portfolio'
-  | 'shares';
+  | 'shares'
+  | 'parentSuggestions';
 
 export type ChangeNotification = {
   seq: number;

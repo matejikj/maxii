@@ -95,6 +95,31 @@ export type ShareSnapshot = {
   createdAt: Instant;
 };
 
+export type ParentSuggestionStatus =
+  | 'pending'
+  | 'withdrawn'
+  | 'accepted'
+  | 'dismissed'
+  | 'startedTogether';
+
+/**
+ * One adult's proposal to a specific child. Acceptance copies into the child's
+ * private space when that mode is active; otherwise a caregiver may only start
+ * a familyGuided project explicitly without claiming private privacy.
+ */
+export type ParentSuggestion = {
+  suggestionId: EntityId;
+  childId: ChildId;
+  authorAppUserId: ActorId | null;
+  templateRevisionId: ProjectTemplateRevisionId | null;
+  title: string;
+  note: string | null;
+  status: ParentSuggestionStatus;
+  resultingProjectId: EntityId | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+};
+
 export function asProjectTemplateId(value: string): ProjectTemplateId {
   if (!value.trim()) {
     throw new AppError('VALIDATION', 'Project template id is required', {
@@ -123,5 +148,6 @@ export const PROJECT_LIMITS = {
   portfolioDescriptionMaxChars: 2_000,
   shareBodyMaxBytes: 24 * 1024,
   commentMaxChars: 1_000,
+  suggestionNoteMaxChars: 1_000,
   todayActiveProjects: 3,
 } as const;

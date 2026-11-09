@@ -516,6 +516,34 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM share_snapshots/i.test(sql)) {
     return [...ensureTable(state, 'share_snapshots').rows];
   }
+  const suggestionsByChild =
+    /^SELECT .+ FROM parent_suggestions WHERE child_id = \? ORDER BY updated_at_ms DESC(?:, suggestion_id DESC)?$/i.exec(
+      sql,
+    );
+  if (suggestionsByChild) {
+    return ensureTable(state, 'parent_suggestions')
+      .rows.filter((row) => row.child_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.updated_at_ms) - Number(a.updated_at_ms));
+  }
+  const suggestionsByAuthor =
+    /^SELECT .+ FROM parent_suggestions WHERE author_app_user_id = \? ORDER BY updated_at_ms DESC(?:, suggestion_id DESC)?$/i.exec(
+      sql,
+    );
+  if (suggestionsByAuthor) {
+    return ensureTable(state, 'parent_suggestions')
+      .rows.filter((row) => row.author_app_user_id === params[0])
+      .slice()
+      .sort((a, b) => Number(b.updated_at_ms) - Number(a.updated_at_ms));
+  }
+  if (/^SELECT suggestion_id FROM parent_suggestions WHERE child_id = \?$/i.test(sql)) {
+    return ensureTable(state, 'parent_suggestions').rows.filter(
+      (row) => row.child_id === params[0],
+    );
+  }
+  if (/FROM parent_suggestions/i.test(sql)) {
+    return [...ensureTable(state, 'parent_suggestions').rows];
+  }
   return [];
 }
 

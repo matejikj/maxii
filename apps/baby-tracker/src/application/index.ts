@@ -173,5 +173,16 @@ export {
   readShareAsRecipient,
   revokeProjectShare,
 } from './projectPortfolioShares';
+export {
+  acceptSuggestionIntoChildPrivate,
+  authorSeesPrivateAcceptTelemetry,
+  dismissSuggestionAsChild,
+  listParentSuggestionsForAuthor,
+  proposeParentSuggestion,
+  readChildPrivateModeSettingsStatus,
+  startSuggestionAsFamilyGuided,
+  withdrawAuthoredSuggestion,
+  type AuthorSuggestionView,
+} from './parentSuggestions';
 
 

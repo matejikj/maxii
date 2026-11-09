@@ -7,6 +7,7 @@ import type { Draft } from '../entities/draft';
 import type { DeletionMarker, OperationReceipt, Revision } from '../entities/revision';
 import type { ChildId, EntityId, OperationId, RevisionId } from '../ids';
 import type {
+  ParentSuggestionRepository,
   PortfolioRepository,
   ProjectRepository,
   ShareRepository,
@@ -39,6 +40,8 @@ export type UnitOfWork = {
   portfolio: PortfolioRepository;
   /** Immutable share snapshots with named audiences and revoke state. */
   shares: ShareRepository;
+  /** Caregiver proposals to a child — cleared with diary wipe/replace. */
+  parentSuggestions: ParentSuggestionRepository;
   /** Personal replace/export helpers stay inside the same private DB boundary. */
   diary: DiarySnapshotRepository;
 };

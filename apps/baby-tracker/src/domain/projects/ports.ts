@@ -1,5 +1,5 @@
 import type { ChildId, EntityId } from '../ids';
-import type { PortfolioItem, Project, ShareSnapshot } from './types';
+import type { ParentSuggestion, PortfolioItem, Project, ShareSnapshot } from './types';
 
 /**
  * Local project rows live in the same private diary DB as care data so wipe
@@ -36,5 +36,15 @@ export type ShareRepository = {
   listAll(): Promise<ShareSnapshot[]>;
   /** Revoke every active share derived from a deleted project. */
   revokeAllForProject(projectId: EntityId, revokedAtMs: number): Promise<number>;
+  clearAll(): Promise<void>;
+};
+
+export type ParentSuggestionRepository = {
+  getById(suggestionId: EntityId): Promise<ParentSuggestion | null>;
+  save(suggestion: ParentSuggestion): Promise<void>;
+  listByChild(childId: ChildId): Promise<ParentSuggestion[]>;
+  listByAuthor(authorAppUserId: string): Promise<ParentSuggestion[]>;
+  listAll(): Promise<ParentSuggestion[]>;
+  deleteByChild(childId: ChildId): Promise<number>;
   clearAll(): Promise<void>;
 };

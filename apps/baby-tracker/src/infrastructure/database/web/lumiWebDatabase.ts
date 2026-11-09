@@ -10,7 +10,7 @@ import Dexie, { type EntityTable } from 'dexie';
  */
 export const WEB_DIARY_DATABASE_NAME = 'lumi-web-diary';
 export const WEB_APP_CACHE_DATABASE_NAME = 'lumi-web-app-cache';
-export const WEB_SCHEMA_VERSION = 7;
+export const WEB_SCHEMA_VERSION = 8;
 
 export type WebChildProfileRow = {
   childId: string;
@@ -165,6 +165,16 @@ export type WebShareSnapshotRow = {
   payloadJson: string;
 };
 
+export type WebParentSuggestionRow = {
+  suggestionId: string;
+  childId: string;
+  authorAppUserId: string | null;
+  status: string;
+  createdAtMs: number;
+  updatedAtMs: number;
+  payloadJson: string;
+};
+
 export class LumiWebDatabase extends Dexie {
   childProfiles!: EntityTable<WebChildProfileRow, 'childId'>;
   careEvents!: EntityTable<WebCareEventRow, 'eventId'>;
@@ -181,6 +191,7 @@ export class LumiWebDatabase extends Dexie {
   projects!: EntityTable<WebProjectRow, 'projectId'>;
   portfolioItems!: EntityTable<WebPortfolioItemRow, 'portfolioItemId'>;
   shareSnapshots!: EntityTable<WebShareSnapshotRow, 'shareId'>;
+  parentSuggestions!: EntityTable<WebParentSuggestionRow, 'suggestionId'>;
 
   constructor(databaseName = WEB_DIARY_DATABASE_NAME) {
     super(databaseName);
@@ -262,6 +273,23 @@ export class LumiWebDatabase extends Dexie {
       photoAttachmentJobs: 'jobId, attachmentId, eventId, updatedAtMs',
       projects: 'projectId, childId, scope, status, updatedAtMs',
     });
+    this.version(7).stores({
+      childProfiles: 'childId',
+      careEvents: 'eventId, childId, sortAtMs, eventType',
+      sessions: 'sessionId, [childId+kind], status',
+      drafts: 'draftId, childId, updatedAtMs',
+      revisions: 'revisionId, entityId, operationId',
+      operationReceipts: 'operationId',
+      deletionMarkers: 'deletionId, entityId, retainUntilMs',
+      meta: 'key',
+      changeNotifications: '++seq, publishedAtMs, dataVersion',
+      searchDocuments: 'entityId, childId, sortAtMs, textNormalized',
+      photoAttachments: 'attachmentId, childId, eventId, orderIndex, createdAtMs',
+      photoAttachmentJobs: 'jobId, attachmentId, eventId, updatedAtMs',
+      projects: 'projectId, childId, scope, status, updatedAtMs',
+      portfolioItems: 'portfolioItemId, projectId, childId, createdAtMs',
+      shareSnapshots: 'shareId, sourceProjectId, ownerAppUserId, createdAtMs',
+    });
     this.version(WEB_SCHEMA_VERSION).stores({
       childProfiles: 'childId',
       careEvents: 'eventId, childId, sortAtMs, eventType',
@@ -278,6 +306,7 @@ export class LumiWebDatabase extends Dexie {
       projects: 'projectId, childId, scope, status, updatedAtMs',
       portfolioItems: 'portfolioItemId, projectId, childId, createdAtMs',
       shareSnapshots: 'shareId, sourceProjectId, ownerAppUserId, createdAtMs',
+      parentSuggestions: 'suggestionId, childId, authorAppUserId, status, updatedAtMs',
     });
   }
 }

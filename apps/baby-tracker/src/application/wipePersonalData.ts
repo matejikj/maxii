@@ -36,7 +36,7 @@ export async function wipePersonalData(deps: PersonalWipeDeps): Promise<Personal
   // Empty replace clears live rows even if file delete is delayed/failing.
   const empty = createDiaryArchive({
     createdAtMs: deps.nowMs,
-    schemaCompatibility: 7,
+    schemaCompatibility: 8,
     profiles: [],
     careEvents: [],
     sessions: [],
@@ -113,6 +113,12 @@ export async function findCanaryResidues(
     const shares = await uow.shares.listAll();
     for (const share of shares) {
       if (JSON.stringify(share).includes(canary)) hits.push(`share:${share.shareId}`);
+    }
+    const suggestions = await uow.parentSuggestions.listAll();
+    for (const suggestion of suggestions) {
+      if (JSON.stringify(suggestion).includes(canary)) {
+        hits.push(`suggestion:${suggestion.suggestionId}`);
+      }
     }
   });
   return hits;

@@ -31,6 +31,8 @@ import type {
   PhotoAttachment,
 } from '../../../domain/attachments';
 import type {
+  ParentSuggestion,
+  ParentSuggestionRepository,
   PortfolioItem,
   PortfolioRepository,
   Project,
@@ -724,6 +726,55 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
+  const parentSuggestions: ParentSuggestionRepository = {
+    async getById(suggestionId) {
+      const row = await db.parentSuggestions.get(suggestionId);
+      return row ? (JSON.parse(row.payloadJson) as ParentSuggestion) : null;
+    },
+    async save(suggestion) {
+      await db.parentSuggestions.put({
+        suggestionId: suggestion.suggestionId,
+        childId: suggestion.childId,
+        authorAppUserId: suggestion.authorAppUserId,
+        status: suggestion.status,
+        createdAtMs: suggestion.createdAt.epochMs,
+        updatedAtMs: suggestion.updatedAt.epochMs,
+        payloadJson: JSON.stringify(suggestion),
+      });
+      topics.add('parentSuggestions');
+    },
+    async listByChild(childId) {
+      const rows = await db.parentSuggestions
+        .where('childId')
+        .equals(childId)
+        .reverse()
+        .sortBy('updatedAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as ParentSuggestion);
+    },
+    async listByAuthor(authorAppUserId) {
+      const rows = await db.parentSuggestions
+        .where('authorAppUserId')
+        .equals(authorAppUserId)
+        .reverse()
+        .sortBy('updatedAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as ParentSuggestion);
+    },
+    async listAll() {
+      const rows = await db.parentSuggestions.orderBy('updatedAtMs').reverse().toArray();
+      return rows.map((row) => JSON.parse(row.payloadJson) as ParentSuggestion);
+    },
+    async deleteByChild(childId) {
+      const rows = await db.parentSuggestions.where('childId').equals(childId).toArray();
+      await db.parentSuggestions.where('childId').equals(childId).delete();
+      if (rows.length > 0) topics.add('parentSuggestions');
+      return rows.length;
+    },
+    async clearAll() {
+      await db.parentSuggestions.clear();
+      topics.add('parentSuggestions');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -760,6 +811,7 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.deletionMarkers.clear();
       await db.photoAttachmentJobs.clear();
       await db.photoAttachments.clear();
+      await db.parentSuggestions.clear();
       await db.shareSnapshots.clear();
       await db.portfolioItems.clear();
       await db.projects.clear();
@@ -798,6 +850,7 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       topics.add('projects');
       topics.add('portfolio');
       topics.add('shares');
+      topics.add('parentSuggestions');
     },
   };
 
@@ -813,6 +866,7 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     projects,
     portfolio,
     shares,
+    parentSuggestions,
     diary,
   };
 }

@@ -2,6 +2,8 @@ export {
   PROJECT_LIMITS,
   asProjectTemplateId,
   asProjectTemplateRevisionId,
+  type ParentSuggestion,
+  type ParentSuggestionStatus,
   type PortfolioItem,
   type Project,
   type ProjectCohort,
@@ -37,8 +39,13 @@ export {
 } from './projectLifecycle';
 export {
   CHILD_PRIVATE_MODE_GATES,
+  CHILD_PRIVATE_MODE_GATE_LABELS,
   childPrivateModeBlockers,
   isChildPrivateModeActive,
+  presentChildPrivateModeStatus,
+  type ChildPrivateModeBlockerCode,
+  type ChildPrivateModeGate,
+  type ChildPrivateModePresentation,
 } from './childMode';
 export {
   planShareSnapshot,
@@ -49,6 +56,15 @@ export {
   type ShareDraft,
 } from './shareLifecycle';
 export {
+  acceptParentSuggestionIntoPrivate,
+  authorLearnsPrivateAcceptOrDismiss,
+  createParentSuggestion,
+  dismissParentSuggestion,
+  presentSuggestionToAuthor,
+  startSuggestionTogether,
+  withdrawParentSuggestion,
+} from './suggestionLifecycle';
+export {
   createPortfolioItem,
   listPortfolioForChild,
 } from './portfolioLifecycle';
@@ -58,6 +74,7 @@ export {
   filterSharesForRequester,
 } from './exportFilter';
 export type {
+  ParentSuggestionRepository,
   PortfolioRepository,
   ProjectRepository,
   ShareRepository,

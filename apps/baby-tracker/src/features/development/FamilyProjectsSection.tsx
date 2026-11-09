@@ -1,15 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
-import type { ChildId, PortfolioItem, ProjectTemplateRevision } from '../../domain';
+import { asEntityId, type ChildId, type PortfolioItem, type ProjectTemplateRevision } from '../../domain';
 import {
   addPortfolioSelection,
   createFamilyGuidedProjectFromTemplate,
   listFamilyGuidedProjectsForChild,
   listFamilyGuidedTemplates,
+  listParentSuggestionsForAuthor,
   listPortfolioSelections,
   markFamilyGuidedProjectStep,
+  proposeParentSuggestion,
+  startSuggestionAsFamilyGuided,
   updateFamilyGuidedProjectStatus,
+  withdrawAuthoredSuggestion,
+  type AuthorSuggestionView,
   type FamilyGuidedProjectView,
 } from '../../application';
 import { useCompositionRoot } from '../../app/providers';
@@ -31,7 +36,9 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const [projects, setProjects] = useState<FamilyGuidedProjectView[]>([]);
   const [templates, setTemplates] = useState<ProjectTemplateRevision[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [suggestions, setSuggestions] = useState<AuthorSuggestionView[]>([]);
   const [picking, setPicking] = useState(false);
+  const [proposing, setProposing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -42,6 +49,12 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     setProjects(rows);
     setTemplates(listFamilyGuidedTemplates());
     setPortfolio(await listPortfolioSelections(runtime.unitOfWork, childId));
+    setSuggestions(
+      await listParentSuggestionsForAuthor({
+        unitOfWork: runtime.unitOfWork,
+        childId,
+      }),
+    );
   }, [childId, runtime?.unitOfWork]);
 
   useEffect(() => {
@@ -136,6 +149,112 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function proposeFromTemplate(template: ProjectTemplateRevision) {
+    if (!runtime?.unitOfWork) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await proposeParentSuggestion({
+        unitOfWork: runtime.unitOfWork,
+        ids: services.ids,
+        now: services.clock.now(),
+        childId,
+        title: template.title,
+        note: template.intent,
+        templateRevisionId: template.revisionId,
+      });
+      setProposing(false);
+      await reload();
+    } catch {
+      setError('Návrh se nepodařilo připravit.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startTogether(suggestionId: string) {
+    if (!runtime?.unitOfWork) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await startSuggestionAsFamilyGuided({
+        unitOfWork: runtime.unitOfWork,
+        ids: services.ids,
+        now: services.clock.now(),
+        suggestionId: asEntityId(suggestionId),
+      });
+      setSelectedId(result.projectId);
+      await reload();
+    } catch {
+      setError('Společný start se nepodařil.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function withdrawSuggestion(suggestionId: string) {
+    if (!runtime?.unitOfWork) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await withdrawAuthoredSuggestion({
+        unitOfWork: runtime.unitOfWork,
+        now: services.clock.now(),
+        suggestionId: asEntityId(suggestionId),
+      });
+      await reload();
+    } catch {
+      setError('Návrh se nepodařilo stáhnout.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function deliveryLabel(delivery: AuthorSuggestionView['delivery']): string {
+    switch (delivery) {
+      case 'pending':
+        return PRODUCT_COPY.development.suggestionPending;
+      case 'withdrawn':
+        return PRODUCT_COPY.development.suggestionWithdrawn;
+      case 'delivered':
+        return PRODUCT_COPY.development.suggestionDelivered;
+      case 'started_together':
+        return PRODUCT_COPY.development.suggestionStartedTogether;
+    }
+  }
+
+  if (proposing) {
+    return (
+      <LumiCard testID="parent-suggestions-picker">
+        <LumiText variant="h2">{PRODUCT_COPY.development.parentSuggestions}</LumiText>
+        <LumiText tone="muted">{PRODUCT_COPY.development.parentSuggestionsHint}</LumiText>
+        <View style={{ gap: ui.space.sm }}>
+          {templates.map((template) => (
+            <Pressable
+              key={template.revisionId}
+              accessibilityRole="button"
+              onPress={() => void proposeFromTemplate(template)}
+              style={{ minHeight: 48, justifyContent: 'center', gap: 2 }}
+              testID={`suggest-template-${template.templateId}`}
+            >
+              <LumiText>{template.title}</LumiText>
+              <LumiText tone="muted">
+                {template.cohort} · {template.theme}
+              </LumiText>
+            </Pressable>
+          ))}
+        </View>
+        <LumiButton
+          title="Zpět"
+          variant="secondary"
+          onPress={() => setProposing(false)}
+          disabled={busy}
+        />
+        {error ? <LumiText tone="muted">{error}</LumiText> : null}
+      </LumiCard>
+    );
   }
 
   if (picking) {
@@ -241,33 +360,71 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   }
 
   return (
-    <LumiCard testID="family-projects-section">
-      <LumiText variant="h2">{PRODUCT_COPY.development.familyProjects}</LumiText>
-      <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
-      {projects.length === 0 ? (
-        <LumiText tone="muted">{PRODUCT_COPY.empty.noFamilyProjects}</LumiText>
-      ) : (
-        projects.map((row) => (
-          <Pressable
-            key={row.project.projectId}
-            accessibilityRole="button"
-            onPress={() => setSelectedId(row.project.projectId)}
-            style={{ minHeight: 48, justifyContent: 'center', gap: 2 }}
-            testID={`family-project-${row.project.projectId}`}
-          >
-            <LumiText>{row.project.title}</LumiText>
-            <LumiText tone="muted">
-              {row.scopeLabel} · {row.project.status}
-            </LumiText>
-          </Pressable>
-        ))
-      )}
-      <LumiButton
-        title={PRODUCT_COPY.development.startFamilyProject}
-        onPress={() => setPicking(true)}
-        disabled={busy || !runtime?.unitOfWork}
-      />
-      {error ? <LumiText tone="muted">{error}</LumiText> : null}
-    </LumiCard>
+    <View style={{ gap: ui.space.md }}>
+      <LumiCard testID="family-projects-section">
+        <LumiText variant="h2">{PRODUCT_COPY.development.familyProjects}</LumiText>
+        <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
+        {projects.length === 0 ? (
+          <LumiText tone="muted">{PRODUCT_COPY.empty.noFamilyProjects}</LumiText>
+        ) : (
+          projects.map((row) => (
+            <Pressable
+              key={row.project.projectId}
+              accessibilityRole="button"
+              onPress={() => setSelectedId(row.project.projectId)}
+              style={{ minHeight: 48, justifyContent: 'center', gap: 2 }}
+              testID={`family-project-${row.project.projectId}`}
+            >
+              <LumiText>{row.project.title}</LumiText>
+              <LumiText tone="muted">
+                {row.scopeLabel} · {row.project.status}
+              </LumiText>
+            </Pressable>
+          ))
+        )}
+        <LumiButton
+          title={PRODUCT_COPY.development.startFamilyProject}
+          onPress={() => setPicking(true)}
+          disabled={busy || !runtime?.unitOfWork}
+        />
+        {error ? <LumiText tone="muted">{error}</LumiText> : null}
+      </LumiCard>
+
+      <LumiCard testID="parent-suggestions-section">
+        <LumiText variant="h2">{PRODUCT_COPY.development.parentSuggestions}</LumiText>
+        <LumiText tone="muted">{PRODUCT_COPY.development.parentSuggestionsHint}</LumiText>
+        {suggestions.length === 0 ? (
+          <LumiText tone="muted">{PRODUCT_COPY.development.noParentSuggestions}</LumiText>
+        ) : (
+          suggestions.map((row) => (
+            <View key={row.suggestionId} style={{ gap: 4, minHeight: 48 }} testID={`suggestion-${row.suggestionId}`}>
+              <LumiText>{row.title}</LumiText>
+              <LumiText tone="muted">{deliveryLabel(row.delivery)}</LumiText>
+              {row.delivery === 'pending' ? (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  <LumiButton
+                    title={PRODUCT_COPY.development.startSuggestionTogether}
+                    onPress={() => void startTogether(row.suggestionId)}
+                    disabled={busy}
+                  />
+                  <LumiButton
+                    title={PRODUCT_COPY.development.withdrawSuggestion}
+                    variant="secondary"
+                    onPress={() => void withdrawSuggestion(row.suggestionId)}
+                    disabled={busy}
+                  />
+                </View>
+              ) : null}
+            </View>
+          ))
+        )}
+        <LumiButton
+          title={PRODUCT_COPY.development.proposeSuggestion}
+          variant="secondary"
+          onPress={() => setProposing(true)}
+          disabled={busy || !runtime?.unitOfWork}
+        />
+      </LumiCard>
+    </View>
   );
 }

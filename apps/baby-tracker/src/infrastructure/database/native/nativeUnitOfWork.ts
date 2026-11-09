@@ -31,6 +31,8 @@ import type {
   PhotoAttachment,
 } from '../../../domain/attachments';
 import type {
+  ParentSuggestion,
+  ParentSuggestionRepository,
   PortfolioItem,
   PortfolioRepository,
   Project,
@@ -39,7 +41,7 @@ import type {
   ShareSnapshot,
 } from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
-import { SCHEMA_VERSION_7 } from './schema/v7';
+import { SCHEMA_VERSION_8 } from './schema/v8';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
@@ -762,6 +764,66 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
+  const parentSuggestions: ParentSuggestionRepository = {
+    async getById(suggestionId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM parent_suggestions WHERE suggestion_id = ?`,
+        suggestionId,
+      );
+      return row ? (JSON.parse(row.payload_json) as ParentSuggestion) : null;
+    },
+    async save(suggestion) {
+      await txn.runAsync(
+        'DELETE FROM parent_suggestions WHERE suggestion_id = ?',
+        suggestion.suggestionId,
+      );
+      await txn.runAsync(
+        `INSERT INTO parent_suggestions (suggestion_id, child_id, author_app_user_id, status, created_at_ms, updated_at_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        suggestion.suggestionId,
+        suggestion.childId,
+        suggestion.authorAppUserId,
+        suggestion.status,
+        suggestion.createdAt.epochMs,
+        suggestion.updatedAt.epochMs,
+        JSON.stringify(suggestion),
+      );
+      topics.add('parentSuggestions');
+    },
+    async listByChild(childId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM parent_suggestions WHERE child_id = ? ORDER BY updated_at_ms DESC, suggestion_id DESC`,
+        childId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ParentSuggestion);
+    },
+    async listByAuthor(authorAppUserId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM parent_suggestions WHERE author_app_user_id = ? ORDER BY updated_at_ms DESC, suggestion_id DESC`,
+        authorAppUserId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ParentSuggestion);
+    },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM parent_suggestions ORDER BY updated_at_ms DESC, suggestion_id DESC`,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as ParentSuggestion);
+    },
+    async deleteByChild(childId) {
+      const rows = await txn.getAllAsync<{ suggestion_id: string }>(
+        `SELECT suggestion_id FROM parent_suggestions WHERE child_id = ?`,
+        childId,
+      );
+      await txn.runAsync('DELETE FROM parent_suggestions WHERE child_id = ?', childId);
+      if (rows.length > 0) topics.add('parentSuggestions');
+      return rows.length;
+    },
+    async clearAll() {
+      await txn.runAsync('DELETE FROM parent_suggestions');
+      topics.add('parentSuggestions');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -777,7 +839,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return assembleDiaryArchive({
         createdAtMs: input.createdAtMs,
-        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_7,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_8,
         profiles: profilesList,
         careEvents,
         sessions: await sessions.listAll(),
@@ -798,6 +860,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM deletion_markers');
       await txn.runAsync('DELETE FROM photo_attachment_jobs');
       await txn.runAsync('DELETE FROM photo_attachments');
+      await txn.runAsync('DELETE FROM parent_suggestions');
       await txn.runAsync('DELETE FROM share_snapshots');
       await txn.runAsync('DELETE FROM portfolio_items');
       await txn.runAsync('DELETE FROM projects');
@@ -836,6 +899,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       topics.add('projects');
       topics.add('portfolio');
       topics.add('shares');
+      topics.add('parentSuggestions');
     },
   };
 
@@ -851,6 +915,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     projects,
     portfolio,
     shares,
+    parentSuggestions,
     diary,
   };
 }

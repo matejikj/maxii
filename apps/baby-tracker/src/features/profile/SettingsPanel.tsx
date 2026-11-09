@@ -6,6 +6,7 @@ import {
   LOCAL_GUIDE_SPECIES,
   buildDiagnosticsSnapshot,
   buildSupportReport,
+  readChildPrivateModeSettingsStatus,
   serializeSupportReport,
   type AppearanceStyle,
   type GuideSpecies,
@@ -362,6 +363,24 @@ export function SettingsPanel() {
             }}
           />
         )}
+      </LumiCard>
+
+      <LumiCard testID="child-private-mode-status">
+        <LumiText variant="h3">Soukromý prostor dítěte</LumiText>
+        {(() => {
+          const status = readChildPrivateModeSettingsStatus();
+          return (
+            <>
+              <LumiText>{status.headline}</LumiText>
+              <LumiText tone="muted">{status.detail}</LumiText>
+              {status.blockers.map((blocker) => (
+                <LumiText key={blocker.code} tone="muted">
+                  · {blocker.label}
+                </LumiText>
+              ))}
+            </>
+          );
+        })()}
       </LumiCard>
 
       <LumiCard>

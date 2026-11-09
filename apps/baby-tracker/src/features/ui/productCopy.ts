@@ -187,6 +187,17 @@ export const PRODUCT_COPY = {
     addToPortfolio: 'Vybrat do portfolia',
     portfolioEmpty: 'Zatím není vybraný výtvor.',
     portfolioPrivateNote: 'Výběr zůstává soukromý, dokud výslovně neukážete ukázku.',
+    parentSuggestions: 'Návrhy pro dítě',
+    parentSuggestionsHint:
+      'Připravte nápad. Bez dětského účtu ho můžete společně zahájit jako rodinný projekt — rodič neuvidí tajné přijetí nebo odmítnutí.',
+    proposeSuggestion: 'Připravit návrh',
+    startSuggestionTogether: 'Zahájit společně',
+    withdrawSuggestion: 'Stáhnout návrh',
+    suggestionPending: 'Čeká na společný start',
+    suggestionWithdrawn: 'Stažený',
+    suggestionDelivered: 'Doručený',
+    suggestionStartedTogether: 'Zahájený společně',
+    noParentSuggestions: 'Zatím nemáte připravený návrh.',
 
     draftBadge: 'Návrh — zatím nevydáno',
     draftPreviewNote:

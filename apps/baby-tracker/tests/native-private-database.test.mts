@@ -23,7 +23,7 @@ import { createMemoryEncryptedSqlOpener } from '../src/infrastructure/database/n
 import { createNativeUnitOfWorkFactory } from '../src/infrastructure/database/native/nativeUnitOfWork.ts';
 import { openPrivateDatabase } from '../src/infrastructure/database/native/privateDatabase.ts';
 import { currentSchemaVersion } from '../src/infrastructure/database/native/migrations.ts';
-import { SCHEMA_VERSION_7 } from '../src/infrastructure/database/native/schema/v7.ts';
+import { SCHEMA_VERSION_8 } from '../src/infrastructure/database/native/schema/v8.ts';
 import { DATABASE_KEY_LIFECYCLE } from '../src/infrastructure/database/native/keyLifecycle.ts';
 import {
   assertExplicitPlaintextConversion,
@@ -91,7 +91,7 @@ test('private database migrates, commits care atomically, and notifies after suc
 
   const loaded = await unitOfWork.run((uow) => uow.care.getById(event.eventId));
   assert.equal(loaded?.type, 'diaper');
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_7);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_8);
   assert.equal(notifications.length, 1);
   await db.close();
 });
@@ -262,7 +262,7 @@ test('failed migration keeps checkpoint and does not advance schema', async () =
     now,
     assertCipher: async () => '4.5.0-test',
   });
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_7);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_8);
   assert.equal(checkpointStore.records.size, 1);
 
   await assert.rejects(() =>
@@ -276,7 +276,7 @@ test('failed migration keeps checkpoint and does not advance schema', async () =
       throw new Error('boom');
     }),
   );
-  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_7);
+  assert.equal(await currentSchemaVersion(db.connection), SCHEMA_VERSION_8);
   const checkpoint = await checkpointStore.restore([...checkpointStore.records.keys()][0]!);
   assert.ok(checkpoint.payload.byteLength > 0);
   await db.close();
@@ -407,7 +407,7 @@ test('native UnitOfWork persists photo attachment metadata in SQLCipher tables',
     await uow.diary.replace(
       createDiaryArchive({
         createdAtMs: now.epochMs,
-        schemaCompatibility: SCHEMA_VERSION_7,
+        schemaCompatibility: SCHEMA_VERSION_8,
         profiles: [],
         careEvents: [],
         sessions: [],
