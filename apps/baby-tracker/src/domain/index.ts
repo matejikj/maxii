@@ -231,6 +231,14 @@ export {
   type SyncTransferPresentation,
 } from './sync/presentation';
 export {
+  buildFamilyDurabilityPresentation,
+  describeRecordTransferLine,
+  type BackupDurabilityInput,
+  type DurabilityKind,
+  type DurabilityRow,
+  type FamilyDurabilityPresentation,
+} from './sync/durabilityLabels';
+export {
   applyRevision,
   bumpEraseGeneration,
   convergeByRevisions,

@@ -1,4 +1,5 @@
 import type { SyncTransferPresentation } from '../sync/presentation.ts';
+import { describeRecordTransferLine } from '../sync/durabilityLabels.ts';
 
 export type AuthorshipLine = {
   readonly originalAuthorLabel: string;
@@ -92,16 +93,12 @@ export function buildAuthorshipLine(input: {
     input.lastEditorLabel && input.lastEditorLabel !== original
       ? input.lastEditorLabel
       : null;
-  let transferLine: string | null = null;
-  if (input.transfer) {
-    if (input.transfer.transferState === 'pending' || input.transfer.transferState === 'in_flight') {
-      transferLine = 'Čeká na přenos. Uloženo v tomto zařízení.';
-    } else if (input.lastSuccessfulSyncAtLabel) {
-      transferLine = `Poslední přenos: ${input.lastSuccessfulSyncAtLabel}`;
-    } else {
-      transferLine = 'Zatím bez potvrzeného přenosu mezi zařízeními.';
-    }
-  }
+  const transferLine = input.transfer
+    ? describeRecordTransferLine({
+        transfer: input.transfer,
+        lastSuccessfulSyncAtLabel: input.lastSuccessfulSyncAtLabel,
+      })
+    : null;
   return {
     originalAuthorLabel: original,
     lastEditorLabel: lastEditor,

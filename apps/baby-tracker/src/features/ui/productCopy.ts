@@ -96,6 +96,13 @@ export const PRODUCT_COPY = {
     experienceRequired: 'Vyberte oblast, nebo doplňte název či krátkou poznámku.',
     endNotSaved: 'Ukončení není uložené.',
     savedLocally: 'Uloženo v tomto zařízení.',
+    awaitingTransfer: 'Čeká na přenos.',
+    synchronized: 'Synchronizováno.',
+    synchronizedCaveat:
+      'Jiný offline telefon může mít ještě neodeslané změny, které toto zařízení nezná.',
+    backupCreated: 'Záloha vytvořena.',
+    backupDistinctFromSync:
+      'Záloha je oddělená od synchronizace mezi telefony.',
     saveFailed: 'Uložení se nepovedlo. Zadané hodnoty zůstaly zachované.',
     draftUnprotected: 'Rozepsané hodnoty zatím nejsou chráněné.',
     clockMovedBack: 'Systémový čas je dřívější než začátek. Délku neupravujeme automaticky.',

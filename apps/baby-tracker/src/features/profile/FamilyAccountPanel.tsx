@@ -12,6 +12,7 @@ import {
   createDisabledFamilyAuthPort,
   type FamilyAuthSession,
 } from '../../infrastructure/family/familyAuthPort';
+import { FamilyDurabilityStatusCard } from '../family/FamilyDurabilityStatusCard';
 
 function defaultRedirectUri(): string {
   return Platform.OS === 'web'
@@ -93,31 +94,37 @@ export function FamilyAccountPanel() {
   if (!enabled) return null;
 
   return (
-    <LumiCard>
-      <LumiText variant="h3">Rodinný účet</LumiText>
-      <LumiText tone="muted">
-        Volitelné přihlášení pro sdílení. Osobní deník funguje dál i bez účtu a bez serveru.
-      </LumiText>
-      {session ? (
-        <View style={styles.block}>
-          <LumiText>Přihlášeno ({session.appUserId.slice(0, 8)}…)</LumiText>
-          <LumiButton title="Odhlásit" disabled={busy} onPress={onLogout} />
-        </View>
-      ) : (
-        <View style={styles.block}>
-          <LumiButton title="Přihlásit přes prohlížeč" disabled={busy} onPress={onLogin} />
-          <LumiText tone="muted">
-            Obnova hesla probíhá u poskytovatele identity, ne uvnitř deníku.
-          </LumiText>
-        </View>
-      )}
-      {message ? <LumiText>{message}</LumiText> : null}
-      {error ? <LumiText tone="muted">{error}</LumiText> : null}
-    </LumiCard>
+    <View style={styles.stack}>
+      <LumiCard>
+        <LumiText variant="h3">Rodinný účet</LumiText>
+        <LumiText tone="muted">
+          Volitelné přihlášení pro sdílení. Osobní deník funguje dál i bez účtu a bez serveru.
+        </LumiText>
+        {session ? (
+          <View style={styles.block}>
+            <LumiText>Přihlášeno ({session.appUserId.slice(0, 8)}…)</LumiText>
+            <LumiButton title="Odhlásit" disabled={busy} onPress={onLogout} />
+          </View>
+        ) : (
+          <View style={styles.block}>
+            <LumiButton title="Přihlásit přes prohlížeč" disabled={busy} onPress={onLogin} />
+            <LumiText tone="muted">
+              Obnova hesla probíhá u poskytovatele identity, ne uvnitř deníku.
+            </LumiText>
+          </View>
+        )}
+        {message ? <LumiText>{message}</LumiText> : null}
+        {error ? <LumiText tone="muted">{error}</LumiText> : null}
+      </LumiCard>
+      <FamilyDurabilityStatusCard />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  stack: {
+    gap: 12,
+  },
   block: {
     gap: 8,
     marginTop: 8,
