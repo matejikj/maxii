@@ -2,6 +2,7 @@ import {
   createDisabledFamilyAttachmentTransferPort,
   isolateTransfersOnSessionChange,
   labelForAttachmentTransfer,
+  planDownloadJobsForRemoteMetadata,
   planUploadJobsForLocalAttachments,
   runFamilyPhotoTransferTick,
   shouldEnqueueFamilyPhotoTransfers,
@@ -17,6 +18,16 @@ export type FamilyPhotoTransferRuntime = {
   readonly getJobs: () => readonly FamilyPhotoBlobTransferJob[];
   readonly setSession: (session: FamilyPhotoTransferSession) => void;
   readonly enqueueLocalUploads: (attachments: readonly PhotoAttachment[]) => void;
+  /** Queue downloads for remote metadata that lacks local bytes. */
+  readonly enqueueRemoteDownloads: (input: {
+    readonly remoteAttachments: readonly PhotoAttachment[];
+    readonly localAttachments: readonly PhotoAttachment[];
+  }) => {
+    readonly queued: number;
+    readonly placeholders: readonly PhotoAttachment[];
+  };
+  /** Replace the in-memory job list after cancel/isolation updates. */
+  readonly replaceJobs: (next: readonly FamilyPhotoBlobTransferJob[]) => void;
   readonly labelFor: (input: {
     readonly attachment: PhotoAttachment;
     readonly remoteActivated?: boolean;
@@ -83,6 +94,25 @@ export function createFamilyPhotoTransferRuntime(input?: {
       });
       if (created.length === 0) return;
       jobs = [...jobs, ...created];
+    },
+    enqueueRemoteDownloads({ remoteAttachments, localAttachments }) {
+      if (!shouldEnqueueFamilyPhotoTransfers(session)) {
+        return { queued: 0, placeholders: [] };
+      }
+      const planned = planDownloadJobsForRemoteMetadata({
+        session,
+        remoteAttachments,
+        localAttachments,
+        existingJobs: jobs,
+        createJobId,
+      });
+      if (planned.jobs.length > 0) {
+        jobs = [...jobs, ...planned.jobs];
+      }
+      return { queued: planned.jobs.length, placeholders: planned.placeholders };
+    },
+    replaceJobs(next) {
+      jobs = [...next];
     },
     labelFor({ attachment, remoteActivated = false }) {
       return labelForAttachmentTransfer({

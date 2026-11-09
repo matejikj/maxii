@@ -158,6 +158,13 @@ export {
   type FamilyPhotoTransferLoopResult,
 } from './familyPhotoTransferLoop';
 export {
+  applyRemoteAttachmentMetadata,
+  attachmentEntriesFromSyncInbox,
+  type ApplyRemoteAttachmentMetadataResult,
+  type FamilyPhotoTransferDownloadQueue,
+} from './applyRemoteAttachmentMetadata';
+export { runFamilySyncTickWithAttachments } from './runFamilySyncTickWithAttachments';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

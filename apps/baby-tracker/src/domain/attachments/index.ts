@@ -115,3 +115,13 @@ export type {
   ActiveFamilySelection,
   FamilyMembershipSummary,
 } from './activeFamilySelection';
+export {
+  isRemoteAttachmentMetadataPayload,
+  mergeRemoteAttachmentMetadata,
+  parseRemoteAttachmentMetadataEntries,
+  photoAttachmentFromRemoteMetadata,
+} from './remoteAttachmentMetadata';
+export type {
+  RemoteAttachmentMetadataEntry,
+  RemoteAttachmentMetadataPayload,
+} from './remoteAttachmentMetadata';
