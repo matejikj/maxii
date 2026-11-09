@@ -15,6 +15,7 @@ import { createChildProfile } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { FamilyAccountPanel } from './FamilyAccountPanel';
+import { PhotoStoragePanel } from './PhotoStoragePanel';
 import { GuideCompanion } from '../shell/GuideCompanion';
 
 const GUIDE_LABELS: Record<GuideSpecies, string> = {
@@ -93,6 +94,8 @@ export function SettingsPanel() {
       </LumiText>
 
       <FamilyAccountPanel />
+
+      <PhotoStoragePanel />
 
       <LumiCard>
         <LumiText variant="h3">Jednotky a pásmo</LumiText>

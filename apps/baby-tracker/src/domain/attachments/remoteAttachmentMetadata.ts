@@ -76,6 +76,8 @@ export function photoAttachmentFromRemoteMetadata(
     deletedAtMs: Number.isFinite(deletedAtMs) ? deletedAtMs : null,
     retainUntilMs: null,
     offlinePinned: false,
+    // Family peers start as downloads — recoverable cache until pinned.
+    localOrigin: 'downloaded',
     renditions: payload.renditions.map((row) => ({
       renditionId: asRenditionId(row.renditionId),
       attachmentId,
@@ -110,6 +112,7 @@ export function mergeRemoteAttachmentMetadata(input: {
       retainUntilMs: input.local.retainUntilMs,
       // Keep the local pin intent across remote tombstone metadata merges.
       offlinePinned: input.local.offlinePinned === true,
+      localOrigin: input.local.localOrigin ?? 'imported',
     };
   }
   const localByRendition = new Map(
@@ -122,6 +125,7 @@ export function mergeRemoteAttachmentMetadata(input: {
     deletedAtMs: null,
     retainUntilMs: null,
     offlinePinned: input.local.offlinePinned === true,
+    localOrigin: input.local.localOrigin ?? 'imported',
     renditions: input.remote.renditions.map((remoteRow) => {
       const localRow = localByRendition.get(remoteRow.renditionId);
       if (

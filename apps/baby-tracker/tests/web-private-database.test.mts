@@ -306,6 +306,7 @@ test('web UnitOfWork stores photo attachment metadata in diary IndexedDB', async
         deletedAtMs: null,
         retainUntilMs: null,
         offlinePinned: false,
+        localOrigin: 'imported',
         renditions: [
           {
             renditionId: asRenditionId('rend_web_1'),

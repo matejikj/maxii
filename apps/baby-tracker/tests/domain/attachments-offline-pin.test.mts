@@ -47,6 +47,7 @@ function attachment(input?: {
     deletedAtMs: null,
     retainUntilMs: null,
     offlinePinned: input?.offlinePinned === true,
+    localOrigin: 'imported',
     renditions: [
       {
         renditionId: asRenditionId('rend_display'),
@@ -214,4 +215,5 @@ test('legacy rows without offlinePinned normalize to unpinned', () => {
     renditions: [],
   });
   assert.equal(legacy.offlinePinned, false);
+  assert.equal(legacy.localOrigin, 'imported');
 });

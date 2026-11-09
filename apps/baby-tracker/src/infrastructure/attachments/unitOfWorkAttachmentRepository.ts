@@ -12,6 +12,9 @@ export function createUnitOfWorkAttachmentRepository(
     listForEvent(eventId) {
       return unitOfWork.run((uow) => uow.attachments.listForEvent(eventId));
     },
+    listAll() {
+      return unitOfWork.run((uow) => uow.attachments.listAll());
+    },
     getById(attachmentId) {
       return unitOfWork.run((uow) => uow.attachments.getById(attachmentId));
     },

@@ -135,3 +135,8 @@ export {
   withOfflinePinDefault,
 } from './offlinePin';
 export type { OfflinePinReadiness } from './offlinePin';
+export {
+  buildPhotoStorageInventory,
+  presentPhotoStorageSummary,
+} from './photoStorageInventory';
+export type { PhotoStorageInventory } from './photoStorageInventory';

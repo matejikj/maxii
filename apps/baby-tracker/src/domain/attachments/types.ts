@@ -64,6 +64,11 @@ export type PhotoAttachment = {
    * display bytes must exist before parents see offline confirmation.
    */
   offlinePinned: boolean;
+  /**
+   * Local imports stay outside recoverable cache; family downloads may be cache
+   * until pinned. Legacy rows without the field are treated as imports.
+   */
+  localOrigin: 'imported' | 'downloaded';
   renditions: PhotoRendition[];
 };
 

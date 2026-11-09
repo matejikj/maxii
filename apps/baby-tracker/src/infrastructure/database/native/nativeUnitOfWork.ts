@@ -521,6 +521,15 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
         .filter((row) => row.deleted_at_ms == null)
         .map((row) => withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment));
     },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string; deleted_at_ms: number | null }>(
+        `SELECT payload_json, deleted_at_ms FROM photo_attachments
+         ORDER BY created_at_ms ASC, order_index ASC, attachment_id ASC`,
+      );
+      return rows
+        .filter((row) => row.deleted_at_ms == null)
+        .map((row) => withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment));
+    },
     async getById(attachmentId) {
       const row = await txn.getFirstAsync<{ payload_json: string }>(
         `SELECT payload_json FROM photo_attachments WHERE attachment_id = ?`,

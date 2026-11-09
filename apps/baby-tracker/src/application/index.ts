@@ -170,6 +170,15 @@ export {
   type FamilyPhotoTransferPinQueue,
 } from './keepAttachmentOffline';
 export {
+  clearRecoverablePhotoCache,
+  loadPhotoStorageSnapshot,
+  releaseDurableOwnPhotoCopy,
+  type ClearRecoverablePhotoCacheResult,
+  type PhotoStorageSnapshot,
+  type ReleaseDurablePhotoCopyReason,
+  type ReleaseDurablePhotoCopyResult,
+} from './managePhotoStorage';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

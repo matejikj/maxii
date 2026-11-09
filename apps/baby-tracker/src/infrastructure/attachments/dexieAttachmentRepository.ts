@@ -16,6 +16,12 @@ export function createDexieAttachmentRepository(db: LumiWebDatabase): Attachment
         .filter((row) => row.deletedAtMs == null)
         .map((row) => withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment));
     },
+    async listAll() {
+      const rows = await db.photoAttachments.orderBy('createdAtMs').toArray();
+      return rows
+        .filter((row) => row.deletedAtMs == null)
+        .map((row) => withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment));
+    },
     async getById(attachmentId) {
       const row = await db.photoAttachments.get(attachmentId);
       return row

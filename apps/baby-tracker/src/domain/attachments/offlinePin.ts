@@ -147,14 +147,16 @@ export function summarizeProtectedOfflineBytes(
   return { protectedBytes, cacheBytes };
 }
 
-/** Legacy rows without the pin field stay unpinned. */
+/** Legacy rows without pin/origin fields stay unpinned local imports. */
 export function withOfflinePinDefault(
-  attachment: Omit<PhotoAttachment, 'offlinePinned'> & {
+  attachment: Omit<PhotoAttachment, 'offlinePinned' | 'localOrigin'> & {
     readonly offlinePinned?: boolean;
+    readonly localOrigin?: 'imported' | 'downloaded';
   },
 ): PhotoAttachment {
   return {
     ...attachment,
     offlinePinned: attachment.offlinePinned === true,
+    localOrigin: attachment.localOrigin === 'downloaded' ? 'downloaded' : 'imported',
   };
 }

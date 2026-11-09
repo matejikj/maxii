@@ -42,6 +42,8 @@ export type PrivateAttachmentBlobStore = {
 
 export type AttachmentRepository = {
   listForEvent(eventId: EntityId): Promise<PhotoAttachment[]>;
+  /** Active (non-deleted) attachments across events — used for space inventory. */
+  listAll(): Promise<PhotoAttachment[]>;
   getById(attachmentId: AttachmentId): Promise<PhotoAttachment | null>;
   save(attachment: PhotoAttachment): Promise<void>;
   softDelete(input: {

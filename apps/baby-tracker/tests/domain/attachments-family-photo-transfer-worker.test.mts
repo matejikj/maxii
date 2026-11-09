@@ -37,6 +37,7 @@ function attachmentWithBytes(id: string, bytes: Uint8Array): PhotoAttachment {
     deletedAtMs: null,
     retainUntilMs: null,
     offlinePinned: false,
+    localOrigin: 'imported',
     renditions: [
       {
         renditionId: asRenditionId(`ren_${id}`),

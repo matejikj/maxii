@@ -357,6 +357,7 @@ test('native UnitOfWork persists photo attachment metadata in SQLCipher tables',
     deletedAtMs: null,
     retainUntilMs: null,
     offlinePinned: false,
+    localOrigin: 'imported',
     renditions: [
       {
         renditionId: asRenditionId('rend_1'),
