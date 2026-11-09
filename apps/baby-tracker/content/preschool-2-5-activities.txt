@@ -1,0 +1,302 @@
+# LUMI preschool 2–5 years — versioned editorial source
+# CheckedOn: 2026-11-08. Owner-reported content approval recorded separately.
+# Production builds read generated TypeScript revisions, not this Markdown.
+
+## preschool-two-toy-worlds — Dvě hry vedle sebe
+
+**Metadata:** `preschool-two-toy-worlds` · 24–59 měsíců · `relationship` / `rel.cooperation` · `home` · 5 minut.
+
+**Pomůcky:** dva velké věkově vhodné předměty.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Zeptejte se, co chce dítě s předmětem dělat. 2. Přidejte se s druhým předmětem bez přebírání vedení. 3. Nabídněte spojení her a přijměte i hraní vedle sebe.
+**Nabídka řeči:** „Můžu být se svou hrou vedle tebe?“
+**Pozorování a konec:** Nevyžadovat sdílení vlastního předmětu ani společné hraní přes nesouhlas.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-three-picture-story — Příběh ze tří obrázků
+
+**Metadata:** `preschool-three-picture-story` · 24–59 měsíců · `speech` / `speech.storytelling` · `home` · 5 minut.
+
+**Pomůcky:** tři velké bezpečné obrázky známých věcí.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Rozložte obrázky a nechte dítě vybrat první. 2. Navazujte spolu krátkým vlastním příběhem. 3. Dovolte pořadí změnit nebo příběh nedokončit.
+**Nabídka řeči:** „Co by se mohlo stát potom?“
+**Pozorování a konec:** Slova může nahradit gesto; žádné opravování jediné správné posloupnosti.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-two-chosen-moves — Dva vlastní pohyby
+
+**Metadata:** `preschool-two-chosen-moves` · 24–59 měsíců · `movement` / `move.sequence` · `home` · 5 minut.
+
+**Pomůcky:** žádné; bezpečný volný prostor.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Nabídněte dítěti zvolit dva pohodlné osvojené pohyby. 2. Pomalu je vedle sebe zopakujte. 3. Vyměňte vedení nebo skončete podle chuti.
+**Nabídka řeči:** „Jaký pohyb vybereš první?“
+**Pozorování a konec:** Lze pohybovat jen pažemi vsedě; žádné lezení na nábytek, nucené skoky nebo bolest.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-texture-mark-on-paper — Stopa známého povrchu
+
+**Metadata:** `preschool-texture-mark-on-paper` · 24–59 měsíců · `senses` / `sense.texture` · `home` · 5 minut.
+
+**Pomůcky:** papír, silná pastelka a velká pevná strukturovaná podložka bez hran.
+**Připravenost:** `safeMarkMaking` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Dospělý přidrží papír na bezpečné podložce. 2. Dítě může zkusit jemnou stopu pastelkou nebo sledovat dospělého. 3. Porovnejte papír s dotykem podložky.
+**Nabídka řeči:** „Na papíře se objevila stopa. Čeho sis všiml/a?“
+**Pozorování a konec:** Pouze bezpečné kreslení; žádná ostrá nebo odlomitelná podložka.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-notice-one-change — Jedna malá změna
+
+**Metadata:** `preschool-notice-one-change` · 24–59 měsíců · `attention` / `attn.short-focus` · `home` · 5 minut.
+
+**Pomůcky:** dva velké bezpečné předměty.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Společně si předměty prohlédněte. 2. Přímo před dítětem jeden otočte nebo přesuňte. 3. Povídejte si o změně, které si všimlo.
+**Nabídka řeči:** „Co je teď jinak? Můžeme se podívat spolu.“
+**Pozorování a konec:** Bez zakrývání očí, paměťové zkoušky nebo trestu za přehlédnutí.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-one-place-for-each — Pro každého jedno místo
+
+**Metadata:** `preschool-one-place-for-each` · 24–59 měsíců · `spaceQuantity` / `space.match-count` · `home` · 5 minut.
+
+**Pomůcky:** dva velcí plyšáci a dvě velké podložky.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Připravte místo pro každého plyšáka. 2. Nechte dítě podložky přiřadit podle vlastního nápadu. 3. Zkuste spolu přesunout jedno místo.
+**Nabídka řeči:** „Každý má kde být. Co se změní, když ho přesuneme?“
+**Pozorování a konec:** Pouze velké pomůcky bez malých částí; počítání není podmínka.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-two-colour-page — Stránka dvěma barvami
+
+**Metadata:** `preschool-two-colour-page` · 24–59 měsíců · `creationRhythm` / `create.drawing` · `home` · 5 minut.
+
+**Pomůcky:** velký papír a dvě bezpečné silné pastelky.
+**Připravenost:** `safeMarkMaking` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Nabídněte výběr jedné nebo obou barev. 2. Nechte dítě zvolit, jak bude čáry tvořit. 3. Přijměte název obrázku nebo jej nechte bez názvu.
+**Nabídka řeči:** „Jak se má tvůj obrázek jmenovat, jestli chceš?“
+**Pozorování a konec:** Žádná předloha k přesnému kopírování; kreslení skončí při nebezpečném zacházení.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-prepare-two-clothes — Připravíme dva kousky
+
+**Metadata:** `preschool-prepare-two-clothes` · 24–59 měsíců · `autonomy` / `auto.routine` · `home` · 5 minut.
+
+**Pomůcky:** dva bezpečné kusy vhodného oblečení.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Nabídněte dvě části běžného oblékání. 2. Dítě vybere, co připraví samo nebo spolu. 3. Zbytek dokončete s potřebnou pomocí.
+**Nabídka řeči:** „Čím chceš začít a kde mám pomoci?“
+**Pozorování a konec:** Neprodlužovat nepohodlí a nevyžadovat samostatné zapínání.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-toy-misunderstanding — Plyšáci se nedomluvili
+
+**Metadata:** `preschool-toy-misunderstanding` · 36–59 měsíců · `relationship` / `rel.perspective` · `home` · 5 minut.
+
+**Pomůcky:** dva velcí bezpeční plyšáci.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Vymyslete drobné nedorozumění mezi plyšáky. 2. Nabídněte dítěti doplnit, co který mohl chtít. 3. Zahrajte více než jedno možné smíření.
+**Nabídka řeči:** „Co by mohl jeden druhému říct?“
+**Pozorování a konec:** Nepřenášet skrytě skutečný konflikt nebo vinu dítěte do příběhu.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-story-from-own-choice — Co bylo předtím a potom
+
+**Metadata:** `preschool-story-from-own-choice` · 36–59 měsíců · `speech` / `speech.storytelling` · `home` · 5 minut.
+
+**Pomůcky:** žádné; případně známé leporelo.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dítě vybere smyšlenou postavu nebo známý obrázek. 2. Společně vymyslete jednu situaci a pokračování. 3. Nechte dítě změnit závěr.
+**Nabídka řeči:** „A jak bys chtěl/a, aby to pokračovalo?“
+**Pozorování a konec:** Neopravovat fantazii jako chybu; dítě nemusí mluvit ve větách.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-floor-path-choice — Cesta, kterou si zvolím
+
+**Metadata:** `preschool-floor-path-choice` · 36–59 měsíců · `movement` / `move.self-directed` · `home` · 5 minut.
+
+**Pomůcky:** žádné; volná rovná podlaha.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dítě ukáže krátkou trasu ve volném bezpečném prostoru. 2. Dospělý ověří, že se nikde neklouže a nejsou překážky. 3. Projděte ji vlastním osvojeným způsobem nebo ji ukažte rukou.
+**Nabídka řeči:** „Kudy bys chtěl/a jít nebo ukázat cestu?“
+**Pozorování a konec:** Žádné schody, překážky na přelézání, zavázané oči nebo závod; dohled dospělého.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-shadow-not-sun — Kde je stín
+
+**Metadata:** `preschool-shadow-not-sun` · 36–59 měsíců · `senses` / `sense.light` · `outdoor` · 5 minut.
+
+**Pomůcky:** žádné; bezpečné místo se stínem.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dospělý vybere klidné místo mimo dopravu. 2. Porovnejte stín při dvou malých pohybech ruky. 3. Pojmenujte, co se změnilo, bez povinného vysvětlení.
+**Nabídka řeči:** „Co udělá stín, když pohneme rukou?“
+**Pozorování a konec:** Nedívat se do slunce nebo svítidla, nepoužívat laser/lupu; při nepohodlí odejít.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-one-sorting-rule — Tři věci podle jednoho nápadu
+
+**Metadata:** `preschool-one-sorting-rule` · 36–59 měsíců · `attention` / `attn.sort-rule` · `home` · 5 minut.
+
+**Pomůcky:** tři až čtyři velké bezpečné různobarevné předměty.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dítě navrhne, co mohou mít některé věci společné. 2. Přesuňte je podle jeho zvoleného pravidla. 3. Dovolte pravidlo změnit a znovu věci uspořádat.
+**Nabídka řeči:** „Podle čeho je chceš dát k sobě?“
+**Pozorování a konec:** Žádná skrytá správná kategorie nebo hodnocení rychlosti.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-bridge-for-big-toy — Most pro velkou hračku
+
+**Metadata:** `preschool-bridge-for-big-toy` · 36–59 měsíců · `spaceQuantity` / `space.position` · `home` · 5 minut.
+
+**Pomůcky:** velké věkově vhodné kostky a lehká velká hračka.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Společně postavte dva nízké pilíře na podlaze. 2. Položte vhodnou velkou kostku jako most. 3. Zkuste pod ním posunout lehkou hračku.
+**Nabídka řeči:** „Vešla se pod most, nebo ho chceš změnit?“
+**Pozorování a konec:** Pouze malá hračka, nikdy tělo dítěte; konstrukce není určena k lezení nebo zatížení člověkem.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-quiet-orchestra — Tichý orchestr s pauzou
+
+**Metadata:** `preschool-quiet-orchestra` · 36–59 měsíců · `creationRhythm` / `create.rhythm` · `home` · 5 minut.
+
+**Pomůcky:** žádné.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dítě vybere tichý zvuk dlaní nebo hlasu. 2. Dospělý odpoví podobným motivem. 3. Nabídněte společnou pauzu nebo nové vedení.
+**Nabídka řeči:** „Kdy necháme zaznít ticho?“
+**Pozorování a konec:** Hlasitost bez nepohodlí; žádné údery do nádob u ucha nebo nucené vystupování.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-before-going-out — Co si připravíme k odchodu
+
+**Metadata:** `preschool-before-going-out` · 36–59 měsíců · `autonomy` / `auto.routine` · `home` · 5 minut.
+
+**Pomůcky:** dva běžné bezpečné kusy oblečení nebo výbavy.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dospělý vymezí dvě drobné vhodné části přípravy. 2. Dítě si vybere jednu a zkusí ji s dostupnou pomocí. 3. Dospělý ověří skutečně potřebnou výbavu.
+**Nabídka řeči:** „Co si chceš připravit ty?“
+**Pozorování a konec:** Za bezpečí a vybavení odpovídá dospělý; dítě se netestuje a nechodí samo ven.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-different-needs-story — Každá postava chce něco jiného
+
+**Metadata:** `preschool-different-needs-story` · 48–59 měsíců · `relationship` / `rel.perspective` · `home` · 5 minut.
+
+**Pomůcky:** žádné; vlastní smyšlený příběh.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Vymyslete dvě postavy s různým přáním. 2. Dítě navrhne, jak se mohou domluvit. 3. Přijměte více možností včetně oddělených činností.
+**Nabídka řeči:** „Jak by se dalo zařídit, aby mohly říct, co chtějí?“
+**Pozorování a konec:** Nežádat přiznání vlastních citlivých zážitků a nehodnotit empatii skórem.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-story-two-voices — Tentýž příběh dvěma hlasy
+
+**Metadata:** `preschool-story-two-voices` · 48–59 měsíců · `speech` / `speech.word-play` · `home` · 5 minut.
+
+**Pomůcky:** žádné; případně rodině známý příběh.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Vyberte krátkou vlastní situaci. 2. Jednou ji vyprávějte jiným hlasem nebo rodinným jazykem, který skutečně používáte. 3. Dítě zvolí, jak bude vyprávění pokračovat.
+**Nabídka řeči:** „Co znělo jinak a co zůstalo stejné?“
+**Pozorování a konec:** Žádné zesměšňování přízvuku; další jazyk není povinný a nevymýšlí se překlad.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-gentle-ball-aim — Kam pošleme míč
+
+**Metadata:** `preschool-gentle-ball-aim` · 48–59 měsíců · `movement` / `move.coordination` · `home` · 5 minut.
+
+**Pomůcky:** velký měkký míč a dostatek bezpečného místa.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Zvolte blízké místo na podlaze bez lidí a rozbitných věcí. 2. Pomalu kutálejte míč k místu nebo k dospělému. 3. Měňte vzdálenost jen při zájmu dítěte.
+**Nabídka řeči:** „Kam ho chceš poslat tentokrát?“
+**Pozorování a konec:** Není závod ani test přesnosti; žádné hody do obličeje nebo běh za míčem k dopravě.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-weight-in-two-hands — Dvě věci v rukou
+
+**Metadata:** `preschool-weight-in-two-hands` · 48–59 měsíců · `senses` / `sense.compare` · `home` · 5 minut.
+
+**Pomůcky:** dva lehké velké bezpečné předměty bez ostrých hran.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dospělý ověří, že oba lze pohodlně držet. 2. Nabídněte dítěti porovnat vjem v ruce postupně nebo vedle sebe. 3. Přijměte vlastní slova pro rozdíl.
+**Nabídka řeči:** „Jak ti připadají v ruce?“
+**Pozorování a konec:** Nezvedat těžké předměty, nebalancovat s nimi a netestovat sílu.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-invent-grouping-rule — Vymyslíme vlastní pravidlo
+
+**Metadata:** `preschool-invent-grouping-rule` · 48–59 měsíců · `attention` / `attn.sort-rule` · `home` · 5 minut.
+
+**Pomůcky:** několik velkých bezpečných tvarů nebo pevných obrázků.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Dítě si vybere znak pro uspořádání věcí. 2. Vytvoří skupiny a ukáže dospělému svůj nápad. 3. Dospělý se zeptá na jinou možnou variantu.
+**Nabídka řeči:** „Jak bys je rozdělil/a jinak, kdybys chtěl/a?“
+**Pozorování a konec:** Neoznačovat neobvyklé pravidlo za špatné; bez odhadování inteligence.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-room-as-large-shapes — Pokoj z velkých tvarů
+
+**Metadata:** `preschool-room-as-large-shapes` · 48–59 měsíců · `spaceQuantity` / `space.position` · `home` · 5 minut.
+
+**Pomůcky:** papír a bezpečná kreslicí pomůcka; dospělý může kreslit podle gest.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Vyberte jednu smyšlenou nebo známou místnost. 2. Nakreslete několik velkých tvarů pro věci v ní. 3. Dítě navrhne nové uspořádání.
+**Nabídka řeči:** „Co bys chtěl/a mít blíž a co dál?“
+**Pozorování a konec:** Není přesná mapa domova pro sdílení; neuvádět adresu a nepřesouvat skutečný těžký nábytek.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-box-town — Město z krabiček
+
+**Metadata:** `preschool-box-town` · 48–59 měsíců · `creationRhythm` / `create.building` · `home` · 5 minut.
+
+**Pomůcky:** velké čisté lehké papírové krabičky bez sponek a drobných součástí.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte krabičky na stabilní podlahu. 2. Dítě vybere, co budou představovat. 3. Propojte je příběhem nebo změnou uspořádání.
+**Nabídka řeči:** „Kudy by se tvým městem chodilo?“
+**Pozorování a konec:** Bez nožů, tavného lepidla, lezení do krabic nebo zakrývání hlavy.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## preschool-my-first-step-your-help — Můj krok a tvoje pomoc
+
+**Metadata:** `preschool-my-first-step-your-help` · 48–59 měsíců · `autonomy` / `auto.help-choice` · `home` · 5 minut.
+
+**Pomůcky:** pomůcky jedné zvolené bezpečné činnosti.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Vyberte společnou drobnou činnost. 2. Dítě pojmenuje nebo ukáže část, kterou chce zkusit. 3. Dohodněte si pomoc a možnost kdykoli přestat.
+**Nabídka řeči:** „Co chceš udělat ty a co mám převzít já?“
+**Pozorování a konec:** Nezadávat nebezpečný nebo časově nutný domácí úkol; pomoc není odměna.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## Source principles
+
+### S01
+
+[NAEYC — Play](https://www.naeyc.org/resources/topics/play): hra může propojit více oblastí učení v raném dětství. Podporuje rámec dobrovolné hry, nikoli záruku přínosu konkrétní naší položky.
+
+### S02
+
+[Harvard Center on the Developing Child — Serve and Return](https://developingchild.harvard.edu/key-concept/serve-and-return/): citlivá odpověď dospělého na iniciativu dítěte. Nevyžaduje, aby dítě odpovídalo jedním předepsaným způsobem.
+
+### S03
+
+[UNICEF — Learning activities for babies and toddlers](https://www.unicef.org/parenting/child-care/21-learning-activities-babies-and-toddlers): příležitosti k učení v běžném společném dni. Naše seznamy nejsou reprodukcí tohoto článku ani převzetím všech jeho pomůcek.
+
+### S04
+
+[NAEYC — Everyday Steps to Reading and Writing](https://www.naeyc.org/our-work/families/everyday-steps-reading-and-writing): význam čtení, vyprávění a smysluplného používání jazyka doma. Nejde o povinný termín samostatného čtení.
+
+### S05
+
+[NAEYC — Articles for Families on Math](https://www.naeyc.org/our-work/families/math): množství, třídění, prostor a měření v běžném prostředí. Není důkazem, že náš věkový filtr vyhovuje konkrétnímu dítěti.
+
+### S06
+
+[Royal Children's Hospital — Toy safety](https://www.rch.org.au/kidsinfo/fact_sheets/Toy_safety/): bezpečnost a věkové určení pomůcek. Slouží jako podklad pro kontrolu rizik; nenahrazuje posouzení každého materiálu a situace.
+
+### S07
+
+[EEF — Metacognition and self-regulation](https://educationendowmentfoundation.org.uk/education-evidence/teaching-learning-toolkit/metacognition-and-self-Regulation): plánování, průběžná úprava a reflexe v konkrétní činnosti. Školní důkazy nepřenášet jako měřený účinek na batolata nebo na naši aplikaci.
+
+## Předání po obsahovém potvrzení
+
+Stav všech 72 podkladů je OWNER_REPORTED_APPROVED k 2026-11-08 podle [evidence](review-approval.md). Při implementaci vytvořit skutečné revision ID a mapování na toto přesné znění. Ukázková osoba, AI rozbor ani odkaz toto potvrzení nenahrazují. Významová změna vyžaduje nové posouzení; testy budoucího UI a offline balení zbývají. Uvolnit lze jednotlivou technicky a produktově ověřenou věkovou sadu, bez čekání na společné vydání všech tří.
+

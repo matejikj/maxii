@@ -52,6 +52,10 @@ export {
   TODDLER_1_2_PUBLISHED_REVISIONS,
 } from './catalog/toddler12Published';
 export {
+  PRESCHOOL_2_5_PUBLISHED_CONTENT_VERSION,
+  PRESCHOOL_2_5_PUBLISHED_REVISIONS,
+} from './catalog/preschool25Published';
+export {
   PRODUCT_PUBLISHED_CONTENT_VERSION,
   PRODUCT_PUBLISHED_REVISIONS,
   PRODUCT_SUPPORTED_AGE_MONTHS,
@@ -69,3 +73,7 @@ export {
   TODDLER_1_2_DRAFT_CONTENT_VERSION,
   TODDLER_1_2_DRAFT_REVISIONS,
 } from './drafts/toddler12Drafts';
+export {
+  PRESCHOOL_2_5_DRAFT_CONTENT_VERSION,
+  PRESCHOOL_2_5_DRAFT_REVISIONS,
+} from './drafts/preschool25Drafts';

@@ -70,3 +70,12 @@ export {
   EMBEDDED_TODDLER_1_2_MANIFEST,
   EMBEDDED_TODDLER_1_2_SIGNATURE,
 } from './embeddedToddler12';
+export {
+  PRESCHOOL_2_5_PACK_ID,
+  buildPreschool25Files,
+  buildPreschool25Manifest,
+} from './preschool25Pack';
+export {
+  EMBEDDED_PRESCHOOL_2_5_MANIFEST,
+  EMBEDDED_PRESCHOOL_2_5_SIGNATURE,
+} from './embeddedPreschool25';

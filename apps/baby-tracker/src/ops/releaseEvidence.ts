@@ -11,6 +11,8 @@ import {
 import { EMBEDDED_FIRST_YEAR_BASE_SIGNATURE } from '../content/pack/embeddedFirstYearBase';
 import { TODDLER_1_2_PACK_ID } from '../content/pack/toddler12Pack';
 import { EMBEDDED_TODDLER_1_2_SIGNATURE } from '../content/pack/embeddedToddler12';
+import { PRESCHOOL_2_5_PACK_ID } from '../content/pack/preschool25Pack';
+import { EMBEDDED_PRESCHOOL_2_5_SIGNATURE } from '../content/pack/embeddedPreschool25';
 import { WEB_SCHEMA_VERSION } from '../infrastructure/database/web/lumiWebDatabase';
 import { SCHEMA_VERSION_4 } from '../infrastructure/database/native/schema/v4';
 import { RECOMMENDATION_RULES_VERSION } from '../domain/recommendation/types';
@@ -59,6 +61,9 @@ export type ReleaseEvidenceManifest = {
     keyId: string;
     expansionPackId: string;
     expansionKeyId: string;
+    /** Previously shipped age expansion that remains install-local. */
+    toddlerExpansionPackId: string;
+    toddlerExpansionKeyId: string;
   };
   art: {
     collectionVersion: string;
@@ -111,8 +116,10 @@ export function buildReleaseEvidenceManifest(
       generation: pack.generation,
       readerVersion: pack.readerVersion,
       keyId: EMBEDDED_FIRST_YEAR_BASE_SIGNATURE.keyId,
-      expansionPackId: TODDLER_1_2_PACK_ID,
-      expansionKeyId: EMBEDDED_TODDLER_1_2_SIGNATURE.keyId,
+      expansionPackId: PRESCHOOL_2_5_PACK_ID,
+      expansionKeyId: EMBEDDED_PRESCHOOL_2_5_SIGNATURE.keyId,
+      toddlerExpansionPackId: TODDLER_1_2_PACK_ID,
+      toddlerExpansionKeyId: EMBEDDED_TODDLER_1_2_SIGNATURE.keyId,
     },
     art: {
       collectionVersion: EMBEDDED_COLLECTION_VERSION,

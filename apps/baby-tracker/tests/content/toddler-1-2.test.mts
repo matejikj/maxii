@@ -31,7 +31,7 @@ test('toddler 1–2 drafts and published set validate with monthly coverage', ()
     supportedAgeTo: 23,
   });
   assert.equal(coverage.gaps.filter((gap) => gap.code === 'age_gap').length, 0);
-  assert.ok(PRODUCT_PUBLISHED_REVISIONS.length >= 84);
+  assert.ok(PRODUCT_PUBLISHED_REVISIONS.length >= 108);
 });
 
 test('safeMarkMaking gates mark-making and unknown stays ineligible', () => {

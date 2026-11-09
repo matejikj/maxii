@@ -44,9 +44,9 @@ test('first content window ends the day before the first birthday', () => {
   );
 });
 
-test('published content window covers toddler ages until the second birthday', () => {
-  const birth = parseCalendarDate('2024-11-08');
-  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2025-11-08')), true);
+test('published content window covers preschool ages until the fifth birthday', () => {
+  const birth = parseCalendarDate('2021-11-08');
+  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2023-11-08')), true);
   assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-07')), true);
   assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-08')), false);
 });

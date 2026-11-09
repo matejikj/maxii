@@ -29,6 +29,7 @@ import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../conte
 import {
   FIRST_YEAR_ARCHIVED_REVISIONS,
   FIRST_YEAR_DRAFT_REVISIONS,
+  PRESCHOOL_2_5_DRAFT_REVISIONS,
   PRODUCT_PUBLISHED_CONTENT_VERSION,
   PRODUCT_PUBLISHED_REVISIONS,
   TODDLER_1_2_DRAFT_REVISIONS,
@@ -83,6 +84,7 @@ export function useDevelopmentModel() {
     for (const revision of FIRST_YEAR_ARCHIVED_REVISIONS) map.set(revision.revisionId, revision);
     for (const revision of FIRST_YEAR_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
     for (const revision of TODDLER_1_2_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
+    for (const revision of PRESCHOOL_2_5_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
     for (const revision of publishedLibrary) map.set(revision.revisionId, revision);
     return map;
   }, [publishedLibrary]);

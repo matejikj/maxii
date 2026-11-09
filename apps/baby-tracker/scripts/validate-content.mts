@@ -9,6 +9,8 @@ import {
   FIRST_YEAR_DRAFT_REVISIONS,
   FIRST_YEAR_PUBLISHED_REVISIONS,
   LOCAL_LIBRARY_REVISIONS,
+  PRESCHOOL_2_5_DRAFT_REVISIONS,
+  PRESCHOOL_2_5_PUBLISHED_REVISIONS,
   PRODUCT_PUBLISHED_REVISIONS,
   STARTER_TOPICS,
   TODDLER_1_2_DRAFT_REVISIONS,
@@ -21,9 +23,11 @@ import {
 
 const firstYearDrafts = [...FIRST_YEAR_DRAFT_REVISIONS];
 const toddlerDrafts = [...TODDLER_1_2_DRAFT_REVISIONS];
-const drafts = [...firstYearDrafts, ...toddlerDrafts];
+const preschoolDrafts = [...PRESCHOOL_2_5_DRAFT_REVISIONS];
+const drafts = [...firstYearDrafts, ...toddlerDrafts, ...preschoolDrafts];
 const publishedFirstYear = [...FIRST_YEAR_PUBLISHED_REVISIONS];
 const publishedToddler = [...TODDLER_1_2_PUBLISHED_REVISIONS];
+const publishedPreschool = [...PRESCHOOL_2_5_PUBLISHED_REVISIONS];
 const all = [
   ...DEV_FIXTURE_REVISIONS,
   ...LOCAL_LIBRARY_REVISIONS,
@@ -31,6 +35,7 @@ const all = [
   ...drafts,
   ...publishedFirstYear,
   ...publishedToddler,
+  ...publishedPreschool,
 ];
 let failed = 0;
 
@@ -76,6 +81,16 @@ if (publishedToddlerCount !== 24) {
   console.error(`toddler 1–2 published recommendable count: ${publishedToddlerCount} (expected 24)`);
 }
 
+const publishedPreschoolCount = publishedPreschool.filter((revision) =>
+  isRecommendable(revision),
+).length;
+if (publishedPreschoolCount !== 24) {
+  failed += 1;
+  console.error(
+    `preschool 2–5 published recommendable count: ${publishedPreschoolCount} (expected 24)`,
+  );
+}
+
 const birthdayLeak = [...firstYearDrafts, ...publishedFirstYear].filter(
   (revision) => revision.ageMonths.toInclusive >= 12,
 ).length;
@@ -92,6 +107,14 @@ if (toddlerAgeLeak > 0) {
   console.error(`toddler age window leak: ${toddlerAgeLeak}`);
 }
 
+const preschoolAgeLeak = [...preschoolDrafts, ...publishedPreschool].filter(
+  (revision) => revision.ageMonths.fromInclusive < 24 || revision.ageMonths.toInclusive > 59,
+).length;
+if (preschoolAgeLeak > 0) {
+  failed += 1;
+  console.error(`preschool age window leak: ${preschoolAgeLeak}`);
+}
+
 const firstYearCoverage = buildCoverageReport(publishedFirstYear, {
   supportedAgeFrom: 0,
   supportedAgeTo: 11,
@@ -100,28 +123,36 @@ const toddlerCoverage = buildCoverageReport(publishedToddler, {
   supportedAgeFrom: 12,
   supportedAgeTo: 23,
 });
+const preschoolCoverage = buildCoverageReport(publishedPreschool, {
+  supportedAgeFrom: 24,
+  supportedAgeTo: 59,
+});
 const productCoverage = buildCoverageReport([...PRODUCT_PUBLISHED_REVISIONS], {
   supportedAgeFrom: 0,
-  supportedAgeTo: 23,
+  supportedAgeTo: 59,
 });
 
 if (toddlerCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
   failed += 1;
   console.error('toddler coverage has empty months', toddlerCoverage.gaps);
 }
+if (preschoolCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
+  failed += 1;
+  console.error('preschool coverage has empty months', preschoolCoverage.gaps);
+}
 if (productCoverage.gaps.some((gap) => gap.code === 'age_gap')) {
   failed += 1;
   console.error('product coverage has empty months', productCoverage.gaps);
 }
 
-const safeMarkMaking = publishedToddler.filter((revision) =>
+const safeMarkMaking = [...publishedToddler, ...publishedPreschool].filter((revision) =>
   revision.suitability.some(
     (item) => item.kind === 'readiness_confirmed' && item.key === 'safeMarkMaking',
   ),
 );
-if (safeMarkMaking.length < 1) {
+if (safeMarkMaking.length < 2) {
   failed += 1;
-  console.error('expected at least one safeMarkMaking-gated toddler activity');
+  console.error('expected safeMarkMaking-gated toddler and preschool activities');
 }
 
 console.log(
@@ -133,10 +164,12 @@ console.log(
       archivedDrafts: FIRST_YEAR_ARCHIVED_REVISIONS.length,
       publishedFirstYear: publishedFirstYearCount,
       publishedToddler12: publishedToddlerCount,
+      publishedPreschool25: publishedPreschoolCount,
       productPublished: PRODUCT_PUBLISHED_REVISIONS.length,
       recommendable: catalog.recommendable.length,
       firstYearCoverageGaps: firstYearCoverage.gaps.map((gap) => gap.code),
       toddlerCoverageGaps: toddlerCoverage.gaps.map((gap) => gap.code),
+      preschoolCoverageGaps: preschoolCoverage.gaps.map((gap) => gap.code),
       productCoverageGaps: productCoverage.gaps.map((gap) => gap.code),
       safeMarkMakingGated: safeMarkMaking.length,
       failed,
