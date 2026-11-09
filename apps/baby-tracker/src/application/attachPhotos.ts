@@ -108,6 +108,8 @@ export async function attachPhotosToSavedEvent(
         createdAtMs: input.nowMs,
         deletedAtMs: null,
         retainUntilMs: null,
+        // Own imports stay durable without an explicit keep-offline pin.
+        offlinePinned: false,
         renditions: [
           {
             renditionId: asRenditionId(input.createId('rend')),

@@ -75,6 +75,7 @@ export function photoAttachmentFromRemoteMetadata(
     createdAtMs: 0,
     deletedAtMs: Number.isFinite(deletedAtMs) ? deletedAtMs : null,
     retainUntilMs: null,
+    offlinePinned: false,
     renditions: payload.renditions.map((row) => ({
       renditionId: asRenditionId(row.renditionId),
       attachmentId,
@@ -107,6 +108,8 @@ export function mergeRemoteAttachmentMetadata(input: {
       orderIndex: input.remote.orderIndex,
       deletedAtMs: input.remote.deletedAtMs,
       retainUntilMs: input.local.retainUntilMs,
+      // Keep the local pin intent across remote tombstone metadata merges.
+      offlinePinned: input.local.offlinePinned === true,
     };
   }
   const localByRendition = new Map(
@@ -118,6 +121,7 @@ export function mergeRemoteAttachmentMetadata(input: {
     orderIndex: input.remote.orderIndex,
     deletedAtMs: null,
     retainUntilMs: null,
+    offlinePinned: input.local.offlinePinned === true,
     renditions: input.remote.renditions.map((remoteRow) => {
       const localRow = localByRendition.get(remoteRow.renditionId);
       if (

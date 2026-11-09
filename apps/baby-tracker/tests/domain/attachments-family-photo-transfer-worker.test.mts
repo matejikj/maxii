@@ -36,6 +36,7 @@ function attachmentWithBytes(id: string, bytes: Uint8Array): PhotoAttachment {
     createdAtMs: 1,
     deletedAtMs: null,
     retainUntilMs: null,
+    offlinePinned: false,
     renditions: [
       {
         renditionId: asRenditionId(`ren_${id}`),

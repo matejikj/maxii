@@ -66,6 +66,7 @@ test('photo transfer runtime stays cold in personal mode and enqueues only with 
     createdAtMs: 1,
     deletedAtMs: null,
     retainUntilMs: null,
+    offlinePinned: false,
     renditions: [
       {
         renditionId: asRenditionId('r1'),

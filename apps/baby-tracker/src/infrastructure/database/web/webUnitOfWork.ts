@@ -30,6 +30,7 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
+import { withOfflinePinDefault } from '../../../domain/attachments';
 import type {
   ParentSuggestion,
   ParentSuggestionRepository,
@@ -527,11 +528,13 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       const rows = await db.photoAttachments.where('eventId').equals(eventId).sortBy('orderIndex');
       return rows
         .filter((row) => row.deletedAtMs == null)
-        .map((row) => JSON.parse(row.payloadJson) as PhotoAttachment);
+        .map((row) => withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment));
     },
     async getById(attachmentId) {
       const row = await db.photoAttachments.get(attachmentId);
-      return row ? (JSON.parse(row.payloadJson) as PhotoAttachment) : null;
+      return row
+        ? withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment)
+        : null;
     },
     async save(attachment) {
       await db.photoAttachments.put({

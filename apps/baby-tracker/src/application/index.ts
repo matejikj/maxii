@@ -165,6 +165,11 @@ export {
 } from './applyRemoteAttachmentMetadata';
 export { runFamilySyncTickWithAttachments } from './runFamilySyncTickWithAttachments';
 export {
+  setAttachmentOfflinePin,
+  type KeepAttachmentOfflineResult,
+  type FamilyPhotoTransferPinQueue,
+} from './keepAttachmentOffline';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

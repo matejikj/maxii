@@ -3,9 +3,13 @@ import { View } from 'react-native';
 import { LumiButton, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   ATTACHMENT_LIMITS,
+  attachmentHasDownloadWork,
+  attachmentHasDurableRole,
   localAvailabilityLabel,
+  presentOfflinePinReadiness,
   presentPhotoParentStatus,
   type AttachmentServices,
+  type FamilyPhotoBlobTransferJob,
   type FamilyPhotoTransferLabel,
   type PhotoAttachment,
   type PickedPhotoCandidate,
@@ -33,6 +37,10 @@ export type PhotoAttachmentsFieldProps = {
   transferLabelFor?: (attachment: PhotoAttachment) => FamilyPhotoTransferLabel | null;
   /** Called after local photos are confirmed so family uploads can enqueue. */
   onLocalAttachmentsCommitted?: (attachments: PhotoAttachment[]) => void;
+  /** Show keep-offline controls (family sync). Personal installs can omit. */
+  enableOfflinePin?: boolean;
+  transferJobs?: readonly FamilyPhotoBlobTransferJob[];
+  onToggleOfflinePin?: (attachment: PhotoAttachment, pinned: boolean) => Promise<void> | void;
 };
 
 /**
@@ -52,9 +60,13 @@ export function PhotoAttachmentsField({
   onPendingCandidatesChange,
   transferLabelFor,
   onLocalAttachmentsCommitted,
+  enableOfflinePin = false,
+  transferJobs = [],
+  onToggleOfflinePin,
 }: PhotoAttachmentsFieldProps) {
   const { ui } = useLumiTheme();
   const [busy, setBusy] = useState(false);
+  const [pinBusyId, setPinBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const remaining = ATTACHMENT_LIMITS.maxPerEvent - attachments.length - pendingCandidates.length;
 
@@ -119,11 +131,54 @@ export function PhotoAttachmentsField({
           localLabel,
           transferLabel: transferLabelFor?.(attachment) ?? null,
         });
+        const pinReadiness = presentOfflinePinReadiness({
+          offlinePinned: attachment.offlinePinned === true,
+          hasDurableDisplay: attachmentHasDurableRole(attachment),
+          downloadInFlightOrQueued: attachmentHasDownloadWork(
+            attachment.attachmentId,
+            transferJobs,
+          ),
+        });
         return (
-          <LumiText key={attachment.attachmentId} variant="body">
-            {status}
-            {attachment.caption ? ` — ${attachment.caption}` : ''}
-          </LumiText>
+          <View key={attachment.attachmentId} style={{ gap: ui.space.xs }}>
+            <LumiText variant="body">
+              {status}
+              {attachment.caption ? ` — ${attachment.caption}` : ''}
+            </LumiText>
+            {enableOfflinePin ? (
+              <View style={{ gap: ui.space.xs }}>
+                <LumiButton
+                  title={
+                    attachment.offlinePinned
+                      ? 'Zrušit uchování offline'
+                      : 'Uchovat offline'
+                  }
+                  variant="secondary"
+                  disabled={busy || pinBusyId === attachment.attachmentId || !onToggleOfflinePin}
+                  onPress={() => {
+                    if (!onToggleOfflinePin) return;
+                    setPinBusyId(attachment.attachmentId);
+                    void Promise.resolve(
+                      onToggleOfflinePin(attachment, !attachment.offlinePinned),
+                    )
+                      .catch(() => {
+                        setMessage('Uchování offline se nepodařilo změnit.');
+                      })
+                      .finally(() => setPinBusyId(null));
+                  }}
+                />
+                {pinReadiness.label ? (
+                  <LumiText variant="caption" tone="muted">
+                    {pinReadiness.label}
+                  </LumiText>
+                ) : (
+                  <LumiText variant="caption" tone="muted">
+                    Přepínač sám nestačí — offline je hotové až po ověřené kopii v zařízení.
+                  </LumiText>
+                )}
+              </View>
+            ) : null}
+          </View>
         );
       })}
       {pendingCandidates.map((candidate, index) => (

@@ -30,6 +30,7 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
+import { withOfflinePinDefault } from '../../../domain/attachments';
 import type {
   ParentSuggestion,
   ParentSuggestionRepository,
@@ -518,14 +519,16 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       );
       return rows
         .filter((row) => row.deleted_at_ms == null)
-        .map((row) => JSON.parse(row.payload_json) as PhotoAttachment);
+        .map((row) => withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment));
     },
     async getById(attachmentId) {
       const row = await txn.getFirstAsync<{ payload_json: string }>(
         `SELECT payload_json FROM photo_attachments WHERE attachment_id = ?`,
         attachmentId,
       );
-      return row ? (JSON.parse(row.payload_json) as PhotoAttachment) : null;
+      return row
+        ? withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment)
+        : null;
     },
     async save(attachment) {
       await txn.runAsync('DELETE FROM photo_attachments WHERE attachment_id = ?', attachment.attachmentId);

@@ -257,6 +257,7 @@ test('local durable bytes are kept when remote metadata arrives again', async ()
     createdAtMs: 1,
     deletedAtMs: null,
     retainUntilMs: null,
+    offlinePinned: false,
     renditions: [
       {
         renditionId: asRenditionId('rend_display'),

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { LumiButton, LumiChip, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { ChildId, DevelopmentArea, TimeZoneId } from '../../domain';
@@ -10,7 +10,8 @@ import {
   createDraft,
   touchDraft,
 } from '../../domain';
-import { createDraftAutosave } from '../../application';
+import { createDraftAutosave, setAttachmentOfflinePin } from '../../application';
+import { resolveRemoteServicesBoundary } from '../../app/remoteServicesBoundary';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
 import {
@@ -93,6 +94,32 @@ export function ExperienceRecorder({
   }, []);
 
   useUndoWindow(undoAvailable, UNDO_WINDOW_MS, () => setUndoAvailable(false));
+
+  const offlinePinEnabled = useMemo(
+    () => resolveRemoteServicesBoundary().syncConfigured,
+    [],
+  );
+  const onToggleOfflinePin = useCallback(
+    async (attachment: PhotoAttachment, pinned: boolean) => {
+      if (!runtime.attachments) return;
+      const result = await setAttachmentOfflinePin({
+        attachmentId: attachment.attachmentId,
+        pinned,
+        attachments: runtime.attachments,
+        transfer: runtime.photoTransfer,
+      });
+      if (!result) return;
+      setAttachments((prev) =>
+        prev.map((row) =>
+          row.attachmentId === result.attachment.attachmentId ? result.attachment : row,
+        ),
+      );
+      if (result.downloadJobsQueued > 0) {
+        void runtime.photoTransferLoop.runOnce();
+      }
+    },
+    [runtime.attachments, runtime.photoTransfer, runtime.photoTransferLoop],
+  );
 
   function resetFields(kind: MomentKind | 'picker') {
     const now = formatWallDateTime(services.clock.now().epochMs, timeZone);
@@ -459,6 +486,9 @@ export function ExperienceRecorder({
             // Opportunistic tick; personal/cold sessions return immediately.
             void runtime.photoTransferLoop.runOnce();
           }}
+          enableOfflinePin={offlinePinEnabled}
+          transferJobs={runtime.photoTransfer.getJobs()}
+          onToggleOfflinePin={onToggleOfflinePin}
         />
       </CareActionSheet>
 
@@ -509,6 +539,9 @@ export function ExperienceRecorder({
             runtime.photoTransfer.enqueueLocalUploads(rows);
             void runtime.photoTransferLoop.runOnce();
           }}
+          enableOfflinePin={offlinePinEnabled}
+          transferJobs={runtime.photoTransfer.getJobs()}
+          onToggleOfflinePin={onToggleOfflinePin}
         />
       </CareActionSheet>
 
@@ -559,6 +592,9 @@ export function ExperienceRecorder({
             runtime.photoTransfer.enqueueLocalUploads(rows);
             void runtime.photoTransferLoop.runOnce();
           }}
+          enableOfflinePin={offlinePinEnabled}
+          transferJobs={runtime.photoTransfer.getJobs()}
+          onToggleOfflinePin={onToggleOfflinePin}
         />
       </CareActionSheet>
     </>

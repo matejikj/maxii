@@ -125,3 +125,13 @@ export type {
   RemoteAttachmentMetadataEntry,
   RemoteAttachmentMetadataPayload,
 } from './remoteAttachmentMetadata';
+export {
+  attachmentHasDownloadWork,
+  attachmentHasDurableRole,
+  classifyLocalPhotoCopyKind,
+  planOfflinePinChange,
+  presentOfflinePinReadiness,
+  summarizeProtectedOfflineBytes,
+  withOfflinePinDefault,
+} from './offlinePin';
+export type { OfflinePinReadiness } from './offlinePin';

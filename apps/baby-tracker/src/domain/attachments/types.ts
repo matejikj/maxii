@@ -59,6 +59,11 @@ export type PhotoAttachment = {
   createdAtMs: number;
   deletedAtMs: number | null;
   retainUntilMs: number | null;
+  /**
+   * Explicit "keep offline" pin. The toggle alone is not readiness — durable
+   * display bytes must exist before parents see offline confirmation.
+   */
+  offlinePinned: boolean;
   renditions: PhotoRendition[];
 };
 

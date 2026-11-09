@@ -3,6 +3,7 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../domain/attachments';
+import { withOfflinePinDefault } from '../../domain/attachments';
 import type { EntityId } from '../../domain';
 
 type Snapshot = {
@@ -27,7 +28,9 @@ export function createFileAttachmentRepository(): AttachmentRepository {
     const raw = await FileSystem.readAsStringAsync(path);
     const parsed = JSON.parse(raw) as Snapshot;
     return {
-      attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
+      attachments: Array.isArray(parsed.attachments)
+        ? parsed.attachments.map((row) => withOfflinePinDefault(row))
+        : [],
       jobs: Array.isArray(parsed.jobs) ? parsed.jobs : [],
     };
   }
