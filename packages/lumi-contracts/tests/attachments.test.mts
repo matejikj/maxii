@@ -5,6 +5,7 @@ import {
   authorizeFamilyAttachmentAction,
   decideAttachmentMutationAgainstErasure,
   isDisposableAttachmentCopy,
+  isFamilyAttachmentMetadataPayload,
   planAttachmentEraseGeneration,
   planFamilyAttachmentReservation,
 } from '../src/attachments.ts';
@@ -49,6 +50,24 @@ test('only cache copies are disposable; own/pending/pinned stay durable', () => 
   assert.equal(isDisposableAttachmentCopy('own'), false);
   assert.equal(isDisposableAttachmentCopy('pending'), false);
   assert.equal(isDisposableAttachmentCopy('pinned'), false);
+});
+
+test('attachment metadata payload is recognized without requiring bytes', () => {
+  assert.equal(
+    isFamilyAttachmentMetadataPayload({
+      attachmentId: 'a1',
+      childId: 'c1',
+      eventId: 'e1',
+      hostEventType: 'note',
+      orderIndex: 0,
+      caption: null,
+      deletedAt: null,
+      eraseGeneration: null,
+      renditions: [],
+    }),
+    true,
+  );
+  assert.equal(isFamilyAttachmentMetadataPayload({ attachmentId: 'a1' }), false);
 });
 
 test('erase generations advance and block mutations after deletion', () => {

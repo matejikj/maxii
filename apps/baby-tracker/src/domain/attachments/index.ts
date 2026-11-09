@@ -56,6 +56,23 @@ export type {
   FamilyPhotoTransferLabel,
 } from './familyTransfer';
 export {
+  applyTransferJobState,
+  buildAttachmentMetadataOutboxPayload,
+  cancelTransferJob,
+  isolateTransfersOnSessionChange,
+  labelForAttachmentTransfer,
+  planDownloadJobsForRemoteMetadata,
+  planUploadJobsForLocalAttachments,
+  selectTransferJobsToStart,
+  shouldEnqueueFamilyPhotoTransfers,
+} from './familyPhotoTransferPlanner';
+export type {
+  FamilyPhotoBlobTransferJob,
+  FamilyPhotoBlobTransferKind,
+  FamilyPhotoBlobTransferState,
+  FamilyPhotoTransferSession,
+} from './familyPhotoTransferPlanner';
+export {
   classifyPhotoExportCompleteness,
   decideSoleOwnCopyRelease,
   planRecoverableCacheEviction,

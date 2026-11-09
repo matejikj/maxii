@@ -122,6 +122,7 @@ export {
   authorizeFamilyAttachmentAction,
   decideAttachmentMutationAgainstErasure,
   isDisposableAttachmentCopy,
+  isFamilyAttachmentMetadataPayload,
   planAttachmentEraseGeneration,
   planFamilyAttachmentReservation,
 } from './attachments.ts';
@@ -129,6 +130,7 @@ export type {
   AttachmentRenditionRole,
   FamilyAttachmentFinalizeRequest,
   FamilyAttachmentFinalizeResponse,
+  FamilyAttachmentMetadataPayload,
   FamilyAttachmentQuotaView,
   FamilyAttachmentReadResponse,
   FamilyAttachmentTombstoneRequest,

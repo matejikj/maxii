@@ -80,6 +80,44 @@ export type FamilyAttachmentQuotaView = {
 };
 
 /**
+ * Metadata-only sync payload. Rendition digests travel with the diary revision;
+ * JPEG bytes use the authenticated attachment upload path, never this body.
+ */
+export type FamilyAttachmentMetadataPayload = {
+  readonly attachmentId: string;
+  readonly childId: string;
+  readonly eventId: string;
+  readonly hostEventType: 'note' | 'milestone' | 'experience';
+  readonly orderIndex: number;
+  readonly caption: string | null;
+  readonly deletedAt: string | null;
+  readonly eraseGeneration: number | null;
+  readonly renditions: readonly {
+    readonly renditionId: string;
+    readonly role: AttachmentRenditionRole;
+    readonly mime: 'image/jpeg';
+    readonly width: number;
+    readonly height: number;
+    readonly byteLength: number;
+    readonly sha256: string;
+    readonly normalizationVersion: string;
+  }[];
+};
+
+export function isFamilyAttachmentMetadataPayload(
+  value: unknown,
+): value is FamilyAttachmentMetadataPayload {
+  if (!value || typeof value !== 'object') return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.attachmentId === 'string' &&
+    typeof row.childId === 'string' &&
+    typeof row.eventId === 'string' &&
+    Array.isArray(row.renditions)
+  );
+}
+
+/**
  * Atomically decide whether a reservation fits. Callers must apply the result
  * under the same lock that reads used/reserved — never a plain check-then-write.
  */

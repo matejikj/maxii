@@ -50,10 +50,11 @@ export function presentFamilyPhotoTransferLabel(input: {
 }): FamilyPhotoTransferLabel {
   if (!input.familySyncConfigured) return 'local_only';
   if (input.quotaBlocked) return 'quota_waiting';
+  // Metadata can arrive before bytes — never claim family readiness locally.
+  if (input.downloadMissing) return 'missing_download';
   if (input.remoteActivated) return 'available_to_family';
   if (input.uploadPending && input.localDurable) return 'waiting_to_send';
   if (input.uploadPending) return 'sending';
-  if (input.downloadMissing) return 'missing_download';
   if (input.localDurable) return 'local_only';
   return 'missing_download';
 }

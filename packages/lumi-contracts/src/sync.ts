@@ -9,6 +9,8 @@ export type SyncOperationKind =
   | 'care.update'
   | 'care.delete'
   | 'profile.update'
+  | 'attachment.upsert'
+  | 'attachment.tombstone'
   | 'ops.noop';
 
 export type SyncOperation = {
