@@ -3,7 +3,9 @@ import { randomBytes } from '@noble/hashes/utils.js';
 import type { AttachmentServices } from '../../domain/attachments';
 import type { LumiWebDatabase } from '../database/web/lumiWebDatabase';
 import { createDexieAttachmentRepository } from './dexieAttachmentRepository';
+import { createDexiePrivateAttachmentStore } from './dexiePrivateAttachmentStore';
 import { createExpoPhotoPicker } from './expoPhotoPicker';
+import { createExpoPhotoProcessor } from './expoPhotoProcessor';
 import { createFileAttachmentRepository } from './fileAttachmentRepository';
 import { createFilePrivateAttachmentStore } from './filePrivateAttachmentStore';
 import { createMemoryAttachmentRepository } from './memoryAttachmentRepository';
@@ -11,13 +13,16 @@ import { createMemoryPrivateAttachmentStore } from './memoryPrivateAttachmentSto
 import { createSyntheticPhotoProcessor } from './syntheticPhotoProcessor';
 
 /**
- * Personal offline photo services. Native keeps sealed JPEG files and metadata
- * under the app documents tree so confirmed photos survive restart without a
- * remote. Web prefers Dexie metadata when a diary handle is provided.
+ * Personal offline photo services. Native keeps sealed JPEG files under the
+ * app documents tree; web keeps sealed blobs in a private IndexedDB that is
+ * separate from the public service-worker cache. Confirmed photos survive
+ * restart without a remote.
  */
 export function createPersonalAttachmentServices(input?: {
   blobKey?: Uint8Array;
   webDb?: LumiWebDatabase;
+  /** Force the synthetic processor (Node contract tests without ImageManipulator). */
+  useSyntheticProcessor?: boolean;
 }): AttachmentServices {
   const key = input?.blobKey ?? randomBytes(32);
   const native = Platform.OS !== 'web';
@@ -26,12 +31,34 @@ export function createPersonalAttachmentServices(input?: {
     : native
       ? createFileAttachmentRepository()
       : createMemoryAttachmentRepository();
+
   return {
     picker: createExpoPhotoPicker(),
-    processor: createSyntheticPhotoProcessor(),
+    processor: input?.useSyntheticProcessor
+      ? createSyntheticPhotoProcessor()
+      : createExpoPhotoProcessor(),
     blobs: native
       ? createFilePrivateAttachmentStore({ key })
-      : createMemoryPrivateAttachmentStore({ key }),
+      : Platform.OS === 'web'
+        ? createDexiePrivateAttachmentStore({ key })
+        : createMemoryPrivateAttachmentStore({ key }),
     repository,
+  };
+}
+
+/** In-memory sealed store + synthetic codec for Node contract tests. */
+export function createTestAttachmentServices(input?: {
+  blobKey?: Uint8Array;
+}): AttachmentServices {
+  const key = input?.blobKey ?? randomBytes(32);
+  return {
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
+    processor: createSyntheticPhotoProcessor(),
+    blobs: createMemoryPrivateAttachmentStore({ key }),
+    repository: createMemoryAttachmentRepository(),
   };
 }

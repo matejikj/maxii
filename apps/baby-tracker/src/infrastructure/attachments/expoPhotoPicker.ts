@@ -15,21 +15,17 @@ export function createExpoPhotoPicker(): PhotoPicker {
           message: 'U tohoto záznamu už je maximálně šest fotografií.',
         };
       }
-      if (Platform.OS === 'web') {
-        // Web uses the document/file input path separately; keep API honest.
-        return {
-          status: 'unavailable',
-          message: 'Výběr fotografií na webu zatím není v této sestavě zapnutý.',
-        };
-      }
       try {
         const ImagePicker = await import('expo-image-picker');
-        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-          return {
-            status: 'unavailable',
-            message: 'Bez přístupu k vybraným fotografiím nelze nic přidat.',
-          };
+        // Web file-input pickers do not need a preflight library grant.
+        if (Platform.OS !== 'web') {
+          const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!permission.granted) {
+            return {
+              status: 'unavailable',
+              message: 'Bez přístupu k vybraným fotografiím nelze nic přidat.',
+            };
+          }
         }
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ['images'],

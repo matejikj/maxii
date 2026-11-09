@@ -35,6 +35,8 @@ export type OpenedPersonalRuntime = {
   presence?: DatabasePresence;
   close: () => Promise<void>;
   deleteDurableStore: () => Promise<void>;
+  /** Web diary handle for durable photo metadata; absent on native. */
+  webDb?: import('../infrastructure/database/web/lumiWebDatabase').LumiWebDatabase;
 };
 
 /**
@@ -76,7 +78,12 @@ export async function openPersonalUnitOfWork(
         const Dexie = (await import('dexie')).default;
         await Dexie.delete(databaseName);
         await Dexie.delete(WEB_STORAGE_LIMITS.checkpointDatabaseName);
+        const { clearPersonalAttachmentStorage } = await import(
+          '../infrastructure/attachments/clearAttachmentStorage'
+        );
+        await clearPersonalAttachmentStorage();
       },
+      webDb: handle.db,
     };
   }
 
@@ -113,6 +120,10 @@ export async function openPersonalUnitOfWork(
     close: () => database.close(),
     deleteDurableStore: async () => {
       await opener.delete(databaseName);
+      const { clearPersonalAttachmentStorage } = await import(
+        '../infrastructure/attachments/clearAttachmentStorage'
+      );
+      await clearPersonalAttachmentStorage();
     },
   };
 }

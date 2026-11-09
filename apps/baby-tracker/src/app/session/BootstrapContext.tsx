@@ -71,6 +71,7 @@ export type OpenPersonalDiary = () => Promise<{
   presence?: DatabasePresence;
   close: () => Promise<void>;
   deleteDurableStore: () => Promise<void>;
+  webDb?: import('../../infrastructure/database/web/lumiWebDatabase').LumiWebDatabase;
 }>;
 
 export type BootstrapContextValue = {
@@ -140,7 +141,9 @@ export function BootstrapProvider({
         overviewCache,
         checkpoints: opened.checkpoints,
         reminders: opened.reminders,
-        attachments: attachmentModule.createPersonalAttachmentServices(),
+        attachments: attachmentModule.createPersonalAttachmentServices({
+          ...(opened.webDb ? { webDb: opened.webDb } : {}),
+        }),
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,

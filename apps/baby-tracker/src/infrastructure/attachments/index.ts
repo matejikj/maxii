@@ -4,6 +4,23 @@ export { createMemoryPrivateAttachmentStore } from './memoryPrivateAttachmentSto
 export { createMemoryAttachmentRepository } from './memoryAttachmentRepository';
 export { createSyntheticPhotoProcessor } from './syntheticPhotoProcessor';
 export {
+  createPhotoNormalizeProcessor,
+  decodeBase64Jpeg,
+} from './photoNormalizeCodec';
+export type {
+  ManipulatedImage,
+  PhotoManipulateFn,
+  TempJpegHandle,
+} from './photoNormalizeCodec';
+export {
+  createDexiePrivateAttachmentStore,
+  deleteWebAttachmentBlobDatabase,
+} from './dexiePrivateAttachmentStore';
+export {
+  WEB_ATTACHMENT_BLOB_DATABASE_NAME,
+  AttachmentBlobDatabase,
+} from './attachmentBlobDatabase';
+export {
   MEDIA_ARCHIVE_FORMAT,
   buildMediaArchiveBundle,
   openMediaArchiveBundle,
@@ -16,6 +33,9 @@ export type { MediaArchiveBundle, MediaArchiveManifest } from './mediaArchive';
 export async function loadExpoPhotoPicker() {
   return import('./expoPhotoPicker');
 }
+export async function loadExpoPhotoProcessor() {
+  return import('./expoPhotoProcessor');
+}
 export async function loadFilePrivateAttachmentStore() {
   return import('./filePrivateAttachmentStore');
 }
@@ -24,4 +44,7 @@ export async function loadPersonalAttachmentServices() {
 }
 export async function loadDexieAttachmentRepository() {
   return import('./dexieAttachmentRepository');
+}
+export async function loadClearAttachmentStorage() {
+  return import('./clearAttachmentStorage');
 }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomBytes } from '@noble/hashes/utils.js';
+import 'fake-indexeddb/auto';
 import { asChildId, asEntityId } from '../../src/domain/ids.ts';
 import {
   ATTACHMENT_LIMITS,
@@ -13,10 +14,14 @@ import {
 } from '../../src/domain/attachments/index.ts';
 import { attachPhotosToSavedEvent } from '../../src/application/attachPhotos.ts';
 import {
+  AttachmentBlobDatabase,
   buildMediaArchiveBundle,
+  createDexiePrivateAttachmentStore,
   createMemoryAttachmentRepository,
   createMemoryPrivateAttachmentStore,
+  createPhotoNormalizeProcessor,
   createSyntheticPhotoProcessor,
+  deleteWebAttachmentBlobDatabase,
   openMediaArchiveBundle,
   serializeMediaArchiveBundle,
   parseMediaArchiveBundle,
@@ -157,4 +162,138 @@ test('media archive seals each rendition separately and restores digests', async
   const opened = openMediaArchiveBundle(parseMediaArchiveBundle(serialized), 'recovery-passphrase');
   assert.equal(opened.manifest.attachments.length, 1);
   assert.equal(opened.manifest.attachments[0]?.renditions.length, 2);
+});
+
+test('normalize codec re-encodes via injected manipulator and strips EXIF', async () => {
+  const withGps = buildMinimalJpeg({ withExifGps: true, comment: 'picker' });
+  assert.equal(jpegContainsAsciiCanary(withGps, 'GPS:CANARY'), true);
+  const base64 = Buffer.from(withGps).toString('base64');
+  const processor = createPhotoNormalizeProcessor({
+    allowHeic: false,
+    async manipulate(_uri, actions, options) {
+      assert.equal(options.format, 'jpeg');
+      assert.equal(options.base64, true);
+      assert.ok(actions[0]?.resize.width);
+      return {
+        uri: 'file://normalized-temp.jpg',
+        width: actions[0]!.resize.width,
+        height: actions[0]!.resize.height,
+        base64,
+      };
+    },
+    async writeTempJpeg() {
+      return {
+        uri: 'file://thumb-source.jpg',
+        cleanup: async () => undefined,
+      };
+    },
+    async cleanupUri() {
+      return;
+    },
+  });
+  const display = await processor.normalizeDisplay({
+    sourceUri: 'file://source.jpg',
+    mime: 'image/jpeg',
+    byteLength: withGps.byteLength,
+    width: 1600,
+    height: 1200,
+    fileName: 'source.jpg',
+  });
+  assert.equal(jpegContainsAsciiCanary(display.bytes, 'GPS:CANARY'), false);
+  assert.equal(jpegContainsAsciiCanary(display.bytes, 'Exif'), false);
+  assert.equal(display.mime, 'image/jpeg');
+  const thumb = await processor.normalizeThumbnail(display);
+  assert.ok(thumb.bytes.byteLength > 0);
+  assert.ok(thumb.width <= ATTACHMENT_LIMITS.thumbnailMaxEdgePx);
+});
+
+test('HEIC is rejected offline unless the platform codec gate is open', async () => {
+  const blocked = createPhotoNormalizeProcessor({
+    allowHeic: false,
+    async manipulate() {
+      throw new Error('should not run');
+    },
+    async writeTempJpeg() {
+      throw new Error('should not run');
+    },
+  });
+  await assert.rejects(
+    () =>
+      blocked.normalizeDisplay({
+        sourceUri: 'file://a.heic',
+        mime: 'image/heic',
+        byteLength: 1200,
+        width: 800,
+        height: 600,
+        fileName: 'a.heic',
+      }),
+    /photo_mime_unsupported/,
+  );
+
+  const allowed = createPhotoNormalizeProcessor({
+    allowHeic: true,
+    async manipulate(_uri, actions) {
+      const jpeg = buildMinimalJpeg();
+      return {
+        uri: 'file://heic-out.jpg',
+        width: actions[0]!.resize.width,
+        height: actions[0]!.resize.height,
+        base64: Buffer.from(jpeg).toString('base64'),
+      };
+    },
+    async writeTempJpeg() {
+      return { uri: 'file://t.jpg', cleanup: async () => undefined };
+    },
+  });
+  const converted = await allowed.normalizeDisplay({
+    sourceUri: 'file://a.heic',
+    mime: 'image/heic',
+    byteLength: 1200,
+    width: 800,
+    height: 600,
+    fileName: 'a.heic',
+  });
+  assert.equal(converted.mime, 'image/jpeg');
+});
+
+test('web sealed blob store survives a second database open', async () => {
+  const dbName = `lumi-web-attachment-blobs-test-${Date.now()}`;
+  const key = randomBytes(32);
+  const first = createDexiePrivateAttachmentStore({
+    key,
+    databaseName: dbName,
+    nowMs: () => 1_700_000_000_300,
+  });
+  const payload = stripJpegMetadata(buildMinimalJpeg({ withExifGps: true }));
+  await first.writeDurable({
+    blobKey: 'att/one/display.jpe.sealed',
+    bytes: payload,
+    aad: 'att/one/display.jpe.sealed',
+  });
+  assert.equal(await first.hasDurable('att/one/display.jpe.sealed'), true);
+
+  const second = createDexiePrivateAttachmentStore({ key, databaseName: dbName });
+  const roundtrip = await second.readDurable({
+    blobKey: 'att/one/display.jpe.sealed',
+    aad: 'att/one/display.jpe.sealed',
+  });
+  assert.deepEqual(roundtrip, payload);
+  assert.equal(jpegContainsAsciiCanary(roundtrip, 'GPS:'), false);
+
+  // Wrong AAD must not decrypt a swapped row.
+  await assert.rejects(
+    () =>
+      second.readDurable({
+        blobKey: 'att/one/display.jpe.sealed',
+        aad: 'att/one/thumb.jpe.sealed',
+      }),
+    /authentication failed/i,
+  );
+
+  await deleteWebAttachmentBlobDatabase(dbName);
+  const probe = new AttachmentBlobDatabase(dbName);
+  await probe.open();
+  assert.equal(await probe.sealedBlobs.count(), 0);
+  probe.close();
+  await deleteWebAttachmentBlobDatabase(dbName);
 });
