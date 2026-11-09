@@ -66,6 +66,8 @@ export type PersonalRuntime = {
   ) => void;
   /** Select the family whose photos may upload/download. */
   bindPhotoTransferFamily: (familyId: string | null) => void;
+  /** Periodic/manual photo transfer ticks against sealed local blobs. */
+  photoTransferLoop: import('../../application/familyPhotoTransferLoop').FamilyPhotoTransferLoop;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -159,11 +161,27 @@ export function BootstrapProvider({
       const { createFamilyPhotoTransferSessionBinding } = await import(
         '../../application/bindFamilyPhotoTransferSession'
       );
+      const { createFamilyPhotoTransferLoop } = await import(
+        '../../application/familyPhotoTransferLoop'
+      );
       const { resolveRemoteServicesBoundary } = await import('../remoteServicesBoundary');
+      const remoteBoundary = resolveRemoteServicesBoundary();
       // Binding stays cold unless EXPO_PUBLIC_LUMI_SYNC_ENABLED and a login exist.
       const photoTransferBinding = createFamilyPhotoTransferSessionBinding({
-        boundary: resolveRemoteServicesBoundary(),
+        boundary: remoteBoundary,
       });
+      const attachments = attachmentModule.createPersonalAttachmentServices({
+        unitOfWork: opened.unitOfWork,
+        ...(opened.webDb ? { webDb: opened.webDb } : {}),
+      });
+      const photoTransferLoop = createFamilyPhotoTransferLoop({
+        runtime: photoTransferBinding.runtime,
+        attachments,
+      });
+      // Only schedule network ticks when family sync is explicitly configured.
+      if (remoteBoundary.syncConfigured) {
+        photoTransferLoop.start();
+      }
       const next: PersonalRuntime = {
         unitOfWork: opened.unitOfWork,
         commands: wired.commands!,
@@ -171,19 +189,20 @@ export function BootstrapProvider({
         overviewCache,
         checkpoints: opened.checkpoints,
         reminders: opened.reminders,
-        attachments: attachmentModule.createPersonalAttachmentServices({
-          unitOfWork: opened.unitOfWork,
-          ...(opened.webDb ? { webDb: opened.webDb } : {}),
-        }),
+        attachments,
         photoTransfer: photoTransferBinding.runtime,
         bindPhotoTransferAuth: photoTransferBinding.bindAuthSession,
         bindPhotoTransferFamily: photoTransferBinding.bindActiveFamily,
+        photoTransferLoop,
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,
         ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
         ...(opened.presence ? { presence: opened.presence } : {}),
-        close: opened.close,
+        close: async () => {
+          photoTransferLoop.stop();
+          await opened.close();
+        },
         deleteDurableStore: opened.deleteDurableStore,
       };
       cached.current = next;

@@ -456,6 +456,8 @@ export function ExperienceRecorder({
           transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
           onLocalAttachmentsCommitted={(rows) => {
             runtime.photoTransfer.enqueueLocalUploads(rows);
+            // Opportunistic tick; personal/cold sessions return immediately.
+            void runtime.photoTransferLoop.runOnce();
           }}
         />
       </CareActionSheet>
@@ -505,6 +507,7 @@ export function ExperienceRecorder({
           transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
           onLocalAttachmentsCommitted={(rows) => {
             runtime.photoTransfer.enqueueLocalUploads(rows);
+            void runtime.photoTransferLoop.runOnce();
           }}
         />
       </CareActionSheet>
@@ -554,6 +557,7 @@ export function ExperienceRecorder({
           transferLabelFor={(row) => runtime.photoTransfer.labelFor({ attachment: row })}
           onLocalAttachmentsCommitted={(rows) => {
             runtime.photoTransfer.enqueueLocalUploads(rows);
+            void runtime.photoTransferLoop.runOnce();
           }}
         />
       </CareActionSheet>

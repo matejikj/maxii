@@ -152,6 +152,12 @@ export {
   type SyncActiveFamilyForPhotoTransferResult,
 } from './syncActiveFamilyForPhotoTransfer';
 export {
+  createFamilyPhotoTransferLoop,
+  runFamilyPhotoTransferTickWithStore,
+  type FamilyPhotoTransferLoop,
+  type FamilyPhotoTransferLoopResult,
+} from './familyPhotoTransferLoop';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';
