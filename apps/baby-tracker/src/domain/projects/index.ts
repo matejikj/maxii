@@ -62,6 +62,25 @@ export {
   type SelfManagementPreparation,
 } from './childMode';
 export {
+  CHILD_SHELL_FIRST_ENTRY,
+  CHILD_SHELL_FORBIDDEN_ROUTES,
+  CHILD_SHELL_TABS,
+  attemptChildShellActivation,
+  childShellAllowsRoute,
+  normalizeChildDisplayAlias,
+  planPrincipalWorkspaceHandoff,
+  resolveRootShellKind,
+  selectChildShellTodayProjects,
+  type ChildAppPrincipal,
+  type ChildShellActivationGates,
+  type ChildShellActivationResult,
+  type ChildShellBlueprint,
+  type ChildShellForbiddenRoute,
+  type ChildShellSession,
+  type ChildShellTab,
+  type ChildShellTabId,
+} from './childShell';
+export {
   planShareSnapshot,
   presentShareToRecipient,
   publishShareSnapshot,

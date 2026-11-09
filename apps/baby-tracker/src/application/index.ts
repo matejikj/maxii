@@ -249,5 +249,20 @@ export {
   withdrawAuthoredSuggestion,
   type AuthorSuggestionView,
 } from './parentSuggestions';
+export {
+  createChildShellBlankProject,
+  listChildShellProjectShelves,
+  listChildShellTodayCards,
+  presentChildShellAvailability,
+  resolveActiveRootShell,
+  tryActivateChildShell,
+  type ChildShellAvailability,
+  type ChildShellProjectCard,
+} from './childShell';
+export {
+  CHILD_SHELL_FIRST_ENTRY,
+  CHILD_SHELL_TABS,
+  type ChildShellSession,
+} from '../domain';
 
 

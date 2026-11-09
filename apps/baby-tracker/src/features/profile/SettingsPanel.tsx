@@ -6,6 +6,7 @@ import {
   LOCAL_GUIDE_SPECIES,
   buildDiagnosticsSnapshot,
   buildSupportReport,
+  presentChildShellAvailability,
   readChildPrivateModeSettingsStatus,
   serializeSupportReport,
   type AppearanceStyle,
@@ -372,6 +373,7 @@ export function SettingsPanel() {
         <LumiText variant="h3">Soukromý prostor dítěte</LumiText>
         {(() => {
           const status = readChildPrivateModeSettingsStatus();
+          const shell = presentChildShellAvailability();
           return (
             <>
               <LumiText>{status.headline}</LumiText>
@@ -381,6 +383,10 @@ export function SettingsPanel() {
                   · {blocker.label}
                 </LumiText>
               ))}
+              <LumiText tone="muted" testID="child-shell-tab-preview">
+                Připravený dětský shell: {shell.tabs.map((tab) => tab.title).join(' · ')}. Profil je
+                v hlavičce, ne jako pátá záložka. Bez ověřené identity zůstává pečovatelský režim.
+              </LumiText>
             </>
           );
         })()}

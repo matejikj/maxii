@@ -4,6 +4,7 @@ import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useLumiTheme } from '@lumi/forest-design/native';
+import { resolveActiveRootShell } from '../../application';
 import { CareScreen } from '../../features/care/CareScreen';
 import { DevelopmentScreen } from '../../features/development/DevelopmentScreen';
 import { EventDetailScreen } from '../../features/history/EventDetailScreen';
@@ -98,6 +99,8 @@ export function RootNavigator() {
   const { mode, colors } = useLumiTheme();
   const bootstrap = useBootstrap();
   const linking = React.useMemo(() => createAppLinking(), []);
+  // Personal builds keep the caregiver shell until every child gate is proven.
+  const rootShell = resolveActiveRootShell();
   const navTheme =
     mode === 'dark'
       ? {
@@ -123,12 +126,12 @@ export function RootNavigator() {
           },
         };
 
+  const homeRoute =
+    bootstrap.welcomePending ? 'Welcome' : rootShell === 'child' ? 'ChildShell' : 'MainTabs';
+
   return (
     <NavigationContainer linking={linking} theme={navTheme}>
-      <Stack.Navigator
-        initialRouteName={bootstrap.welcomePending ? 'Welcome' : 'MainTabs'}
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator initialRouteName={homeRoute} screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Welcome">
           {({ navigation }) => (
             <WelcomeScreen
@@ -144,6 +147,18 @@ export function RootNavigator() {
           )}
         </Stack.Screen>
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="ChildShell">
+          {() => {
+            // Production gates keep resolveActiveRootShell on caregiver, so this
+            // route falls back instead of inventing a fake private session.
+            if (resolveActiveRootShell() !== 'child') {
+              return <MainTabs />;
+            }
+            // A real session store lands with verified identity; until then stay
+            // on the caregiver shell rather than a disguised private UI.
+            return <MainTabs />;
+          }}
+        </Stack.Screen>
         <Stack.Screen name="Profile" options={{ presentation: 'modal' }}>
           {({ navigation }) => <ProfileScreen onClose={() => navigation.goBack()} />}
         </Stack.Screen>
