@@ -5,7 +5,8 @@ export type ChangeTopic =
   | 'revisions'
   | 'profile'
   | 'schema'
-  | 'meta';
+  | 'meta'
+  | 'attachments';
 
 export type ChangeNotification = {
   seq: number;

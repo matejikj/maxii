@@ -274,3 +274,71 @@ test('quota and open failures fail closed without false success', async () => {
     (error: unknown) => error instanceof AppError && error.details.reason === 'storage_full',
   );
 });
+
+test('web UnitOfWork stores photo attachment metadata in diary IndexedDB', async () => {
+  const handle = await openWebDatabase({
+    databaseName: `web-photo-${Date.now()}`,
+    lockDatabaseName: `web-locks-photo-${Date.now()}`,
+    now,
+  });
+  try {
+    const childId = asChildId('child_web_photo');
+    const eventId = asEntityId('note_web_photo');
+    await ensureChildProfileRow(handle.db, {
+      childId,
+      displayName: 'Max',
+      summaryTimeZone: 'Europe/Prague',
+    });
+    const { asAttachmentId, asRenditionId, asAttachmentJobId } = await import(
+      '../src/domain/attachments/types.ts'
+    );
+    const unitOfWork = createWebUnitOfWorkFactory(handle, { nowMs: () => now.epochMs });
+    await unitOfWork.run(async (uow) => {
+      await uow.attachments.save({
+        attachmentId: asAttachmentId('att_web_1'),
+        childId,
+        eventId,
+        hostEventType: 'milestone',
+        orderIndex: 0,
+        caption: null,
+        recordedBy: null,
+        createdAtMs: now.epochMs,
+        deletedAtMs: null,
+        retainUntilMs: null,
+        renditions: [
+          {
+            renditionId: asRenditionId('rend_web_1'),
+            attachmentId: asAttachmentId('att_web_1'),
+            role: 'thumbnail',
+            mime: 'image/jpeg',
+            width: 320,
+            height: 240,
+            byteLength: 400,
+            sha256: 'def',
+            normalizationVersion: 'lumi.photo-normalize.v1',
+            blobKey: 'att/att_web_1/thumb.jpe.sealed',
+            availability: 'durable',
+          },
+        ],
+      });
+      await uow.attachments.saveJob({
+        jobId: asAttachmentJobId('job_web_1'),
+        attachmentId: asAttachmentId('att_web_1'),
+        childId,
+        eventId,
+        state: 'linked',
+        errorCode: null,
+        sourceMime: 'image/png',
+        createdAtMs: now.epochMs,
+        updatedAtMs: now.epochMs,
+      });
+    });
+    const listed = await unitOfWork.run((uow) => uow.attachments.listForEvent(eventId));
+    assert.equal(listed.length, 1);
+    assert.equal(listed[0]?.hostEventType, 'milestone');
+    const job = await unitOfWork.run((uow) => uow.attachments.getJob(asAttachmentJobId('job_web_1')));
+    assert.equal(job?.sourceMime, 'image/png');
+  } finally {
+    await handle.close();
+  }
+});

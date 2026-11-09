@@ -6,6 +6,7 @@ import {
   asEntityId,
   asOperationId,
   asRevisionId,
+  createDiaryArchive,
   createDiaperEvent,
   createDraft,
   startSession,
@@ -325,5 +326,102 @@ test('sessions drafts and plaintext conversion policy stay explicit', async () =
   );
   assert.match(describePlaintextConversionPolicy(), /plugin flag alone/);
   assert.ok(DATABASE_KEY_LIFECYCLE.some((row) => row.situation === 'db_present_key_missing'));
+  await db.close();
+});
+
+test('native UnitOfWork persists photo attachment metadata in SQLCipher tables', async () => {
+  const { db } = await openTestDb('photo-attachments.db');
+  const childId = asChildId('child_photo_1');
+  const eventId = asEntityId('note_photo_1');
+  await db.connection.runAsync(
+    `INSERT INTO child_profiles (child_id, display_name, birth_date, summary_time_zone, payload_json) VALUES (?, ?, ?, ?, ?)`,
+    childId,
+    'Max',
+    null,
+    'Europe/Prague',
+    '{}',
+  );
+  const unitOfWork = createNativeUnitOfWorkFactory(db, { nowMs: () => now.epochMs });
+  const { asAttachmentId, asRenditionId, asAttachmentJobId } = await import(
+    '../src/domain/attachments/types.ts'
+  );
+  const attachment = {
+    attachmentId: asAttachmentId('att_1'),
+    childId,
+    eventId,
+    hostEventType: 'note' as const,
+    orderIndex: 0,
+    caption: 'ráno',
+    recordedBy: null,
+    createdAtMs: now.epochMs,
+    deletedAtMs: null,
+    retainUntilMs: null,
+    renditions: [
+      {
+        renditionId: asRenditionId('rend_1'),
+        attachmentId: asAttachmentId('att_1'),
+        role: 'display' as const,
+        mime: 'image/jpeg' as const,
+        width: 800,
+        height: 600,
+        byteLength: 1200,
+        sha256: 'abc',
+        normalizationVersion: 'lumi.photo-normalize.v1',
+        blobKey: 'att/att_1/display.jpe.sealed',
+        availability: 'durable' as const,
+      },
+    ],
+  };
+  await unitOfWork.run(async (uow) => {
+    await uow.attachments.save(attachment);
+    await uow.attachments.saveJob({
+      jobId: asAttachmentJobId('job_1'),
+      attachmentId: attachment.attachmentId,
+      childId,
+      eventId,
+      state: 'linked',
+      errorCode: null,
+      sourceMime: 'image/jpeg',
+      createdAtMs: now.epochMs,
+      updatedAtMs: now.epochMs,
+    });
+  });
+
+  const listed = await unitOfWork.run((uow) => uow.attachments.listForEvent(eventId));
+  assert.equal(listed.length, 1);
+  assert.equal(listed[0]?.caption, 'ráno');
+  const job = await unitOfWork.run((uow) => uow.attachments.getJob(asAttachmentJobId('job_1')));
+  assert.equal(job?.state, 'linked');
+
+  await unitOfWork.run((uow) =>
+    uow.attachments.softDelete({
+      attachmentId: attachment.attachmentId,
+      deletedAtMs: now.epochMs + 1,
+      retainUntilMs: now.epochMs + 7 * 86_400_000,
+    }),
+  );
+  const afterDelete = await unitOfWork.run((uow) => uow.attachments.listForEvent(eventId));
+  assert.equal(afterDelete.length, 0);
+
+  await unitOfWork.run(async (uow) => {
+    await uow.diary.replace(
+      createDiaryArchive({
+        createdAtMs: now.epochMs,
+        schemaCompatibility: SCHEMA_VERSION_5,
+        profiles: [],
+        careEvents: [],
+        sessions: [],
+        drafts: [],
+        revisions: [],
+        receipts: [],
+        deletions: [],
+        meta: [],
+      }),
+    );
+  });
+  const jobs = await db.connection.getAllAsync<{ job_id: string }>(
+    'SELECT job_id FROM photo_attachment_jobs',
+  );
+  assert.equal(jobs.length, 0);
   await db.close();
 });

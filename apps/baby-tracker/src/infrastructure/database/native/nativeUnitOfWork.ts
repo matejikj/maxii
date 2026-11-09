@@ -25,6 +25,11 @@ import type {
   UnitOfWorkFactory,
   DeletionMarker,
 } from '../../../domain';
+import type {
+  AttachmentImportJob,
+  AttachmentRepository,
+  PhotoAttachment,
+} from '../../../domain/attachments';
 import { AppError } from '../../../domain/errors';
 import { SCHEMA_VERSION_5 } from './schema/v5';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
@@ -493,6 +498,82 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
+  const attachments: AttachmentRepository = {
+    async listForEvent(eventId) {
+      const rows = await txn.getAllAsync<{ payload_json: string; deleted_at_ms: number | null }>(
+        `SELECT payload_json, deleted_at_ms FROM photo_attachments
+         WHERE event_id = ?
+         ORDER BY order_index ASC, attachment_id ASC`,
+        eventId,
+      );
+      return rows
+        .filter((row) => row.deleted_at_ms == null)
+        .map((row) => JSON.parse(row.payload_json) as PhotoAttachment);
+    },
+    async getById(attachmentId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM photo_attachments WHERE attachment_id = ?`,
+        attachmentId,
+      );
+      return row ? (JSON.parse(row.payload_json) as PhotoAttachment) : null;
+    },
+    async save(attachment) {
+      await txn.runAsync('DELETE FROM photo_attachments WHERE attachment_id = ?', attachment.attachmentId);
+      // Single-line INSERT keeps the memory SQLCipher test double's parser happy.
+      await txn.runAsync(
+        `INSERT INTO photo_attachments (attachment_id, child_id, event_id, host_event_type, order_index, caption, recorded_by, created_at_ms, deleted_at_ms, retain_until_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        attachment.attachmentId,
+        attachment.childId,
+        attachment.eventId,
+        attachment.hostEventType,
+        attachment.orderIndex,
+        attachment.caption,
+        attachment.recordedBy,
+        attachment.createdAtMs,
+        attachment.deletedAtMs,
+        attachment.retainUntilMs,
+        JSON.stringify(attachment),
+      );
+      topics.add('attachments');
+    },
+    async softDelete({ attachmentId, deletedAtMs, retainUntilMs }) {
+      const current = await this.getById(attachmentId);
+      if (!current) return;
+      await this.save({ ...current, deletedAtMs, retainUntilMs });
+    },
+    async saveJob(job) {
+      await txn.runAsync('DELETE FROM photo_attachment_jobs WHERE job_id = ?', job.jobId);
+      await txn.runAsync(
+        `INSERT INTO photo_attachment_jobs (job_id, attachment_id, child_id, event_id, state, error_code, source_mime, created_at_ms, updated_at_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        job.jobId,
+        job.attachmentId,
+        job.childId,
+        job.eventId,
+        job.state,
+        job.errorCode,
+        job.sourceMime,
+        job.createdAtMs,
+        job.updatedAtMs,
+        JSON.stringify(job),
+      );
+      topics.add('attachments');
+    },
+    async getJob(jobId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM photo_attachment_jobs WHERE job_id = ?`,
+        jobId,
+      );
+      return row ? (JSON.parse(row.payload_json) as AttachmentImportJob) : null;
+    },
+    async listJobsForEvent(eventId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM photo_attachment_jobs WHERE event_id = ?`,
+        eventId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as AttachmentImportJob);
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -527,6 +608,8 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM revisions');
       await txn.runAsync('DELETE FROM operation_receipts');
       await txn.runAsync('DELETE FROM deletion_markers');
+      await txn.runAsync('DELETE FROM photo_attachment_jobs');
+      await txn.runAsync('DELETE FROM photo_attachments');
       await txn.runAsync('DELETE FROM child_profiles');
       await txn.runAsync('DELETE FROM app_meta');
       for (const profile of archive.profiles) {
@@ -558,10 +641,11 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       topics.add('drafts');
       topics.add('revisions');
       topics.add('profile');
+      topics.add('attachments');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, diary };
+  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, diary };
 }
 
 async function listCarePage(

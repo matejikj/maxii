@@ -1,3 +1,4 @@
+import type { AttachmentRepository } from '../attachments/ports';
 import type { DiaryArchive } from '../backup/diaryArchive';
 import type { CareEvent } from '../entities/careEvent';
 import type { ActiveSession, SessionKind, SessionRecord } from '../entities/activeSession';
@@ -19,6 +20,11 @@ export type UnitOfWork = {
   profiles: ProfileRepository;
   meta: AppMetaRepository;
   search: SearchIndexRepository;
+  /**
+   * Photo attachment metadata in the same private DB transaction as care rows.
+   * Sealed JPEG bytes stay in the private blob store; this repo only keeps links.
+   */
+  attachments: AttachmentRepository;
   /** Personal replace/export helpers stay inside the same private DB boundary. */
   diary: DiarySnapshotRepository;
 };

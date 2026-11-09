@@ -25,6 +25,11 @@ import type {
   UnitOfWork,
   UnitOfWorkFactory,
 } from '../../../domain';
+import type {
+  AttachmentImportJob,
+  AttachmentRepository,
+  PhotoAttachment,
+} from '../../../domain/attachments';
 import { AppError } from '../../../domain/errors';
 import {
   compareCareTimelineDesc,
@@ -107,6 +112,8 @@ export function createWebUnitOfWorkFactory(
             runtime.db.meta,
             runtime.db.changeNotifications,
             runtime.db.searchDocuments,
+            runtime.db.photoAttachments,
+            runtime.db.photoAttachmentJobs,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
@@ -501,6 +508,63 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
+  const attachments: AttachmentRepository = {
+    async listForEvent(eventId) {
+      const rows = await db.photoAttachments.where('eventId').equals(eventId).sortBy('orderIndex');
+      return rows
+        .filter((row) => row.deletedAtMs == null)
+        .map((row) => JSON.parse(row.payloadJson) as PhotoAttachment);
+    },
+    async getById(attachmentId) {
+      const row = await db.photoAttachments.get(attachmentId);
+      return row ? (JSON.parse(row.payloadJson) as PhotoAttachment) : null;
+    },
+    async save(attachment) {
+      await db.photoAttachments.put({
+        attachmentId: attachment.attachmentId,
+        childId: attachment.childId,
+        eventId: attachment.eventId,
+        hostEventType: attachment.hostEventType,
+        orderIndex: attachment.orderIndex,
+        caption: attachment.caption,
+        recordedBy: attachment.recordedBy,
+        createdAtMs: attachment.createdAtMs,
+        deletedAtMs: attachment.deletedAtMs,
+        retainUntilMs: attachment.retainUntilMs,
+        payloadJson: JSON.stringify(attachment),
+      });
+      topics.add('attachments');
+    },
+    async softDelete({ attachmentId, deletedAtMs, retainUntilMs }) {
+      const current = await this.getById(attachmentId);
+      if (!current) return;
+      await this.save({ ...current, deletedAtMs, retainUntilMs });
+    },
+    async saveJob(job) {
+      await db.photoAttachmentJobs.put({
+        jobId: job.jobId,
+        attachmentId: job.attachmentId,
+        childId: job.childId,
+        eventId: job.eventId,
+        state: job.state,
+        errorCode: job.errorCode,
+        sourceMime: job.sourceMime,
+        createdAtMs: job.createdAtMs,
+        updatedAtMs: job.updatedAtMs,
+        payloadJson: JSON.stringify(job),
+      });
+      topics.add('attachments');
+    },
+    async getJob(jobId) {
+      const row = await db.photoAttachmentJobs.get(jobId);
+      return row ? (JSON.parse(row.payloadJson) as AttachmentImportJob) : null;
+    },
+    async listJobsForEvent(eventId) {
+      const rows = await db.photoAttachmentJobs.where('eventId').equals(eventId).toArray();
+      return rows.map((row) => JSON.parse(row.payloadJson) as AttachmentImportJob);
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -535,6 +599,8 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.revisions.clear();
       await db.operationReceipts.clear();
       await db.deletionMarkers.clear();
+      await db.photoAttachmentJobs.clear();
+      await db.photoAttachments.clear();
       await db.childProfiles.clear();
       await db.meta.clear();
       for (const profile of archive.profiles) {
@@ -566,10 +632,11 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       topics.add('drafts');
       topics.add('revisions');
       topics.add('profile');
+      topics.add('attachments');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, diary };
+  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, diary };
 }
 
 async function listWebCarePage(

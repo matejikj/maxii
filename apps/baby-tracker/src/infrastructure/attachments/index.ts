@@ -16,6 +16,7 @@ export {
   createDexiePrivateAttachmentStore,
   deleteWebAttachmentBlobDatabase,
 } from './dexiePrivateAttachmentStore';
+export { createUnitOfWorkAttachmentRepository } from './unitOfWorkAttachmentRepository';
 export {
   WEB_ATTACHMENT_BLOB_DATABASE_NAME,
   AttachmentBlobDatabase,

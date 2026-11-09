@@ -142,6 +142,7 @@ export function BootstrapProvider({
         checkpoints: opened.checkpoints,
         reminders: opened.reminders,
         attachments: attachmentModule.createPersonalAttachmentServices({
+          unitOfWork: opened.unitOfWork,
           ...(opened.webDb ? { webDb: opened.webDb } : {}),
         }),
         appLock: opened.appLock,

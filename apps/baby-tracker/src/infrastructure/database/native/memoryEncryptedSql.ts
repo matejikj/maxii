@@ -416,6 +416,31 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM app_meta/i.test(sql)) {
     return [...ensureTable(state, 'app_meta').rows];
   }
+  const photoByEvent =
+    /^SELECT .+ FROM photo_attachments WHERE event_id = \? ORDER BY order_index ASC(?:, attachment_id ASC)?$/i.exec(
+      sql,
+    );
+  if (photoByEvent) {
+    return ensureTable(state, 'photo_attachments')
+      .rows.filter((row) => row.event_id === params[0])
+      .slice()
+      .sort((a, b) => {
+        const order = Number(a.order_index) - Number(b.order_index);
+        if (order !== 0) return order;
+        return String(a.attachment_id).localeCompare(String(b.attachment_id));
+      });
+  }
+  if (/FROM photo_attachments/i.test(sql)) {
+    return [...ensureTable(state, 'photo_attachments').rows];
+  }
+  if (/FROM photo_attachment_jobs WHERE event_id = \?/i.test(sql)) {
+    return ensureTable(state, 'photo_attachment_jobs').rows.filter(
+      (row) => row.event_id === params[0],
+    );
+  }
+  if (/FROM photo_attachment_jobs/i.test(sql)) {
+    return [...ensureTable(state, 'photo_attachment_jobs').rows];
+  }
   return [];
 }
 
@@ -524,7 +549,11 @@ function primaryKeyMatch(tableName: string, existing: Row, next: Row): boolean {
                     ? 'key'
                     : tableName === 'schema_migrations'
                       ? 'version'
-                      : null;
+                      : tableName === 'photo_attachments'
+                        ? 'attachment_id'
+                        : tableName === 'photo_attachment_jobs'
+                          ? 'job_id'
+                          : null;
   if (key == null) return false;
   return existing[key] === next[key];
 }
