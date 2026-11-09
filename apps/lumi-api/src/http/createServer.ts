@@ -187,21 +187,46 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   });
 
   app.get('/v1/me', async (request, reply) => {
-    const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
-    if (!auth.ok) {
-      const code = auth.reason === 'token_expired'
-        ? 'token_expired'
-        : auth.reason === 'issuer_rejected'
-          ? 'issuer_rejected'
-          : 'unauthorized';
-      const err = apiError(code, 'Authentication required', String(request.id));
+    const usesBearer = typeof request.headers.authorization === 'string'
+      && request.headers.authorization.startsWith('Bearer ');
+    // Cookie BFF sessions must list memberships too; bearer stays the native path.
+    if (usesBearer) {
+      const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
+      if (!auth.ok) {
+        const code = auth.reason === 'token_expired'
+          ? 'token_expired'
+          : auth.reason === 'issuer_rejected'
+            ? 'issuer_rejected'
+            : 'unauthorized';
+        const err = apiError(code, 'Authentication required', String(request.id));
+        return reply.code(err.status).send(err.body);
+      }
+      return {
+        appUserId: auth.principal.appUserId,
+        issuer: auth.principal.issuer,
+        expiresAt: auth.principal.expiresAt,
+        transport: 'bearer' as const,
+        memberships: store.listMemberships(auth.principal.appUserId).map((item) => ({
+          familyId: item.familyId,
+          role: item.role,
+          status: item.status,
+        })),
+      };
+    }
+
+    const session = sessions.getSession(
+      readCookie(request.headers.cookie, config.sessionCookieName),
+    );
+    if (!session) {
+      const err = apiError('unauthorized', 'Authentication required', String(request.id));
       return reply.code(err.status).send(err.body);
     }
     return {
-      appUserId: auth.principal.appUserId,
-      issuer: auth.principal.issuer,
-      expiresAt: auth.principal.expiresAt,
-      memberships: store.listMemberships(auth.principal.appUserId).map((item) => ({
+      appUserId: session.appUserId,
+      expiresAt: new Date(session.expiresAtMs).toISOString(),
+      transport: 'cookie' as const,
+      csrfToken: session.csrfToken,
+      memberships: store.listMemberships(session.appUserId).map((item) => ({
         familyId: item.familyId,
         role: item.role,
         status: item.status,

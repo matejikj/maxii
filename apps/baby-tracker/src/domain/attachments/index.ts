@@ -106,3 +106,12 @@ export type {
   AttachmentPurgeDecision,
   AttachmentRestoreFilterResult,
 } from './attachmentErasurePolicy';
+export {
+  familyIdFromActiveFamilySelection,
+  listActiveFamilyMemberships,
+  resolveActiveFamilySelection,
+} from './activeFamilySelection';
+export type {
+  ActiveFamilySelection,
+  FamilyMembershipSummary,
+} from './activeFamilySelection';

@@ -148,6 +148,10 @@ export {
   type FamilyPhotoTransferSessionBinding,
 } from './bindFamilyPhotoTransferSession';
 export {
+  syncActiveFamilyForPhotoTransfer,
+  type SyncActiveFamilyForPhotoTransferResult,
+} from './syncActiveFamilyForPhotoTransfer';
+export {
   buildEditCareCommand,
   type CareEditPatch,
 } from './careEdit';

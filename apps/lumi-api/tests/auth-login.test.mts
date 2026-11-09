@@ -94,6 +94,36 @@ test('login rejects unknown redirect URIs and completes PKCE cookie session', as
   assert.equal(typeof session.json().csrfToken, 'string');
   assert.equal(session.json().csrfToken, callback.json().csrfToken);
 
+  const created = await app.inject({
+    method: 'POST',
+    url: '/v1/families',
+    headers: {
+      cookie: cookieHeader,
+      'x-csrf-token': callback.json().csrfToken,
+      'content-type': 'application/json',
+    },
+    payload: {
+      protocolVersion: LUMI_API_PROTOCOL_VERSION,
+      idempotencyKey: 'cookie-me-family',
+      displayName: 'Cookie Family',
+    },
+  });
+  assert.equal(created.statusCode, 201);
+  const me = await app.inject({
+    method: 'GET',
+    url: '/v1/me',
+    headers: { cookie: cookieHeader },
+  });
+  assert.equal(me.statusCode, 200);
+  assert.equal(me.json().transport, 'cookie');
+  assert.equal(me.json().appUserId, callback.json().appUserId);
+  assert.ok(Array.isArray(me.json().memberships));
+  assert.ok(
+    me.json().memberships.some(
+      (item: { familyId: string }) => item.familyId === created.json().familyId,
+    ),
+  );
+
   const logout = await app.inject({
     method: 'POST',
     url: '/v1/auth/logout',
