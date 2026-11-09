@@ -94,6 +94,7 @@ test('operations owners handoff denies E2EE claims and names next gates', () => 
     e2eeClaim: boolean;
     roles: Record<string, string>;
     backup?: { retentionDays: number; livePgDataCopyForbidden: boolean };
+    onCall?: { primaryName: string };
     handoff: Record<string, string[]>;
   };
   assert.equal(owners.e2eeClaim, false);
@@ -101,8 +102,11 @@ test('operations owners handoff denies E2EE claims and names next gates', () => 
   assert.equal(owners.roles.backupOwner, 'tech-lead');
   assert.equal(owners.backup?.retentionDays, 30);
   assert.equal(owners.backup?.livePgDataCopyForbidden, true);
+  assert.equal(owners.onCall?.primaryName, 'UNASSIGNED');
   const done31 = owners.handoff.fromTask31Done ?? [];
-  const to392 = owners.handoff.toTask392 ?? [];
+  const software392 = owners.handoff.fromTask392SoftwareDone ?? [];
+  const live392 = owners.handoff.toTask392Live ?? [];
   assert.ok(done31.length > 0);
-  assert.ok(to392.some((item) => /LUKS/i.test(item)));
+  assert.ok(software392.length > 0);
+  assert.ok(live392.some((item) => /LUKS/i.test(item)));
 });

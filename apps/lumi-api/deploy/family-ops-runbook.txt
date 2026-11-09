@@ -1,0 +1,36 @@
+# Family ops runbook — cheap single-VPS beta (ADR 0005)
+
+Working targets: RPO 24h · RTO 8h (exercise goals, not an SLA).
+Personal trackers stay usable without this host.
+
+## Daily / weekly checks
+
+1. Off-host uptime probe still green (must not live only on this VPS).
+2. `restic snapshots` age ≤ 24h; failed upload leaves the previous live tree untouched.
+3. Erasure registry mirror readable off-host; never confirm server erase without it.
+4. Free disk, RAM/OOM kills, TLS certificate expiry (Caddy), and log rotation.
+5. PostgreSQL and Keycloak container health; Compose resource limits still applied.
+
+## Updates
+
+- OS packages → reboot window with LUKS unlock material from the independent vault.
+- PostgreSQL minor updates with logical dump before; major bumps need a restore drill.
+- Keycloak/OIDC image pin; rotate admin MFA and SMTP credentials outside Git.
+- App/worker image digest pin; schema compatibility gate before binary rollback.
+
+## Alerts → action
+
+| Alert | Owner role | First action |
+| --- | --- | --- |
+| backup_stale_or_missing / backup_failed | backupOwner | restore-runbook.txt; page off-host channel |
+| queue_backlog_high | composeOwner | inspect worker leases; scale vertically only after measurement |
+| sync_lag_high / reject_ratio_high | observabilityOwner | check /v1/ops/metrics (ops bearer); no diary payloads |
+| server_errors / vps_total_outage | observabilityOwner | incident-runbooks.txt; provision replacement host |
+| external_host_probe_required | observabilityOwner | configure independent probe before family release |
+
+## Forbidden
+
+- Live PGDATA copy as a “backup”.
+- Monitoring that only runs on the same VPS as the sole outage detector.
+- Remote kill switch that wipes or locks the on-device diary.
+- Claiming E2EE for server-processed family data.

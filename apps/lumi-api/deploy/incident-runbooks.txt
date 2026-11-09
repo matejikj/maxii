@@ -1,0 +1,38 @@
+# Family incident runbooks
+
+Invariant: isolate the remote service without wiping phones or locking local history.
+No remote kill switch may delete the device diary.
+
+## token_leak
+
+1. Rotate the leaked secret offline; revoke sessions at the IdP.
+2. Capture request IDs only — never paste access/refresh tokens into chat.
+3. Confirm caregivers can still open the local tracker without the API.
+
+## foreign_access
+
+1. Revoke invitation hashes / freeze membership; keep opaque audit IDs.
+2. Force admin re-auth from a trusted device.
+3. Do not export notes or DOB into the incident ticket.
+
+## database_failure
+
+1. Fail `/ready`; stop writers that would enlarge corruption.
+2. Restore logical dumps after applying the current erasure registry.
+3. Clients keep offline capture until readiness returns.
+
+## malicious_update
+
+1. Pin the last known-good image digest; block the bad tag in the registry.
+2. Refuse binary rollback that opens a newer incompatible schema.
+3. Embedded content packs stay on-device; refuse unsigned activations.
+
+## bad_content_pack
+
+1. Keep the previously verified local catalog.
+2. Publish only a higher signed generation after review.
+3. Care logging remains available offline.
+
+## vps_total_outage / disk_full / identity_loss
+
+Follow family-ops-runbook.txt and restore-runbook.txt. Measure actual RPO/RTO for the family release gate. Off-host alert delivery is mandatory for total host loss.

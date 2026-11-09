@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "note": "Example only — real endpoints and secrets stay outside Git.",
+  "offHostUptimeProbe": {
+    "provider": "REPLACE_WITH_INDEPENDENT_PROBE",
+    "targetUrl": "https://api.example.invalid/health",
+    "mustNotRunOnlyOnSameVps": true
+  },
+  "paging": {
+    "channel": "REPLACE_WITH_OFF_HOST_EMAIL_OR_SMS",
+    "criticalAlerts": [
+      "backup_stale_or_missing",
+      "backup_failed",
+      "server_errors",
+      "external_host_probe_required"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+# Managed hosting cutover runbook (ADR 0006) — drill vs activation
+
+This file prepares a future Supabase/Render/S3 move. It does not order those services.
+Today’s production profile remains the single VPS from ADR 0005.
+
+## Modes
+
+| Mode | Purpose | Production mutation |
+| --- | --- | --- |
+| drill | Disposable target, account-map rehearsal, backup verify | Forbidden |
+| activation | Real cutover with a single writer | Allowed only after preflight + checkpoint |
+
+## Ordered phases
+
+1. preflight — adapters, regions, secrets roles, verified account map (no e-mail auto-claim).
+2. checkpoint — off-server archive + erasure-registry generation recorded.
+3. single_writer — freeze old writers.
+4. cutover — switch API/worker to the new writer; keep the public API domain.
+5. verify — memberships, sync cursors, login path.
+6. rollback_decision — **DNS rollback onto the old DB is forbidden after the first confirmed new write.**
+
+## Decision triggers (no auto-provision)
+
+Resize/optimize the VPS first when RAM, disk, DB connections, latency, or backlog pressure is measured.
+Only after recovery targets stay missed, cost a managed profile and run a load test.
+Crossing a target never creates cloud accounts or flips data by itself.

@@ -33,15 +33,17 @@ node -e '
   const fs = require("node:fs");
   const owners = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
   if (owners.e2eeClaim !== false) process.exit(2);
-  if (!owners.roles?.composeOwner || !owners.handoff?.toTask31) process.exit(3);
+  if (!owners.roles?.composeOwner || !owners.onCall || !owners.liveDrillEvidence) process.exit(3);
+  if (!owners.handoff?.fromTask392SoftwareDone || !owners.handoff?.toTask392Live) process.exit(4);
   console.log(JSON.stringify({
     ok: true,
     e2eeClaim: owners.e2eeClaim,
     composeOwner: owners.roles.composeOwner,
+    onCallPrimary: owners.onCall.primaryName,
     handoff: Object.keys(owners.handoff),
   }));
 ' "$OWNERS"
 
 echo "provision: compose overlays and ownership handoff are ready"
 echo "provision: next host steps (manual): LUKS volume, SSH keys, firewall, place secrets outside Git"
-echo "provision: remaining live-host drills belong with backup/observability release gates"
+echo "provision: remaining live-host drills belong with family ops live readiness"

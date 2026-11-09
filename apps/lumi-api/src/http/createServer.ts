@@ -23,8 +23,15 @@ import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
 import { registerSyncRoutes } from './syncRoutes.ts';
 import { registerBackupRoutes } from './backupRoutes.ts';
+import { registerOpsRoutes } from './opsRoutes.ts';
 import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
+import {
+  classifyFamilyOpsPath,
+  createFamilyOpsMetrics,
+  statusClassOf,
+  type FamilyOpsMetrics,
+} from '../ops/familyMetrics.ts';
 import type { RemoteBackupStatusResponse } from '@lumi/contracts';
 
 export type CreatedApi = {
@@ -36,6 +43,7 @@ export type CreatedApi = {
   readonly oidc: OidcTokenExchanger;
   readonly backups: ReturnType<typeof createMemoryBackupRepository>;
   readonly erasureRegistry: ReturnType<typeof createMemoryErasureRegistry>;
+  readonly metrics: FamilyOpsMetrics;
 };
 
 export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
@@ -59,6 +67,7 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     limit: config.rateLimitPerWindow,
     windowMs: config.rateLimitWindowMs,
   });
+  const metrics = createFamilyOpsMetrics();
   const app = Fastify({
     logger: false,
     bodyLimit: LUMI_API_LIMITS.maxJsonBodyBytes,
@@ -80,8 +89,14 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     erasureRegistry,
     backupStatusByFamily,
   });
+  registerOpsRoutes(app, {
+    config,
+    metrics,
+    offHostProbeConfigured: config.offHostProbeConfigured,
+  });
 
   app.addHook('onRequest', async (request, reply) => {
+    (request as { lumiOpsStartedAtMs?: number }).lumiOpsStartedAtMs = Date.now();
     const clientKey = request.ip || 'unknown';
     if (!request.url.startsWith('/health') && !request.url.startsWith('/ready')) {
       const limited = rateLimiter.check(clientKey);
@@ -123,6 +138,19 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
       ready: checks.oidc !== 'fail',
       checks,
     };
+  });
+
+  app.addHook('onResponse', async (request, reply) => {
+    const started = (request as { lumiOpsStartedAtMs?: number }).lumiOpsStartedAtMs;
+    const durationMs = started == null ? 0 : Math.max(0, Date.now() - started);
+    const statusClass = statusClassOf(reply.statusCode);
+    metrics.recordRequest({
+      pathClass: classifyFamilyOpsPath(request.url),
+      method: request.method,
+      statusClass,
+      rejected: statusClass === '4xx',
+      durationMs,
+    });
   });
 
   app.get('/v1/me', async (request, reply) => {
@@ -254,5 +282,5 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     return { ok: true };
   });
 
-  return { app, store, sync, tokens, sessions, oidc, backups, erasureRegistry };
+  return { app, store, sync, tokens, sessions, oidc, backups, erasureRegistry, metrics };
 }

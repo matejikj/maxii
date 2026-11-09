@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "e2eeClaim": false,
   "e2eeNote": "Family service processes domain changes server-side; TLS and disk encryption are not end-to-end encryption of diary content.",
   "hostingProfile": "adr-0005-single-vps",
@@ -13,8 +13,29 @@
     "composeOwner": "tech-lead",
     "identityOwner": "tech-lead",
     "backupOwner": "tech-lead",
-    "observabilityOwner": "task-39.2",
+    "observabilityOwner": "on-call-primary",
     "familyReleaseGate": "task-32"
+  },
+  "onCall": {
+    "primaryName": "UNASSIGNED",
+    "primaryContact": "UNASSIGNED",
+    "availability": "UNASSIGNED",
+    "deputyName": null,
+    "independentRecoveryHolder": "UNASSIGNED",
+    "alertChannelOutsideVps": "UNASSIGNED"
+  },
+  "workingTargets": {
+    "rpoHours": 24,
+    "rtoHours": 8
+  },
+  "liveDrillEvidence": {
+    "vpsOutageAlarm": null,
+    "luksUnlockAfterReboot": null,
+    "fullDisk": null,
+    "failedBackup": null,
+    "identityLoss": null,
+    "measuredRpoHours": null,
+    "measuredRtoHours": null
   },
   "backup": {
     "tool": "restic",
@@ -28,24 +49,31 @@
     "sseKmsDoesNotReplaceArchiveKey": true
   },
   "handoff": {
-    "toTask31": [],
     "fromTask31Done": [
       "manifest + restic/R2 script",
       "durable erasure registry gate",
       "recovery preview + cross-family archive denial",
       "daily/retention job handlers"
     ],
-    "toTask392": [
+    "fromTask392SoftwareDone": [
+      "family ops metrics + gated /v1/ops endpoints",
+      "alert evaluation with off-host channel requirement",
+      "incident playbooks preserving local tracker",
+      "family/migration/ops runbooks + readiness script",
+      "growth decision triggers without auto-provision"
+    ],
+    "toTask392Live": [
+      "named on-call owner and availability",
+      "independent recovery holder + off-host alert channel",
       "monitoring outside a failing VPS",
-      "named on-call owner",
-      "update/alarm/restore/rollback drills",
       "verified LUKS unlock after reboot on the live host",
-      "live restore drill alarm when daily backup missing"
+      "VPS outage / full disk / failed backup / identity-loss drills",
+      "measured RPO/RTO on a real restore"
     ],
     "toTask32": [
       "two-phone offline sync acceptance",
       "permission and recovery evidence pack",
-      "measured RPO/RTO disaster drill on staging"
+      "family release only after liveReady"
     ]
   },
   "adapterTargetsWithoutSecrets": {

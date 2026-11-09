@@ -14,6 +14,25 @@ export {
 export { runWorkerLoop } from './ops/workerLoop.ts';
 export { createFixedWindowRateLimiter } from './http/rateLimit.ts';
 export {
+  classifyFamilyOpsPath,
+  createFamilyOpsMetrics,
+  statusClassOf,
+} from './ops/familyMetrics.ts';
+export {
+  DEFAULT_FAMILY_ALERT_THRESHOLDS,
+  evaluateFamilyAlerts,
+} from './ops/familyAlerts.ts';
+export {
+  INCIDENT_PLAYBOOKS,
+  simulateIncidentResponse,
+} from './ops/incidentPlaybooks.ts';
+export {
+  evaluateGrowthDecision,
+  planManagedMigrationCutover,
+} from './ops/migrationCutover.ts';
+export { parseOperationsOwners, isAssigned } from './ops/owners.ts';
+export { evaluateFamilyOpsReadiness } from './ops/familyOpsReadiness.ts';
+export {
   MemorySyncStore,
   hashSyncPayload,
   encodeCursor,

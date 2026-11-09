@@ -26,6 +26,10 @@ export type ApiConfig = {
   readonly workerId: string;
   readonly workerLeaseMs: number;
   readonly workerPollMs: number;
+  /** Optional bearer for /v1/ops/* — unset keeps metrics private (401). */
+  readonly opsBearerToken: string | null;
+  /** Independent uptime probe configured outside this VPS. */
+  readonly offHostProbeConfigured: boolean;
 };
 
 function readList(value: string | undefined): readonly string[] {
@@ -73,5 +77,7 @@ export function loadApiConfig(
     workerId: env.LUMI_WORKER_ID?.trim() || `worker-${process.pid}`,
     workerLeaseMs: Number.isFinite(workerLeaseMs) ? workerLeaseMs : 15_000,
     workerPollMs: Number.isFinite(workerPollMs) ? workerPollMs : 1_000,
+    opsBearerToken: env.LUMI_OPS_BEARER_TOKEN?.trim() || null,
+    offHostProbeConfigured: env.LUMI_OFF_HOST_PROBE_CONFIGURED === '1',
   };
 }
