@@ -44,3 +44,7 @@ export {
   encodeCursor,
   decodeCursor,
 } from './sync/syncStore.ts';
+export {
+  createSoakDevice,
+  runFamilySyncSoak,
+} from './sync/familySyncSoak.ts';
