@@ -26,6 +26,8 @@ export const READINESS_KEYS = [
   'floorSit',
   'floorMove',
   'gesture',
+  /** Safe mark-making under supervision — never inferred from age alone. */
+  'safeMarkMaking',
 ] as const;
 export type ReadinessKey = (typeof READINESS_KEYS)[number];
 export type ReadinessState = 'yes' | 'no' | 'unknown';
@@ -38,6 +40,7 @@ export const READINESS_LABELS_CS: Record<ReadinessKey, string> = {
   floorSit: 'Stabilní sed na zemi',
   floorMove: 'Vlastní pohyb po zemi',
   gesture: 'Vlastní ukazovací gesto',
+  safeMarkMaking: 'Bezpečné kreslení pod dohledem',
 };
 
 /**
@@ -98,6 +101,12 @@ export type ActivityRevision = {
   primaryArea: DevelopmentArea;
   relatedAreas: DevelopmentArea[];
   topicIds: string[];
+  /**
+   * Stable editorial family for related motifs. Ranking must not treat three
+   * members of the same family as three unrelated daily alternatives.
+   * Omitted on older revisions — treat as null.
+   */
+  activityFamilyId?: string | null;
   sources: ContentSource[];
   suitability: SuitabilityCondition[];
   editorial: {

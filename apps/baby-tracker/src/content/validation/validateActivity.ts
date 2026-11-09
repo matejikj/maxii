@@ -77,6 +77,20 @@ export function validateActivityRevision(raw: unknown): {
       });
     }
   }
+  let activityFamilyId: string | null | undefined;
+  if (value.activityFamilyId === undefined) {
+    activityFamilyId = undefined;
+  } else if (value.activityFamilyId === null) {
+    activityFamilyId = null;
+  } else if (typeof value.activityFamilyId === 'string' && value.activityFamilyId.trim()) {
+    activityFamilyId = value.activityFamilyId.trim();
+  } else {
+    errors.push({
+      path: 'activityFamilyId',
+      code: 'activity_family',
+      message: 'activityFamilyId must be a non-empty string or null.',
+    });
+  }
   const sources = parseSources(value.sources, errors);
   const suitability = parseSuitability(value.suitability, errors);
   const editorial = parseEditorial(value.editorial, errors);
@@ -148,6 +162,7 @@ export function validateActivityRevision(raw: unknown): {
     primaryArea: primaryArea!,
     relatedAreas,
     topicIds,
+    ...(activityFamilyId !== undefined ? { activityFamilyId } : {}),
     sources,
     suitability,
     editorial: editorial!,

@@ -39,7 +39,7 @@ export type ParentRecommendationContext = {
   /** Calendar age in completed months when birth date is known; otherwise null. */
   ageMonths: number | null;
   birthDateKnown: boolean;
-  /** True when the child is still inside the first published content window. */
+  /** True when the child is inside the currently published install-local window. */
   withinContentWindow: boolean | null;
   /** Optional caregiver filters — empty means no filter (not “unknown”). */
   environments: ContentEnvironmentLike[];
@@ -74,6 +74,7 @@ export type EligibilityDecision = {
 export type RankedCandidate = {
   activityId: string;
   revisionId: string;
+  activityFamilyId: string | null;
   score: number;
   reasonCodes: RecommendationReasonCode[];
 };

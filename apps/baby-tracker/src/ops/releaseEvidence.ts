@@ -1,13 +1,16 @@
+import { FIRST_YEAR_PUBLISHED_CONTENT_VERSION } from '../content/catalog/firstYearPublished';
 import {
-  FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
-  FIRST_YEAR_PUBLISHED_REVISIONS,
-} from '../content/catalog/firstYearPublished';
+  PRODUCT_PUBLISHED_CONTENT_VERSION,
+  PRODUCT_PUBLISHED_REVISIONS,
+} from '../content/catalog/productPublished';
 import {
   EMBEDDED_BASE_PACK_ID,
   EMBEDDED_COLLECTION_VERSION,
   describeEmbeddedBasePack,
 } from '../content/pack/embeddedBase';
 import { EMBEDDED_FIRST_YEAR_BASE_SIGNATURE } from '../content/pack/embeddedFirstYearBase';
+import { TODDLER_1_2_PACK_ID } from '../content/pack/toddler12Pack';
+import { EMBEDDED_TODDLER_1_2_SIGNATURE } from '../content/pack/embeddedToddler12';
 import { WEB_SCHEMA_VERSION } from '../infrastructure/database/web/lumiWebDatabase';
 import { SCHEMA_VERSION_4 } from '../infrastructure/database/native/schema/v4';
 import { RECOMMENDATION_RULES_VERSION } from '../domain/recommendation/types';
@@ -47,12 +50,15 @@ export type ReleaseEvidenceManifest = {
     catalogVersion: string;
     recommendationRulesVersion: string;
     publishedRevisionCount: number;
+    baseCatalogVersion: string;
   };
   pack: {
     packId: string;
     generation: number;
     readerVersion: string;
     keyId: string;
+    expansionPackId: string;
+    expansionKeyId: string;
   };
   art: {
     collectionVersion: string;
@@ -95,15 +101,18 @@ export function buildReleaseEvidenceManifest(
       webSchemaCompatibility: WEB_SCHEMA_COMPATIBILITY,
     },
     content: {
-      catalogVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
+      catalogVersion: PRODUCT_PUBLISHED_CONTENT_VERSION,
       recommendationRulesVersion: RECOMMENDATION_RULES_VERSION,
-      publishedRevisionCount: FIRST_YEAR_PUBLISHED_REVISIONS.length,
+      publishedRevisionCount: PRODUCT_PUBLISHED_REVISIONS.length,
+      baseCatalogVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
     },
     pack: {
       packId: EMBEDDED_BASE_PACK_ID,
       generation: pack.generation,
       readerVersion: pack.readerVersion,
       keyId: EMBEDDED_FIRST_YEAR_BASE_SIGNATURE.keyId,
+      expansionPackId: TODDLER_1_2_PACK_ID,
+      expansionKeyId: EMBEDDED_TODDLER_1_2_SIGNATURE.keyId,
     },
     art: {
       collectionVersion: EMBEDDED_COLLECTION_VERSION,

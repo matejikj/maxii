@@ -11,8 +11,8 @@ import {
   loadReadinessByKey,
 } from '../../application';
 import {
-  FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
-  FIRST_YEAR_PUBLISHED_REVISIONS,
+  PRODUCT_PUBLISHED_CONTENT_VERSION,
+  PRODUCT_PUBLISHED_REVISIONS,
 } from '../../content';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
@@ -53,8 +53,8 @@ export function TodayTogetherCard({
           localDay,
           context,
           catalog: {
-            contentVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
-            candidates: candidatesFromRevisions([...FIRST_YEAR_PUBLISHED_REVISIONS]),
+            contentVersion: PRODUCT_PUBLISHED_CONTENT_VERSION,
+            candidates: candidatesFromRevisions([...PRODUCT_PUBLISHED_REVISIONS]),
           },
           nowSeed: `today-${localDay.year}${localDay.month}${localDay.day}`,
         });
@@ -68,7 +68,7 @@ export function TodayTogetherCard({
 
   const primary = view?.set.offers[0];
   const revision = primary
-    ? FIRST_YEAR_PUBLISHED_REVISIONS.find((item) => item.revisionId === primary.activityRevisionId)
+    ? PRODUCT_PUBLISHED_REVISIONS.find((item) => item.revisionId === primary.activityRevisionId)
     : null;
 
   return (

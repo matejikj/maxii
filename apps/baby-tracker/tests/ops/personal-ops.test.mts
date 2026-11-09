@@ -78,12 +78,14 @@ test('release evidence pins app, schema, catalog, pack and art versions', () => 
   assert.equal(manifest.app.applicationId, 'com.matejikj');
   assert.equal(manifest.storage.nativeSchemaCompatibility, NATIVE_SCHEMA_COMPATIBILITY);
   assert.equal(manifest.storage.webSchemaCompatibility, WEB_SCHEMA_COMPATIBILITY);
-  assert.equal(manifest.content.catalogVersion, 'first-year.v1');
-  assert.equal(manifest.content.publishedRevisionCount, 60);
+  assert.equal(manifest.content.catalogVersion, 'first-year.v1+toddler-1-2.v1');
+  assert.equal(manifest.content.baseCatalogVersion, 'first-year.v1');
+  assert.equal(manifest.content.publishedRevisionCount, 84);
   assert.ok(manifest.content.recommendationRulesVersion.length > 0);
   assert.equal(manifest.pack.packId, 'lumi.first-year.base');
   assert.equal(manifest.pack.generation, 1);
   assert.equal(manifest.pack.keyId, 'lumi-content-ed25519-v1');
+  assert.equal(manifest.pack.expansionPackId, 'lumi.toddler-1-2.content');
   assert.equal(manifest.art.collectionVersion, 'lumi.characters.collection.v1');
   assert.equal(manifest.signing.keysInRepository, false);
 });

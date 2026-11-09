@@ -24,7 +24,9 @@ export {
   assertBirthDateNotFuture,
   calendarAgeOn,
   FIRST_CONTENT_MAX_EXCLUSIVE_YEARS,
+  PUBLISHED_CONTENT_MAX_EXCLUSIVE_YEARS,
   isWithinFirstContentWindow,
+  isWithinPublishedContentWindow,
   parseOptionalBirthDate,
   todayInZone,
 } from './calendarAge';

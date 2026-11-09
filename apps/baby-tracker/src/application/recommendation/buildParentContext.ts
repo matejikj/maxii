@@ -4,7 +4,7 @@ import type {
   DevelopmentArea,
   ParentRecommendationContext,
 } from '../../domain';
-import { calendarAgeOn, isWithinFirstContentWindow } from '../../domain';
+import { calendarAgeOn, isWithinPublishedContentWindow } from '../../domain';
 import type { ContentDurationLike, ContentEnvironmentLike } from '../../domain';
 
 export type RecommendationFilterInput = {
@@ -54,7 +54,7 @@ export function buildParentRecommendationContext(
   return {
     ageMonths: age.totalMonths,
     birthDateKnown: true,
-    withinContentWindow: isWithinFirstContentWindow(birthDate, onLocalDay),
+    withinContentWindow: isWithinPublishedContentWindow(birthDate, onLocalDay),
     environments: filters.environments ?? [],
     availableMaterials: filters.availableMaterials ?? [],
     withoutMaterialsOnly: filters.withoutMaterialsOnly ?? false,

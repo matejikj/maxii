@@ -47,6 +47,15 @@ export {
   FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
   FIRST_YEAR_PUBLISHED_REVISIONS,
 } from './catalog/firstYearPublished';
+export {
+  TODDLER_1_2_PUBLISHED_CONTENT_VERSION,
+  TODDLER_1_2_PUBLISHED_REVISIONS,
+} from './catalog/toddler12Published';
+export {
+  PRODUCT_PUBLISHED_CONTENT_VERSION,
+  PRODUCT_PUBLISHED_REVISIONS,
+  PRODUCT_SUPPORTED_AGE_MONTHS,
+} from './catalog/productPublished';
 export * from './pack';
 export {
   FIRST_YEAR_DRAFT_CONTENT_VERSION,
@@ -56,3 +65,7 @@ export {
   FIRST_YEAR_ARCHIVED_CONTENT_VERSION,
   FIRST_YEAR_ARCHIVED_REVISIONS,
 } from './drafts/firstYearDraftArchive';
+export {
+  TODDLER_1_2_DRAFT_CONTENT_VERSION,
+  TODDLER_1_2_DRAFT_REVISIONS,
+} from './drafts/toddler12Drafts';

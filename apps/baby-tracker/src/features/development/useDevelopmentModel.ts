@@ -29,8 +29,9 @@ import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../conte
 import {
   FIRST_YEAR_ARCHIVED_REVISIONS,
   FIRST_YEAR_DRAFT_REVISIONS,
-  FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
-  FIRST_YEAR_PUBLISHED_REVISIONS,
+  PRODUCT_PUBLISHED_CONTENT_VERSION,
+  PRODUCT_PUBLISHED_REVISIONS,
+  TODDLER_1_2_DRAFT_REVISIONS,
 } from '../../content';
 import { useCompositionRoot } from '../../app/providers';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
@@ -65,11 +66,11 @@ export function useDevelopmentModel() {
   const [error, setError] = useState<string | null>(null);
 
   // Product library and recommendations are published-only; drafts stay for history lookup.
-  const publishedLibrary = useMemo(() => [...FIRST_YEAR_PUBLISHED_REVISIONS], []);
+  const publishedLibrary = useMemo(() => [...PRODUCT_PUBLISHED_REVISIONS], []);
   const library = publishedLibrary;
   const catalog = useMemo(
     () => ({
-      contentVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
+      contentVersion: PRODUCT_PUBLISHED_CONTENT_VERSION,
       candidates: candidatesFromRevisions(publishedLibrary),
     }),
     [publishedLibrary],
@@ -81,6 +82,7 @@ export function useDevelopmentModel() {
     const map = new Map<string, ActivityRevision>();
     for (const revision of FIRST_YEAR_ARCHIVED_REVISIONS) map.set(revision.revisionId, revision);
     for (const revision of FIRST_YEAR_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
+    for (const revision of TODDLER_1_2_DRAFT_REVISIONS) map.set(revision.revisionId, revision);
     for (const revision of publishedLibrary) map.set(revision.revisionId, revision);
     return map;
   }, [publishedLibrary]);

@@ -50,9 +50,14 @@ export function selectDailyOffers(
 
   const offers: SelectionResult['offers'] = [];
   const usedActivities = new Set<string>();
+  const usedFamilies = new Set<string>();
   for (const candidate of eligible) {
     if (usedActivities.has(candidate.activityId)) continue;
+    const familyId = candidate.activityFamilyId ?? null;
+    // Related motifs share one daily slot so three variants are not three alternatives.
+    if (familyId && usedFamilies.has(familyId)) continue;
     usedActivities.add(candidate.activityId);
+    if (familyId) usedFamilies.add(familyId);
     const reasonCodes = [...candidate.reasonCodes];
     if (eligible.length === 1) reasonCodes.push('single_eligible');
     offers.push({
@@ -121,6 +126,7 @@ function rankCandidate(
   return {
     activityId: candidate.activityId,
     revisionId: candidate.revisionId,
+    activityFamilyId: candidate.activityFamilyId ?? null,
     score,
     reasonCodes: unique(reasonCodes),
   };

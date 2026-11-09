@@ -61,3 +61,12 @@ export {
 } from './embeddedFirstYearBase';
 export { activateEmbeddedFirstYearBase } from './loadEmbeddedBase';
 export type { EmbeddedBaseActivation } from './loadEmbeddedBase';
+export {
+  TODDLER_1_2_PACK_ID,
+  buildToddler12Files,
+  buildToddler12Manifest,
+} from './toddler12Pack';
+export {
+  EMBEDDED_TODDLER_1_2_MANIFEST,
+  EMBEDDED_TODDLER_1_2_SIGNATURE,
+} from './embeddedToddler12';

@@ -11,10 +11,16 @@ import type { CalendarDate, TimeZoneId } from './types';
 import { asTimeZoneId } from './zonedTime';
 
 /**
- * First published activity pack covers birth through the day before the first
- * birthday. Age is never stretched into that window when the child is older.
+ * First-year base pack covers birth through the day before the first birthday.
+ * Age is never stretched into that window when the child is older.
  */
 export const FIRST_CONTENT_MAX_EXCLUSIVE_YEARS = 1;
+
+/**
+ * Combined install-local recommendable window after toddler 1–2 publication:
+ * birth through the day before the second birthday (completed months 0–23).
+ */
+export const PUBLISHED_CONTENT_MAX_EXCLUSIVE_YEARS = 2;
 
 export type CalendarAge = {
   years: number;
@@ -53,13 +59,29 @@ export function calendarAgeOn(birthDate: CalendarDate, onDate: CalendarDate): Ca
 
 /**
  * True from birth date through the calendar day before the first birthday.
- * The first birthday itself is outside the initial 0–12 month pack. Older ages
- * are reported honestly and are not clamped into the pack window.
+ * The first birthday itself is outside the initial 0–11 month base pack. Older
+ * ages are reported honestly and are not clamped into that pack window.
  */
 export function isWithinFirstContentWindow(birthDate: CalendarDate, onDate: CalendarDate): boolean {
+  return isWithinPublishedContentWindow(birthDate, onDate, {
+    maxExclusiveYears: FIRST_CONTENT_MAX_EXCLUSIVE_YEARS,
+  });
+}
+
+/**
+ * True while the child's completed months fall inside the currently published
+ * install-local catalogs. Outside the window the UI must say the next set is
+ * unavailable — never stretch older ages into infant activities.
+ */
+export function isWithinPublishedContentWindow(
+  birthDate: CalendarDate,
+  onDate: CalendarDate,
+  options: { maxExclusiveYears?: number } = {},
+): boolean {
   assertBirthDateNotFuture(birthDate, onDate);
-  const firstBirthday = anniversaryOn(birthDate, FIRST_CONTENT_MAX_EXCLUSIVE_YEARS);
-  return compareCalendarDates(onDate, firstBirthday) < 0;
+  const years = options.maxExclusiveYears ?? PUBLISHED_CONTENT_MAX_EXCLUSIVE_YEARS;
+  const exclusiveEnd = anniversaryOn(birthDate, years);
+  return compareCalendarDates(onDate, exclusiveEnd) < 0;
 }
 
 export function anniversaryOn(birthDate: CalendarDate, yearsLater: number): CalendarDate {

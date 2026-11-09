@@ -27,6 +27,7 @@ export function candidateFromRevision(
     materials: revision.materials,
     duration: revision.duration,
     suitability: revision.suitability,
+    activityFamilyId: revision.activityFamilyId ?? null,
     recommendable,
   };
 }

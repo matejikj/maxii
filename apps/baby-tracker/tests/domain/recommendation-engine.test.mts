@@ -253,6 +253,44 @@ test('reason copy stays free of PII-shaped placeholders', () => {
   assert.doesNotMatch(copy, /\{name\}|childId|CANARY/i);
 });
 
+test('related activity families share one daily offer slot', () => {
+  const noneSuitability = [
+    { kind: 'age_months' as const, fromInclusive: 0, toInclusive: 12 },
+    { kind: 'materials_none' as const },
+  ];
+  const a = productCandidate({
+    activityId: 'act.ball-a',
+    revisionId: 'act.ball-a.r1',
+    activityFamilyId: 'family.ball',
+    primaryArea: 'movement',
+    materials: [],
+    suitability: noneSuitability,
+    ageMonths: { fromInclusive: 0, toInclusive: 12 },
+  });
+  const b = productCandidate({
+    activityId: 'act.ball-b',
+    revisionId: 'act.ball-b.r1',
+    activityFamilyId: 'family.ball',
+    primaryArea: 'relationship',
+    materials: [],
+    suitability: noneSuitability,
+    ageMonths: { fromInclusive: 0, toInclusive: 12 },
+  });
+  const c = productCandidate({
+    activityId: 'act.other',
+    revisionId: 'act.other.r1',
+    activityFamilyId: null,
+    primaryArea: 'senses',
+    materials: [],
+    suitability: noneSuitability,
+    ageMonths: { fromInclusive: 0, toInclusive: 12 },
+  });
+  const selected = selectDailyOffers([a, b, c], baseContext({ withoutMaterialsOnly: true }));
+  assert.equal(selected.offers.length, 2);
+  const ids = selected.offers.map((offer) => offer.activityId).sort();
+  assert.deepEqual(ids, ['act.ball-a', 'act.other'].sort());
+});
+
 test('readiness-gated activity stays out until caregiver confirms yes', () => {
   const candidate = productCandidate({
     activityId: 'act.grasp-ring',

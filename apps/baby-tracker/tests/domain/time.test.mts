@@ -11,6 +11,7 @@ import {
   instantFromLocalWallTime,
   intersectWithLocalDay,
   isWithinFirstContentWindow,
+  isWithinPublishedContentWindow,
   knownInterval,
   nursingActiveDurationMs,
   parseCalendarDate,
@@ -41,6 +42,13 @@ test('first content window ends the day before the first birthday', () => {
     () => isWithinFirstContentWindow(birth, parseCalendarDate('2025-11-07')),
     (error: unknown) => error instanceof AppError && error.code === 'VALIDATION',
   );
+});
+
+test('published content window covers toddler ages until the second birthday', () => {
+  const birth = parseCalendarDate('2024-11-08');
+  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2025-11-08')), true);
+  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-07')), true);
+  assert.equal(isWithinPublishedContentWindow(birth, parseCalendarDate('2026-11-08')), false);
 });
 
 test('DST spring gap rejects or shifts explicitly', () => {

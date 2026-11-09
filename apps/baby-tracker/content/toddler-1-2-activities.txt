@@ -1,0 +1,302 @@
+# LUMI toddler 1–2 years — versioned editorial source
+# CheckedOn: 2026-11-08. Owner-reported content approval recorded separately.
+# Production builds read generated TypeScript revisions, not this Markdown.
+
+## toddler-shared-hello-choice — Pozdrav podle nás
+
+**Metadata:** `toddler-shared-hello-choice` · 12–23 měsíců · `relationship` / `rel.turn-taking` · `home` · moment.
+
+**Pomůcky:** žádné.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Nabídněte pozdrav hlasem nebo mávnutím. 2. Počkejte, zda dítě nabídne svůj způsob odpovědi. 3. Odpovězte jeho způsobem a pokračujte v běžném dni.
+**Nabídka řeči:** „Jak se dnes pozdravíme?“
+**Pozorování a konec:** Nežádejte dotek, oční kontakt ani opakování; odvrácení znamená konec.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-two-pages-together — Dvě stránky spolu
+
+**Metadata:** `toddler-two-pages-together` · 12–23 měsíců · `speech` / `speech.naming` · `home` · moment.
+
+**Pomůcky:** věkově vhodné pevné leporelo.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Nechte dítě vybrat obrázek na otevřené stránce. 2. Pojmenujte, co ho zaujalo, jednou krátkou větou. 3. Počkejte na gesto nebo zvuk a odpovězte.
+**Nabídka řeči:** „Vidím pejska. Čeho sis všiml/a ty?“
+**Pozorování a konec:** Nezkoušejte správná slova ani nebraňte otočení stránky.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-soft-ball-return — Míč k tobě a zpět
+
+**Metadata:** `toddler-soft-ball-return` · 12–23 měsíců · `movement` / `move.coordination` · `home` · moment.
+
+**Pomůcky:** velký měkký míč určený pro tento věk.
+**Připravenost:** `floorSit` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Posaďte se na bezpečnou podlahu v malé vzdálenosti. 2. Pomalu pošlete míč po zemi k dítěti. 3. Nechte je zvolit dotek, odsun nebo jen pozorování.
+**Nabídka řeči:** „Míč jede k tobě. Co s ním uděláš?“
+**Pozorování a konec:** Pouze při vlastním stabilním sedu; míč neházejte na tělo ani obličej.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-two-large-textures — Dva velké povrchy
+
+**Metadata:** `toddler-two-large-textures` · 12–23 měsíců · `senses` / `sense.texture` · `home` · moment.
+
+**Pomůcky:** dva velké nepoškozené kusy látky bez třásní a volných částí.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte látky před dítě na bezpečný podklad. 2. Nabídněte dotek rukou bez zakrývání obličeje. 3. Popište rozdíl, kterého si dítě všimlo.
+**Nabídka řeči:** „Tahle je hladká. Chceš sáhnout i na druhou?“
+**Pozorování a konec:** Nevkládat látku do úst ani kolem krku; při odmítání doteku přestat.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-follow-your-interest — Podíváme se na to spolu
+
+**Metadata:** `toddler-follow-your-interest` · 12–23 měsíců · `attention` / `attn.shared` · `home` · moment.
+
+**Pomůcky:** žádné.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Všimněte si, čemu dítě právě věnuje pozornost. 2. Připojte krátký komentář bez přerušení jeho činnosti. 3. Počkejte, kam svou pozornost přesune dál.
+**Nabídka řeči:** „Tohle tě zaujalo. Jsem tu s tebou.“
+**Pozorování a konec:** Nevynucujte ukazování nebo pohled; neodvádějte pozornost od potřebné péče.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-cup-in-and-out — Dovnitř a zase ven
+
+**Metadata:** `toddler-cup-in-and-out` · 12–23 měsíců · `spaceQuantity` / `space.in-out` · `home` · moment.
+
+**Pomůcky:** dva velké lehké vkládací kelímky určené pro daný věk.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte velký kelímek a menší, který se bezpečně vejde dovnitř. 2. Jednou ukažte vložení a vyjmutí. 3. Nechte dítě zkusit vlastní nápad.
+**Nabídka řeči:** „Teď je uvnitř. Kam ho dáš?“
+**Pozorování a konec:** Pouze celistvé pomůcky bez malých dílů; žádné nucené narovnávání ruky.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-palm-pause-rhythm — Dlaně a pauza
+
+**Metadata:** `toddler-palm-pause-rhythm` · 12–23 měsíců · `creationRhythm` / `create.rhythm` · `home` · moment.
+
+**Pomůcky:** žádné.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Jemně poklepejte vlastními dlaněmi na stehna. 2. Na chvíli se zastavte. 3. Odpovězte na zvuk nebo pohyb dítěte.
+**Nabídka řeči:** „Ťuk, ťuk… a teď chvíli ticho.“
+**Pozorování a konec:** Bez hlasitých úderů a vedení rukou dítěte; při únavě skončit.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-choose-two-clothes — Vybereme jeden kousek
+
+**Metadata:** `toddler-choose-two-clothes` · 12–23 měsíců · `autonomy` / `auto.choice` · `home` · moment.
+
+**Pomůcky:** dva bezpečné kusy oblečení bez dostupných šňůrek a volných částí.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Ukažte dvě reálně použitelné možnosti. 2. Přijměte pohled, gesto nebo jiný signál volby. 3. Zvolenou věc použijte s obvyklou pomocí.
+**Nabídka řeči:** „Chceš dnes tenhle, nebo tenhle?“
+**Pozorování a konec:** Není-li volba zřejmá, pomozte; nečekejte na správnou odpověď.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-shared-ball-turn — Teď ty, teď já
+
+**Metadata:** `toddler-shared-ball-turn` · 16–23 měsíců · `relationship` / `rel.turn-taking` · `home` · moment.
+
+**Pomůcky:** velký měkký míč vhodný pro věk.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Nabídněte krátkou společnou hru po zemi. 2. Pojmenujte svůj a dětský tah bez časomíry. 3. Když si chce dítě míč nechat, nabídněte pauzu.
+**Nabídka řeči:** „Teď ho máš ty. Můžu se přidat?“
+**Pozorování a konec:** Nevyžadovat půjčení nebo čekání přes odpor; hra není zkouška poslušnosti.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-words-for-two-things — Dvě známé věci
+
+**Metadata:** `toddler-words-for-two-things` · 16–23 měsíců · `speech` / `speech.naming` · `home` · moment.
+
+**Pomůcky:** dva velké bezpečné známé předměty.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Sledujte, po kterém předmětu dítě sáhne. 2. Popište jej a jeho běžné použití. 3. Rozviňte dětské gesto nebo zvuk vlastní krátkou větou.
+**Nabídka řeči:** „Máš hrnek. Hrnek bývá na pití.“
+**Pozorování a konec:** Nejde o test rozpoznávání; nepoužívat horký, skleněný nebo rozbitný předmět.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-own-way-to-toy — Moje cesta za hračkou
+
+**Metadata:** `toddler-own-way-to-toy` · 16–23 měsíců · `movement` / `move.self-directed` · `home` · moment.
+
+**Pomůcky:** jedna velká věkově vhodná hračka a volný rovný prostor.
+**Připravenost:** `floorMove` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Připravte krátkou cestu bez překážek a schodů. 2. Nechte dítě zvolit už osvojený způsob pohybu. 3. Přesuňte hračku jen tehdy, chce-li dítě pokračovat.
+**Nabídka řeči:** „Můžeš si pro ni dojít svým způsobem.“
+**Pozorování a konec:** Pohyb musí dítě zahajovat samo; nevyžadovat chůzi ani tahání za ruce.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-quiet-sound-source — Odkud přišel tichý zvuk
+
+**Metadata:** `toddler-quiet-sound-source` · 16–23 měsíců · `senses` / `sense.sound` · `quiet` · moment.
+
+**Pomůcky:** velká látka bez volných částí; případně jen ruce dospělého.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. V zorném poli tiše promněte látku nebo vlastní dlaně. 2. Přestaňte a počkejte na reakci. 3. Zopakujte jen při zájmu dítěte.
+**Nabídka řeči:** „Ten zvuk dělají moje ruce.“
+**Pozorování a konec:** Nezvukovat u ucha, nic neschovávat na obličej a nevyžadovat sluchovou odpověď.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-toy-under-cloth-edge — Hračka u kraje látky
+
+**Metadata:** `toddler-toy-under-cloth-edge` · 16–23 měsíců · `attention` / `attn.short-focus` · `home` · moment.
+
+**Pomůcky:** velká hračka a velká látka bez třásní.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte hračku tak, aby její část zůstala vidět. 2. Přikryjte jen její okraj a společně si změny všimněte. 3. Dovolte dítěti odkrýt nebo jen sledovat.
+**Nabídka řeči:** „Kousek je vidět. Co chceš udělat?“
+**Pozorování a konec:** Látka nikdy nepřikrývá dítě; při nezájmu hračku zpřístupnit bez zkoušení.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-empty-full-container — Prázdná a plná nádoba
+
+**Metadata:** `toddler-empty-full-container` · 16–23 měsíců · `spaceQuantity` / `space.more-less` · `home` · moment.
+
+**Pomůcky:** dvě nízké lehké nádoby a několik velkých věkově vhodných kostek.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Ukažte prázdnou nádobu a druhou s kostkami. 2. Nabídněte přesouvání jednotlivých velkých kostek. 3. Popisujte, co se právě mění.
+**Nabídka řeči:** „Tady už něco je. Tady zatím nic.“
+**Pozorování a konec:** Žádné sypké drobnosti, jídlo, voda nebo nádoba nasaditelná na hlavu.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-first-large-mark — Velká čára
+
+**Metadata:** `toddler-first-large-mark` · 16–23 měsíců · `creationRhythm` / `create.drawing` · `home` · moment.
+
+**Pomůcky:** velký papír a nepoškozená věkově vhodná silná pastelka bez oddělitelného víčka.
+**Připravenost:** `safeMarkMaking` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Připravte papír na stabilní pracovní plochu. 2. Nabídněte pastelku a přijměte libovolnou stopu. 3. Pojmenujte pohyb bez hodnocení výsledku.
+**Nabídka řeči:** „Tvoje ruka udělala stopu.“
+**Pozorování a konec:** Pouze při potvrzeném bezpečném zacházení s kreslicí pomůckou a přímém dohledu; při vkládání do úst přestat.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-toy-home-basket — Hračka má svoje místo
+
+**Metadata:** `toddler-toy-home-basket` · 16–23 měsíců · `autonomy` / `auto.routine` · `home` · moment.
+
+**Pomůcky:** jedna hračka a nízký otevřený košík bez výpletu uvolňujícího části.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Ukažte jedno dostupné místo pro hračku. 2. Nabídněte společné odložení. 3. Pomozte nebo úkon dokončete, pokud dítě nechce.
+**Nabídka řeči:** „Tady může hračka odpočívat. Pomůžu ti.“
+**Pozorování a konec:** Neuklízet dítěti hru za trest ani nepodmiňovat péči splněním úkolu.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-plush-needs-pause — Plyšák potřebuje pauzu
+
+**Metadata:** `toddler-plush-needs-pause` · 20–23 měsíců · `relationship` / `rel.comfort` · `home` · moment.
+
+**Pomůcky:** velký věkově vhodný plyšák bez drobných částí.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Zahrajte krátký příběh, že plyšák chce být chvíli v klidu. 2. Nabídněte dítěti volbu, zda mu uděláte prostor. 3. Přijměte jiný dětský nápad.
+**Nabídka řeči:** „Možná chce pauzu. Co mu nabídneme?“
+**Pozorování a konec:** Nedovozovat z odpovědi emoce či diagnózu dítěte; nevyžadovat objímání.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-familiar-story-pause — Pauza ve známém příběhu
+
+**Metadata:** `toddler-familiar-story-pause` · 20–23 měsíců · `speech` / `speech.listening` · `home` · moment.
+
+**Pomůcky:** známé leporelo nebo vlastní krátká říkanka.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Přečtěte či řekněte krátkou známou část. 2. Udělejte přirozenou pauzu. 3. Přijměte slovo, zvuk, gesto i ticho a dokončete příběh.
+**Nabídka řeči:** „A potom… můžeme pokračovat spolu.“
+**Pozorování a konec:** Nečekat na povinné doplnění ani neopravovat výslovnost.
+**Princip k redakčnímu posouzení:** [S02](activity-catalog.md#s02), [S04](activity-catalog.md#s04); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-slow-motion-statues — Pomalý pohyb a zastavení
+
+**Metadata:** `toddler-slow-motion-statues` · 20–23 měsíců · `movement` / `move.self-directed` · `home` · moment.
+
+**Pomůcky:** žádné; volná rovná plocha.
+**Připravenost:** `floorMove` = výslovně potvrzeno; neznámé se nepřijímá.
+**Postup:** 1. Pohybujte se pomalu osvojeným způsobem vedle dítěte. 2. Zastavte se a nabídněte, zda chce také pauzu. 3. Pokračujte podle jeho volby.
+**Nabídka řeči:** „Já teď stojím. Ty si vyber svůj pohyb.“
+**Pozorování a konec:** Žádné rychlé povely, běh, zavírání očí nebo závod; respektovat rovnováhu a únavu.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-large-paper-surfaces — Papír pokaždé jinak
+
+**Metadata:** `toddler-large-paper-surfaces` · 20–23 měsíců · `senses` / `sense.texture` · `home` · moment.
+
+**Pomůcky:** velké nepoškozené listy hladkého a pevného zvlněného papíru bez sponek.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte oba povrchy vedle sebe. 2. Nabídněte přejetí rukou nebo sledování pohybu papíru. 3. Popište rozdíl, který dítě samo zaujme.
+**Nabídka řeči:** „Tenhle šustí jinak. Chceš pokračovat?“
+**Pozorování a konec:** Při trhání a vkládání do úst skončit a odstranit útržky; žádné sáčky.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S06](activity-catalog.md#s06); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-find-same-big-picture — Dva stejné velké obrázky
+
+**Metadata:** `toddler-find-same-big-picture` · 20–23 měsíců · `attention` / `attn.shared` · `home` · moment.
+
+**Pomůcky:** dva páry velkých pevných bezpečných obrázků.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Ukažte jeden obrázek a dvě možné dvojice. 2. Nabídněte společné hledání podobnosti. 3. Přijměte i vlastní spojení dítěte.
+**Nabídka řeči:** „Tyhle dva ti něco připomínají?“
+**Pozorování a konec:** Nehodnotit rychlost nebo chyby; při frustraci snížit výběr či skončit.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01), [S02](activity-catalog.md#s02); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-big-small-cloth — Velký a menší kus
+
+**Metadata:** `toddler-big-small-cloth` · 20–23 měsíců · `spaceQuantity` / `space.compare-size` · `home` · moment.
+
+**Pomůcky:** dva velké kusy oblečení bez šňůrek, oba bezpečně větší než drobná součást.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Položte oba kusy vedle sebe. 2. Nabídněte jejich přiložení nebo přesunutí. 3. Popište konkrétní rozdíl bez zkoušení názvů.
+**Nabídka řeči:** „Tenhle zabere víc místa.“
+**Pozorování a konec:** Nic neomotávat kolem krku ani nenutit oblékání; pomůcky musí zůstat bezpečné.
+**Princip k redakčnímu posouzení:** [S05](activity-catalog.md#s05); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-your-sound-my-answer — Tvůj zvuk, moje odpověď
+
+**Metadata:** `toddler-your-sound-my-answer` · 20–23 měsíců · `creationRhythm` / `create.rhythm` · `home` · moment.
+
+**Pomůcky:** žádné.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Počkejte na vlastní zvuk nebo rytmický pohyb dítěte. 2. Krátce jej napodobte v klidné hlasitosti. 3. Nechte dítě změnit motiv nebo přestat.
+**Nabídka řeči:** „Slyším tvůj rytmus. Můžu odpovědět?“
+**Pozorování a konec:** Bez hudebního testu a hlasitých úderů; nevynucovat opakování.
+**Princip k redakčnímu posouzení:** [S01](activity-catalog.md#s01); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## toddler-choose-help-signal — Jak si řekneme o pomoc
+
+**Metadata:** `toddler-choose-help-signal` · 20–23 měsíců · `autonomy` / `auto.help-choice` · `home` · moment.
+
+**Pomůcky:** žádné; běžná bezpečná činnost.
+**Připravenost:** Společné bezpečnostní podmínky a dobrovolný zájem; bez dalšího povinného dovednostního potvrzení.
+**Postup:** 1. Při drobné obtíži nabídněte dostupnou pomoc. 2. Ukažte, že stačí gesto, pohled či slovo. 3. Pomozte bez zdržování a dovolte dítěti pokračovat.
+**Nabídka řeči:** „Jsem tady. Můžeš mi ukázat, s čím pomoci.“
+**Pozorování a konec:** Potřebnou pomoc nikdy neodpírat do vyslovení určitého slova.
+**Princip k redakčnímu posouzení:** [S03](activity-catalog.md#s03); zdroj nedokládá schválení této konkrétní činnosti ani jejích věkových mezí.
+
+## Source principles
+
+### S01
+
+[NAEYC — Play](https://www.naeyc.org/resources/topics/play): hra může propojit více oblastí učení v raném dětství. Podporuje rámec dobrovolné hry, nikoli záruku přínosu konkrétní naší položky.
+
+### S02
+
+[Harvard Center on the Developing Child — Serve and Return](https://developingchild.harvard.edu/key-concept/serve-and-return/): citlivá odpověď dospělého na iniciativu dítěte. Nevyžaduje, aby dítě odpovídalo jedním předepsaným způsobem.
+
+### S03
+
+[UNICEF — Learning activities for babies and toddlers](https://www.unicef.org/parenting/child-care/21-learning-activities-babies-and-toddlers): příležitosti k učení v běžném společném dni. Naše seznamy nejsou reprodukcí tohoto článku ani převzetím všech jeho pomůcek.
+
+### S04
+
+[NAEYC — Everyday Steps to Reading and Writing](https://www.naeyc.org/our-work/families/everyday-steps-reading-and-writing): význam čtení, vyprávění a smysluplného používání jazyka doma. Nejde o povinný termín samostatného čtení.
+
+### S05
+
+[NAEYC — Articles for Families on Math](https://www.naeyc.org/our-work/families/math): množství, třídění, prostor a měření v běžném prostředí. Není důkazem, že náš věkový filtr vyhovuje konkrétnímu dítěti.
+
+### S06
+
+[Royal Children's Hospital — Toy safety](https://www.rch.org.au/kidsinfo/fact_sheets/Toy_safety/): bezpečnost a věkové určení pomůcek. Slouží jako podklad pro kontrolu rizik; nenahrazuje posouzení každého materiálu a situace.
+
+### S07
+
+[EEF — Metacognition and self-regulation](https://educationendowmentfoundation.org.uk/education-evidence/teaching-learning-toolkit/metacognition-and-self-Regulation): plánování, průběžná úprava a reflexe v konkrétní činnosti. Školní důkazy nepřenášet jako měřený účinek na batolata nebo na naši aplikaci.
+
+## Předání po obsahovém potvrzení
+
+Stav všech 72 podkladů je OWNER_REPORTED_APPROVED k 2026-11-08 podle [evidence](review-approval.md). Při implementaci vytvořit skutečné revision ID a mapování na toto přesné znění. Ukázková osoba, AI rozbor ani odkaz toto potvrzení nenahrazují. Významová změna vyžaduje nové posouzení; testy budoucího UI a offline balení zbývají. Uvolnit lze jednotlivou technicky a produktově ověřenou věkovou sadu, bez čekání na společné vydání všech tří.
+

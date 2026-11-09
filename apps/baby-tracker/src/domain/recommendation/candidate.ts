@@ -13,7 +13,8 @@ export type ReadinessKeyLike =
   | 'rollAttempt'
   | 'floorSit'
   | 'floorMove'
-  | 'gesture';
+  | 'gesture'
+  | 'safeMarkMaking';
 
 export type SuitabilityConditionLike =
   | {
@@ -41,6 +42,8 @@ export type RecommendableCandidate = {
   materials: string[];
   duration: ContentDurationLike;
   suitability: SuitabilityConditionLike[];
+  /** Related motif family — null when the activity stands alone. */
+  activityFamilyId?: string | null;
   /** False for drafts, withdrawn items, and unlabeled development fixtures. */
   recommendable: boolean;
 };
