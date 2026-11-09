@@ -37,6 +37,7 @@ export {
   evaluateFamilyReleaseGate,
 } from './ops/familyReleaseGate.ts';
 export { loadFamilyReleaseGateFromDeploy } from './ops/loadFamilyReleaseGate.ts';
+export { runFamilySecurityMatrix } from './ops/familySecurityMatrix.ts';
 
 export {
   MemorySyncStore,
