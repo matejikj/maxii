@@ -6,6 +6,7 @@ import type { ChildProfile } from '../entities/childProfile';
 import type { Draft } from '../entities/draft';
 import type { DeletionMarker, OperationReceipt, Revision } from '../entities/revision';
 import type { ChildId, EntityId, OperationId, RevisionId } from '../ids';
+import type { ProjectRepository } from '../projects/ports';
 import type { TimelineCursor } from '../projections/historyQuery';
 
 /**
@@ -25,6 +26,11 @@ export type UnitOfWork = {
    * Sealed JPEG bytes stay in the private blob store; this repo only keeps links.
    */
   attachments: AttachmentRepository;
+  /**
+   * Local project rows (familyGuided today; childPrivate stays gated). Cleared
+   * with diary replace/wipe so projects never survive a full personal erase.
+   */
+  projects: ProjectRepository;
   /** Personal replace/export helpers stay inside the same private DB boundary. */
   diary: DiarySnapshotRepository;
 };

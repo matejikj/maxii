@@ -10,7 +10,7 @@ import Dexie, { type EntityTable } from 'dexie';
  */
 export const WEB_DIARY_DATABASE_NAME = 'lumi-web-diary';
 export const WEB_APP_CACHE_DATABASE_NAME = 'lumi-web-app-cache';
-export const WEB_SCHEMA_VERSION = 5;
+export const WEB_SCHEMA_VERSION = 6;
 
 export type WebChildProfileRow = {
   childId: string;
@@ -134,6 +134,19 @@ export type WebPhotoAttachmentJobRow = {
   payloadJson: string;
 };
 
+export type WebProjectRow = {
+  projectId: string;
+  childId: string;
+  scope: string;
+  status: string;
+  ownerAppUserId: string | null;
+  creatorAppUserId: string | null;
+  familyId: string | null;
+  templateRevisionId: string | null;
+  updatedAtMs: number;
+  payloadJson: string;
+};
+
 export class LumiWebDatabase extends Dexie {
   childProfiles!: EntityTable<WebChildProfileRow, 'childId'>;
   careEvents!: EntityTable<WebCareEventRow, 'eventId'>;
@@ -147,6 +160,7 @@ export class LumiWebDatabase extends Dexie {
   searchDocuments!: EntityTable<WebSearchDocumentRow, 'entityId'>;
   photoAttachments!: EntityTable<WebPhotoAttachmentRow, 'attachmentId'>;
   photoAttachmentJobs!: EntityTable<WebPhotoAttachmentJobRow, 'jobId'>;
+  projects!: EntityTable<WebProjectRow, 'projectId'>;
 
   constructor(databaseName = WEB_DIARY_DATABASE_NAME) {
     super(databaseName);
@@ -199,6 +213,20 @@ export class LumiWebDatabase extends Dexie {
         // Rebuildable index — empty until care saves or an explicit rebuild.
         await tx.table('searchDocuments').clear();
       });
+    this.version(5).stores({
+      childProfiles: 'childId',
+      careEvents: 'eventId, childId, sortAtMs, eventType',
+      sessions: 'sessionId, [childId+kind], status',
+      drafts: 'draftId, childId, updatedAtMs',
+      revisions: 'revisionId, entityId, operationId',
+      operationReceipts: 'operationId',
+      deletionMarkers: 'deletionId, entityId, retainUntilMs',
+      meta: 'key',
+      changeNotifications: '++seq, publishedAtMs, dataVersion',
+      searchDocuments: 'entityId, childId, sortAtMs, textNormalized',
+      photoAttachments: 'attachmentId, childId, eventId, orderIndex, createdAtMs',
+      photoAttachmentJobs: 'jobId, attachmentId, eventId, updatedAtMs',
+    });
     this.version(WEB_SCHEMA_VERSION).stores({
       childProfiles: 'childId',
       careEvents: 'eventId, childId, sortAtMs, eventType',
@@ -212,6 +240,7 @@ export class LumiWebDatabase extends Dexie {
       searchDocuments: 'entityId, childId, sortAtMs, textNormalized',
       photoAttachments: 'attachmentId, childId, eventId, orderIndex, createdAtMs',
       photoAttachmentJobs: 'jobId, attachmentId, eventId, updatedAtMs',
+      projects: 'projectId, childId, scope, status, updatedAtMs',
     });
   }
 }

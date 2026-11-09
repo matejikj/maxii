@@ -9,7 +9,7 @@ import { careSortAtMs } from '../projections/careTime';
 export const DIARY_ARCHIVE_FORMAT = 'lumi.diary-archive.v1' as const;
 
 /** Archives above this schema id need a newer app; older ids remain readable. */
-export const DIARY_ARCHIVE_MAX_COMPAT = 5;
+export const DIARY_ARCHIVE_MAX_COMPAT = 6;
 
 export type DiaryArchiveManifest = {
   createdAtMs: number;

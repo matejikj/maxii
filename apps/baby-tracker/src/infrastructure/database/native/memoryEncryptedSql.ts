@@ -441,6 +441,32 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM photo_attachment_jobs/i.test(sql)) {
     return [...ensureTable(state, 'photo_attachment_jobs').rows];
   }
+  const projectsByChild =
+    /^SELECT .+ FROM projects WHERE child_id = \? ORDER BY updated_at_ms DESC(?:, project_id DESC)?$/i.exec(
+      sql,
+    );
+  if (projectsByChild) {
+    return ensureTable(state, 'projects')
+      .rows.filter((row) => row.child_id === params[0])
+      .slice()
+      .sort((a, b) => {
+        const updated = Number(b.updated_at_ms) - Number(a.updated_at_ms);
+        if (updated !== 0) return updated;
+        return String(b.project_id).localeCompare(String(a.project_id));
+      });
+  }
+  if (/^SELECT project_id FROM projects WHERE child_id = \?$/i.test(sql)) {
+    return ensureTable(state, 'projects').rows.filter((row) => row.child_id === params[0]);
+  }
+  if (/FROM projects/i.test(sql)) {
+    return [...ensureTable(state, 'projects').rows]
+      .slice()
+      .sort((a, b) => {
+        const updated = Number(b.updated_at_ms) - Number(a.updated_at_ms);
+        if (updated !== 0) return updated;
+        return String(b.project_id).localeCompare(String(a.project_id));
+      });
+  }
   return [];
 }
 

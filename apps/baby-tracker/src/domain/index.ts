@@ -274,3 +274,4 @@ export {
   type ChildContextBinding,
   type DiaryExportScope,
 } from './multiChild/workspace';
+export * from './projects';

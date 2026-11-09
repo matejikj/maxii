@@ -7,6 +7,7 @@ import type { ActivityRevision } from '../../content';
 import { DEVELOPMENT_AREA_LABELS_CS } from '../../content';
 import { PRODUCT_COPY } from '../ui';
 import { ActivityDetailScreen } from './ActivityDetailScreen';
+import { FamilyProjectsSection } from './FamilyProjectsSection';
 import { useDevelopmentModel, type SituationFilters } from './useDevelopmentModel';
 
 type DevelopmentScreenProps = {
@@ -201,6 +202,8 @@ export function DevelopmentScreen({ onOpenEvent }: DevelopmentScreenProps) {
             ))
           )}
         </LumiCard>
+
+        {model.childId ? <FamilyProjectsSection childId={model.childId} /> : null}
 
         {model.error ? <LumiText tone="muted">{model.error}</LumiText> : null}
         {model.busy ? <LumiText tone="muted">Načítám…</LumiText> : null}

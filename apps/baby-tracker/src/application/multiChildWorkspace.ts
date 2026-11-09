@@ -177,7 +177,7 @@ export async function captureScopedDiaryArchive(input: {
   const full = await input.unitOfWork.run((uow) =>
     uow.diary.capture({
       createdAtMs: input.nowMs,
-      schemaCompatibility: input.schemaCompatibility ?? 5,
+      schemaCompatibility: input.schemaCompatibility ?? 6,
     }),
   );
   return filterDiaryArchiveByScope(full, input.scope);
@@ -195,7 +195,7 @@ export async function wipeSingleChildDiaryScope(input: {
   return input.unitOfWork.run(async (uow) => {
     const full = await uow.diary.capture({
       createdAtMs: input.nowMs,
-      schemaCompatibility: 5,
+      schemaCompatibility: 6,
     });
     const remainingProfiles = full.profiles
       .map(normalizeChildProfile)
@@ -212,6 +212,10 @@ export async function wipeSingleChildDiaryScope(input: {
       });
     }
     const keepIds = new Set(remainingProfiles.map((profile) => profile.childId));
+    // Diary replace clears the projects table; keep siblings' projects to re-save.
+    const keptProjects = (await uow.projects.listAll()).filter((project) =>
+      keepIds.has(project.childId),
+    );
     const careEvents = full.careEvents.filter((event) => keepIds.has(event.childId));
     const sessions = full.sessions.filter((session) => keepIds.has(session.childId));
     const drafts = full.drafts.filter((draft) => keepIds.has(draft.childId));
@@ -237,7 +241,7 @@ export async function wipeSingleChildDiaryScope(input: {
     ];
     const nextArchive = createDiaryArchive({
       createdAtMs: input.nowMs,
-      schemaCompatibility: 5,
+      schemaCompatibility: 6,
       profiles: remainingProfiles,
       careEvents,
       sessions,
@@ -248,6 +252,9 @@ export async function wipeSingleChildDiaryScope(input: {
       meta,
     });
     await uow.diary.replace(nextArchive);
+    for (const project of keptProjects) {
+      await uow.projects.save(project);
+    }
     for (const profile of remainingProfiles) {
       await uow.search.rebuildForChild(profile.childId);
     }

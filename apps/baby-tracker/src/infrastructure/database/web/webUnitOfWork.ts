@@ -30,6 +30,7 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
+import type { Project, ProjectRepository } from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
 import {
   compareCareTimelineDesc,
@@ -114,6 +115,7 @@ export function createWebUnitOfWorkFactory(
             runtime.db.searchDocuments,
             runtime.db.photoAttachments,
             runtime.db.photoAttachmentJobs,
+            runtime.db.projects,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
@@ -565,6 +567,50 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
   };
 
+  const projects: ProjectRepository = {
+    async getById(projectId) {
+      const row = await db.projects.get(projectId);
+      return row ? (JSON.parse(row.payloadJson) as Project) : null;
+    },
+    async save(project) {
+      await db.projects.put({
+        projectId: project.projectId,
+        childId: project.childId,
+        scope: project.scope,
+        status: project.status,
+        ownerAppUserId: project.ownerAppUserId,
+        creatorAppUserId: project.creatorAppUserId,
+        familyId: project.familyId,
+        templateRevisionId: project.templateRevisionId,
+        updatedAtMs: project.updatedAt.epochMs,
+        payloadJson: JSON.stringify(project),
+      });
+      topics.add('projects');
+    },
+    async delete(projectId) {
+      await db.projects.delete(projectId);
+      topics.add('projects');
+    },
+    async listByChild(childId) {
+      const rows = await db.projects.where('childId').equals(childId).reverse().sortBy('updatedAtMs');
+      return rows.map((row) => JSON.parse(row.payloadJson) as Project);
+    },
+    async listAll() {
+      const rows = await db.projects.orderBy('updatedAtMs').reverse().toArray();
+      return rows.map((row) => JSON.parse(row.payloadJson) as Project);
+    },
+    async deleteByChild(childId) {
+      const rows = await db.projects.where('childId').equals(childId).toArray();
+      await db.projects.where('childId').equals(childId).delete();
+      if (rows.length > 0) topics.add('projects');
+      return rows.length;
+    },
+    async clearAll() {
+      await db.projects.clear();
+      topics.add('projects');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -601,6 +647,7 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.deletionMarkers.clear();
       await db.photoAttachmentJobs.clear();
       await db.photoAttachments.clear();
+      await db.projects.clear();
       await db.childProfiles.clear();
       await db.meta.clear();
       for (const profile of archive.profiles) {
@@ -633,10 +680,11 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       topics.add('revisions');
       topics.add('profile');
       topics.add('attachments');
+      topics.add('projects');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, diary };
+  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, projects, diary };
 }
 
 async function listWebCarePage(

@@ -64,6 +64,12 @@ export {
   PRODUCT_PUBLISHED_REVISIONS,
   PRODUCT_SUPPORTED_AGE_MONTHS,
 } from './catalog/productPublished';
+export {
+  PROJECT_TEMPLATES_CONTENT_VERSION,
+  PROJECT_TEMPLATES_PUBLISHED,
+  findProjectTemplateRevision,
+  listProjectTemplatesByCohort,
+} from './catalog/projectTemplatesPublished';
 export * from './pack';
 export {
   FIRST_YEAR_DRAFT_CONTENT_VERSION,

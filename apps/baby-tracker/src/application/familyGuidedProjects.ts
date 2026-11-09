@@ -1,0 +1,219 @@
+import {
+  AppError,
+  asEntityId,
+  asRevisionId,
+  assertProjectAccess,
+  createFamilyGuidedProject,
+  describeScopeForCaregiver,
+  isChildPrivateModeActive,
+  listTodayActiveProjects,
+  markProjectStep,
+  transitionProjectStatus,
+  updateProjectReflection,
+  type ActorId,
+  type ChildId,
+  type EntityId,
+  type IdGenerator,
+  type Instant,
+  type Project,
+  type ProjectStatus,
+  type ProjectStep,
+  type ProjectTemplateRevision,
+  type ProjectTemplateRevisionId,
+  type UnitOfWorkFactory,
+} from '../domain';
+import {
+  findProjectTemplateRevision,
+  PROJECT_TEMPLATES_PUBLISHED,
+} from '../content/catalog/projectTemplatesPublished';
+
+export type FamilyGuidedProjectView = {
+  project: Project;
+  scopeLabel: string;
+  templateTitle: string | null;
+};
+
+function caregiverAccess(project: Project, principalAppUserId: ActorId | null) {
+  const namedOwner =
+    principalAppUserId != null &&
+    (project.creatorAppUserId === principalAppUserId ||
+      project.ownerAppUserId === principalAppUserId);
+  // Personal mode has no login — unowned familyGuided rows stay editable locally.
+  const personalLocalOwner =
+    project.scope === 'familyGuided' &&
+    project.creatorAppUserId == null &&
+    project.ownerAppUserId == null;
+  return {
+    principalKind: (namedOwner || personalLocalOwner
+      ? 'owner'
+      : 'other_adult_caregiver') as const,
+    principalAppUserId,
+    childPrivateModeActive: isChildPrivateModeActive(),
+    project,
+  };
+}
+
+function toView(project: Project): FamilyGuidedProjectView {
+  const template = project.templateRevisionId
+    ? findProjectTemplateRevision(project.templateRevisionId)
+    : null;
+  return {
+    project,
+    scopeLabel: describeScopeForCaregiver(project.scope),
+    templateTitle: template?.title ?? null,
+  };
+}
+
+/** Published templates available offline for caregiver-led shared projects. */
+export function listFamilyGuidedTemplates(): ProjectTemplateRevision[] {
+  return [...PROJECT_TEMPLATES_PUBLISHED];
+}
+
+export async function listFamilyGuidedProjectsForChild(
+  unitOfWork: UnitOfWorkFactory,
+  input: { childId: ChildId; principalAppUserId?: ActorId | null },
+): Promise<FamilyGuidedProjectView[]> {
+  return unitOfWork.run(async (uow) => {
+    const rows = await uow.projects.listByChild(input.childId);
+    const views: FamilyGuidedProjectView[] = [];
+    for (const project of rows) {
+      if (project.scope !== 'familyGuided') continue;
+      assertProjectAccess('list', caregiverAccess(project, input.principalAppUserId ?? null));
+      views.push(toView(project));
+    }
+    return views;
+  });
+}
+
+export async function listTodayFamilyGuidedProjects(
+  unitOfWork: UnitOfWorkFactory,
+  input: { childId: ChildId; principalAppUserId?: ActorId | null },
+): Promise<FamilyGuidedProjectView[]> {
+  const all = await listFamilyGuidedProjectsForChild(unitOfWork, input);
+  return listTodayActiveProjects(all.map((view) => view.project)).map(toView);
+}
+
+export async function createFamilyGuidedProjectFromTemplate(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  childId: ChildId;
+  templateRevisionId: ProjectTemplateRevisionId | string;
+  creatorAppUserId?: ActorId | null;
+  familyId?: string | null;
+  title?: string;
+  intent?: string;
+}): Promise<FamilyGuidedProjectView> {
+  const template = findProjectTemplateRevision(String(input.templateRevisionId));
+  if (!template) {
+    throw new AppError('NOT_FOUND', 'Project template revision was not found', {
+      details: { reason: 'template_missing', revisionId: String(input.templateRevisionId) },
+    });
+  }
+
+  const project = createFamilyGuidedProject({
+    projectId: asEntityId(input.ids.createId('proj')),
+    revisionId: asRevisionId(input.ids.createId('rev')),
+    childId: input.childId,
+    creatorAppUserId: input.creatorAppUserId ?? null,
+    familyId: input.familyId ?? null,
+    template,
+    ...(input.title != null ? { title: input.title } : {}),
+    ...(input.intent != null ? { intent: input.intent } : {}),
+    now: input.now,
+    createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),
+  });
+
+  assertProjectAccess(
+    'create',
+    caregiverAccess(project, input.creatorAppUserId ?? null),
+  );
+
+  await input.unitOfWork.run(async (uow) => {
+    await uow.projects.save(project);
+  });
+  return toView(project);
+}
+
+export async function updateFamilyGuidedProjectStatus(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  projectId: EntityId;
+  nextStatus: ProjectStatus;
+  principalAppUserId?: ActorId | null;
+}): Promise<FamilyGuidedProjectView> {
+  return input.unitOfWork.run(async (uow) => {
+    const current = await uow.projects.getById(input.projectId);
+    if (!current || current.scope !== 'familyGuided') {
+      throw new AppError('NOT_FOUND', 'Family project was not found', {
+        details: { reason: 'project_missing' },
+      });
+    }
+    assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
+    const next = transitionProjectStatus(
+      current,
+      input.nextStatus,
+      asRevisionId(input.ids.createId('rev')),
+      input.now,
+    );
+    await uow.projects.save(next);
+    return toView(next);
+  });
+}
+
+export async function markFamilyGuidedProjectStep(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  projectId: EntityId;
+  stepId: EntityId;
+  status: ProjectStep['status'];
+  principalAppUserId?: ActorId | null;
+}): Promise<FamilyGuidedProjectView> {
+  return input.unitOfWork.run(async (uow) => {
+    const current = await uow.projects.getById(input.projectId);
+    if (!current || current.scope !== 'familyGuided') {
+      throw new AppError('NOT_FOUND', 'Family project was not found', {
+        details: { reason: 'project_missing' },
+      });
+    }
+    assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
+    const next = markProjectStep(
+      current,
+      input.stepId,
+      input.status,
+      asRevisionId(input.ids.createId('rev')),
+      input.now,
+    );
+    await uow.projects.save(next);
+    return toView(next);
+  });
+}
+
+export async function saveFamilyGuidedProjectReflection(input: {
+  unitOfWork: UnitOfWorkFactory;
+  ids: IdGenerator;
+  now: Instant;
+  projectId: EntityId;
+  reflection: string | null;
+  principalAppUserId?: ActorId | null;
+}): Promise<FamilyGuidedProjectView> {
+  return input.unitOfWork.run(async (uow) => {
+    const current = await uow.projects.getById(input.projectId);
+    if (!current || current.scope !== 'familyGuided') {
+      throw new AppError('NOT_FOUND', 'Family project was not found', {
+        details: { reason: 'project_missing' },
+      });
+    }
+    assertProjectAccess('update', caregiverAccess(current, input.principalAppUserId ?? null));
+    const next = updateProjectReflection(
+      current,
+      input.reflection,
+      asRevisionId(input.ids.createId('rev')),
+      input.now,
+    );
+    await uow.projects.save(next);
+    return toView(next);
+  });
+}

@@ -166,6 +166,7 @@ export const PRODUCT_COPY = {
     noFavorites: 'Zatím nemáte oblíbené aktivity.',
     noWeeklyGlance: 'Až přibudou zkušenosti, objeví se tu stručné ohlédnutí.',
     libraryEmpty: 'Filtr nic nenašel. Aktivity v místní knihovně zůstávají.',
+    noFamilyProjects: 'Zatím nemáte společný projekt. Vyberte šablonu a začněte spolu.',
   },
   development: {
     title: 'Rozvoj',
@@ -175,6 +176,14 @@ export const PRODUCT_COPY = {
     favorites: 'Oblíbené',
     weeklyGlance: 'Týdenní ohlédnutí',
     library: 'Procházet aktivity',
+    familyProjects: 'Společné projekty',
+    familyProjectsHint:
+      'Pro dítě bez vlastního účtu. Záznamy vidí pečující rodiny; nejde o soukromý dětský deník.',
+    startFamilyProject: 'Začít společný projekt',
+    pauseFamilyProject: 'Odložit',
+    closeFamilyProject: 'Uzavřít',
+    resumeFamilyProject: 'Pokračovat',
+    markStepTried: 'Vyzkoušeno',
     draftBadge: 'Návrh — zatím nevydáno',
     draftPreviewNote:
       'Pracovní náhled. Do denní nabídky vstupují jen vydané aktivity po odborné kontrole.',

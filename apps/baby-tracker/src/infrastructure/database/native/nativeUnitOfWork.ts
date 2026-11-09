@@ -30,8 +30,9 @@ import type {
   AttachmentRepository,
   PhotoAttachment,
 } from '../../../domain/attachments';
+import type { Project, ProjectRepository } from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
-import { SCHEMA_VERSION_5 } from './schema/v5';
+import { SCHEMA_VERSION_6 } from './schema/v6';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
@@ -574,6 +575,63 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
     },
   };
 
+  const projects: ProjectRepository = {
+    async getById(projectId) {
+      const row = await txn.getFirstAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM projects WHERE project_id = ?`,
+        projectId,
+      );
+      return row ? (JSON.parse(row.payload_json) as Project) : null;
+    },
+    async save(project) {
+      await txn.runAsync('DELETE FROM projects WHERE project_id = ?', project.projectId);
+      await txn.runAsync(
+        `INSERT INTO projects (project_id, child_id, scope, status, owner_app_user_id, creator_app_user_id, family_id, template_revision_id, updated_at_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        project.projectId,
+        project.childId,
+        project.scope,
+        project.status,
+        project.ownerAppUserId,
+        project.creatorAppUserId,
+        project.familyId,
+        project.templateRevisionId,
+        project.updatedAt.epochMs,
+        JSON.stringify(project),
+      );
+      topics.add('projects');
+    },
+    async delete(projectId) {
+      await txn.runAsync('DELETE FROM projects WHERE project_id = ?', projectId);
+      topics.add('projects');
+    },
+    async listByChild(childId) {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM projects WHERE child_id = ? ORDER BY updated_at_ms DESC, project_id DESC`,
+        childId,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as Project);
+    },
+    async listAll() {
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        `SELECT payload_json FROM projects ORDER BY updated_at_ms DESC, project_id DESC`,
+      );
+      return rows.map((row) => JSON.parse(row.payload_json) as Project);
+    },
+    async deleteByChild(childId) {
+      const rows = await txn.getAllAsync<{ project_id: string }>(
+        `SELECT project_id FROM projects WHERE child_id = ?`,
+        childId,
+      );
+      await txn.runAsync('DELETE FROM projects WHERE child_id = ?', childId);
+      if (rows.length > 0) topics.add('projects');
+      return rows.length;
+    },
+    async clearAll() {
+      await txn.runAsync('DELETE FROM projects');
+      topics.add('projects');
+    },
+  };
+
   const diary: DiarySnapshotRepository = {
     async capture(input) {
       const profilesList = await profiles.list();
@@ -589,7 +647,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return assembleDiaryArchive({
         createdAtMs: input.createdAtMs,
-        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_5,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_6,
         profiles: profilesList,
         careEvents,
         sessions: await sessions.listAll(),
@@ -610,6 +668,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM deletion_markers');
       await txn.runAsync('DELETE FROM photo_attachment_jobs');
       await txn.runAsync('DELETE FROM photo_attachments');
+      await txn.runAsync('DELETE FROM projects');
       await txn.runAsync('DELETE FROM child_profiles');
       await txn.runAsync('DELETE FROM app_meta');
       for (const profile of archive.profiles) {
@@ -642,10 +701,11 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       topics.add('revisions');
       topics.add('profile');
       topics.add('attachments');
+      topics.add('projects');
     },
   };
 
-  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, diary };
+  return { care, sessions, drafts, revisions, profiles, meta, search, attachments, projects, diary };
 }
 
 async function listCarePage(

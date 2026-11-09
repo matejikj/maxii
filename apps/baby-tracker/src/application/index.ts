@@ -155,5 +155,15 @@ export {
   wipeSingleChildDiaryScope,
   type MultiChildWorkspaceSnapshot,
 } from './multiChildWorkspace';
+export {
+  createFamilyGuidedProjectFromTemplate,
+  listFamilyGuidedProjectsForChild,
+  listFamilyGuidedTemplates,
+  listTodayFamilyGuidedProjects,
+  markFamilyGuidedProjectStep,
+  saveFamilyGuidedProjectReflection,
+  updateFamilyGuidedProjectStatus,
+  type FamilyGuidedProjectView,
+} from './familyGuidedProjects';
 
 
