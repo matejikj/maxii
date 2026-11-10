@@ -218,6 +218,7 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
         attachmentId: params.attachmentId,
         role: params.role,
         membership,
+        appUserId,
       });
       if (!read.ok) {
         const err = apiError(read.code, read.message, String(request.id));
@@ -246,6 +247,7 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
       attachmentId: params.attachmentId,
       membership,
       eraseGeneration: Number(body.eraseGeneration ?? 0),
+      appUserId,
     });
     if (!erased.ok) {
       const err = apiError(erased.code, erased.message, String(request.id));

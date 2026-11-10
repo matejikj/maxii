@@ -12,6 +12,7 @@ import {
   type FamilyRole,
 } from '@lumi/contracts';
 import type { AttachmentObjectStorePort } from './objectStore.ts';
+import type { AttachmentMetadataStorePort } from './postgresAttachmentMetadataStore.ts';
 import type { FamilyAttachmentQuotaLedger } from './quotaLedger.ts';
 
 export type AttachmentIntentRecord = {
@@ -52,10 +53,13 @@ type CreateIntentInput = {
 /**
  * Family photo upload/finalize/read/tombstone orchestration. Personal mode
  * never requires this service — local sealed blobs stay enough offline.
+ * Optional metadata store persists locators under tenant RLS; unset keeps the
+ * in-process map used by offline CI boots without Postgres.
  */
 export function createFamilyAttachmentService(input: {
   readonly objects: AttachmentObjectStorePort;
   readonly quota: FamilyAttachmentQuotaLedger;
+  readonly metadata?: AttachmentMetadataStorePort;
 }) {
   const intents = new Map<string, AttachmentIntentRecord>();
   const idempotency = new Map<string, string>();
@@ -69,6 +73,29 @@ export function createFamilyAttachmentService(input: {
 
   function recordedEraseGeneration(familyId: string, attachmentId: string): number | null {
     return erasures.get(erasureKey(familyId, attachmentId))?.eraseGeneration ?? null;
+  }
+
+  async function resolveEraseGeneration(inputErase: {
+    readonly familyId: string;
+    readonly attachmentId: string;
+    readonly appUserId: string;
+  }): Promise<number | null> {
+    const memory = recordedEraseGeneration(inputErase.familyId, inputErase.attachmentId);
+    if (!input.metadata) return memory;
+    try {
+      const row = await input.metadata.getAttachment({
+        appUserId: inputErase.appUserId as never,
+        familyId: inputErase.familyId as never,
+        attachmentId: inputErase.attachmentId,
+      });
+      const fromStore = row?.eraseGeneration ?? null;
+      if (fromStore == null) return memory;
+      if (memory == null) return fromStore;
+      return Math.max(memory, fromStore);
+    } catch {
+      // Missing tenant seed or pool blip must not invent a lower erase barrier.
+      return memory;
+    }
   }
 
   function authorize(
@@ -113,7 +140,11 @@ export function createFamilyAttachmentService(input: {
         return { ok: false, code: 'forbidden', message: 'Attachment upload is not allowed' };
       }
       const againstErasure = decideAttachmentMutationAgainstErasure({
-        recordedEraseGeneration: recordedEraseGeneration(create.familyId, create.attachmentId),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: create.familyId,
+          attachmentId: create.attachmentId,
+          appUserId: create.appUserId,
+        }),
         action: 'create_intent',
       });
       if (!againstErasure.allow) {
@@ -221,7 +252,11 @@ export function createFamilyAttachmentService(input: {
         return { ok: false, code: 'not_found', message: 'Upload intent was not found' };
       }
       const againstErasure = decideAttachmentMutationAgainstErasure({
-        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: intent.familyId,
+          attachmentId: intent.attachmentId,
+          appUserId: inputUpload.appUserId,
+        }),
         action: 'upload',
       });
       if (!againstErasure.allow) {
@@ -274,7 +309,11 @@ export function createFamilyAttachmentService(input: {
         return { ok: false, code: 'not_found', message: 'Upload intent was not found' };
       }
       const againstErasure = decideAttachmentMutationAgainstErasure({
-        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: intent.familyId,
+          attachmentId: intent.attachmentId,
+          appUserId: inputFinalize.appUserId,
+        }),
         action: 'finalize',
       });
       if (!againstErasure.allow) {
@@ -313,7 +352,11 @@ export function createFamilyAttachmentService(input: {
       }
       // Last check before publish — erasure during staging must not activate.
       const stillLive = decideAttachmentMutationAgainstErasure({
-        recordedEraseGeneration: recordedEraseGeneration(intent.familyId, intent.attachmentId),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: intent.familyId,
+          attachmentId: intent.attachmentId,
+          appUserId: inputFinalize.appUserId,
+        }),
         action: 'finalize',
       });
       if (!stillLive.allow) {
@@ -329,6 +372,36 @@ export function createFamilyAttachmentService(input: {
       const activated = await input.objects.activate(intent.objectKey);
       if (!activated) {
         return { ok: false, code: 'conflict', message: 'Staged object could not be activated' };
+      }
+      if (input.metadata) {
+        try {
+          await input.metadata.activateObject({
+            appUserId: inputFinalize.appUserId as never,
+            familyId: intent.familyId as never,
+            attachmentId: intent.attachmentId,
+            childId: intent.childId,
+            eventId: intent.eventId,
+            role: intent.role,
+            objectKey: intent.objectKey,
+            byteLength: intent.expectedBytes,
+            sha256: intent.expectedSha256,
+            nowMs: inputFinalize.nowMs,
+          });
+        } catch {
+          // Object store activated without a locator row — roll the blob back so
+          // readers cannot follow a half-published attachment.
+          await input.objects.tombstoneByAttachment({
+            familyId: intent.familyId,
+            attachmentId: intent.attachmentId,
+          });
+          await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
+          intents.delete(intent.intentId);
+          return {
+            ok: false,
+            code: 'conflict',
+            message: 'Attachment metadata could not be recorded',
+          };
+        }
       }
       await input.quota.commitReservation(intent.familyId, intent.expectedBytes);
       intent.finalized = true;
@@ -357,25 +430,40 @@ export function createFamilyAttachmentService(input: {
       readonly attachmentId: string;
       readonly role: AttachmentRenditionRole;
       readonly membership: AttachmentMembership;
+      readonly appUserId: string;
     }) {
       const gate = authorize(inputRead.membership, 'read');
       if (!gate.allow) {
         return { ok: false as const, code: 'forbidden' as const, message: 'Attachment read is not allowed' };
       }
       const againstErasure = decideAttachmentMutationAgainstErasure({
-        recordedEraseGeneration: recordedEraseGeneration(inputRead.familyId, inputRead.attachmentId),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: inputRead.familyId,
+          attachmentId: inputRead.attachmentId,
+          appUserId: inputRead.appUserId,
+        }),
         action: 'read',
       });
       if (!againstErasure.allow) {
         return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
       }
-      const meta = activatedKeys.get(
-        `${inputRead.familyId}:${inputRead.attachmentId}:${inputRead.role}`,
-      );
-      if (!meta) {
+      let objectKey =
+        activatedKeys.get(
+          `${inputRead.familyId}:${inputRead.attachmentId}:${inputRead.role}`,
+        )?.objectKey ?? null;
+      if (!objectKey && input.metadata) {
+        const durable = await input.metadata.getObject({
+          appUserId: inputRead.appUserId as never,
+          familyId: inputRead.familyId as never,
+          attachmentId: inputRead.attachmentId,
+          role: inputRead.role,
+        });
+        objectKey = durable?.objectKey ?? null;
+      }
+      if (!objectKey) {
         return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
       }
-      const object = await input.objects.readActivated(meta.objectKey);
+      const object = await input.objects.readActivated(objectKey);
       if (!object || object.familyId !== inputRead.familyId) {
         return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
       }
@@ -398,6 +486,7 @@ export function createFamilyAttachmentService(input: {
       readonly attachmentId: string;
       readonly membership: AttachmentMembership;
       readonly eraseGeneration: number;
+      readonly appUserId: string;
       readonly nowMs?: number;
     }) {
       const gate = authorize(inputTomb.membership, 'tombstone');
@@ -405,10 +494,11 @@ export function createFamilyAttachmentService(input: {
         return { ok: false as const, code: 'forbidden' as const, message: 'Attachment erase is not allowed' };
       }
       const planned = planAttachmentEraseGeneration({
-        recordedEraseGeneration: recordedEraseGeneration(
-          inputTomb.familyId,
-          inputTomb.attachmentId,
-        ),
+        recordedEraseGeneration: await resolveEraseGeneration({
+          familyId: inputTomb.familyId,
+          attachmentId: inputTomb.attachmentId,
+          appUserId: inputTomb.appUserId,
+        }),
         requestedEraseGeneration: inputTomb.eraseGeneration,
       });
       if (!planned.ok) {
@@ -422,10 +512,27 @@ export function createFamilyAttachmentService(input: {
         };
       }
       await cancelOpenIntentsForAttachment(inputTomb.familyId, inputTomb.attachmentId);
-      const removed = await input.objects.tombstoneByAttachment({
+      // Prefer durable locators so a fresh API process can still erase S3 bytes.
+      const durableKeys: string[] = [];
+      if (input.metadata) {
+        for (const role of ['display', 'thumbnail'] as const) {
+          const durable = await input.metadata.getObject({
+            appUserId: inputTomb.appUserId as never,
+            familyId: inputTomb.familyId as never,
+            attachmentId: inputTomb.attachmentId,
+            role,
+          });
+          if (durable) durableKeys.push(durable.objectKey);
+        }
+      }
+      let removed = await input.objects.tombstoneByAttachment({
         familyId: inputTomb.familyId,
         attachmentId: inputTomb.attachmentId,
       });
+      for (const objectKey of durableKeys) {
+        const purged = await input.objects.purgeActivated(objectKey);
+        if (purged) removed += 1;
+      }
       for (const role of ['display', 'thumbnail'] as const) {
         const key = `${inputTomb.familyId}:${inputTomb.attachmentId}:${role}`;
         const meta = activatedKeys.get(key);
@@ -434,9 +541,19 @@ export function createFamilyAttachmentService(input: {
           activatedKeys.delete(key);
         }
       }
+      const nowMs = inputTomb.nowMs ?? Date.now();
+      if (input.metadata) {
+        await input.metadata.tombstone({
+          appUserId: inputTomb.appUserId as never,
+          familyId: inputTomb.familyId as never,
+          attachmentId: inputTomb.attachmentId,
+          eraseGeneration: planned.eraseGeneration,
+          nowMs,
+        });
+      }
       erasures.set(erasureKey(inputTomb.familyId, inputTomb.attachmentId), {
         eraseGeneration: planned.eraseGeneration,
-        erasedAtMs: inputTomb.nowMs ?? Date.now(),
+        erasedAtMs: nowMs,
       });
       return { ok: true as const, removed, eraseGeneration: planned.eraseGeneration };
     },

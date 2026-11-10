@@ -20,6 +20,7 @@
     "attachment:http-s3-drill": "bash ./deploy/attachment-http-s3-drill.sh",
     "attachment:compose-drill": "bash ./deploy/attachment-compose-stack-drill.sh",
     "attachment:pg-meta-drill": "bash ./deploy/attachment-postgres-metadata-drill.sh",
+    "attachment:http-pg-meta-drill": "bash ./deploy/attachment-http-postgres-metadata-drill.sh",
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },

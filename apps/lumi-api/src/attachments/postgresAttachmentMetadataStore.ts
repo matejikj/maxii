@@ -21,11 +21,45 @@ export type FamilyAttachmentObjectRow = {
   readonly sha256: string;
 };
 
+/** Locator + erase rows only; JPEG bytes stay in the object store. */
+export type AttachmentMetadataStorePort = {
+  activateObject(input: {
+    readonly appUserId: AppUserId;
+    readonly familyId: FamilyId;
+    readonly attachmentId: string;
+    readonly childId: string;
+    readonly eventId: string;
+    readonly role: AttachmentRenditionRole;
+    readonly objectKey: string;
+    readonly byteLength: number;
+    readonly sha256: string;
+    readonly nowMs: number;
+  }): Promise<void>;
+  getObject(input: {
+    readonly appUserId: AppUserId;
+    readonly familyId: FamilyId;
+    readonly attachmentId: string;
+    readonly role: AttachmentRenditionRole;
+  }): Promise<FamilyAttachmentObjectRow | null>;
+  tombstone(input: {
+    readonly appUserId: AppUserId;
+    readonly familyId: FamilyId;
+    readonly attachmentId: string;
+    readonly eraseGeneration: number;
+    readonly nowMs: number;
+  }): Promise<{ removedObjects: number }>;
+  getAttachment(input: {
+    readonly appUserId: AppUserId;
+    readonly familyId: FamilyId;
+    readonly attachmentId: string;
+  }): Promise<FamilyAttachmentMetadataRow | null>;
+};
+
 /**
  * Durable attachment metadata under family RLS. Blob bytes stay in the object
  * store; personal boots never require this pool.
  */
-export function createPostgresAttachmentMetadataStore(pool: AppDbPool) {
+export function createPostgresAttachmentMetadataStore(pool: AppDbPool): AttachmentMetadataStorePort {
   return {
     async activateObject(input: {
       readonly appUserId: AppUserId;

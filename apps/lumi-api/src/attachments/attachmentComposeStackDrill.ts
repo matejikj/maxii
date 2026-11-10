@@ -10,6 +10,10 @@ import {
   runAttachmentHttpS3CompatibleDrill,
   type AttachmentHttpS3CompatibleDrillCase,
 } from './attachmentHttpS3CompatibleDrill.ts';
+import {
+  runAttachmentHttpPostgresMetadataDrill,
+  type AttachmentHttpPostgresMetadataDrillCase,
+} from './attachmentHttpPostgresMetadataDrill.ts';
 
 export type AttachmentComposeStackDrillCase = {
   readonly name: string;
@@ -29,7 +33,10 @@ export type AttachmentComposeStackDrillResult = {
 
 function mapCases(
   prefix: string,
-  rows: readonly FamilyComposeStackDrillCase[] | readonly AttachmentHttpS3CompatibleDrillCase[],
+  rows:
+    | readonly FamilyComposeStackDrillCase[]
+    | readonly AttachmentHttpS3CompatibleDrillCase[]
+    | readonly AttachmentHttpPostgresMetadataDrillCase[],
 ): AttachmentComposeStackDrillCase[] {
   return rows.map((row) => ({
     name: `${prefix}.${row.name}`,
@@ -114,6 +121,34 @@ export async function runAttachmentComposeStackDrill(input: {
     name: 'cloudflare_r2_not_claimed',
     ok: true,
     detail: 'Compose S3Mock is not Cloudflare R2; cloudflareR2Ready stays false',
+  });
+
+  if (!http.ok) {
+    return {
+      ok: false,
+      cloudflareR2Ready: false,
+      liveReady: false,
+      softwareReady: compose.softwareReady,
+      cases,
+    };
+  }
+
+  const httpPg = await runAttachmentHttpPostgresMetadataDrill({
+    databaseUrl: input.databaseUrl,
+    adminDatabaseUrl: input.adminDatabaseUrl,
+    endpoint: input.s3Endpoint,
+    ...(input.region ? { region: input.region } : {}),
+    bucket: input.bucket,
+    accessKeyId: input.accessKeyId,
+    secretAccessKey: input.secretAccessKey,
+  });
+  cases.push(...mapCases('http_pg_meta', httpPg.cases));
+  cases.push({
+    name: 'http_pg_meta_personal_cold',
+    ok: httpPg.personalColdUnaffected,
+    detail: httpPg.personalColdUnaffected
+      ? 'HTTP+Postgres metadata path leaves personal cold'
+      : 'personal cold affected',
   });
 
   return {

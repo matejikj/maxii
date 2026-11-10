@@ -375,6 +375,7 @@ test('tombstone cancels in-flight upload and blocks late finalize revival', asyn
     attachmentId: 'att_erase',
     membership: { active: true, role: 'admin' },
     eraseGeneration: 1,
+    appUserId: 'user_1',
     nowMs: 1_200,
   });
   assert.equal(erased.ok, true);
@@ -411,6 +412,7 @@ test('tombstone cancels in-flight upload and blocks late finalize revival', asyn
     attachmentId: 'att_erase',
     membership: { active: true, role: 'admin' },
     eraseGeneration: 1,
+    appUserId: 'user_1',
     nowMs: 1_500,
   });
   assert.equal(staleTomb.ok, false);

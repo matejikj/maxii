@@ -16,6 +16,23 @@ type MetaRecord = {
  * R2/S3-backed private attachment store. Staging and active namespaces keep
  * failed uploads from becoming readable family objects.
  */
+/** Object keys minted by the family attachment service. */
+export function parseFamilyAttachmentObjectKey(objectKey: string): {
+  readonly familyId: string;
+  readonly attachmentId: string;
+  readonly role: 'display' | 'thumbnail';
+} | null {
+  const parts = objectKey.split('/');
+  if (parts.length < 6) return null;
+  if (parts[0] !== 'fam' || parts[2] !== 'att') return null;
+  const role = parts[4];
+  if (role !== 'display' && role !== 'thumbnail') return null;
+  const familyId = parts[1];
+  const attachmentId = parts[3];
+  if (!familyId || !attachmentId) return null;
+  return { familyId, attachmentId, role };
+}
+
 export function createR2AttachmentObjectStore(input: {
   readonly client: S3CompatibleClient;
   /** Optional in-process meta for tests; production may replace with durable rows. */
@@ -69,21 +86,38 @@ export function createR2AttachmentObjectStore(input: {
 
     async readActivated(objectKey) {
       const row = meta.get(objectKey);
-      if (!row || !row.activated || row.erased) return null;
+      if (row?.erased) return null;
+      if (row && !row.activated) return null;
       const bytes = await input.client.getObject(activeKey(objectKey));
       if (!bytes) return null;
-      const stored: StoredAttachmentObject = {
+      if (row) {
+        return {
+          objectKey,
+          familyId: row.familyId,
+          attachmentId: row.attachmentId,
+          role: row.role,
+          bytes,
+          sha256: row.sha256,
+          contentType: 'image/jpeg' as const,
+          activated: true,
+          erased: false,
+        } satisfies StoredAttachmentObject;
+      }
+      // Another API process may have activated the object; durable metadata
+      // already authorized the opaque key, so reconstruct identity from it.
+      const parsed = parseFamilyAttachmentObjectKey(objectKey);
+      if (!parsed) return null;
+      return {
         objectKey,
-        familyId: row.familyId,
-        attachmentId: row.attachmentId,
-        role: row.role,
+        familyId: parsed.familyId,
+        attachmentId: parsed.attachmentId,
+        role: parsed.role,
         bytes,
-        sha256: row.sha256,
+        sha256: createHash('sha256').update(bytes).digest('hex'),
         contentType: 'image/jpeg',
         activated: true,
         erased: false,
       };
-      return stored;
     },
 
     async tombstoneByAttachment(request) {
@@ -109,7 +143,10 @@ export function createR2AttachmentObjectStore(input: {
 
     async purgeActivated(objectKey) {
       const row = meta.get(objectKey);
-      if (!row || !row.activated || row.erased) return false;
+      if (row?.erased) return false;
+      if (row && !row.activated) return false;
+      const active = await input.client.getObject(activeKey(objectKey));
+      if (!active && !row) return false;
       await input.client.deleteObject(activeKey(objectKey));
       await input.client.deleteObject(stagingKey(objectKey));
       meta.delete(objectKey);

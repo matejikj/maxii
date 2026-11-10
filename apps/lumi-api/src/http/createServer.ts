@@ -29,6 +29,7 @@ import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
 import { createFamilyAttachmentQuotaLedger } from '../attachments/quotaLedger.ts';
 import { createFamilyAttachmentService } from '../attachments/attachmentService.ts';
+import type { AttachmentMetadataStorePort } from '../attachments/postgresAttachmentMetadataStore.ts';
 import { resolveAttachmentObjectStore } from '../attachments/resolveAttachmentObjectStore.ts';
 import {
   classifyFamilyOpsPath,
@@ -50,10 +51,20 @@ export type CreatedApi = {
   readonly attachments: ReturnType<typeof createFamilyAttachmentService>;
   /** Which private attachment blob backend createFamilyApi selected. */
   readonly attachmentObjectProvider: 'memory' | 'r2';
+  /** Optional durable locator store; unset keeps personal/CI boots offline. */
+  readonly attachmentMetadataProvider: 'none' | 'postgres';
   readonly metrics: FamilyOpsMetrics;
 };
 
-export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
+export type CreateFamilyApiOptions = {
+  readonly attachmentMetadata?: AttachmentMetadataStorePort;
+  readonly attachmentMetadataProvider?: 'none' | 'postgres';
+};
+
+export async function createFamilyApi(
+  config: ApiConfig,
+  options: CreateFamilyApiOptions = {},
+): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
   const sync = new MemorySyncStore();
   const tokens = new AccessTokenVerifier(config, store);
@@ -62,9 +73,11 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
   const backups = createMemoryBackupRepository();
   const erasureRegistry = createMemoryErasureRegistry();
   const attachmentObjects = resolveAttachmentObjectStore(config);
+  const attachmentMetadata = options.attachmentMetadata;
   const attachments = createFamilyAttachmentService({
     objects: attachmentObjects.store,
     quota: createFamilyAttachmentQuotaLedger(),
+    ...(attachmentMetadata ? { metadata: attachmentMetadata } : {}),
   });
   const backupStatusByFamily = new Map<
     string,
@@ -353,6 +366,9 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     erasureRegistry,
     attachments,
     attachmentObjectProvider: attachmentObjects.provider,
+    attachmentMetadataProvider:
+      options.attachmentMetadataProvider ??
+      (attachmentMetadata ? 'postgres' : 'none'),
     metrics,
   };
 }

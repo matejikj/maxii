@@ -40,7 +40,10 @@ export {
   createPostgresAttachmentMetadataStore,
   createPostgresAttachmentMetadataStoreFromUrl,
 } from './attachments/postgresAttachmentMetadataStore.ts';
+export type { AttachmentMetadataStorePort } from './attachments/postgresAttachmentMetadataStore.ts';
 export { runAttachmentPostgresMetadataDrill } from './attachments/attachmentPostgresMetadataDrill.ts';
+export { runAttachmentHttpPostgresMetadataDrill } from './attachments/attachmentHttpPostgresMetadataDrill.ts';
+export { seedFamilyAttachmentTenant } from './attachments/seedFamilyAttachmentTenant.ts';
 export {
   emptyFamilyReleaseEvidence,
   evaluateFamilyReleaseGate,
