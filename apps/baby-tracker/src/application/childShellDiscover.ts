@@ -10,6 +10,7 @@ import {
   type EntityId,
   type IdGenerator,
   type Instant,
+  type OperationId,
   type ParentSuggestion,
   type Project,
   type ProjectTemplateRevision,
@@ -19,6 +20,11 @@ import {
   PROJECT_TEMPLATES_PUBLISHED,
   searchPublishedProjectTemplates,
 } from '../content/catalog/projectTemplatesPublished';
+import {
+  enqueueAfterChildPrivateProjectSave,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
 
 export type ChildShellDiscoverTemplateCard = {
   readonly revisionId: string;
@@ -130,6 +136,8 @@ export async function startChildShellProjectFromTemplate(input: {
   readonly ownerAppUserId: ActorId;
   readonly templateRevisionId: string;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<Project> {
   const active = input.childPrivateModeActive ?? isChildPrivateModeActive();
   if (!active) {
@@ -159,6 +167,15 @@ export async function startChildShellProjectFromTemplate(input: {
       childPrivateModeActive: true,
     });
     await uow.projects.save(project);
+    await enqueueAfterChildPrivateProjectSave({
+      syncEnqueue: input.syncEnqueue,
+      project,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_tpl_${project.projectId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return project;
   });
 }

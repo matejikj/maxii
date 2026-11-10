@@ -111,6 +111,8 @@ function BootstrappedApp() {
       databaseName: opened.databaseName,
       ...(opened.keyStore ? { keyStore: opened.keyStore } : {}),
       ...(opened.presence ? { presence: opened.presence } : {}),
+      ...(opened.webDb ? { webDb: opened.webDb } : {}),
+      childPrivateSyncStore: opened.childPrivateSyncStore,
       close: opened.close,
       deleteDurableStore: opened.deleteDurableStore,
     };

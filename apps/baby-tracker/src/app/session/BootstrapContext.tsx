@@ -68,6 +68,11 @@ export type PersonalRuntime = {
   bindPhotoTransferFamily: (familyId: string | null) => void;
   /** Periodic/manual photo transfer ticks against sealed local blobs. */
   photoTransferLoop: import('../../application/familyPhotoTransferLoop').FamilyPhotoTransferLoop;
+  /**
+   * Local child-private sync snapshot (outbox/inbox). Always present with the diary;
+   * network push/pull stays cold until a sync session is configured.
+   */
+  childPrivateSyncStore: import('../../domain/sync/childPrivateSyncStateStore').ChildPrivateSyncStateStore;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -86,6 +91,7 @@ export type OpenPersonalDiary = () => Promise<{
   close: () => Promise<void>;
   deleteDurableStore: () => Promise<void>;
   webDb?: import('../../infrastructure/database/web/lumiWebDatabase').LumiWebDatabase;
+  childPrivateSyncStore: import('../../domain/sync/childPrivateSyncStateStore').ChildPrivateSyncStateStore;
 }>;
 
 export type BootstrapContextValue = {
@@ -194,6 +200,7 @@ export function BootstrapProvider({
         bindPhotoTransferAuth: photoTransferBinding.bindAuthSession,
         bindPhotoTransferFamily: photoTransferBinding.bindActiveFamily,
         photoTransferLoop,
+        childPrivateSyncStore: opened.childPrivateSyncStore,
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,

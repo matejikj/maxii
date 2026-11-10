@@ -10,11 +10,17 @@ import {
   type EntityId,
   type IdGenerator,
   type Instant,
+  type OperationId,
   type Project,
   type ProjectStatus,
   type ProjectStep,
   type UnitOfWorkFactory,
 } from '../domain';
+import {
+  enqueueAfterChildPrivateProjectSave,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
 
 export type ChildShellProjectDetailView = {
   readonly projectId: string;
@@ -110,6 +116,8 @@ export async function continueChildShellProject(input: {
   readonly projectId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellProjectDetailView> {
   const active = input.childPrivateModeActive ?? false;
   requireActiveMode(active);
@@ -139,6 +147,15 @@ export async function continueChildShellProject(input: {
       );
     }
     await uow.projects.save(next);
+    await enqueueAfterChildPrivateProjectSave({
+      syncEnqueue: input.syncEnqueue,
+      project: next,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_continue_${next.projectId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return toDetailView(next);
   });
 }
@@ -150,6 +167,8 @@ export async function pauseChildShellProject(input: {
   readonly projectId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellProjectDetailView> {
   return mutateStatus(input, 'paused');
 }
@@ -161,6 +180,8 @@ export async function closeChildShellProject(input: {
   readonly projectId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellProjectDetailView> {
   return mutateStatus(input, 'closed');
 }
@@ -173,6 +194,8 @@ async function mutateStatus(
     readonly projectId: EntityId;
     readonly ownerAppUserId: ActorId;
     readonly childPrivateModeActive?: boolean;
+    readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+    readonly operationId?: OperationId;
   },
   nextStatus: Extract<ProjectStatus, 'paused' | 'closed'>,
 ): Promise<ChildShellProjectDetailView> {
@@ -190,6 +213,15 @@ async function mutateStatus(
       input.now,
     );
     await uow.projects.save(next);
+    await enqueueAfterChildPrivateProjectSave({
+      syncEnqueue: input.syncEnqueue,
+      project: next,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_${nextStatus}_${next.projectId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return toDetailView(next);
   });
 }
@@ -205,6 +237,8 @@ export async function saveChildShellProjectReflection(input: {
   readonly ownerAppUserId: ActorId;
   readonly reflection: string | null;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellProjectDetailView> {
   const active = input.childPrivateModeActive ?? false;
   requireActiveMode(active);
@@ -224,6 +258,15 @@ export async function saveChildShellProjectReflection(input: {
       input.now,
     );
     await uow.projects.save(next);
+    await enqueueAfterChildPrivateProjectSave({
+      syncEnqueue: input.syncEnqueue,
+      project: next,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_reflect_${next.projectId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return toDetailView(next);
   });
 }

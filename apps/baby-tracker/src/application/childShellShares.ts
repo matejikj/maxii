@@ -11,10 +11,17 @@ import {
   type EntityId,
   type IdGenerator,
   type Instant,
+  type OperationId,
   type PendingShareProposal,
   type ShareSnapshot,
   type UnitOfWorkFactory,
 } from '../domain';
+import {
+  enqueueAfterChildPrivateSharePublish,
+  enqueueAfterChildPrivateShareRevoke,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
 
 export type ChildShellShareCard = {
   readonly shareId: string;
@@ -72,6 +79,8 @@ export async function confirmAndPublishChildShellShare(input: {
   readonly childPrivateModeActive?: boolean;
   /** When true, simulates reconnect before confirm — must still refuse without confirm. */
   readonly networkBecameOnline?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ShareSnapshot> {
   const active = input.childPrivateModeActive ?? isChildPrivateModeActive();
   if (!active) {
@@ -113,6 +122,15 @@ export async function confirmAndPublishChildShellShare(input: {
       now: input.now,
     });
     await uow.shares.save(share);
+    await enqueueAfterChildPrivateSharePublish({
+      syncEnqueue: input.syncEnqueue,
+      share,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_share_${share.shareId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return share;
   });
 }
@@ -142,6 +160,8 @@ export async function revokeChildShellShare(input: {
   readonly shareId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ShareSnapshot> {
   const active = input.childPrivateModeActive ?? isChildPrivateModeActive();
   if (!active) {
@@ -163,6 +183,15 @@ export async function revokeChildShellShare(input: {
     }
     const revoked = revokeShareSnapshot(share, input.now);
     await uow.shares.save(revoked);
+    await enqueueAfterChildPrivateShareRevoke({
+      syncEnqueue: input.syncEnqueue,
+      share: revoked,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_revoke_${revoked.shareId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return revoked;
   });
 }

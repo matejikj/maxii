@@ -11,9 +11,15 @@ import {
   type EntityId,
   type IdGenerator,
   type Instant,
+  type OperationId,
   type PortfolioItem,
   type UnitOfWorkFactory,
 } from '../domain';
+import {
+  enqueueAfterChildPrivatePortfolioSave,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
 
 export type ChildShellPortfolioCard = {
   readonly portfolioItemId: string;
@@ -91,6 +97,8 @@ export async function addChildShellPortfolioSelection(input: {
   readonly title: string;
   readonly description?: string | null | undefined;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellPortfolioCard> {
   const active = input.childPrivateModeActive ?? false;
   requireActiveMode(active);
@@ -116,6 +124,15 @@ export async function addChildShellPortfolioSelection(input: {
       childPrivateModeActive: true,
     });
     await uow.portfolio.save(item);
+    await enqueueAfterChildPrivatePortfolioSave({
+      syncEnqueue: input.syncEnqueue,
+      item,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_port_${item.portfolioItemId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return toCard(item);
   });
 }
@@ -127,6 +144,9 @@ export async function renameChildShellPortfolioCard(input: {
   readonly title: string;
   readonly description?: string | null | undefined;
   readonly childPrivateModeActive?: boolean;
+  readonly now?: Instant;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<ChildShellPortfolioCard> {
   const active = input.childPrivateModeActive ?? false;
   requireActiveMode(active);
@@ -140,6 +160,16 @@ export async function renameChildShellPortfolioCard(input: {
       description: input.description,
     });
     await uow.portfolio.save(next);
+    const now = input.now ?? { epochMs: Date.now() };
+    await enqueueAfterChildPrivatePortfolioSave({
+      syncEnqueue: input.syncEnqueue,
+      item: next,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_port_rename_${next.portfolioItemId}_${now.epochMs}`,
+      ),
+      now,
+    });
     return toCard(next);
   });
 }
@@ -149,6 +179,8 @@ export async function moveChildShellPortfolioCardEarlier(input: {
   readonly portfolioItemId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive?: boolean;
+  readonly now?: Instant;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
 }): Promise<ChildShellPortfolioCard[]> {
   const active = input.childPrivateModeActive ?? false;
   requireActiveMode(active);
@@ -161,10 +193,20 @@ export async function moveChildShellPortfolioCardEarlier(input: {
       (item) => item.ownerAppUserId === input.ownerAppUserId,
     );
     const reordered = movePortfolioItemEarlier(siblings, input.portfolioItemId);
+    const now = input.now ?? { epochMs: Date.now() };
     for (const item of reordered) {
       const before = siblings.find((row) => row.portfolioItemId === item.portfolioItemId);
       if (!before || before.sortIndex !== item.sortIndex) {
         await uow.portfolio.save(item);
+        await enqueueAfterChildPrivatePortfolioSave({
+          syncEnqueue: input.syncEnqueue,
+          item,
+          operationId: operationIdOrFallback(
+            undefined,
+            `op_port_move_${item.portfolioItemId}_${now.epochMs}_${item.sortIndex}`,
+          ),
+          now,
+        });
       }
     }
     return listPortfolioForChild(reordered, current.childId).map(toCard);

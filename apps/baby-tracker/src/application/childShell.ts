@@ -21,11 +21,17 @@ import {
   type ChildShellSession,
   type EntityId,
   type Instant,
+  type OperationId,
   type Project,
   type ProjectTemplateRevision,
   type RevisionId,
   type UnitOfWorkFactory,
 } from '../domain';
+import {
+  enqueueAfterChildPrivateProjectSave,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
 
 export type ChildShellAvailability = ChildShellBlueprint & {
   readonly headline: string;
@@ -160,6 +166,8 @@ export async function createChildShellBlankProject(input: {
   readonly now: Instant;
   readonly template?: ProjectTemplateRevision | null;
   readonly childPrivateModeActive?: boolean;
+  readonly syncEnqueue?: ChildPrivateSyncEnqueuePort;
+  readonly operationId?: OperationId;
 }): Promise<Project> {
   const active = input.childPrivateModeActive ?? isChildPrivateModeActive();
   if (!active) {
@@ -181,6 +189,15 @@ export async function createChildShellBlankProject(input: {
       childPrivateModeActive: true,
     });
     await uow.projects.save(project);
+    await enqueueAfterChildPrivateProjectSave({
+      syncEnqueue: input.syncEnqueue,
+      project,
+      operationId: operationIdOrFallback(
+        input.operationId,
+        `op_proj_${project.projectId}_${input.now.epochMs}`,
+      ),
+      now: input.now,
+    });
     return project;
   });
 }

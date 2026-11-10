@@ -1,6 +1,8 @@
 import { Platform } from 'react-native';
 import type { UnitOfWorkFactory } from '../domain';
+import type { ChildPrivateSyncStateStore } from '../domain/sync/childPrivateSyncStateStore';
 import {
+  createChildPrivateSyncStoreFromRuntime,
   createCommandDispatcher,
   createReadModelInvalidator,
   type ApplicationServices,
@@ -37,6 +39,11 @@ export type OpenedPersonalRuntime = {
   deleteDurableStore: () => Promise<void>;
   /** Web diary handle for durable photo metadata; absent on native. */
   webDb?: import('../infrastructure/database/web/lumiWebDatabase').LumiWebDatabase;
+  /**
+   * Durable local child-private outbox/inbox snapshot for this diary.
+   * Enqueue stays local without a sync backend; network ticks stay cold.
+   */
+  childPrivateSyncStore: ChildPrivateSyncStateStore;
 };
 
 /**
@@ -67,6 +74,9 @@ export async function openPersonalUnitOfWork(
       faults: services.faults,
       nowMs: () => services.clock.now().epochMs,
     });
+    const childPrivateSyncStore = createChildPrivateSyncStoreFromRuntime({
+      webDb: handle.db,
+    });
     return {
       unitOfWork,
       checkpoints,
@@ -84,6 +94,7 @@ export async function openPersonalUnitOfWork(
         await clearPersonalAttachmentStorage();
       },
       webDb: handle.db,
+      childPrivateSyncStore,
     };
   }
 
@@ -109,6 +120,9 @@ export async function openPersonalUnitOfWork(
     faults: services.faults,
     nowMs: () => services.clock.now().epochMs,
   });
+  const childPrivateSyncStore = createChildPrivateSyncStoreFromRuntime({
+    nativeConnection: database.connection,
+  });
   return {
     unitOfWork,
     checkpoints,
@@ -125,6 +139,7 @@ export async function openPersonalUnitOfWork(
       );
       await clearPersonalAttachmentStorage();
     },
+    childPrivateSyncStore,
   };
 }
 

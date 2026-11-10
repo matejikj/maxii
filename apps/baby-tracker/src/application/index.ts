@@ -186,6 +186,15 @@ export {
   type EnqueueChildPrivateSyncChangeResult,
 } from './enqueueChildPrivateSyncChange';
 export {
+  enqueueAfterChildPrivatePortfolioSave,
+  enqueueAfterChildPrivateProjectSave,
+  enqueueAfterChildPrivateSharePublish,
+  enqueueAfterChildPrivateShareRevoke,
+  operationIdOrFallback,
+  type ChildPrivateSyncEnqueuePort,
+} from './childPrivateSyncEnqueuePort';
+export { createChildPrivateSyncStoreFromRuntime } from './createChildPrivateSyncStoreFromRuntime';
+export {
   setAttachmentOfflinePin,
   type KeepAttachmentOfflineResult,
   type FamilyPhotoTransferPinQueue,

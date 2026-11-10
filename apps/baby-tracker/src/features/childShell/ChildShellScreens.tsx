@@ -36,7 +36,10 @@ import {
   type ChildShellShareCard,
 } from '../../application';
 import { useCompositionRoot } from '../../app/providers';
-import { useBootstrap } from '../../app/session/BootstrapContext';
+import {
+  useBootstrap,
+  type PersonalRuntime,
+} from '../../app/session/BootstrapContext';
 import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import {
   asActorId,
@@ -46,6 +49,11 @@ import {
   type EntityId,
   type PendingShareProposal,
 } from '../../domain';
+
+/** Bind shell writes to the durable local outbox without requiring a network. */
+function syncEnqueueFor(runtime: PersonalRuntime) {
+  return { store: runtime.childPrivateSyncStore };
+}
 
 type ShellProps = {
   readonly session: ChildShellSession;
@@ -226,6 +234,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
             intent: 'Chci zkusit něco vlastního.',
             now: { epochMs: Date.now() },
             childPrivateModeActive: props.childPrivateModeActive,
+            syncEnqueue: syncEnqueueFor(bootstrap.runtime),
           })
             .then(async (created) => {
               await reload();
@@ -278,6 +287,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 projectId: asEntityId(detail.projectId) as EntityId,
                 ownerAppUserId,
                 childPrivateModeActive: props.childPrivateModeActive,
+                syncEnqueue: syncEnqueueFor(bootstrap.runtime),
               })
                 .then(async (next) => {
                   setDetail(next);
@@ -303,6 +313,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 projectId: asEntityId(detail.projectId) as EntityId,
                 ownerAppUserId,
                 childPrivateModeActive: props.childPrivateModeActive,
+                syncEnqueue: syncEnqueueFor(bootstrap.runtime),
               })
                 .then(async (next) => {
                   setDetail(next);
@@ -328,6 +339,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 projectId: asEntityId(detail.projectId) as EntityId,
                 ownerAppUserId,
                 childPrivateModeActive: props.childPrivateModeActive,
+                syncEnqueue: syncEnqueueFor(bootstrap.runtime),
               })
                 .then(async (next) => {
                   setDetail(next);
@@ -363,6 +375,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 ownerAppUserId,
                 reflection: reflectionDraft,
                 childPrivateModeActive: props.childPrivateModeActive,
+                syncEnqueue: syncEnqueueFor(bootstrap.runtime),
               })
                 .then((next) => {
                   setDetail(next);
@@ -390,6 +403,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 title: detail.title,
                 description: detail.currentStep?.text ?? null,
                 childPrivateModeActive: props.childPrivateModeActive,
+                syncEnqueue: syncEnqueueFor(bootstrap.runtime),
               })
                 .then(() => {
                   setError(null);
@@ -568,6 +582,8 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
                     title: renameDrafts[card.portfolioItemId] ?? card.title,
                     description: card.description,
                     childPrivateModeActive: props.childPrivateModeActive,
+                    now: { epochMs: Date.now() },
+                    syncEnqueue: syncEnqueueFor(bootstrap.runtime),
                   })
                     .then(() => reloadPortfolio())
                     .catch((err) => {
@@ -589,6 +605,8 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
                       portfolioItemId: asEntityId(card.portfolioItemId) as EntityId,
                       ownerAppUserId,
                       childPrivateModeActive: props.childPrivateModeActive,
+                      now: { epochMs: Date.now() },
+                      syncEnqueue: syncEnqueueFor(bootstrap.runtime),
                     })
                       .then(() => reloadPortfolio())
                       .catch((err) => {
@@ -668,6 +686,7 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
                   explicitConfirm: true,
                   networkBecameOnline: true,
                   childPrivateModeActive: props.childPrivateModeActive,
+                  syncEnqueue: syncEnqueueFor(bootstrap.runtime),
                 })
                   .then(() => {
                     setPending(null);
@@ -712,6 +731,7 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
                       shareId: asEntityId(share.shareId) as EntityId,
                       ownerAppUserId,
                       childPrivateModeActive: props.childPrivateModeActive,
+                      syncEnqueue: syncEnqueueFor(bootstrap.runtime),
                     })
                       .then(() => reloadShares())
                       .catch((err) => {
@@ -858,6 +878,7 @@ export function ChildShellDiscoverScreen(props: ShellProps) {
                     ownerAppUserId,
                     templateRevisionId: card.revisionId,
                     childPrivateModeActive: props.childPrivateModeActive,
+                    syncEnqueue: syncEnqueueFor(bootstrap.runtime),
                   })
                     .then(() => {
                       setError(null);
