@@ -164,10 +164,11 @@ export function presentChildShellMyData(input: {
     {
       id: 'wipe',
       title: 'Výmaz vlastních dat',
-      status: 'unavailable',
-      statusLabel: statusLabel('unavailable'),
-      detail:
-        'Výslovný výmaz vlastního workspace vyžaduje ověřený destruktivní průchod. Tlačítko tu záměrně chybí, aby nevznikla falešná jistota.',
+      status: active ? 'available' : 'unavailable',
+      statusLabel: statusLabel(active ? 'available' : 'unavailable'),
+      detail: active
+        ? 'Výmaz smaže vlastní projekty, portfolio a ukázky na tomto zařízení po napsání „SMAZAT VLASTNI“. Rodinná péče a cizí private řádky zůstanou. Heslem chráněné soubory mimo aplikaci smažte ručně. Live zrušení účtu to není.'
+        : 'Výslovný výmaz vlastního workspace vyžaduje aktivní dětský prostor. Tlačítko tu záměrně chybí, aby nevznikla falešná jistota.',
     },
   ];
 

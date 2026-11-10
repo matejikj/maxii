@@ -157,6 +157,15 @@ export {
   presentChildRecoveryPreview,
   type ChildRecoveryPreview,
 } from './childRecoveryPreview';
+export {
+  CHILD_PRIVATE_WIPE_CONFIRMATION,
+  applyChildPrivateWorkspaceWipe,
+  childPrivateWipeConfirmationMatches,
+  planChildPrivateWorkspaceWipe,
+  type ChildPrivateWipeFailureReason,
+  type ChildPrivateWipePlan,
+  type ChildPrivateWipeStaging,
+} from './childPrivateWipe';
 export type {
   ParentSuggestionRepository,
   PortfolioRepository,

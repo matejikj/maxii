@@ -97,6 +97,11 @@ export {
   type PersonalWipeResult,
 } from './wipePersonalData';
 export {
+  wipeChildPrivateWorkspace,
+  type ChildPrivateWipeFailure,
+  type ChildPrivateWipeResult,
+} from './wipeChildPrivateWorkspace';
+export {
   buildDiagnosticsSnapshot,
   serializeDiagnosticsSnapshot,
   type DiagnosticsSnapshot,

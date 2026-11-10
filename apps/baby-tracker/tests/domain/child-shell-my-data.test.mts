@@ -74,8 +74,10 @@ test('active mode shows honest summaries without inventing live recovery or wipe
   assert.match(shares?.detail ?? '', /1/);
 
   const wipe = view.sections.find((row) => row.id === 'wipe');
-  assert.equal(wipe?.status, 'unavailable');
-  assert.equal(wipe?.statusLabel, 'Zatím nedostupné');
+  assert.equal(wipe?.status, 'available');
+  assert.equal(wipe?.statusLabel, 'Dostupné');
+  assert.match(wipe?.detail ?? '', /SMAZAT VLASTNI/);
+  assert.match(wipe?.detail ?? '', /Live zrušení účtu to není/i);
 });
 
 function exportPreviewFor(ownerId: string, withRows: boolean) {
