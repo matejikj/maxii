@@ -18,7 +18,7 @@ jobs:
         with:
           ref: ${{ inputs.release_tag }}
           fetch-depth: 0
-      - uses: actions/setup-node@39370e3970a6d050c4804d46898778ad8554cb37 # v4.1.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: '22.16.0'
       - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
