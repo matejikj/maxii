@@ -303,6 +303,15 @@ export {
   type ChildPrivateExportPreview,
 } from './exportChildPrivateWorkspace';
 export {
+  childPrivatePortableFileName,
+  exportSealedChildPrivateWorkspace,
+  openSealedChildPrivatePortable,
+  sealChildPrivatePortableArchive,
+  type OpenedChildPrivatePortable,
+  type SealedChildPrivateExport,
+  type SealedChildPrivateExportFailure,
+} from './sealChildPrivatePortable';
+export {
   presentChildShellMyData,
   type ChildShellMyDataSection,
   type ChildShellMyDataView,

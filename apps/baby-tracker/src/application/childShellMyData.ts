@@ -37,6 +37,8 @@ export type ChildShellMyDataView = {
   readonly recoveryPreview: ChildRecoveryPreview;
   /** Export counts only when a preview for this principal was supplied. */
   readonly exportPreview: ChildPrivateExportPreview | null;
+  /** Basename of a password-sealed portable file when one was prepared. */
+  readonly sealedPortableFileName: string | null;
 };
 
 function statusLabel(status: ChildShellMyDataSectionStatus): string {
@@ -63,6 +65,8 @@ export function presentChildShellMyData(input: {
   readonly gateOverrides?: Partial<Record<ChildPrivateModeGate, boolean>> | undefined;
   readonly exportPreview?: ChildPrivateExportPreview | null | undefined;
   readonly recoveryPreview?: ChildRecoveryPreview | null | undefined;
+  /** Optional sealed portable basename for this principal; ignored when inactive. */
+  readonly sealedPortableFileName?: string | null | undefined;
 }): ChildShellMyDataView {
   const preparation = presentSelfManagementPreparation(input.gateOverrides);
   const mode = presentChildPrivateModeStatus(input.gateOverrides);
@@ -86,6 +90,10 @@ export function presentChildShellMyData(input: {
       'Obnova je ověřená, ale vlastní dětský prostor ještě není aktivní.'
     : `${recoveryPreview.detail} Rozsah: ${recoveryPreview.scopeLabels.join('; ')}. Nečekej falešné tlačítko Obnovit.`;
 
+  const sealedName =
+    active && input.sealedPortableFileName != null && input.sealedPortableFileName.trim() !== ''
+      ? input.sealedPortableFileName.trim()
+      : null;
   const exportDetail = !active
     ? 'Export vlastního prostoru není dostupný mimo aktivní dětský režim.'
     : exportPreview
@@ -93,6 +101,10 @@ export function presentChildShellMyData(input: {
           exportPreview.fileGenerated
             ? ' Logický archiv je připravený bez credentials.'
             : ' Počty jsou známé; logický archiv se ještě nepřipravil.'
+        }${
+          sealedName
+            ? ` Heslem chráněný soubor „${sealedName}“ je připravený (bez rodinné historie).`
+            : ' Heslem chráněný přenosný soubor vznikne jen po výslovném exportu s heslem.'
         } Převzetí cizí rodinné historie není automatické.`
       : 'Počty pro export se zatím nenačetly, takže nic netvrdíme jako připravené. Převzetí cizí rodinné historie není automatické.';
 
@@ -170,5 +182,6 @@ export function presentChildShellMyData(input: {
     screenAvailable: active,
     recoveryPreview,
     exportPreview,
+    sealedPortableFileName: sealedName,
   };
 }
