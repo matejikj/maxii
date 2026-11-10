@@ -4,10 +4,11 @@
   "e2eeNote": "Family service processes domain changes server-side; TLS and disk encryption are not end-to-end encryption of diary content.",
   "hostingProfile": "adr-0005-single-vps",
   "defaultCandidate": {
-    "provider": "FORPSI",
-    "alternative": "Hetzner",
+    "provider": "Hetzner",
+    "plan": "CX23",
+    "alternative": "FORPSI",
     "minRamGb": 4,
-    "budgetNoteKcMonthly": "170-300 after promo, infrastructure only"
+    "budgetNoteKcMonthly": "CX23 from ~€5.99/mo after remaining software work; infrastructure only"
   },
   "roles": {
     "composeOwner": "tech-lead",
@@ -60,7 +61,8 @@
       "alert evaluation with off-host channel requirement",
       "incident playbooks preserving local tracker",
       "family/migration/ops runbooks + readiness script",
-      "growth decision triggers without auto-provision"
+      "growth decision triggers without auto-provision",
+      "software incident rehearsal (tabletop; liveDrillEvidence stays null)"
     ],
     "toTask392Live": [
       "named on-call owner and availability",

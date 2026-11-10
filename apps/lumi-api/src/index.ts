@@ -33,6 +33,10 @@ export {
 export { parseOperationsOwners, isAssigned } from './ops/owners.ts';
 export { evaluateFamilyOpsReadiness } from './ops/familyOpsReadiness.ts';
 export {
+  CRITICAL_SOFTWARE_REHEARSAL_KINDS,
+  runFamilyOpsIncidentRehearsal,
+} from './ops/familyOpsIncidentRehearsal.ts';
+export {
   emptyFamilyReleaseEvidence,
   evaluateFamilyReleaseGate,
 } from './ops/familyReleaseGate.ts';
