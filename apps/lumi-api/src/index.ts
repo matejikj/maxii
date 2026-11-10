@@ -37,6 +37,11 @@ export {
   runFamilyOpsIncidentRehearsal,
 } from './ops/familyOpsIncidentRehearsal.ts';
 export {
+  createPostgresAttachmentMetadataStore,
+  createPostgresAttachmentMetadataStoreFromUrl,
+} from './attachments/postgresAttachmentMetadataStore.ts';
+export { runAttachmentPostgresMetadataDrill } from './attachments/attachmentPostgresMetadataDrill.ts';
+export {
   emptyFamilyReleaseEvidence,
   evaluateFamilyReleaseGate,
 } from './ops/familyReleaseGate.ts';
