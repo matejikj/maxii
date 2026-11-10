@@ -49,7 +49,7 @@ test('lost ack retry marks outbox acked once without duplicating local work', ()
 });
 
 test('pull cursor advances only with applied inbox page; crash leaves prior cursor', () => {
-  let state = createEmptySyncState();
+  const state = createEmptySyncState();
   const before = commitPullPage(state, {
     entries: [
       {

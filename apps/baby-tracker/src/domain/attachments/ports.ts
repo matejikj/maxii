@@ -6,7 +6,6 @@ import type {
   NormalizedPhotoBytes,
   PhotoAttachment,
   PickedPhotoCandidate,
-  RenditionId,
 } from './types';
 
 export type PhotoPickerResult =

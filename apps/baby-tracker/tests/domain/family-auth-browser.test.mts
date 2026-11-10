@@ -4,7 +4,7 @@ import { createBrowserFamilyAuthPort } from '../../src/infrastructure/family/bro
 
 test('browser auth port completes login, logout preserves local drafts, unknown mode holds data', async () => {
   const calls: string[] = [];
-  let pendingState = 'state-1';
+  const pendingState = 'state-1';
 
   const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);

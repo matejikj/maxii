@@ -16,6 +16,7 @@ export default tseslint.config(
       'node_modules/**',
       'metro.config.js',
       'playwright.config.mjs',
+      'plugins/**',
       'public/**',
       'tests/e2e/**',
       'tests/ts-resolve-*.mjs',
@@ -45,7 +46,10 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}', 'App.tsx', 'index.ts'],
     plugins: { 'react-hooks': reactHooks },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // Keep classic hooks lint only. eslint-plugin-react-hooks@7 recommended
+      // also enables React Compiler rules that reject common data-load effects.
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/require-await': 'off',
@@ -57,6 +61,12 @@ export default tseslint.config(
           ],
         },
       ],
+    },
+  },
+  {
+    files: ['tests/**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
     },
   },
 );
