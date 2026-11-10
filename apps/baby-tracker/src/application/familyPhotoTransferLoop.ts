@@ -3,13 +3,21 @@ import type {
   PhotoAttachment,
 } from '../domain/attachments';
 import { asAttachmentId } from '../domain/attachments';
+import type { FamilyPhotoUploadMetadataOutbox } from '../domain/attachments';
 import type { FamilyPhotoTransferRuntime } from './familyPhotoTransferRuntime';
 
 export type FamilyPhotoTransferLoopResult = {
   readonly started: number;
   readonly succeeded: number;
   readonly personalCold: boolean;
+  /** attachment.upsert rows produced by uploads that finalized this tick. */
+  readonly metadataOutbox?: readonly FamilyPhotoUploadMetadataOutbox[];
 };
+
+/** Enqueue diary outbox rows after bytes are activated on the family API. */
+export type FamilyPhotoMetadataOutboxSink = (
+  rows: readonly FamilyPhotoUploadMetadataOutbox[],
+) => void | Promise<void>;
 
 export type FamilyPhotoTransferLoop = {
   /** One bounded tick — no-op when family transfer session is cold. */
@@ -28,6 +36,7 @@ const DEFAULT_INTERVAL_MS = 15_000;
 export async function runFamilyPhotoTransferTickWithStore(input: {
   readonly runtime: FamilyPhotoTransferRuntime;
   readonly attachments: AttachmentServices;
+  readonly onMetadataOutbox?: FamilyPhotoMetadataOutboxSink | undefined;
 }): Promise<FamilyPhotoTransferLoopResult> {
   const jobs = input.runtime.getJobs();
   const cache = new Map<string, PhotoAttachment | null>();
@@ -38,7 +47,7 @@ export async function runFamilyPhotoTransferTickWithStore(input: {
     }),
   );
 
-  return input.runtime.runTick({
+  const result = await input.runtime.runTick({
     resolveAttachment: (attachmentId) => cache.get(attachmentId) ?? null,
     readLocalBytes: async (job) => {
       const attachment = cache.get(job.attachmentId) ?? null;
@@ -81,6 +90,10 @@ export async function runFamilyPhotoTransferTickWithStore(input: {
       cache.set(job.attachmentId, saved);
     },
   });
+  if (result.metadataOutbox.length > 0) {
+    await input.onMetadataOutbox?.(result.metadataOutbox);
+  }
+  return result;
 }
 
 /**
@@ -90,6 +103,7 @@ export async function runFamilyPhotoTransferTickWithStore(input: {
 export function createFamilyPhotoTransferLoop(input: {
   readonly runtime: FamilyPhotoTransferRuntime;
   readonly attachments: AttachmentServices;
+  readonly onMetadataOutbox?: FamilyPhotoMetadataOutboxSink | undefined;
   readonly setIntervalFn?: typeof setInterval;
   readonly clearIntervalFn?: typeof clearInterval;
 }): FamilyPhotoTransferLoop {
@@ -108,6 +122,7 @@ export function createFamilyPhotoTransferLoop(input: {
         return await runFamilyPhotoTransferTickWithStore({
           runtime: input.runtime,
           attachments: input.attachments,
+          onMetadataOutbox: input.onMetadataOutbox,
         });
       } finally {
         inFlight = false;

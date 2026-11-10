@@ -10,6 +10,7 @@ import {
   type FamilyAttachmentTransferPort,
   type FamilyPhotoBlobTransferJob,
   type FamilyPhotoTransferLabel,
+  type FamilyPhotoUploadMetadataOutbox,
   type FamilyPhotoTransferSession,
   type PhotoAttachment,
   type RenditionRole,
@@ -58,10 +59,15 @@ export type FamilyPhotoTransferRuntime = {
       job: FamilyPhotoBlobTransferJob,
       bytes: Uint8Array,
     ) => Promise<void>;
+    readonly onUploadSucceeded?: (
+      outbox: FamilyPhotoUploadMetadataOutbox,
+      job: FamilyPhotoBlobTransferJob,
+    ) => void | Promise<void>;
   }) => Promise<{
     readonly started: number;
     readonly succeeded: number;
     readonly personalCold: boolean;
+    readonly metadataOutbox: readonly FamilyPhotoUploadMetadataOutbox[];
   }>;
 };
 
@@ -167,12 +173,14 @@ export function createFamilyPhotoTransferRuntime(input?: {
         readLocalBytes: tickInput.readLocalBytes,
         writeDownloadedBytes: tickInput.writeDownloadedBytes,
         port: getPort(),
+        onUploadSucceeded: tickInput.onUploadSucceeded,
       });
       jobs = [...result.jobs];
       return {
         started: result.started,
         succeeded: result.succeeded,
         personalCold: result.personalCold,
+        metadataOutbox: result.metadataOutbox,
       };
     },
   };

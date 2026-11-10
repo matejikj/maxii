@@ -1,7 +1,29 @@
 import {
   FAMILY_ATTACHMENT_QUOTA,
   planFamilyAttachmentReservation,
+  type FamilyAttachmentQuotaView,
 } from '@lumi/contracts';
+
+/**
+ * Quota contract shared by the in-process ledger and the durable Postgres
+ * ledger. `view` may be sync (memory) or async (Postgres); callers must await.
+ */
+export type FamilyAttachmentQuotaPort = {
+  view(familyId: string): FamilyAttachmentQuotaView | Promise<FamilyAttachmentQuotaView>;
+  reserve(
+    familyId: string,
+    requestBytes: number,
+  ): Promise<
+    | { readonly ok: true; readonly reservedBytes: number }
+    | {
+        readonly ok: false;
+        readonly reason: 'quota_exceeded' | 'pending_budget_exceeded' | 'invalid_size';
+      }
+  >;
+  commitReservation(familyId: string, reservedBytes: number): Promise<void>;
+  releaseReservation(familyId: string, reservedBytes: number): Promise<void>;
+  releaseUsed(familyId: string, usedBytes: number): Promise<void>;
+};
 
 type FamilyQuotaState = {
   usedBytes: number;

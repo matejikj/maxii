@@ -65,6 +65,8 @@ export { runManagedMigrationLocalDrill } from './ops/managedMigrationLocalDrill.
 export { runRemoteBackupNewDeviceDrill } from './backup/remoteBackupNewDeviceDrill.ts';
 export { createMemoryAttachmentObjectStore } from './attachments/objectStore.ts';
 export { createFamilyAttachmentQuotaLedger } from './attachments/quotaLedger.ts';
+export type { FamilyAttachmentQuotaPort } from './attachments/quotaLedger.ts';
+export { createPostgresFamilyAttachmentQuotaLedger } from './attachments/postgresQuotaLedger.ts';
 export {
   createFamilyAttachmentService,
   sha256Hex,

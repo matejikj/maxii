@@ -185,6 +185,46 @@ test('upload tick creates intent, uploads bytes, and finalizes without diary JSO
   assert.equal(result.succeeded, 1);
   assert.equal(result.jobs[0]!.state, 'succeeded');
   assert.ok(store.has('a1'));
+  assert.equal(result.metadataOutbox.length, 1);
+  assert.equal(result.metadataOutbox[0]!.commandType, 'attachment.upsert');
+  assert.equal(result.metadataOutbox[0]!.entityId, 'a1');
+  assert.equal(result.metadataOutbox[0]!.payload.renditions[0]!.sha256, local.renditions[0]!.sha256);
+});
+
+test('upload tick fires onUploadSucceeded once and skips outbox on quota hold', async () => {
+  const bytes = Uint8Array.from([4, 4, 4]);
+  const local = attachmentWithBytes('a_hook', bytes);
+  const session = { familySyncConfigured: true, activeFamilyId: 'fam_1', appUserId: 'user_1' };
+  const jobs = planUploadJobsForLocalAttachments({
+    session,
+    attachments: [local],
+    existingJobs: [],
+    createJobId: (seed) => seed,
+  });
+  const seen: string[] = [];
+  const ok = await runFamilyPhotoTransferTick({
+    session,
+    jobs,
+    resolveAttachment: () => local,
+    readLocalBytes: async () => bytes,
+    writeDownloadedBytes: async () => undefined,
+    port: mockUploadPort(),
+    onUploadSucceeded: (outbox) => {
+      seen.push(outbox.commandType);
+    },
+  });
+  assert.deepEqual(seen, ['attachment.upsert']);
+  assert.equal(ok.metadataOutbox.length, 1);
+
+  const held = await runFamilyPhotoTransferTick({
+    session,
+    jobs,
+    resolveAttachment: () => local,
+    readLocalBytes: async () => bytes,
+    writeDownloadedBytes: async () => undefined,
+    port: mockUploadPort({ quota: true }),
+  });
+  assert.equal(held.metadataOutbox.length, 0);
 });
 
 test('quota rejection holds the upload locally without deleting durable bytes', async () => {

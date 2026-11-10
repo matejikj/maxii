@@ -68,6 +68,7 @@ apply_if_missing family_invitation "$MIGRATIONS_DIR/003_family_invitations.sql"
 apply_if_missing family_sync_state "$MIGRATIONS_DIR/004_family_sync.sql"
 apply_if_missing family_erasure_event "$MIGRATIONS_DIR/005_backup_erasure.sql"
 apply_if_missing family_attachment "$MIGRATIONS_DIR/006_family_attachments.sql"
+apply_if_missing family_attachment_quota "$MIGRATIONS_DIR/007_family_attachment_quota.sql"
 
 export LUMI_DATABASE_URL="$DATABASE_URL"
 export LUMI_DATABASE_ADMIN_URL="$ADMIN_URL"

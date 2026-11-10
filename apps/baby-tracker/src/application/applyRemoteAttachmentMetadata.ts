@@ -163,6 +163,9 @@ export function attachmentEntriesFromSyncInbox(
   const next: RemoteAttachmentMetadataEntry[] = [];
   for (const entry of entries) {
     if (entry.kind === 'attachment.upsert' || entry.kind === 'attachment.tombstone') {
+      // Server activation rows are digest-only hints; full metadata arrives on
+      // the uploader's outbox revision (hostEventType, dimensions, caption).
+      if (entry.payload.source === 'server_activation') continue;
       next.push({ kind: entry.kind, payload: entry.payload });
     }
   }

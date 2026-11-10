@@ -155,6 +155,82 @@ export class MemorySyncStore {
     });
   }
 
+  /**
+   * Server-originated changelog row after a rendition is activated. Carries
+   * digests only (no object key or bytes) so peers can queue a download; it is
+   * idempotent per attachment+role+digest and never touches the revision graph.
+   */
+  async recordAttachmentActivation(input: {
+    familyId: string;
+    attachmentId: string;
+    childId: string;
+    eventId: string;
+    role: string;
+    byteLength: number;
+    sha256: string;
+    appUserId: string;
+    now?: string;
+  }): Promise<{ changelogSeq: number; duplicate: boolean }> {
+    const familyId = input.familyId as FamilyId;
+    return this.withFamilyLock(familyId, async () => {
+      const state = this.ensureFamily(familyId);
+      const operationId = `attachment-activate:${input.attachmentId}:${input.role}:${input.sha256}`;
+      const key = `${familyId}:${operationId}`;
+      const existing = this.byOperation.get(key);
+      if (existing) return { changelogSeq: existing.changelogSeq, duplicate: true };
+
+      const payload = {
+        attachmentId: input.attachmentId,
+        childId: input.childId,
+        eventId: input.eventId,
+        source: 'server_activation',
+        deletedAt: null,
+        renditions: [
+          {
+            role: input.role,
+            mime: 'image/jpeg',
+            byteLength: input.byteLength,
+            sha256: input.sha256,
+          },
+        ],
+      } as const;
+      const revisionId = `rev-${operationId}`;
+      const payloadHash = hashSyncPayload(payload);
+      state.lastChangelogSeq += 1;
+      const changelogSeq = state.lastChangelogSeq;
+      const operation: SyncOperation = {
+        schemaVersion: LUMI_API_PROTOCOL_VERSION,
+        operationId,
+        deviceId: 'server',
+        actorAppUserId: input.appUserId,
+        kind: 'attachment.upsert',
+        entityId: input.attachmentId,
+        revisionId,
+        parentRevisionIds: [],
+        payloadHash,
+        payload,
+      };
+      const stored: StoredReceipt = {
+        familyId,
+        operationId,
+        payloadHash,
+        operation,
+        receipt: {
+          operationId,
+          status: 'accepted',
+          revisionId,
+          heads: [revisionId],
+          changelogSeq,
+        },
+        changelogSeq,
+        acceptedAt: input.now ?? new Date().toISOString(),
+      };
+      this.byOperation.set(key, stored);
+      this.changelog.get(familyId)!.push(stored);
+      return { changelogSeq, duplicate: false };
+    });
+  }
+
   pull(input: {
     familyId: FamilyId;
     appUserId: AppUserId;

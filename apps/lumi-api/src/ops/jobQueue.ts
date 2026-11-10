@@ -6,7 +6,9 @@ export type WorkerJobKind =
   | 'ops.noop'
   | 'backup.daily'
   | 'backup.retention.prune'
-  | 'erasure.registry.sync';
+  | 'erasure.registry.sync'
+  /** Handler should call `attachments.cleanupExpiredIntents(Date.now())`. */
+  | 'attachment.intent.expire';
 
 export type WorkerJob = {
   readonly jobId: string;

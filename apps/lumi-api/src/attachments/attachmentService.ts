@@ -13,7 +13,7 @@ import {
 } from '@lumi/contracts';
 import type { AttachmentObjectStorePort } from './objectStore.ts';
 import type { AttachmentMetadataStorePort } from './postgresAttachmentMetadataStore.ts';
-import type { FamilyAttachmentQuotaLedger } from './quotaLedger.ts';
+import type { FamilyAttachmentQuotaPort } from './quotaLedger.ts';
 
 export type AttachmentIntentRecord = {
   readonly intentId: string;
@@ -29,6 +29,19 @@ export type AttachmentIntentRecord = {
   readonly expiresAtMs: number;
   uploaded: boolean;
   finalized: boolean;
+};
+
+/** Fired after a rendition is activated so sync can fan metadata out to peers. */
+export type AttachmentRenditionActivatedEvent = {
+  readonly familyId: string;
+  readonly attachmentId: string;
+  readonly childId: string;
+  readonly eventId: string;
+  readonly role: AttachmentRenditionRole;
+  readonly objectKey: string;
+  readonly byteLength: number;
+  readonly sha256: string;
+  readonly appUserId: string;
 };
 
 export type AttachmentMembership = {
@@ -58,8 +71,12 @@ type CreateIntentInput = {
  */
 export function createFamilyAttachmentService(input: {
   readonly objects: AttachmentObjectStorePort;
-  readonly quota: FamilyAttachmentQuotaLedger;
+  readonly quota: FamilyAttachmentQuotaPort;
   readonly metadata?: AttachmentMetadataStorePort;
+  /** Best-effort hook; a failure never un-activates the rendition. */
+  readonly onRenditionActivated?: (
+    event: AttachmentRenditionActivatedEvent,
+  ) => void | Promise<void>;
 }) {
   const intents = new Map<string, AttachmentIntentRecord>();
   const idempotency = new Map<string, string>();
@@ -123,7 +140,7 @@ export function createFamilyAttachmentService(input: {
   }
 
   return {
-    quotaView(familyId: string): FamilyAttachmentQuotaView {
+    async quotaView(familyId: string): Promise<FamilyAttachmentQuotaView> {
       return input.quota.view(familyId);
     },
 
@@ -413,6 +430,23 @@ export function createFamilyAttachmentService(input: {
         byteLength: intent.expectedBytes,
         sha256: intent.expectedSha256,
       });
+      if (input.onRenditionActivated) {
+        try {
+          await input.onRenditionActivated({
+            familyId: intent.familyId,
+            attachmentId: intent.attachmentId,
+            childId: intent.childId,
+            eventId: intent.eventId,
+            role: intent.role,
+            objectKey: intent.objectKey,
+            byteLength: intent.expectedBytes,
+            sha256: intent.expectedSha256,
+            appUserId: intent.appUserId,
+          });
+        } catch {
+          // Client outbox still carries metadata; sync fan-out is best-effort.
+        }
+      }
       return {
         ok: true,
         response: {
@@ -514,6 +548,7 @@ export function createFamilyAttachmentService(input: {
       await cancelOpenIntentsForAttachment(inputTomb.familyId, inputTomb.attachmentId);
       // Prefer durable locators so a fresh API process can still erase S3 bytes.
       const durableKeys: string[] = [];
+      const durableBytesByRole = new Map<string, number>();
       if (input.metadata) {
         for (const role of ['display', 'thumbnail'] as const) {
           const durable = await input.metadata.getObject({
@@ -522,7 +557,10 @@ export function createFamilyAttachmentService(input: {
             attachmentId: inputTomb.attachmentId,
             role,
           });
-          if (durable) durableKeys.push(durable.objectKey);
+          if (durable) {
+            durableKeys.push(durable.objectKey);
+            durableBytesByRole.set(role, durable.byteLength);
+          }
         }
       }
       let removed = await input.objects.tombstoneByAttachment({
@@ -539,6 +577,10 @@ export function createFamilyAttachmentService(input: {
         if (meta) {
           await input.quota.releaseUsed(inputTomb.familyId, meta.byteLength);
           activatedKeys.delete(key);
+        } else {
+          // Fresh API process: durable locator still knows what quota to return.
+          const durableBytes = durableBytesByRole.get(role);
+          if (durableBytes) await input.quota.releaseUsed(inputTomb.familyId, durableBytes);
         }
       }
       const nowMs = inputTomb.nowMs ?? Date.now();

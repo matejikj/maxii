@@ -1,12 +1,18 @@
 import type { FamilyAttachmentTransferPort } from './familyAttachmentTransferPort';
 import {
   applyTransferJobState,
+  buildAttachmentMetadataOutboxPayload,
   selectTransferJobsToStart,
   shouldEnqueueFamilyPhotoTransfers,
   type FamilyPhotoBlobTransferJob,
   type FamilyPhotoTransferSession,
 } from './familyPhotoTransferPlanner';
 import type { PhotoAttachment } from './types';
+
+/** Metadata-only diary outbox row built after a successful blob upload. */
+export type FamilyPhotoUploadMetadataOutbox = ReturnType<
+  typeof buildAttachmentMetadataOutboxPayload
+>;
 
 export type FamilyPhotoTransferTickResult = {
   readonly jobs: readonly FamilyPhotoBlobTransferJob[];
@@ -15,6 +21,12 @@ export type FamilyPhotoTransferTickResult = {
   readonly quotaHeld: number;
   /** True when the tick stayed local because family transfer is off. */
   readonly personalCold: boolean;
+  /**
+   * attachment.upsert rows for attachments whose upload finalized this tick
+   * (one per attachment). Callers enqueue them on the diary outbox so peers
+   * receive metadata after bytes are activated server-side.
+   */
+  readonly metadataOutbox: readonly FamilyPhotoUploadMetadataOutbox[];
 };
 
 /**
@@ -32,6 +44,10 @@ export async function runFamilyPhotoTransferTick(input: {
   ) => Promise<void>;
   readonly port: FamilyAttachmentTransferPort;
   readonly quotaBlockedAttachmentIds?: ReadonlySet<string> | undefined;
+  /** Optional hook fired once per successfully finalized upload job. */
+  readonly onUploadSucceeded?:
+    | ((outbox: FamilyPhotoUploadMetadataOutbox, job: FamilyPhotoBlobTransferJob) => void | Promise<void>)
+    | undefined;
 }): Promise<FamilyPhotoTransferTickResult> {
   if (!shouldEnqueueFamilyPhotoTransfers(input.session)) {
     return {
@@ -40,6 +56,7 @@ export async function runFamilyPhotoTransferTick(input: {
       succeeded: 0,
       quotaHeld: 0,
       personalCold: true,
+      metadataOutbox: [],
     };
   }
 
@@ -67,6 +84,7 @@ export async function runFamilyPhotoTransferTick(input: {
 
   let jobs = applyTransferJobState(input.jobs, updates);
   let succeeded = 0;
+  const metadataByAttachment = new Map<string, FamilyPhotoUploadMetadataOutbox>();
 
   for (const jobId of selection.startJobIds) {
     const job = jobs.find((row) => row.jobId === jobId);
@@ -87,7 +105,15 @@ export async function runFamilyPhotoTransferTick(input: {
         port: input.port,
       });
       jobs = applyTransferJobState(jobs, new Map([[jobId, outcome]]));
-      if (outcome.state === 'succeeded') succeeded += 1;
+      if (outcome.state === 'succeeded') {
+        succeeded += 1;
+        const attachment = input.resolveAttachment(job.attachmentId);
+        if (attachment && attachment.deletedAtMs == null) {
+          const outbox = buildAttachmentMetadataOutboxPayload({ attachment });
+          metadataByAttachment.set(job.attachmentId, outbox);
+          await input.onUploadSucceeded?.(outbox, job);
+        }
+      }
       continue;
     }
 
@@ -107,6 +133,7 @@ export async function runFamilyPhotoTransferTick(input: {
     succeeded,
     quotaHeld: selection.holdAsQuotaWaitingIds.length,
     personalCold: false,
+    metadataOutbox: [...metadataByAttachment.values()],
   };
 }
 

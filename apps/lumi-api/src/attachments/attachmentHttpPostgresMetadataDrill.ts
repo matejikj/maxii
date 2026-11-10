@@ -6,7 +6,11 @@ import {
 } from '@lumi/contracts';
 import { loadApiConfig } from '../config/env.ts';
 import { createFamilyApi } from '../http/createServer.ts';
+import { createAppDbPool } from '../db/pool.ts';
 import { createPostgresAttachmentMetadataStoreFromUrl } from './postgresAttachmentMetadataStore.ts';
+import { createPostgresFamilyAttachmentQuotaLedger } from './postgresQuotaLedger.ts';
+import { ensureAttachmentQuotaMigration } from './ensureAttachmentQuotaMigration.ts';
+import type { FamilyAttachmentQuotaPort } from './quotaLedger.ts';
 import { resolveAttachmentObjectStore } from './resolveAttachmentObjectStore.ts';
 import { LOCAL_S3_COMPATIBLE_ATTACHMENT_DRILL_DEFAULTS } from './attachmentS3CompatibleDrill.ts';
 import { LOCAL_ATTACHMENT_POSTGRES_METADATA_DRILL_DEFAULTS } from './attachmentPostgresMetadataDrill.ts';
@@ -42,6 +46,19 @@ export async function runAttachmentHttpPostgresMetadataDrill(input: {
   readonly accessKeyId: string;
   readonly secretAccessKey: string;
 }): Promise<AttachmentHttpPostgresMetadataDrillResult> {
+  await ensureAttachmentQuotaMigration(input.adminDatabaseUrl);
+  const quotaPool = createAppDbPool(input.databaseUrl);
+  try {
+    return await runWithQuota(input, createPostgresFamilyAttachmentQuotaLedger(quotaPool));
+  } finally {
+    await quotaPool.end();
+  }
+}
+
+async function runWithQuota(
+  input: Parameters<typeof runAttachmentHttpPostgresMetadataDrill>[0],
+  quota: FamilyAttachmentQuotaPort,
+): Promise<AttachmentHttpPostgresMetadataDrillResult> {
   const cases: AttachmentHttpPostgresMetadataDrillCase[] = [];
 
   const personal = resolveAttachmentObjectStore(
@@ -73,6 +90,7 @@ export async function runAttachmentHttpPostgresMetadataDrill(input: {
   const first = await createFamilyApi(loadApiConfig(env), {
     attachmentMetadata: metadata,
     attachmentMetadataProvider: 'postgres',
+    quota,
   });
   cases.push({
     name: 'api_wired_postgres_metadata',
@@ -236,6 +254,7 @@ export async function runAttachmentHttpPostgresMetadataDrill(input: {
   const second = await createFamilyApi(loadApiConfig(env), {
     attachmentMetadata: createPostgresAttachmentMetadataStoreFromUrl(input.databaseUrl),
     attachmentMetadataProvider: 'postgres',
+    quota,
   });
   try {
     const token = await second.tokens.mintTestToken({

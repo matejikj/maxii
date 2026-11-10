@@ -102,7 +102,10 @@ export type {
   FamilyAttachmentUploadIntent,
 } from './familyAttachmentTransferPort';
 export { runFamilyPhotoTransferTick } from './familyPhotoTransferWorker';
-export type { FamilyPhotoTransferTickResult } from './familyPhotoTransferWorker';
+export type {
+  FamilyPhotoTransferTickResult,
+  FamilyPhotoUploadMetadataOutbox,
+} from './familyPhotoTransferWorker';
 export {
   classifyPhotoExportCompleteness,
   decideSoleOwnCopyRelease,

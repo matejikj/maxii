@@ -155,6 +155,7 @@ export {
   createFamilyPhotoTransferLoop,
   runFamilyPhotoTransferTickWithStore,
   type FamilyPhotoTransferLoop,
+  type FamilyPhotoMetadataOutboxSink,
   type FamilyPhotoTransferLoopResult,
 } from './familyPhotoTransferLoop';
 export {

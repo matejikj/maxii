@@ -27,7 +27,8 @@ export async function runWorkerLoop(options: WorkerLoopOptions): Promise<{
         job.kind === 'ops.noop' ||
         job.kind === 'backup.daily' ||
         job.kind === 'backup.retention.prune' ||
-        job.kind === 'erasure.registry.sync';
+        job.kind === 'erasure.registry.sync' ||
+        job.kind === 'attachment.intent.expire';
       if (!known) {
         throw new Error(`unsupported_job:${job.kind}`);
       }

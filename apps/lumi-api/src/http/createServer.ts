@@ -27,7 +27,10 @@ import { registerAttachmentRoutes } from './attachmentRoutes.ts';
 import { registerOpsRoutes } from './opsRoutes.ts';
 import { createMemoryBackupRepository } from '../backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../backup/erasureRegistry.ts';
-import { createFamilyAttachmentQuotaLedger } from '../attachments/quotaLedger.ts';
+import {
+  createFamilyAttachmentQuotaLedger,
+  type FamilyAttachmentQuotaPort,
+} from '../attachments/quotaLedger.ts';
 import { createFamilyAttachmentService } from '../attachments/attachmentService.ts';
 import type { AttachmentMetadataStorePort } from '../attachments/postgresAttachmentMetadataStore.ts';
 import { resolveAttachmentObjectStore } from '../attachments/resolveAttachmentObjectStore.ts';
@@ -59,6 +62,8 @@ export type CreatedApi = {
 export type CreateFamilyApiOptions = {
   readonly attachmentMetadata?: AttachmentMetadataStorePort;
   readonly attachmentMetadataProvider?: 'none' | 'postgres';
+  /** Durable quota (e.g. Postgres) — unset keeps the in-process ledger. */
+  readonly quota?: FamilyAttachmentQuotaPort;
 };
 
 export async function createFamilyApi(
@@ -76,8 +81,11 @@ export async function createFamilyApi(
   const attachmentMetadata = options.attachmentMetadata;
   const attachments = createFamilyAttachmentService({
     objects: attachmentObjects.store,
-    quota: createFamilyAttachmentQuotaLedger(),
+    quota: options.quota ?? createFamilyAttachmentQuotaLedger(),
     ...(attachmentMetadata ? { metadata: attachmentMetadata } : {}),
+    onRenditionActivated: async (event) => {
+      await sync.recordAttachmentActivation(event);
+    },
   });
   const backupStatusByFamily = new Map<
     string,
