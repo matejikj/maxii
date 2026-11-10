@@ -81,6 +81,19 @@ export type {
   SyncPushResponse,
   SyncTransferPresentation,
 } from './sync.ts';
+export {
+  CHILD_PRIVATE_SYNC_KINDS,
+  childPrivateShareAudience,
+  childPrivateSharePayloadIsSafe,
+  isChildPrivateShareKind,
+  isChildPrivateSyncKind,
+} from './childPrivateSync.ts';
+export type {
+  ChildPrivateSyncOperationKind,
+  ChildPrivateSyncPullResponse,
+  ChildPrivateSyncPushRequest,
+  ChildPrivateSyncPushResponse,
+} from './childPrivateSync.ts';
 export type {
   ApplyResult,
   ConflictRecord,

@@ -18,10 +18,12 @@ import { registerAuthRoutes } from '../auth/loginRoutes.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
 import { MemorySyncStore } from '../sync/syncStore.ts';
+import { MemoryChildPrivateSyncStore } from '../childPrivate/childPrivateSyncStore.ts';
 import { apiError } from './errors.ts';
 import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
 import { registerSyncRoutes } from './syncRoutes.ts';
+import { registerChildPrivateSyncRoutes } from './childPrivateSyncRoutes.ts';
 import { registerBackupRoutes } from './backupRoutes.ts';
 import { registerAttachmentRoutes } from './attachmentRoutes.ts';
 import { registerOpsRoutes } from './opsRoutes.ts';
@@ -46,6 +48,7 @@ export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
   readonly store: MemoryFamilyStore;
   readonly sync: MemorySyncStore;
+  readonly childPrivateSync: MemoryChildPrivateSyncStore;
   readonly tokens: AccessTokenVerifier;
   readonly sessions: AuthSessionStore;
   readonly oidc: OidcTokenExchanger;
@@ -72,6 +75,7 @@ export async function createFamilyApi(
 ): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
   const sync = new MemorySyncStore();
+  const childPrivateSync = new MemoryChildPrivateSyncStore();
   const tokens = new AccessTokenVerifier(config, store);
   const sessions = new AuthSessionStore();
   const oidc = new OidcTokenExchanger(config);
@@ -129,6 +133,12 @@ export async function createFamilyApi(
   registerAuthRoutes(app, { config, store, sessions, oidc });
   registerFamilyRoutes(app, { config, store, tokens, sessions });
   registerSyncRoutes(app, { config, store, sync, tokens, sessions });
+  registerChildPrivateSyncRoutes(app, {
+    config,
+    childPrivateSync,
+    tokens,
+    sessions,
+  });
   registerBackupRoutes(app, {
     config,
     store,
@@ -367,6 +377,7 @@ export async function createFamilyApi(
     app,
     store,
     sync,
+    childPrivateSync,
     tokens,
     sessions,
     oidc,

@@ -343,6 +343,14 @@ export class MemorySyncStore {
         reason: 'forbidden',
       };
     }
+    // Private child workspace ops have their own stream — never accept them here.
+    if (String(operation.kind).startsWith('child_private.')) {
+      return {
+        operationId: operation.operationId,
+        status: 'rejected',
+        reason: 'validation',
+      };
+    }
 
     const key = `${state.familyId}:${operation.operationId}`;
     const existing = this.byOperation.get(key);
