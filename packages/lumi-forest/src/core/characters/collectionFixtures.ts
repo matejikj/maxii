@@ -6,9 +6,13 @@ import type { CharacterSemanticState } from './collection';
  * legal proportions, light/dark mats, and safe UI margins around companions.
  */
 export const COLLECTION_SCALE_FIXTURES = {
+  chip24: { width: 24, height: 26 },
+  chip32: { width: 32, height: 34 },
   compact: { width: 48, height: 52 },
   guide: { width: 96, height: 104 },
+  hero144: { width: 144, height: 156 },
   hero: { width: 168, height: 180 },
+  hero256: { width: 256, height: 276 },
 } as const;
 
 export const COLLECTION_BACKGROUND_FIXTURES = {

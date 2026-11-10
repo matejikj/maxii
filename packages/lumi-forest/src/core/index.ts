@@ -109,6 +109,19 @@ export const LUMI_PALETTES = Object.fromEntries(
 export { resolveAspectMode, computeViewportLayout, LUMI_VIEWPORT_FIXTURES } from './layout/viewport';
 export type { AspectMode, ResolvedAspectMode, ViewportSize, ViewportLayout } from './layout/viewport';
 export { LUMI_PERFORMANCE_BUDGETS, countVectorNodes } from './perf/budgets';
+export {
+  WORKSHOP_PORTRAIT_SIZES_PX,
+  WORKSHOP_DEVICE_MEASUREMENT_SCENARIOS,
+  runWorkshopAcceptanceMatrix,
+  describeWorkshopDeviceMeasurementPlan,
+  workshopAppearanceLabel,
+  workshopGuidePreviewHint,
+} from './workshop/acceptance';
+export type {
+  WorkshopAcceptanceCase,
+  WorkshopAcceptanceReport,
+  WorkshopDeviceMeasurementScenario,
+} from './workshop/acceptance';
 
 // v0.4 Procedural Scene Engine; platform-independent public API.
 export { planProceduralScene, composeProceduralScene } from './procedural/compiler';

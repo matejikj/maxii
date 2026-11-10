@@ -11,6 +11,9 @@ export const LUMI_PERFORMANCE_BUDGETS = {
   maxProceduralVectorNodes: 250,
   maxProceduralPlacedItems: 52,
   maxProceduralPlacementAttemptsPerItem: 35,
+  /** Workshop scene IR budget — measured offline in software; device p95 still separate. */
+  maxWorkshopActionVectorNodes: 240,
+  maxWorkshopVisibleProps: 2,
 } as const;
 
 import type { VectorNode, SceneDocument } from '../vector/types';

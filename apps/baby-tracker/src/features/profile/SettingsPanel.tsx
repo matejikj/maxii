@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiMotion } from '@lumi/forest-design/native';
+import { workshopGuidePreviewHint } from '@lumi/forest-design';
 import {
   LOCAL_APPEARANCE_STYLES,
   LOCAL_GUIDE_SPECIES,
@@ -179,7 +180,12 @@ export function SettingsPanel() {
           Les zůstává bezpečným základem. Dílna a Střídmý jsou volba vzhledu, ne věkové
           zamknutí. Stažení se nevyžaduje — sada je součástí instalace.
         </LumiText>
-        <View style={{ alignItems: 'center', marginVertical: 8 }}>
+        <View
+          style={{ alignItems: 'center', marginVertical: 8 }}
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        >
           <GuideCompanion
             species={preferences.guideSpecies}
             appearanceStyle={preferences.appearanceStyle}
@@ -189,10 +195,17 @@ export function SettingsPanel() {
             height={104}
           />
         </View>
+        <LumiText tone="muted">
+          {workshopGuidePreviewHint(preferences.guideSpecies, preferences.appearanceStyle)}
+        </LumiText>
         {LOCAL_APPEARANCE_STYLES.map((style) => (
           <LumiButton
             key={style}
             title={`${STYLE_LABELS[style]}${preferences.appearanceStyle === style ? ' · zvoleno' : ''}`}
+            accessibilityLabel={`Vzhled průvodce ${STYLE_LABELS[style]}${
+              preferences.appearanceStyle === style ? ', zvoleno' : ''
+            }`}
+            accessibilityHint="Mění jen vzhled průvodce. Neodemyká funkce ani věkové omezení."
             variant={preferences.appearanceStyle === style ? 'primary' : 'ghost'}
             onPress={() => void setAppearance(style)}
           />
