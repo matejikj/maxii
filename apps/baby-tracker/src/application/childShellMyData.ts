@@ -89,7 +89,11 @@ export function presentChildShellMyData(input: {
   const exportDetail = !active
     ? 'Export vlastního prostoru není dostupný mimo aktivní dětský režim.'
     : exportPreview
-      ? `${exportPreview.summaryLines.join(' ')} Soubor se zatím nevytváří. Převzetí cizí rodinné historie není automatické.`
+      ? `${exportPreview.summaryLines.join(' ')}${
+          exportPreview.fileGenerated
+            ? ' Logický archiv je připravený bez credentials.'
+            : ' Počty jsou známé; logický archiv se ještě nepřipravil.'
+        } Převzetí cizí rodinné historie není automatické.`
       : 'Počty pro export se zatím nenačetly, takže nic netvrdíme jako připravené. Převzetí cizí rodinné historie není automatické.';
 
   const sections: ChildShellMyDataSection[] = [

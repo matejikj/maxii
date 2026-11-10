@@ -104,7 +104,7 @@ test('export section never claims ready without loaded counts', () => {
   assert.match(exportSection?.detail ?? '', /nenačetly/);
 });
 
-test('export section shows manifest counts and says no file is generated', () => {
+test('export section shows manifest counts and distinguishes prepared archive', () => {
   const session = activatedSession();
   const preview = {
     available: true,
@@ -115,12 +115,14 @@ test('export section shows manifest counts and says no file is generated', () =>
       shareCount: 2,
       activeShareCount: 1,
       revokedShareCount: 1,
-      excludedFamilyHistory: true,
+      excludedFamilyHistory: true as const,
       excludedCategories: [],
     },
     summaryLines: ['Projekty: 4', 'Portfolio: 3'],
     fileGenerated: false,
-  } as const;
+    archive: null,
+    archiveJson: null,
+  };
   const view = presentChildShellMyData({
     session,
     childPrivateModeActive: true,
@@ -132,8 +134,22 @@ test('export section shows manifest counts and says no file is generated', () =>
   });
   const exportSection = view.sections.find((row) => row.id === 'export');
   assert.match(exportSection?.detail ?? '', /Projekty: 4/);
-  assert.match(exportSection?.detail ?? '', /Soubor se zatím nevytváří/);
+  assert.match(exportSection?.detail ?? '', /ještě nepřipravil/);
   assert.equal(view.exportPreview?.manifest?.projectCount, 4);
+
+  const withFile = presentChildShellMyData({
+    session,
+    childPrivateModeActive: true,
+    portfolioCount: 3,
+    activeShareCount: 1,
+    appearanceStyleLabel: 'Les',
+    gateOverrides: openGates,
+    exportPreview: { ...preview, fileGenerated: true },
+  });
+  assert.match(
+    withFile.sections.find((row) => row.id === 'export')?.detail ?? '',
+    /archiv je připravený/i,
+  );
 });
 
 test('export preview built for another principal is ignored', () => {

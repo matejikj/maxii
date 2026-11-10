@@ -1,6 +1,14 @@
 import {
+  createChildPrivateArchive,
+  parseChildPrivateArchive,
   planChildPrivateExport,
+  previewChildPrivateArchiveRestore,
+  serializeChildPrivateArchive,
+  applyChildPrivateArchiveToStaging,
   type ActorId,
+  type ChildPrivateArchive,
+  type ChildPrivateArchiveApplyResult,
+  type ChildPrivateArchiveRestorePreview,
   type ChildPrivateExportFilters,
   type ChildPrivateExportManifest,
   type PortfolioItem,
@@ -15,8 +23,13 @@ export type ChildPrivateExportPreview = {
   readonly manifest: ChildPrivateExportManifest | null;
   /** Czech summary lines derived only from real counts. */
   readonly summaryLines: readonly string[];
-  /** The preview counts rows; it does not produce a file. */
-  readonly fileGenerated: false;
+  /**
+   * True only when a logical archive object was built for this preview.
+   * Sealing to a password file remains a separate portable-backup step.
+   */
+  readonly fileGenerated: boolean;
+  readonly archive: ChildPrivateArchive | null;
+  readonly archiveJson: string | null;
 };
 
 const UNAVAILABLE: ChildPrivateExportPreview = {
@@ -24,6 +37,8 @@ const UNAVAILABLE: ChildPrivateExportPreview = {
   manifest: null,
   summaryLines: [],
   fileGenerated: false,
+  archive: null,
+  archiveJson: null,
 };
 
 function describeManifest(manifest: ChildPrivateExportManifest): string[] {
@@ -50,27 +65,56 @@ export function previewChildPrivateExport(input: {
   readonly portfolio: readonly PortfolioItem[];
   readonly shares: readonly ShareSnapshot[];
   readonly filters?: ChildPrivateExportFilters | undefined;
+  readonly createdAtMs?: number | undefined;
+  /** When true, also materialize the logical archive JSON for this owner. */
+  readonly buildArchive?: boolean | undefined;
 }): ChildPrivateExportPreview {
   const plan = planChildPrivateExport(input);
   if (!plan.ok) return UNAVAILABLE;
-  return {
+  const base: ChildPrivateExportPreview = {
     available: true,
     manifest: plan.manifest,
     summaryLines: describeManifest(plan.manifest),
     fileGenerated: false,
+    archive: null,
+    archiveJson: null,
+  };
+  if (input.buildArchive !== true) return base;
+
+  const built = createChildPrivateArchive({
+    ownerAppUserId: input.ownerAppUserId,
+    childPrivateModeActive: true,
+    createdAtMs: input.createdAtMs ?? Date.now(),
+    projects: input.projects,
+    portfolio: input.portfolio,
+    shares: input.shares,
+    filters: input.filters,
+  });
+  if (!built.ok) return UNAVAILABLE;
+  return {
+    ...base,
+    fileGenerated: true,
+    archive: built.archive,
+    archiveJson: serializeChildPrivateArchive(built.archive),
+    summaryLines: [
+      ...describeManifest(plan.manifest),
+      'Logický archiv vlastního prostoru je připravený (bez rodinné historie a bez credentials).',
+    ],
   };
 }
 
 /**
- * Owner-scoped export preview straight from the local repositories. Lists are
- * read whole and passed through the domain owner filter, so a foreign row in
- * the same database can never reach the manifest.
+ * Owner-scoped export straight from the local repositories. Lists are read
+ * whole and passed through the domain owner filter, so a foreign row in the
+ * same database can never reach the archive.
  */
 export async function exportChildPrivateWorkspace(input: {
   readonly unitOfWork: UnitOfWorkFactory;
   readonly ownerAppUserId: ActorId;
   readonly childPrivateModeActive: boolean;
   readonly filters?: ChildPrivateExportFilters | undefined;
+  readonly createdAtMs?: number | undefined;
+  readonly buildArchive?: boolean | undefined;
 }): Promise<ChildPrivateExportPreview> {
   if (!input.childPrivateModeActive) return UNAVAILABLE;
   const { projects, portfolio, shares } = await input.unitOfWork.run(async (uow) => ({
@@ -85,5 +129,43 @@ export async function exportChildPrivateWorkspace(input: {
     portfolio,
     shares,
     filters: input.filters,
+    createdAtMs: input.createdAtMs,
+    buildArchive: input.buildArchive ?? true,
   });
+}
+
+/** Parse a pasted/decrypted logical archive and describe a soft restore. */
+export function stageChildPrivateArchiveRestore(input: {
+  readonly liveOwnerAppUserId: ActorId;
+  readonly childPrivateModeActive: boolean;
+  readonly supportedRecovery: boolean;
+  readonly liveProjects: readonly Project[];
+  readonly livePortfolio: readonly PortfolioItem[];
+  readonly liveShares: readonly ShareSnapshot[];
+  readonly rawArchive: unknown;
+}): {
+  readonly archive: ChildPrivateArchive;
+  readonly preview: ChildPrivateArchiveRestorePreview;
+  readonly apply: ChildPrivateArchiveApplyResult;
+} {
+  const archive = parseChildPrivateArchive(input.rawArchive);
+  const preview = previewChildPrivateArchiveRestore({
+    liveOwnerAppUserId: input.liveOwnerAppUserId,
+    childPrivateModeActive: input.childPrivateModeActive,
+    supportedRecovery: input.supportedRecovery,
+    liveProjects: input.liveProjects,
+    livePortfolio: input.livePortfolio,
+    liveShares: input.liveShares,
+    archive,
+  });
+  const apply = applyChildPrivateArchiveToStaging({
+    liveOwnerAppUserId: input.liveOwnerAppUserId,
+    childPrivateModeActive: input.childPrivateModeActive,
+    supportedRecovery: input.supportedRecovery,
+    liveProjects: input.liveProjects,
+    livePortfolio: input.livePortfolio,
+    liveShares: input.liveShares,
+    archive,
+  });
+  return { archive, preview, apply };
 }

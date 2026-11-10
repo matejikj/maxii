@@ -128,6 +128,31 @@ export {
   type ChildPrivateExportPlan,
 } from './childPrivateExport';
 export {
+  CHILD_PRIVATE_ARCHIVE_FORMAT,
+  CHILD_PRIVATE_ARCHIVE_MAX_COMPAT,
+  buildChildPrivateArchiveManifest,
+  createChildPrivateArchive,
+  serializeChildPrivateArchive,
+  type ChildPrivateArchive,
+  type ChildPrivateArchiveBuildResult,
+  type ChildPrivateArchiveManifest,
+} from './childPrivateArchive';
+export {
+  MAX_CHILD_PRIVATE_ARCHIVE_BYTES,
+  MAX_CHILD_PRIVATE_ARCHIVE_PROJECTS,
+  MAX_CHILD_PRIVATE_ARCHIVE_RELATED,
+  parseChildPrivateArchive,
+} from './parseChildPrivateArchive';
+export {
+  applyChildPrivateArchiveToStaging,
+  compareChildPrivateArchive,
+  previewChildPrivateArchiveRestore,
+  type ChildPrivateArchiveApplyResult,
+  type ChildPrivateArchiveCompare,
+  type ChildPrivateArchiveRestorePreview,
+  type ChildPrivateArchiveStaging,
+} from './childPrivateArchiveRestore';
+export {
   CHILD_RECOVERY_SCOPE_LABELS,
   presentChildRecoveryPreview,
   type ChildRecoveryPreview,

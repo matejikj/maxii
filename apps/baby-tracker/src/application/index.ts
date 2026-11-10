@@ -299,6 +299,7 @@ export {
 export {
   exportChildPrivateWorkspace,
   previewChildPrivateExport,
+  stageChildPrivateArchiveRestore,
   type ChildPrivateExportPreview,
 } from './exportChildPrivateWorkspace';
 export {
