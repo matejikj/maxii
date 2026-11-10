@@ -26,8 +26,12 @@ import {
 } from '../../src/content/index.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const devKeyPath = path.resolve(here, '../../content/packs/keys/dev.ed25519.sk.hex');
-const DEV_SK = fs.readFileSync(devKeyPath, 'utf8').trim();
+/**
+ * Known development signing secret for `lumi-content-ed25519-dev-1` (see trust.ts).
+ * Kept inline so CI can sign fixtures without the gitignored on-disk key file.
+ * Production verifiers reject this keyId unless allowDevelopmentKeys is set.
+ */
+const DEV_SK = 'd81c22f68b1b2fd46802330ba006e610f9976d82401abf7d1a4624644a1dea3d';
 const DEV_KEY_ID = 'lumi-content-ed25519-dev-1';
 
 function fixturePack(generation = 1) {
