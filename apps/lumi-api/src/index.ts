@@ -73,6 +73,14 @@ export type {
   AttachmentHttpS3CompatibleDrillCase,
   AttachmentHttpS3CompatibleDrillResult,
 } from './attachments/attachmentHttpS3CompatibleDrill.ts';
+export {
+  LOCAL_COMPOSE_STACK_DRILL_DEFAULTS,
+  runFamilyComposeStackDrill,
+} from './ops/familyComposeStackDrill.ts';
+export type {
+  FamilyComposeStackDrillCase,
+  FamilyComposeStackDrillResult,
+} from './ops/familyComposeStackDrill.ts';
 
 export {
   MemorySyncStore,

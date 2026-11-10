@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.mts",
     "ops:readiness": "bash ./deploy/ops-readiness.sh",
+    "ops:compose-drill": "bash ./deploy/family-compose-stack-drill.sh",
     "release:gate": "bash ./deploy/family-release-gate.sh",
     "security:matrix": "bash ./deploy/family-security-matrix.sh",
     "migration:drill": "bash ./deploy/managed-migration-local-drill.sh",

@@ -8,10 +8,11 @@ This stack is **not** end-to-end encrypted: the API processes domain changes. TL
 
 ```bash
 npm run family:compose:up
+npm run ops:compose-drill --workspace @lumi/api
 npm test --workspace @lumi/api
 ```
 
-Compose publishes Postgres on `127.0.0.1:5433` for local proofs. Fresh volumes apply identity and worker migrations from `migrations/` via initdb. On an existing volume, apply `002_worker_jobs.sql` manually once.
+Compose publishes Postgres on `127.0.0.1:5433` and optional S3Mock on `127.0.0.1:9090` for local proofs. Fresh volumes apply identity/worker/sync/backup migrations from `migrations/` via initdb. On an existing volume, apply newer `00N_*.sql` files manually once. `ops:compose-drill` proves schema/RLS + S3Mock health and keeps `liveReady=false`.
 
 ## Auth
 

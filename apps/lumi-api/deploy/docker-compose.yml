@@ -18,6 +18,7 @@ services:
       - ../migrations/002_worker_jobs.sql:/docker-entrypoint-initdb.d/002_worker_jobs.sql:ro
       - ../migrations/003_family_invitations.sql:/docker-entrypoint-initdb.d/003_family_invitations.sql:ro
       - ../migrations/004_family_sync.sql:/docker-entrypoint-initdb.d/004_family_sync.sql:ro
+      - ../migrations/005_backup_erasure.sql:/docker-entrypoint-initdb.d/005_backup_erasure.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d lumi_app']
       interval: 3s
