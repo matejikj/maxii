@@ -42,7 +42,7 @@ import type {
   ShareSnapshot,
 } from '../../../domain/projects';
 import { AppError } from '../../../domain/errors';
-import { SCHEMA_VERSION_8 } from './schema/v8';
+import { SCHEMA_VERSION_9 } from './schema/v9';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
 import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
@@ -861,7 +861,7 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return assembleDiaryArchive({
         createdAtMs: input.createdAtMs,
-        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_8,
+        schemaCompatibility: input.schemaCompatibility || SCHEMA_VERSION_9,
         profiles: profilesList,
         careEvents,
         sessions: await sessions.listAll(),
@@ -886,6 +886,8 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       await txn.runAsync('DELETE FROM share_snapshots');
       await txn.runAsync('DELETE FROM portfolio_items');
       await txn.runAsync('DELETE FROM projects');
+      // Private sync cursor/outbox must not survive a diary replace.
+      await txn.runAsync('DELETE FROM child_private_sync_state');
       await txn.runAsync('DELETE FROM child_profiles');
       await txn.runAsync('DELETE FROM app_meta');
       for (const profile of archive.profiles) {

@@ -831,6 +831,8 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       await db.shareSnapshots.clear();
       await db.portfolioItems.clear();
       await db.projects.clear();
+      // Private sync cursor/outbox must not survive a diary replace.
+      await db.childPrivateSyncState.clear();
       await db.childProfiles.clear();
       await db.meta.clear();
       for (const profile of archive.profiles) {

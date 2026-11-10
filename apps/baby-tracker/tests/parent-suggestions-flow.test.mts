@@ -18,7 +18,7 @@ import { createMemoryEncryptedSqlOpener } from '../src/infrastructure/database/n
 import { createNativeUnitOfWorkFactory } from '../src/infrastructure/database/native/nativeUnitOfWork.ts';
 import { openPrivateDatabase } from '../src/infrastructure/database/native/privateDatabase.ts';
 import { currentSchemaVersion } from '../src/infrastructure/database/native/migrations.ts';
-import { SCHEMA_VERSION_8 } from '../src/infrastructure/database/native/schema/v8.ts';
+import { SCHEMA_VERSION_9 } from '../src/infrastructure/database/native/schema/v9.ts';
 
 const childId = asChildId('child_sug_1');
 const clock = Date.UTC(2026, 10, 9, 14, 0, 0);
@@ -56,7 +56,7 @@ async function openNative(name: string) {
 
 test('schema migrates to parent suggestions table', async () => {
   const ctx = await openNative('sug-schema.db');
-  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_8);
+  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_9);
   await ctx.close();
 });
 

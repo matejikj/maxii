@@ -177,7 +177,7 @@ export async function captureScopedDiaryArchive(input: {
   const full = await input.unitOfWork.run((uow) =>
     uow.diary.capture({
       createdAtMs: input.nowMs,
-      schemaCompatibility: input.schemaCompatibility ?? 8,
+      schemaCompatibility: input.schemaCompatibility ?? 9,
     }),
   );
   return filterDiaryArchiveByScope(full, input.scope);
@@ -195,7 +195,7 @@ export async function wipeSingleChildDiaryScope(input: {
   return input.unitOfWork.run(async (uow) => {
     const full = await uow.diary.capture({
       createdAtMs: input.nowMs,
-      schemaCompatibility: 8,
+      schemaCompatibility: 9,
     });
     const remainingProfiles = full.profiles
       .map(normalizeChildProfile)
@@ -255,7 +255,7 @@ export async function wipeSingleChildDiaryScope(input: {
     ];
     const nextArchive = createDiaryArchive({
       createdAtMs: input.nowMs,
-      schemaCompatibility: 8,
+      schemaCompatibility: 9,
       profiles: remainingProfiles,
       careEvents,
       sessions,

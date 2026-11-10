@@ -7,6 +7,7 @@ export {
 export type {
   WebCareEventRow,
   WebChangeRow,
+  WebChildPrivateSyncStateRow,
   WebChildProfileRow,
   WebDeletionRow,
   WebDraftRow,
@@ -16,6 +17,7 @@ export type {
   WebRevisionRow,
   WebSessionRow,
 } from './lumiWebDatabase';
+export { createDexieChildPrivateSyncStateStore } from './dexieChildPrivateSyncStateStore';
 export { LumiWebLockDatabase, WEB_LOCK_DATABASE_NAME } from './lockDatabase';
 export { openWebDatabase } from './openWebDatabase';
 export type { OpenWebDatabaseOptions, WebDatabaseHandle } from './openWebDatabase';

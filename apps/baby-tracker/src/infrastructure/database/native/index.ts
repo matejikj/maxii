@@ -37,6 +37,8 @@ export { SCHEMA_VERSION_5, SCHEMA_V5_CHECKSUM } from './schema/v5';
 export { SCHEMA_VERSION_6, SCHEMA_V6_CHECKSUM } from './schema/v6';
 export { SCHEMA_VERSION_7, SCHEMA_V7_CHECKSUM } from './schema/v7';
 export { SCHEMA_VERSION_8, SCHEMA_V8_CHECKSUM } from './schema/v8';
+export { SCHEMA_VERSION_9, SCHEMA_V9_CHECKSUM } from './schema/v9';
+export { createSqlChildPrivateSyncStateStore } from './sqlChildPrivateSyncStateStore';
 export { DATABASE_KEY_LIFECYCLE } from './keyLifecycle';
 export {
   assertExplicitPlaintextConversion,

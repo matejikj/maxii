@@ -656,7 +656,9 @@ function primaryKeyMatch(tableName: string, existing: Row, next: Row): boolean {
                         ? 'attachment_id'
                         : tableName === 'photo_attachment_jobs'
                           ? 'job_id'
-                          : null;
+                          : tableName === 'child_private_sync_state'
+                            ? 'id'
+                            : null;
   if (key == null) return false;
   return existing[key] === next[key];
 }

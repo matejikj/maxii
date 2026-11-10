@@ -43,7 +43,7 @@ import { createMemoryEncryptedSqlOpener } from '../src/infrastructure/database/n
 import { createNativeUnitOfWorkFactory } from '../src/infrastructure/database/native/nativeUnitOfWork.ts';
 import { openPrivateDatabase } from '../src/infrastructure/database/native/privateDatabase.ts';
 import { currentSchemaVersion } from '../src/infrastructure/database/native/migrations.ts';
-import { SCHEMA_VERSION_8 } from '../src/infrastructure/database/native/schema/v8.ts';
+import { SCHEMA_VERSION_9 } from '../src/infrastructure/database/native/schema/v9.ts';
 
 const childId = asChildId('child_proj_1');
 const clock = Date.UTC(2026, 10, 9, 12, 0, 0);
@@ -81,7 +81,7 @@ async function openNative(name: string) {
 
 test('schema opens and familyGuided projects persist across reload', async () => {
   const ctx = await openNative('family-projects.db');
-  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_8);
+  assert.equal(await currentSchemaVersion(ctx.db.connection), SCHEMA_VERSION_9);
   assert.equal(isChildPrivateModeActive(), false);
   assert.equal(listFamilyGuidedTemplates().length, 12);
 
@@ -126,7 +126,7 @@ test('diary replace clears local projects so wipe cannot leave residues', async 
 
   const empty = createDiaryArchive({
     createdAtMs: clock,
-    schemaCompatibility: 8,
+    schemaCompatibility: 9,
     profiles: [],
     careEvents: [],
     sessions: [],
