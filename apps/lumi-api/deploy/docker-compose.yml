@@ -74,6 +74,31 @@ services:
     networks:
       - lumi_internal
 
+  # Local S3-compatible object store for family photo adapter drills.
+  # Adobe S3Mock stands in for MinIO: Docker Hub removed minio/minio and Quay
+  # pulls currently return 401 in this environment. Same SigV4 path-style client.
+  # Start with: docker compose --profile attachments up -d s3mock
+  # Not required for personal tracker boots (attachment store stays memory).
+  s3mock:
+    image: adobe/s3mock:3.12.0
+    environment:
+      initialBuckets: lumi-family-photos
+      COM_ADOBE_TESTING_S3MOCK_STORE_REGION: us-east-1
+    ports:
+      - '9090:9090'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q -O - http://127.0.0.1:9090/ >/dev/null || exit 1',
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    profiles: ['attachments']
+    networks:
+      - lumi_internal
+
 volumes:
   lumi_pg_data:
 

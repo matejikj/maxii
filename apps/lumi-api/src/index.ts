@@ -57,6 +57,14 @@ export type {
   AttachmentLocatorMigrationResult,
 } from './attachments/attachmentObjectLocatorMigration.ts';
 export { runAttachmentLocatorMigrationDrill } from './attachments/attachmentLocatorMigrationDrill.ts';
+export {
+  LOCAL_S3_COMPATIBLE_ATTACHMENT_DRILL_DEFAULTS,
+  runAttachmentS3CompatibleDrill,
+} from './attachments/attachmentS3CompatibleDrill.ts';
+export type {
+  AttachmentS3CompatibleDrillCase,
+  AttachmentS3CompatibleDrillResult,
+} from './attachments/attachmentS3CompatibleDrill.ts';
 
 export {
   MemorySyncStore,

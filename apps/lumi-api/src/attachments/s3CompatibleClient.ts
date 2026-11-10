@@ -121,7 +121,61 @@ export function createS3CompatibleClient(input: {
     return response;
   }
 
+  /**
+   * Create the configured bucket when missing. Idempotent against S3/R2-style
+   * stores so local drills can bootstrap without a separate admin CLI.
+   */
+  async function ensureBucket(): Promise<boolean> {
+    const { amzDate: amz, dateStamp } = amzDate(nowFn());
+    const canonicalUri = `/${input.config.bucket}`;
+    const url = `${endpoint}${canonicalUri}`;
+    const host = new URL(url).host;
+    const payloadHash = sha256Hex('');
+    const headers: Record<string, string> = {
+      host,
+      'x-amz-content-sha256': payloadHash,
+      'x-amz-date': amz,
+    };
+    const signedHeaderNames = Object.keys(headers)
+      .map((name) => name.toLowerCase())
+      .sort();
+    const canonicalHeaders = signedHeaderNames
+      .map((name) => `${name}:${headers[name]!.trim()}\n`)
+      .join('');
+    const signedHeaders = signedHeaderNames.join(';');
+    const canonicalRequest = [
+      'PUT',
+      canonicalUri,
+      '',
+      canonicalHeaders,
+      signedHeaders,
+      payloadHash,
+    ].join('\n');
+    const credentialScope = `${dateStamp}/${input.config.region}/s3/aws4_request`;
+    const stringToSign = [
+      'AWS4-HMAC-SHA256',
+      amz,
+      credentialScope,
+      sha256Hex(canonicalRequest),
+    ].join('\n');
+    const kDate = hmac(`AWS4${input.config.secretAccessKey}`, dateStamp);
+    const kRegion = hmac(kDate, input.config.region);
+    const kService = hmac(kRegion, 's3');
+    const kSigning = hmac(kService, 'aws4_request');
+    const signature = createHmac('sha256', kSigning).update(stringToSign, 'utf8').digest('hex');
+    headers.authorization = `AWS4-HMAC-SHA256 Credential=${input.config.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    const response = await fetchImpl(url, { method: 'PUT', headers });
+    // 200/200-created OK; BucketAlreadyOwnedByYou / exists → still usable.
+    return (
+      (response.status >= 200 && response.status < 300) ||
+      response.status === 409 ||
+      response.status === 204
+    );
+  }
+
   return {
+    ensureBucket,
     async putObject(objectKey: string, bytes: Uint8Array, contentType: string) {
       const response = await signedRequest({
         method: 'PUT',
