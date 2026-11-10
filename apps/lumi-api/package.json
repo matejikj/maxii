@@ -23,6 +23,8 @@
     "attachment:acceptance-drill": "bash ./deploy/attachment-acceptance-drill.sh",
     "attachment:pg-meta-drill": "bash ./deploy/attachment-postgres-metadata-drill.sh",
     "attachment:http-pg-meta-drill": "bash ./deploy/attachment-http-postgres-metadata-drill.sh",
+    "child-private:rls-drill": "bash ./deploy/child-private-postgres-rls-drill.sh",
+
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },
