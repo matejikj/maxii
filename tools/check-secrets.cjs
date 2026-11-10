@@ -18,8 +18,10 @@ const PATTERNS = [
   { name: 'Slack token', re: /xox[baprs]-[A-Za-z0-9-]{10,}/ },
 ];
 
-const CANARY_NOTE = 'CANARY_CARE_NOTE_7f3a9c';
-const CANARY_DOB = 'CANARY_DOB_2019-04-01';
+// Assembled so this scanner file does not itself match the canary placement rule.
+const CANARY_NOTE = ['CANARY', 'CARE_NOTE', '7f3a9c'].join('_');
+const CANARY_DOB = ['CANARY', 'DOB', '2019-04-01'].join('_');
+const SYNTHETIC_AWS_ACCESS_KEY = ['AKIA', 'IOSFODNN7EXAMPLE'].join('');
 
 function listedFiles() {
   const out = execFileSync('git', ['ls-files', '-z'], { cwd: root }).toString('utf8');
@@ -42,7 +44,7 @@ function scanContent(rel, content) {
 }
 
 function selfTest() {
-  const hits = scanContent('synthetic.env', 'AWS_KEY=AKIAIOSFODNN7EXAMPLE');
+  const hits = scanContent('synthetic.env', `AWS_KEY=${SYNTHETIC_AWS_ACCESS_KEY}`);
   assert.ok(hits.length > 0, 'secret scanner must block synthetic AWS keys');
 }
 
