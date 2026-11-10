@@ -170,6 +170,11 @@ export {
   type FamilyPhotoTransferPinQueue,
 } from './keepAttachmentOffline';
 export {
+  requestAttachmentDisplayDownload,
+  type FamilyPhotoTransferDisplayQueue,
+  type RequestAttachmentDisplayDownloadResult,
+} from './requestAttachmentDisplayDownload';
+export {
   clearRecoverablePhotoCache,
   loadPhotoStorageSnapshot,
   releaseDurableOwnPhotoCopy,

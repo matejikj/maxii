@@ -48,6 +48,11 @@ export type PhotoAttachmentsFieldProps = {
    */
   onSoftDeleteAttachment?: (attachment: PhotoAttachment) => Promise<void> | void;
   onUndoSoftDeleteAttachment?: (attachmentId: string) => Promise<boolean> | boolean;
+  /**
+   * Conscious full-photo download for one missing item (open / “Stáhnout fotku”).
+   * Must not hydrate the whole album.
+   */
+  onRequestDisplayDownload?: (attachment: PhotoAttachment) => Promise<void> | void;
 };
 
 /**
@@ -72,10 +77,12 @@ export function PhotoAttachmentsField({
   onToggleOfflinePin,
   onSoftDeleteAttachment,
   onUndoSoftDeleteAttachment,
+  onRequestDisplayDownload,
 }: PhotoAttachmentsFieldProps) {
   const { ui } = useLumiTheme();
   const [busy, setBusy] = useState(false);
   const [pinBusyId, setPinBusyId] = useState<string | null>(null);
+  const [downloadBusyId, setDownloadBusyId] = useState<string | null>(null);
   const [removeBusyId, setRemoveBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
@@ -218,6 +225,26 @@ export function PhotoAttachmentsField({
                         setMessage('Uchování offline se nepodařilo změnit.');
                       })
                       .finally(() => setPinBusyId(null));
+                  }}
+                />
+              ) : null}
+              {onRequestDisplayDownload &&
+              transferLabelFor?.(attachment) === 'missing_download' ? (
+                <LumiButton
+                  title="Stáhnout fotku"
+                  variant="secondary"
+                  disabled={busy || downloadBusyId === attachment.attachmentId}
+                  onPress={() => {
+                    setDownloadBusyId(attachment.attachmentId);
+                    setMessage(null);
+                    void Promise.resolve(onRequestDisplayDownload(attachment))
+                      .then(() => {
+                        setMessage('Stahuji plnou fotku — jen tuto, ne celé album.');
+                      })
+                      .catch(() => {
+                        setMessage('Fotku se nepodařilo zařadit ke stažení.');
+                      })
+                      .finally(() => setDownloadBusyId(null));
                   }}
                 />
               ) : null}

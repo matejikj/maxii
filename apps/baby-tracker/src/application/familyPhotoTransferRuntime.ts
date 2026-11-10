@@ -12,6 +12,7 @@ import {
   type FamilyPhotoTransferLabel,
   type FamilyPhotoTransferSession,
   type PhotoAttachment,
+  type RenditionRole,
   type ThumbnailPrefetchCandidate,
 } from '../domain/attachments';
 
@@ -21,12 +22,13 @@ export type FamilyPhotoTransferRuntime = {
   readonly setSession: (session: FamilyPhotoTransferSession) => void;
   readonly enqueueLocalUploads: (attachments: readonly PhotoAttachment[]) => void;
   /**
-   * Queue missing display+thumbnail downloads for keep-offline / conscious
-   * full fetches. Does not run on ordinary metadata sync.
+   * Queue missing downloads for keep-offline or a conscious full-photo fetch.
+   * Pass `roles: ['display']` for open/download-one; default is both roles.
    */
   readonly enqueueRemoteDownloads: (input: {
     readonly remoteAttachments: readonly PhotoAttachment[];
     readonly localAttachments: readonly PhotoAttachment[];
+    readonly roles?: readonly RenditionRole[];
   }) => {
     readonly queued: number;
     readonly placeholders: readonly PhotoAttachment[];
@@ -112,7 +114,7 @@ export function createFamilyPhotoTransferRuntime(input?: {
       if (created.length === 0) return;
       jobs = [...jobs, ...created];
     },
-    enqueueRemoteDownloads({ remoteAttachments, localAttachments }) {
+    enqueueRemoteDownloads({ remoteAttachments, localAttachments, roles }) {
       if (!shouldEnqueueFamilyPhotoTransfers(session)) {
         return { queued: 0, placeholders: [] };
       }
@@ -122,6 +124,7 @@ export function createFamilyPhotoTransferRuntime(input?: {
         localAttachments,
         existingJobs: jobs,
         createJobId,
+        roles,
       });
       if (planned.jobs.length > 0) {
         jobs = [...jobs, ...planned.jobs];

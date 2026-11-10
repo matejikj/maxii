@@ -12,6 +12,7 @@ import {
 } from '../../domain';
 import {
   createDraftAutosave,
+  requestAttachmentDisplayDownload,
   restorePhotoAttachment,
   setAttachmentOfflinePin,
   softDeletePhotoAttachment,
@@ -119,6 +120,22 @@ export function ExperienceRecorder({
           row.attachmentId === result.attachment.attachmentId ? result.attachment : row,
         ),
       );
+      if (result.downloadJobsQueued > 0) {
+        void runtime.photoTransferLoop.runOnce();
+      }
+    },
+    [runtime.attachments, runtime.photoTransfer, runtime.photoTransferLoop],
+  );
+
+  const onRequestDisplayDownload = useCallback(
+    async (attachment: PhotoAttachment) => {
+      if (!runtime.attachments) return;
+      const result = await requestAttachmentDisplayDownload({
+        attachmentId: attachment.attachmentId,
+        attachments: runtime.attachments,
+        transfer: runtime.photoTransfer,
+      });
+      if (!result.ok) return;
       if (result.downloadJobsQueued > 0) {
         void runtime.photoTransferLoop.runOnce();
       }
@@ -533,6 +550,9 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onRequestDisplayDownload={
+            offlinePinEnabled ? onRequestDisplayDownload : undefined
+          }
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
@@ -588,6 +608,9 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onRequestDisplayDownload={
+            offlinePinEnabled ? onRequestDisplayDownload : undefined
+          }
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
@@ -643,6 +666,9 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
+          onRequestDisplayDownload={
+            offlinePinEnabled ? onRequestDisplayDownload : undefined
+          }
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />

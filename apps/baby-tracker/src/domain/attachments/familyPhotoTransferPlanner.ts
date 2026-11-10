@@ -220,6 +220,60 @@ export function planDownloadJobsForRemoteMetadata(input: {
   return { jobs, placeholders };
 }
 
+/**
+ * True when the parent opened a photo that still lacks a local display copy.
+ * Prefetch never fills this — only pin or an explicit download request does.
+ */
+export function attachmentNeedsConsciousDisplayDownload(
+  attachment: PhotoAttachment,
+): boolean {
+  if (attachment.deletedAtMs != null) return false;
+  const display = attachment.renditions.find((row) => row.role === 'display');
+  if (!display) return false;
+  return !renditionHasLocalBytes(display.availability);
+}
+
+/**
+ * Plan a single-photo display download. Never expands into an album hydrate —
+ * cellular sync must not pull every full family photo automatically.
+ */
+export function planConsciousDisplayDownload(input: {
+  readonly session: FamilyPhotoTransferSession;
+  readonly attachment: PhotoAttachment;
+  readonly existingJobs: readonly FamilyPhotoBlobTransferJob[];
+  readonly createJobId: (seed: string) => string;
+}): {
+  readonly jobs: readonly FamilyPhotoBlobTransferJob[];
+  readonly outcome:
+    | 'queued'
+    | 'already_local'
+    | 'personal_cold'
+    | 'deleted'
+    | 'already_queued';
+} {
+  if (input.attachment.deletedAtMs != null) {
+    return { jobs: [], outcome: 'deleted' };
+  }
+  if (!shouldEnqueueFamilyPhotoTransfers(input.session)) {
+    return { jobs: [], outcome: 'personal_cold' };
+  }
+  if (!attachmentNeedsConsciousDisplayDownload(input.attachment)) {
+    return { jobs: [], outcome: 'already_local' };
+  }
+  const planned = planDownloadJobsForRemoteMetadata({
+    session: input.session,
+    remoteAttachments: [input.attachment],
+    localAttachments: [input.attachment],
+    existingJobs: input.existingJobs,
+    createJobId: input.createJobId,
+    roles: ['display'],
+  });
+  if (planned.jobs.length === 0) {
+    return { jobs: [], outcome: 'already_queued' };
+  }
+  return { jobs: planned.jobs, outcome: 'queued' };
+}
+
 export type ThumbnailPrefetchCandidate = {
   readonly attachment: PhotoAttachment;
   /** Capture or sync time used for the recent-window gate. */
