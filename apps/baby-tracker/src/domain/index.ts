@@ -233,6 +233,28 @@ export {
 } from './sync/transport';
 export { runSyncTick, type SyncTransportPort, type SyncWorkerResult } from './sync/worker';
 export {
+  CHILD_PRIVATE_SYNC_KINDS,
+  childPrivateSharePayloadIsSafe,
+  isChildPrivateShareKind,
+  isChildPrivateSyncKind,
+  type ChildPrivateSyncOperationKind,
+} from './sync/childPrivateKinds';
+export {
+  applyChildPrivatePushReceipts,
+  commitChildPrivatePullPage,
+  createEmptyChildPrivateSyncState,
+  enqueueChildPrivateOutbox,
+  isolateRejectedChildPrivatePush,
+  markChildPrivateOutboxAttempt,
+  pendingChildPrivateOutbox,
+  type LocalChildPrivateSyncState,
+} from './sync/childPrivateTransport';
+export {
+  runChildPrivateSyncTick,
+  type ChildPrivateSyncTransportPort,
+  type ChildPrivateSyncWorkerResult,
+} from './sync/childPrivateWorker';
+export {
   buildSyncTransferPresentation,
   type SyncTransferPresentation,
 } from './sync/presentation';

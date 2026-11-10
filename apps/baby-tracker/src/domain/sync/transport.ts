@@ -1,5 +1,7 @@
+import { AppError } from '../errors.ts';
 import type { OperationId } from '../ids.ts';
 import type { Instant } from '../ports/clock.ts';
+import { isChildPrivateSyncKind } from './childPrivateKinds.ts';
 import { createHash } from './hash.ts';
 
 export type DurableOutboxEntry = {
@@ -61,6 +63,17 @@ export function enqueueDurableOutbox(
     readonly enqueuedAt: Instant;
   },
 ): LocalSyncState {
+  // Private workspace changes use a separate owner-scoped outbox/stream.
+  if (
+    isChildPrivateSyncKind(input.commandType) ||
+    input.commandType.startsWith('child_private.')
+  ) {
+    throw new AppError(
+      'FORBIDDEN',
+      'Child-private operations must not enter the family care outbox',
+      { details: { commandType: input.commandType } },
+    );
+  }
   const payloadHash = hashPayload(input.payload);
   const entry: DurableOutboxEntry = {
     operationId: input.operationId,
