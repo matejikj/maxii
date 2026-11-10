@@ -245,7 +245,9 @@ export {
   createEmptyChildPrivateSyncState,
   enqueueChildPrivateOutbox,
   isolateRejectedChildPrivatePush,
+  markChildPrivateInboxApplied,
   markChildPrivateOutboxAttempt,
+  pendingChildPrivateInbox,
   pendingChildPrivateOutbox,
   type LocalChildPrivateSyncState,
 } from './sync/childPrivateTransport';

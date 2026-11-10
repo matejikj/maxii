@@ -147,6 +147,8 @@ export function planChildPrivateSharePublish(
       shareId: share.shareId,
       sourceProjectId: share.sourceProjectId,
       sourceRevisionId: share.sourceRevisionId,
+      // Recipients materialize the share under the publisher, not themselves.
+      ownerAppUserId: share.ownerAppUserId,
       publishedTitle: share.publishedTitle,
       publishedBody: share.publishedBody,
       audienceAppUserIds: [...share.audienceAppUserIds],
@@ -171,6 +173,7 @@ export function planChildPrivateShareRevoke(
     payload: {
       shareId: share.shareId,
       sourceProjectId: share.sourceProjectId,
+      ownerAppUserId: share.ownerAppUserId,
       revokedAt: share.revokedAt,
     },
   };

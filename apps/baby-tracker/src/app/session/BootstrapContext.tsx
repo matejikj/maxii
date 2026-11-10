@@ -204,6 +204,8 @@ export function BootstrapProvider({
       const childPrivateSyncLoop = createChildPrivateSyncLoop({
         binding: childPrivateSyncBinding,
         store: opened.childPrivateSyncStore,
+        unitOfWork: opened.unitOfWork,
+        getSessionAppUserId: () => childPrivateSyncBinding.getAppUserId(),
         nowIso: () => new Date(services.clock.now().epochMs).toISOString(),
       });
       // Only schedule network ticks when family sync is explicitly configured.

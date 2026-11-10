@@ -182,6 +182,10 @@ export {
   type ChildPrivateSyncLoopResult,
 } from './childPrivateSyncLoop';
 export {
+  applyChildPrivateInboxToWorkspace,
+  type ApplyChildPrivateInboxResult,
+} from './applyChildPrivateInbox';
+export {
   enqueueChildPrivatePortfolioDelete,
   enqueueChildPrivatePortfolioUpsert,
   enqueueChildPrivateProjectDelete,

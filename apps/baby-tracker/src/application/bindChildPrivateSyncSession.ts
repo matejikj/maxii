@@ -26,6 +26,8 @@ export type ChildPrivateSyncSessionBinding = {
   readonly bindAuthSession: (session: FamilyAuthSession | null) => void;
   readonly getTransport: () => ChildPrivateSyncTransportPort;
   readonly isTransferReady: () => boolean;
+  /** Current authenticated principal, or null when logged out / personal cold. */
+  readonly getAppUserId: () => string | null;
   /**
    * Runs one owner-scoped tick when sync is configured and a session is bound.
    * Cold personal builds return the prior state without contacting a backend.
@@ -74,6 +76,7 @@ export function createChildPrivateSyncSessionBinding(input: {
       rebuild();
     },
     getTransport: () => transport,
+    getAppUserId: () => authSession?.appUserId ?? null,
     isTransferReady: () =>
       Boolean(
         input.boundary.syncConfigured &&

@@ -156,8 +156,9 @@ export function applyChildPrivatePushReceipts(
 }
 
 /**
- * Cursor advances only with applied inbox rows so a crash between pull and
- * apply leaves the previous cursor for a safe retry.
+ * Accept a pulled page into the durable inbox. Rows start unapplied so a crash
+ * between pull and local materialization can retry entity writes without
+ * re-fetching (cursor already advanced with this snapshot).
  */
 export function commitChildPrivatePullPage(
   state: LocalChildPrivateSyncState,
@@ -177,7 +178,7 @@ export function commitChildPrivatePullPage(
       // Never wipe unsent private work on a resync signal.
     };
   }
-  const incoming = input.entries.map((entry) => ({ ...entry, applied: true }));
+  const incoming = input.entries.map((entry) => ({ ...entry, applied: false }));
   return {
     ...state,
     epoch: input.epoch,
@@ -186,6 +187,27 @@ export function commitChildPrivatePullPage(
     resyncRequired: false,
     inbox: [...state.inbox, ...incoming],
   };
+}
+
+/** Mark inbox rows as materialized into the local private workspace. */
+export function markChildPrivateInboxApplied(
+  state: LocalChildPrivateSyncState,
+  operationIds: readonly string[],
+): LocalChildPrivateSyncState {
+  if (operationIds.length === 0) return state;
+  const wanted = new Set(operationIds);
+  return {
+    ...state,
+    inbox: state.inbox.map((entry) =>
+      wanted.has(entry.operationId) ? { ...entry, applied: true } : entry,
+    ),
+  };
+}
+
+export function pendingChildPrivateInbox(
+  state: LocalChildPrivateSyncState,
+): readonly InboxEntry[] {
+  return state.inbox.filter((entry) => !entry.applied);
 }
 
 /**

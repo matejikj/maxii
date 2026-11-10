@@ -1,5 +1,10 @@
+import type { UnitOfWorkFactory } from '../domain';
 import type { ChildPrivateSyncStateStore } from '../domain/sync/childPrivateSyncStateStore';
 import type { LocalChildPrivateSyncState } from '../domain/sync/childPrivateTransport';
+import {
+  applyChildPrivateInboxToWorkspace,
+  type ApplyChildPrivateInboxResult,
+} from './applyChildPrivateInbox';
 import type { ChildPrivateSyncSessionBinding } from './bindChildPrivateSyncSession';
 
 export type ChildPrivateSyncLoopResult = {
@@ -8,6 +13,7 @@ export type ChildPrivateSyncLoopResult = {
   readonly personalCold: boolean;
   readonly state: LocalChildPrivateSyncState;
   readonly nextDelayMs: number;
+  readonly inboxApply: ApplyChildPrivateInboxResult | null;
 };
 
 export type ChildPrivateSyncLoop = {
@@ -23,6 +29,7 @@ const DEFAULT_INTERVAL_MS = 15_000;
 /**
  * Loads the durable private sync snapshot, runs one session-bound tick, and
  * writes the result back. Personal builds stay cold until sync env + login.
+ * Unapplied inbox rows are materialized into the local diary when a UoW is bound.
  */
 export async function runChildPrivateSyncTickWithStore(input: {
   readonly binding: ChildPrivateSyncSessionBinding;
@@ -30,32 +37,52 @@ export async function runChildPrivateSyncTickWithStore(input: {
   readonly attemptId: string;
   readonly nowIso: string;
   readonly batchSize?: number;
+  readonly unitOfWork?: UnitOfWorkFactory | undefined;
+  readonly sessionAppUserId?: string | null | undefined;
 }): Promise<ChildPrivateSyncLoopResult> {
   const loaded = await input.store.load();
-  if (!input.binding.isTransferReady()) {
-    // Keep the local outbox durable; absence of remote session is not a failure.
-    return {
-      pushed: 0,
-      pulled: 0,
-      personalCold: true,
+  let state = loaded;
+  let pushed = 0;
+  let pulled = 0;
+  let nextDelayMs = 5_000;
+  const personalCold = !input.binding.isTransferReady();
+
+  if (!personalCold) {
+    const tick = await input.binding.runTick({
       state: loaded,
-      nextDelayMs: 5_000,
-    };
+      attemptId: input.attemptId,
+      now: input.nowIso,
+      ...(input.batchSize != null ? { batchSize: input.batchSize } : {}),
+    });
+    state = tick.state;
+    pushed = tick.pushed;
+    pulled = tick.pulled;
+    nextDelayMs = tick.nextDelayMs;
+    await input.store.save(state);
   }
 
-  const tick = await input.binding.runTick({
-    state: loaded,
-    attemptId: input.attemptId,
-    now: input.nowIso,
-    ...(input.batchSize != null ? { batchSize: input.batchSize } : {}),
-  });
-  await input.store.save(tick.state);
+  let inboxApply: ApplyChildPrivateInboxResult | null = null;
+  if (input.unitOfWork) {
+    // Apply even when cold so a prior crash between pull and materialize recovers.
+    inboxApply = await applyChildPrivateInboxToWorkspace({
+      state,
+      unitOfWork: input.unitOfWork,
+      now: { epochMs: Date.parse(input.nowIso) },
+      sessionAppUserId: input.sessionAppUserId ?? state.ownerAppUserId,
+    });
+    if (inboxApply.state !== state) {
+      state = inboxApply.state;
+      await input.store.save(state);
+    }
+  }
+
   return {
-    pushed: tick.pushed,
-    pulled: tick.pulled,
-    personalCold: false,
-    state: tick.state,
-    nextDelayMs: tick.nextDelayMs,
+    pushed,
+    pulled,
+    personalCold,
+    state,
+    nextDelayMs,
+    inboxApply,
   };
 }
 
@@ -66,6 +93,8 @@ export async function runChildPrivateSyncTickWithStore(input: {
 export function createChildPrivateSyncLoop(input: {
   readonly binding: ChildPrivateSyncSessionBinding;
   readonly store: ChildPrivateSyncStateStore;
+  readonly unitOfWork?: UnitOfWorkFactory | undefined;
+  readonly getSessionAppUserId?: (() => string | null) | undefined;
   readonly createAttemptId?: (() => string) | undefined;
   readonly nowIso?: (() => string) | undefined;
   readonly setIntervalFn?: typeof setInterval;
@@ -89,6 +118,7 @@ export function createChildPrivateSyncLoop(input: {
           personalCold: !input.binding.isTransferReady(),
           state,
           nextDelayMs: 5_000,
+          inboxApply: null,
         };
       }
       inFlight = true;
@@ -98,6 +128,8 @@ export function createChildPrivateSyncLoop(input: {
           store: input.store,
           attemptId: createAttemptId(),
           nowIso: nowIso(),
+          unitOfWork: input.unitOfWork,
+          sessionAppUserId: input.getSessionAppUserId?.() ?? null,
         });
       } finally {
         inFlight = false;
