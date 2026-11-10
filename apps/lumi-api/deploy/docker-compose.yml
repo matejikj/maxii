@@ -63,6 +63,14 @@ services:
       LUMI_OIDC_AUDIENCE: lumi-api
       LUMI_TEST_HS256_SECRET: local_dev_hs256_only
       LUMI_CORS_ORIGINS: http://127.0.0.1:8081
+      # Optional: point at Compose S3Mock when profile attachments is also up.
+      # Leave unset for memory object store (personal-safe default).
+      # LUMI_ATTACHMENT_STORE: r2
+      # LUMI_R2_ENDPOINT: http://s3mock:9090
+      # LUMI_R2_REGION: us-east-1
+      # LUMI_R2_BUCKET: lumi-family-photos
+      # LUMI_R2_ACCESS_KEY_ID: test
+      # LUMI_R2_SECRET_ACCESS_KEY: test
     ports:
       - '8787:8787'
     volumes:

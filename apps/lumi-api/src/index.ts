@@ -65,6 +65,14 @@ export type {
   AttachmentS3CompatibleDrillCase,
   AttachmentS3CompatibleDrillResult,
 } from './attachments/attachmentS3CompatibleDrill.ts';
+export {
+  LOCAL_HTTP_S3_ATTACHMENT_DRILL_DEFAULTS,
+  runAttachmentHttpS3CompatibleDrill,
+} from './attachments/attachmentHttpS3CompatibleDrill.ts';
+export type {
+  AttachmentHttpS3CompatibleDrillCase,
+  AttachmentHttpS3CompatibleDrillResult,
+} from './attachments/attachmentHttpS3CompatibleDrill.ts';
 
 export {
   MemorySyncStore,

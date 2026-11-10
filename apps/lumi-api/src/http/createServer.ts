@@ -48,6 +48,8 @@ export type CreatedApi = {
   readonly backups: ReturnType<typeof createMemoryBackupRepository>;
   readonly erasureRegistry: ReturnType<typeof createMemoryErasureRegistry>;
   readonly attachments: ReturnType<typeof createFamilyAttachmentService>;
+  /** Which private attachment blob backend createFamilyApi selected. */
+  readonly attachmentObjectProvider: 'memory' | 'r2';
   readonly metrics: FamilyOpsMetrics;
 };
 
@@ -350,6 +352,7 @@ export async function createFamilyApi(config: ApiConfig): Promise<CreatedApi> {
     backups,
     erasureRegistry,
     attachments,
+    attachmentObjectProvider: attachmentObjects.provider,
     metrics,
   };
 }
