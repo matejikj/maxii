@@ -1,7 +1,16 @@
 /* LUMI personal web shell: cache versioned public assets only — never auth, diaries, or diagnostics. */
-const CACHE = 'lumi-public-v1';
-/** Only URLs that exist in the static export — a missing path would fail install. */
-const PRECACHE = ['./', './index.html'];
+const CACHE = 'lumi-public-v2';
+/** Absolute same-origin shell paths — relative cache.add can fail on redirects from `/`. */
+const PRECACHE = ['/', '/index.html'];
+
+async function matchShell(cache) {
+  return (
+    (await cache.match('/index.html')) ||
+    (await cache.match('/')) ||
+    (await cache.match('./index.html')) ||
+    (await cache.match('./'))
+  );
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -10,7 +19,14 @@ self.addEventListener('install', (event) => {
       await Promise.all(
         PRECACHE.map(async (url) => {
           try {
-            await cache.add(url);
+            const response = await fetch(url, { cache: 'reload' });
+            if (response.ok) {
+              await cache.put(url, response.clone());
+              // Also store under /index.html when `/` served the shell document.
+              if (url === '/' && response.headers.get('content-type')?.includes('text/html')) {
+                await cache.put('/index.html', response.clone());
+              }
+            }
           } catch {
             // Skip optional shell files so one missing asset cannot block offline start.
           }
@@ -51,6 +67,9 @@ self.addEventListener('fetch', (event) => {
   // Never put private API/auth/diagnostic responses into the public cache.
   if (url.pathname.includes('/api/') || url.pathname.includes('diagnostics')) return;
 
+  const isDocument =
+    request.mode === 'navigate' || request.destination === 'document';
+
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(request);
@@ -62,8 +81,8 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       } catch (error) {
-        if (request.mode === 'navigate') {
-          const shell = await cache.match('./index.html');
+        if (isDocument) {
+          const shell = await matchShell(cache);
           if (shell) return shell;
         }
         throw error;

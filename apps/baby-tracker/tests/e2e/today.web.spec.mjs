@@ -65,6 +65,22 @@ test('service worker registers and serves the shell offline after first visit', 
         updateViaCache: 'none',
       });
       await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(
+            () => reject(new Error('service worker did not claim the page')),
+            15_000,
+          );
+          navigator.serviceWorker.addEventListener(
+            'controllerchange',
+            () => {
+              clearTimeout(timer);
+              resolve(undefined);
+            },
+            { once: true },
+          );
+        });
+      }
       return {
         ok: true,
         state: reg.active?.state ?? null,
@@ -78,13 +94,27 @@ test('service worker registers and serves the shell offline after first visit', 
     }
   });
   expect(registration.ok, JSON.stringify(registration)).toBeTruthy();
+  expect(registration.controlling, JSON.stringify(registration)).toBeTruthy();
 
-  // Reload while online so the active worker can cache hashed shell assets.
-  await page.reload({ waitUntil: 'networkidle' });
+  // Online revisit so the controlling worker can cache hashed shell assets.
+  await page.goto('/', { waitUntil: 'networkidle' });
   await expect(page.getByText('LUMI').first()).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(async () => {
+        const cache = await caches.open('lumi-public-v2');
+        const shell =
+          (await cache.match('/index.html')) ||
+          (await cache.match('./index.html')) ||
+          (await cache.match('/'));
+        return Boolean(shell);
+      }),
+    )
+    .toBeTruthy();
 
+  // Prefer goto over reload: CDP offline can fail reload before the SW intercepts.
   await context.setOffline(true);
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('LUMI').first()).toBeVisible({ timeout: 15_000 });
   await context.setOffline(false);
 });
