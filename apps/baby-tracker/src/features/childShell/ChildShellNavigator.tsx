@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useLumiTheme } from '@lumi/forest-design/native';
 import type { ChildShellSession } from '../../application';
 import {
   ChildShellDiscoverScreen,
+  ChildShellMyDataScreen,
   ChildShellPortfolioScreen,
   ChildShellProjectsScreen,
   ChildShellTodayScreen,
@@ -20,19 +21,33 @@ const Tab = createBottomTabNavigator<ChildShellTabParamList>();
 
 /**
  * Four-tab child root. Mounted only for an activated child principal — caregiver
- * care/history tabs are intentionally absent.
+ * care/history tabs are intentionally absent. Profile opens “Moje data”, not a
+ * fifth tab and not the caregiver settings surface.
  */
 export function ChildShellNavigator(props: {
   readonly session: ChildShellSession;
   readonly childPrivateModeActive: boolean;
-  readonly onOpenProfile: () => void;
+  /** Optional gate overrides for harness/tests — production leaves them unset. */
+  readonly gateOverrides?: Parameters<typeof ChildShellMyDataScreen>[0]['gateOverrides'];
 }) {
   const { colors } = useLumiTheme();
+  const [showMyData, setShowMyData] = useState(false);
   const shellProps = {
     session: props.session,
     childPrivateModeActive: props.childPrivateModeActive,
-    onOpenProfile: props.onOpenProfile,
+    onOpenProfile: () => setShowMyData(true),
   };
+
+  if (showMyData) {
+    return (
+      <ChildShellMyDataScreen
+        session={props.session}
+        childPrivateModeActive={props.childPrivateModeActive}
+        gateOverrides={props.gateOverrides}
+        onClose={() => setShowMyData(false)}
+      />
+    );
+  }
 
   return (
     <Tab.Navigator

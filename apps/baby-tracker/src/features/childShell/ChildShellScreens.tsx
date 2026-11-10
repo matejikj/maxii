@@ -19,11 +19,13 @@ import {
   moveChildShellPortfolioCardEarlier,
   pauseChildShellProject,
   prepareChildShellShareProposal,
+  presentChildShellMyData,
   renameChildShellPortfolioCard,
   revokeChildShellShare,
   saveChildShellProjectReflection,
   startChildShellProjectFromTemplate,
   type ChildShellDiscoverTemplateCard,
+  type ChildShellMyDataView,
   type ChildShellParentSuggestionCard,
   type ChildShellPortfolioCard,
   type ChildShellProjectCard,
@@ -33,6 +35,7 @@ import {
 } from '../../application';
 import { useCompositionRoot } from '../../app/providers';
 import { useBootstrap } from '../../app/session/BootstrapContext';
+import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import {
   asActorId,
   asEntityId,
@@ -867,6 +870,114 @@ export function ChildShellDiscoverScreen(props: ShellProps) {
           ))
         )}
       </LumiCard>
+      {error ? <LumiText tone="danger">{error}</LumiText> : null}
+    </ScrollView>
+  );
+}
+
+const APPEARANCE_LABELS = {
+  forest: 'Les',
+  workshop: 'Dílna',
+  restrained: 'Střídmý',
+} as const;
+
+/**
+ * Header “Profil” destination for the child shell. Lists own data honestly —
+ * unavailable wipe/recovery actions stay unavailable.
+ */
+export function ChildShellMyDataScreen(props: {
+  readonly session: ChildShellSession;
+  readonly childPrivateModeActive: boolean;
+  readonly onClose: () => void;
+  readonly gateOverrides?: Parameters<typeof presentChildShellMyData>[0]['gateOverrides'];
+}) {
+  const { colors } = useLumiTheme();
+  const bootstrap = useBootstrap();
+  const { preferences } = usePersonalPreferences();
+  const [view, setView] = useState<ChildShellMyDataView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const childId =
+    props.session.principal.linkedChildProfileId ??
+    (bootstrap.profile?.childId as ChildId | undefined);
+  const ownerAppUserId = props.session.principal.appUserId as ActorId;
+
+  const reload = useCallback(async () => {
+    let portfolioCount = 0;
+    let activeShareCount = 0;
+    if (bootstrap.runtime && childId && props.childPrivateModeActive) {
+      const [portfolio, shares] = await Promise.all([
+        listChildShellPortfolioCards({
+          unitOfWork: bootstrap.runtime.unitOfWork,
+          childId,
+          ownerAppUserId,
+          childPrivateModeActive: props.childPrivateModeActive,
+        }),
+        listChildShellShareCards({
+          unitOfWork: bootstrap.runtime.unitOfWork,
+          ownerAppUserId,
+          childPrivateModeActive: props.childPrivateModeActive,
+        }),
+      ]);
+      portfolioCount = portfolio.length;
+      activeShareCount = shares.filter((row) => !row.revoked).length;
+    }
+    setView(
+      presentChildShellMyData({
+        session: props.session,
+        childPrivateModeActive: props.childPrivateModeActive,
+        portfolioCount,
+        activeShareCount,
+        appearanceStyleLabel: APPEARANCE_LABELS[preferences.appearanceStyle],
+        gateOverrides: props.gateOverrides,
+      }),
+    );
+  }, [
+    bootstrap.runtime,
+    childId,
+    ownerAppUserId,
+    preferences.appearanceStyle,
+    props.childPrivateModeActive,
+    props.gateOverrides,
+    props.session,
+  ]);
+
+  useEffect(() => {
+    void reload().catch((err) => {
+      setError(err instanceof Error ? err.message : 'Načtení selhalo');
+    });
+  }, [reload]);
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={styles.pad}
+      testID="child-shell-my-data"
+    >
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
+          <LumiText variant="h2">{view?.headline ?? 'Moje data a přístupy'}</LumiText>
+          <LumiText tone="muted">{props.session.principal.displayAlias}</LumiText>
+        </View>
+        <LumiButton title="Zpět" onPress={props.onClose} />
+      </View>
+      {view ? (
+        <LumiCard>
+          <LumiText tone="muted">{view.detail}</LumiText>
+          {!view.familyHistoryAutoTransfer ? (
+            <LumiText tone="muted">
+              Cizí rodinná historie se nepřevede automaticky věkem, platbou ani hostingem.
+            </LumiText>
+          ) : null}
+        </LumiCard>
+      ) : null}
+      {view?.sections.map((section) => (
+        <LumiCard key={section.id} testID={`child-shell-my-data-${section.id}`}>
+          <LumiText variant="h3">{section.title}</LumiText>
+          <LumiText tone="muted">{section.statusLabel}</LumiText>
+          <LumiText>{section.detail}</LumiText>
+        </LumiCard>
+      ))}
       {error ? <LumiText tone="danger">{error}</LumiText> : null}
     </ScrollView>
   );

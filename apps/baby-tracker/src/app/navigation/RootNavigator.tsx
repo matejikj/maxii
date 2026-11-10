@@ -151,9 +151,6 @@ export function RootNavigator() {
           {() => {
             // Production gates keep resolveActiveRootShell on caregiver, so this
             // route falls back instead of inventing a fake private session.
-            if (resolveActiveRootShell() !== 'child') {
-              return <MainTabs />;
-            }
             // A real session store lands with verified identity; until then stay
             // on the caregiver shell rather than a disguised private UI.
             return <MainTabs />;

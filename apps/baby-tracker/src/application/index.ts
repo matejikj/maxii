@@ -296,6 +296,11 @@ export {
   type ChildShellPortfolioCard,
 } from './childShellPortfolio';
 export {
+  presentChildShellMyData,
+  type ChildShellMyDataSection,
+  type ChildShellMyDataView,
+} from './childShellMyData';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_TABS,
   type ChildShellSession,
