@@ -281,6 +281,14 @@ export {
   type ChildShellParentSuggestionCard,
 } from './childShellDiscover';
 export {
+  closeChildShellProject,
+  continueChildShellProject,
+  loadChildShellProjectDetail,
+  pauseChildShellProject,
+  saveChildShellProjectReflection,
+  type ChildShellProjectDetailView,
+} from './childShellProjectDetail';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_TABS,
   type ChildShellSession,

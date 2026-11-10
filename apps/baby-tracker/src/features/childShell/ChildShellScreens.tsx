@@ -3,7 +3,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   CHILD_SHELL_FIRST_ENTRY,
+  closeChildShellProject,
   confirmAndPublishChildShellShare,
+  continueChildShellProject,
   createChildShellBlankProject,
   dismissChildShellParentSuggestion,
   listChildShellDiscoverTemplates,
@@ -11,12 +13,16 @@ import {
   listChildShellProjectShelves,
   listChildShellShareCards,
   listChildShellTodayCards,
+  loadChildShellProjectDetail,
+  pauseChildShellProject,
   prepareChildShellShareProposal,
   revokeChildShellShare,
+  saveChildShellProjectReflection,
   startChildShellProjectFromTemplate,
   type ChildShellDiscoverTemplateCard,
   type ChildShellParentSuggestionCard,
   type ChildShellProjectCard,
+  type ChildShellProjectDetailView,
   type ChildShellSession,
   type ChildShellShareCard,
 } from '../../application';
@@ -60,10 +66,12 @@ function ProjectCardList({
   title,
   cards,
   empty,
+  onSelect,
 }: {
   title: string;
   cards: readonly ChildShellProjectCard[];
   empty: string;
+  onSelect?: (projectId: string) => void;
 }) {
   return (
     <LumiCard>
@@ -78,6 +86,9 @@ function ProjectCardList({
               {card.scopeLabel}
               {card.currentStepText ? ` · ${card.currentStepText}` : ''}
             </LumiText>
+            {onSelect ? (
+              <LumiButton title="Otevřít" onPress={() => onSelect(card.projectId)} />
+            ) : null}
           </View>
         ))
       )}
@@ -133,13 +144,19 @@ export function ChildShellTodayScreen(props: ShellProps) {
 export function ChildShellProjectsScreen(props: ShellProps) {
   const { colors } = useLumiTheme();
   const bootstrap = useBootstrap();
+  const { services } = useCompositionRoot();
   const [shelves, setShelves] = useState<{
     active: ChildShellProjectCard[];
     paused: ChildShellProjectCard[];
     closed: ChildShellProjectCard[];
   }>({ active: [], paused: [], closed: [] });
+  const [detail, setDetail] = useState<ChildShellProjectDetailView | null>(null);
+  const [showAllSteps, setShowAllSteps] = useState(false);
+  const [reflectionDraft, setReflectionDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const ownerAppUserId = props.session.principal.appUserId as ActorId;
 
   const reload = useCallback(async () => {
     if (!bootstrap.runtime) return;
@@ -150,6 +167,22 @@ export function ChildShellProjectsScreen(props: ShellProps) {
     });
     setShelves(next);
   }, [bootstrap.runtime, props.childPrivateModeActive, props.session.principal.appUserId]);
+
+  const openDetail = useCallback(
+    async (projectId: string) => {
+      if (!bootstrap.runtime) return;
+      const next = await loadChildShellProjectDetail({
+        unitOfWork: bootstrap.runtime.unitOfWork,
+        projectId: asEntityId(projectId) as EntityId,
+        ownerAppUserId,
+        childPrivateModeActive: props.childPrivateModeActive,
+      });
+      setDetail(next);
+      setReflectionDraft(next.reflection ?? '');
+      setShowAllSteps(false);
+    },
+    [bootstrap.runtime, ownerAppUserId, props.childPrivateModeActive],
+  );
 
   useEffect(() => {
     void reload().catch((err) => {
@@ -178,22 +211,196 @@ export function ChildShellProjectsScreen(props: ShellProps) {
           void createChildShellBlankProject({
             unitOfWork: bootstrap.runtime.unitOfWork,
             childId,
-            ownerAppUserId: props.session.principal.appUserId as ActorId,
+            ownerAppUserId,
             title: 'Můj nápad',
             intent: 'Chci zkusit něco vlastního.',
             now: { epochMs: Date.now() },
             childPrivateModeActive: props.childPrivateModeActive,
           })
-            .then(() => reload())
+            .then(async (created) => {
+              await reload();
+              await openDetail(created.projectId);
+            })
             .catch((err) => {
               setError(err instanceof Error ? err.message : 'Uložení selhalo');
             })
             .finally(() => setBusy(false));
         }}
       />
-      <ProjectCardList title="Aktivní" cards={shelves.active} empty="Žádný aktivní projekt." />
-      <ProjectCardList title="Odložené" cards={shelves.paused} empty="Nic odloženého." />
-      <ProjectCardList title="Uzavřené" cards={shelves.closed} empty="Zatím nic uzavřeného." />
+      {detail ? (
+        <LumiCard testID="child-shell-project-detail">
+          <LumiText variant="h3">{detail.title}</LumiText>
+          <LumiText tone="muted">{detail.scopeLabel}</LumiText>
+          <LumiText>{detail.intent}</LumiText>
+          <LumiText variant="h3">Aktuální krok</LumiText>
+          {detail.currentStep ? (
+            <LumiText>{detail.currentStep.text}</LumiText>
+          ) : (
+            <LumiText tone="muted">Všechny kroky jsou hotové, nebo zatím žádné nejsou.</LumiText>
+          )}
+          {detail.hasMoreSteps ? (
+            <LumiButton
+              title={showAllSteps ? 'Skrýt další kroky' : 'Zobrazit další kroky'}
+              onPress={() => setShowAllSteps((value) => !value)}
+            />
+          ) : null}
+          {showAllSteps
+            ? detail.steps.map((step) => (
+                <View key={step.stepId} style={styles.cardRow}>
+                  <LumiText>
+                    {step.order + 1}. {step.text}
+                  </LumiText>
+                  <LumiText tone="muted">{step.status}</LumiText>
+                </View>
+              ))
+            : null}
+          <LumiButton
+            title="Pokračovat"
+            disabled={busy}
+            onPress={() => {
+              if (!bootstrap.runtime) return;
+              setBusy(true);
+              setError(null);
+              void continueChildShellProject({
+                unitOfWork: bootstrap.runtime.unitOfWork,
+                ids: services.ids,
+                now: { epochMs: Date.now() },
+                projectId: asEntityId(detail.projectId) as EntityId,
+                ownerAppUserId,
+                childPrivateModeActive: props.childPrivateModeActive,
+              })
+                .then(async (next) => {
+                  setDetail(next);
+                  await reload();
+                })
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : 'Pokračování selhalo');
+                })
+                .finally(() => setBusy(false));
+            }}
+          />
+          <LumiButton
+            title="Odložit"
+            disabled={busy}
+            onPress={() => {
+              if (!bootstrap.runtime) return;
+              setBusy(true);
+              setError(null);
+              void pauseChildShellProject({
+                unitOfWork: bootstrap.runtime.unitOfWork,
+                ids: services.ids,
+                now: { epochMs: Date.now() },
+                projectId: asEntityId(detail.projectId) as EntityId,
+                ownerAppUserId,
+                childPrivateModeActive: props.childPrivateModeActive,
+              })
+                .then(async (next) => {
+                  setDetail(next);
+                  await reload();
+                })
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : 'Odložení selhalo');
+                })
+                .finally(() => setBusy(false));
+            }}
+          />
+          <LumiButton
+            title="Uzavřít"
+            disabled={busy}
+            onPress={() => {
+              if (!bootstrap.runtime) return;
+              setBusy(true);
+              setError(null);
+              void closeChildShellProject({
+                unitOfWork: bootstrap.runtime.unitOfWork,
+                ids: services.ids,
+                now: { epochMs: Date.now() },
+                projectId: asEntityId(detail.projectId) as EntityId,
+                ownerAppUserId,
+                childPrivateModeActive: props.childPrivateModeActive,
+              })
+                .then(async (next) => {
+                  setDetail(next);
+                  await reload();
+                })
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : 'Uzavření selhalo');
+                })
+                .finally(() => setBusy(false));
+            }}
+          />
+          <LumiText variant="h3">Malý zápis</LumiText>
+          <LumiText tone="muted">Volitelné — Co jsem zkusil/a, Co bych změnil/a. Můžeš vynechat.</LumiText>
+          <LumiInput
+            label="Reflexe"
+            accessibilityLabel="Reflexe"
+            placeholder="Volitelná poznámka"
+            value={reflectionDraft}
+            onChangeText={setReflectionDraft}
+          />
+          <LumiButton
+            title="Uložit zápis"
+            disabled={busy}
+            onPress={() => {
+              if (!bootstrap.runtime) return;
+              setBusy(true);
+              setError(null);
+              void saveChildShellProjectReflection({
+                unitOfWork: bootstrap.runtime.unitOfWork,
+                ids: services.ids,
+                now: { epochMs: Date.now() },
+                projectId: asEntityId(detail.projectId) as EntityId,
+                ownerAppUserId,
+                reflection: reflectionDraft,
+                childPrivateModeActive: props.childPrivateModeActive,
+              })
+                .then((next) => {
+                  setDetail(next);
+                  setReflectionDraft(next.reflection ?? '');
+                })
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : 'Uložení zápisu selhalo');
+                })
+                .finally(() => setBusy(false));
+            }}
+          />
+          <LumiButton
+            title="Zavřít detail"
+            disabled={busy}
+            onPress={() => setDetail(null)}
+          />
+        </LumiCard>
+      ) : null}
+      <ProjectCardList
+        title="Aktivní"
+        cards={shelves.active}
+        empty="Žádný aktivní projekt."
+        onSelect={(projectId) => {
+          void openDetail(projectId).catch((err) => {
+            setError(err instanceof Error ? err.message : 'Načtení detailu selhalo');
+          });
+        }}
+      />
+      <ProjectCardList
+        title="Odložené"
+        cards={shelves.paused}
+        empty="Nic odloženého."
+        onSelect={(projectId) => {
+          void openDetail(projectId).catch((err) => {
+            setError(err instanceof Error ? err.message : 'Načtení detailu selhalo');
+          });
+        }}
+      />
+      <ProjectCardList
+        title="Uzavřené"
+        cards={shelves.closed}
+        empty="Zatím nic uzavřeného."
+        onSelect={(projectId) => {
+          void openDetail(projectId).catch((err) => {
+            setError(err instanceof Error ? err.message : 'Načtení detailu selhalo');
+          });
+        }}
+      />
       {error ? <LumiText tone="danger">{error}</LumiText> : null}
     </ScrollView>
   );
