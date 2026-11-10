@@ -116,6 +116,22 @@ export {
   filterProjectsForFamilyExport,
   filterSharesForRequester,
 } from './exportFilter';
+export {
+  CHILD_PRIVATE_EXPORT_EXCLUDED_CATEGORIES,
+  filterPortfolioForChildPrivateExport,
+  filterProjectsForChildPrivateExport,
+  filterSharesForChildPrivateExport,
+  planChildPrivateExport,
+  type ChildPrivateExportExcludedCategory,
+  type ChildPrivateExportFilters,
+  type ChildPrivateExportManifest,
+  type ChildPrivateExportPlan,
+} from './childPrivateExport';
+export {
+  CHILD_RECOVERY_SCOPE_LABELS,
+  presentChildRecoveryPreview,
+  type ChildRecoveryPreview,
+} from './childRecoveryPreview';
 export type {
   ParentSuggestionRepository,
   PortfolioRepository,

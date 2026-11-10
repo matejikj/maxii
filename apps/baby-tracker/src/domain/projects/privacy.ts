@@ -75,11 +75,20 @@ export function evaluateProjectAccess(
       return { allowed: false, reason: 'child_mode_inactive' };
     }
     if (ctx.principalKind === 'owner') {
-      return { allowed: true, reason: 'owner' };
+      // The owner kind alone is not enough — the concrete app user must match,
+      // so a sibling's private rows never open for another "owner" principal.
+      if (
+        ctx.principalAppUserId != null &&
+        ctx.principalAppUserId === ctx.project.ownerAppUserId
+      ) {
+        return { allowed: true, reason: 'owner' };
+      }
+      return { allowed: false, reason: 'denied_child_private' };
     }
     if (
       ctx.share &&
       ctx.share.revokedAt == null &&
+      ctx.share.ownerAppUserId === ctx.project.ownerAppUserId &&
       ctx.principalKind === 'named_recipient' &&
       (action === 'read' || action === 'list' || action === 'count') &&
       ctx.principalAppUserId != null &&

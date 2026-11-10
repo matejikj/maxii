@@ -6,7 +6,9 @@ import {
   asChildId,
   attemptChildShellActivation,
 } from '../../src/domain/index.ts';
+import { presentChildRecoveryPreview } from '../../src/domain/index.ts';
 import { presentChildShellMyData } from '../../src/application/childShellMyData.ts';
+import { previewChildPrivateExport } from '../../src/application/exportChildPrivateWorkspace.ts';
 
 const openGates = {
   verifiedChildIdentity: true,
@@ -74,4 +76,144 @@ test('active mode shows honest summaries without inventing live recovery or wipe
   const wipe = view.sections.find((row) => row.id === 'wipe');
   assert.equal(wipe?.status, 'unavailable');
   assert.equal(wipe?.statusLabel, 'Zatím nedostupné');
+});
+
+function exportPreviewFor(ownerId: string, withRows: boolean) {
+  const owner = asActorId(ownerId);
+  const none = { projects: [], portfolio: [], shares: [] };
+  void withRows;
+  return previewChildPrivateExport({
+    ownerAppUserId: owner,
+    childPrivateModeActive: true,
+    ...none,
+  });
+}
+
+test('export section never claims ready without loaded counts', () => {
+  const view = presentChildShellMyData({
+    session: activatedSession(),
+    childPrivateModeActive: true,
+    portfolioCount: 0,
+    activeShareCount: 0,
+    appearanceStyleLabel: 'Les',
+    gateOverrides: openGates,
+  });
+  const exportSection = view.sections.find((row) => row.id === 'export');
+  assert.equal(view.exportPreview, null);
+  assert.doesNotMatch(exportSection?.detail ?? '', /připravený/i);
+  assert.match(exportSection?.detail ?? '', /nenačetly/);
+});
+
+test('export section shows manifest counts and says no file is generated', () => {
+  const session = activatedSession();
+  const preview = {
+    available: true,
+    manifest: {
+      ownerAppUserId: session.principal.appUserId,
+      projectCount: 4,
+      portfolioCount: 3,
+      shareCount: 2,
+      activeShareCount: 1,
+      revokedShareCount: 1,
+      excludedFamilyHistory: true,
+      excludedCategories: [],
+    },
+    summaryLines: ['Projekty: 4', 'Portfolio: 3'],
+    fileGenerated: false,
+  } as const;
+  const view = presentChildShellMyData({
+    session,
+    childPrivateModeActive: true,
+    portfolioCount: 3,
+    activeShareCount: 1,
+    appearanceStyleLabel: 'Les',
+    gateOverrides: openGates,
+    exportPreview: preview,
+  });
+  const exportSection = view.sections.find((row) => row.id === 'export');
+  assert.match(exportSection?.detail ?? '', /Projekty: 4/);
+  assert.match(exportSection?.detail ?? '', /Soubor se zatím nevytváří/);
+  assert.equal(view.exportPreview?.manifest?.projectCount, 4);
+});
+
+test('export preview built for another principal is ignored', () => {
+  const view = presentChildShellMyData({
+    session: activatedSession(),
+    childPrivateModeActive: true,
+    portfolioCount: 0,
+    activeShareCount: 0,
+    appearanceStyleLabel: 'Les',
+    gateOverrides: openGates,
+    exportPreview: exportPreviewFor('someone_else', false),
+  });
+  assert.equal(view.exportPreview, null);
+});
+
+test('inactive mode never surfaces export counts even when a preview is passed', () => {
+  const session = activatedSession();
+  const view = presentChildShellMyData({
+    session,
+    childPrivateModeActive: false,
+    portfolioCount: 0,
+    activeShareCount: 0,
+    appearanceStyleLabel: 'Les',
+    exportPreview: exportPreviewFor('child_my_data', false),
+  });
+  const exportSection = view.sections.find((row) => row.id === 'export');
+  assert.equal(exportSection?.status, 'unavailable');
+  assert.match(exportSection?.detail ?? '', /není dostupný/);
+});
+
+test('recovery preview is blocked with a Czech reason while recovery gate is closed', () => {
+  const blocked = presentChildRecoveryPreview();
+  assert.equal(blocked.status, 'blocked');
+  assert.match(blocked.blockedReason ?? '', /obnovení přístupu/i);
+  assert.deepEqual(blocked.scopeLabels, []);
+  assert.equal(blocked.restoreAction, null);
+  assert.equal(blocked.credentialsIncluded, false);
+  assert.equal(blocked.liveRestoreAvailable, false);
+  assert.equal(blocked.familyHistoryAutoTransfer, false);
+  assert.ok(blocked.otherBlockers.length >= 3);
+
+  const view = presentChildShellMyData({
+    session: activatedSession(),
+    childPrivateModeActive: false,
+    portfolioCount: 0,
+    activeShareCount: 0,
+    appearanceStyleLabel: 'Les',
+  });
+  const recovery = view.sections.find((row) => row.id === 'recovery');
+  assert.equal(recovery?.status, 'unavailable');
+  assert.match(recovery?.detail ?? '', /Podporované obnovení/);
+  assert.equal(view.recoveryPreview.status, 'blocked');
+});
+
+test('recovery preview with gates open lists own-workspace scopes and no restore action', () => {
+  const preview = presentChildRecoveryPreview({ gates: openGates });
+  assert.equal(preview.status, 'preview');
+  assert.equal(preview.blockedReason, null);
+  assert.ok(preview.scopeLabels.length > 0);
+  assert.ok(preview.scopeLabels.every((label) => !/rodin|pečovat|deník/i.test(label.replace('bez obnovení sdílení', ''))));
+  assert.equal(preview.restoreAction, null);
+  assert.equal(preview.credentialsIncluded, false);
+  assert.equal(preview.liveRestoreAvailable, false);
+  assert.equal(preview.familyHistoryAutoTransfer, false);
+  assert.deepEqual(preview.otherBlockers, []);
+
+  const onlyRecovery = presentChildRecoveryPreview({ gates: { supportedRecovery: true } });
+  assert.equal(onlyRecovery.status, 'preview');
+  assert.equal(onlyRecovery.otherBlockers.length, 3);
+
+  const view = presentChildShellMyData({
+    session: activatedSession(),
+    childPrivateModeActive: true,
+    portfolioCount: 0,
+    activeShareCount: 0,
+    appearanceStyleLabel: 'Les',
+    gateOverrides: openGates,
+  });
+  const recovery = view.sections.find((row) => row.id === 'recovery');
+  assert.equal(recovery?.status, 'summary');
+  assert.match(recovery?.detail ?? '', /Vlastní soukromé projekty/);
+  assert.match(recovery?.detail ?? '', /nečekej falešné/i);
 });

@@ -9,6 +9,7 @@ import {
   continueChildShellProject,
   createChildShellBlankProject,
   dismissChildShellParentSuggestion,
+  exportChildPrivateWorkspace,
   listChildShellDiscoverTemplates,
   listChildShellParentSuggestionCards,
   listChildShellPortfolioCards,
@@ -24,6 +25,7 @@ import {
   revokeChildShellShare,
   saveChildShellProjectReflection,
   startChildShellProjectFromTemplate,
+  type ChildPrivateExportPreview,
   type ChildShellDiscoverTemplateCard,
   type ChildShellMyDataView,
   type ChildShellParentSuggestionCard,
@@ -905,8 +907,9 @@ export function ChildShellMyDataScreen(props: {
   const reload = useCallback(async () => {
     let portfolioCount = 0;
     let activeShareCount = 0;
+    let exportPreview: ChildPrivateExportPreview | null = null;
     if (bootstrap.runtime && childId && props.childPrivateModeActive) {
-      const [portfolio, shares] = await Promise.all([
+      const [portfolio, shares, exportRows] = await Promise.all([
         listChildShellPortfolioCards({
           unitOfWork: bootstrap.runtime.unitOfWork,
           childId,
@@ -918,7 +921,13 @@ export function ChildShellMyDataScreen(props: {
           ownerAppUserId,
           childPrivateModeActive: props.childPrivateModeActive,
         }),
+        exportChildPrivateWorkspace({
+          unitOfWork: bootstrap.runtime.unitOfWork,
+          ownerAppUserId,
+          childPrivateModeActive: props.childPrivateModeActive,
+        }),
       ]);
+      exportPreview = exportRows;
       portfolioCount = portfolio.length;
       activeShareCount = shares.filter((row) => !row.revoked).length;
     }
@@ -930,6 +939,7 @@ export function ChildShellMyDataScreen(props: {
         activeShareCount,
         appearanceStyleLabel: APPEARANCE_LABELS[preferences.appearanceStyle],
         gateOverrides: props.gateOverrides,
+        exportPreview,
       }),
     );
   }, [

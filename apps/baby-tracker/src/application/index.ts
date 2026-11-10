@@ -297,6 +297,11 @@ export {
   type ChildShellPortfolioCard,
 } from './childShellPortfolio';
 export {
+  exportChildPrivateWorkspace,
+  previewChildPrivateExport,
+  type ChildPrivateExportPreview,
+} from './exportChildPrivateWorkspace';
+export {
   presentChildShellMyData,
   type ChildShellMyDataSection,
   type ChildShellMyDataView,

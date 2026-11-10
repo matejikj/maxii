@@ -1,9 +1,12 @@
 import {
   presentChildPrivateModeStatus,
+  presentChildRecoveryPreview,
   presentSelfManagementPreparation,
   type ChildShellSession,
   type ChildPrivateModeGate,
+  type ChildRecoveryPreview,
 } from '../domain';
+import type { ChildPrivateExportPreview } from './exportChildPrivateWorkspace';
 
 export type ChildShellMyDataSectionStatus = 'available' | 'unavailable' | 'summary';
 
@@ -30,6 +33,10 @@ export type ChildShellMyDataView = {
   readonly sections: readonly ChildShellMyDataSection[];
   /** True only when the private workspace itself is active. */
   readonly screenAvailable: boolean;
+  /** Recovery DTO behind the recovery section; never carries a restore action. */
+  readonly recoveryPreview: ChildRecoveryPreview;
+  /** Export counts only when a preview for this principal was supplied. */
+  readonly exportPreview: ChildPrivateExportPreview | null;
 };
 
 function statusLabel(status: ChildShellMyDataSectionStatus): string {
@@ -54,6 +61,8 @@ export function presentChildShellMyData(input: {
   readonly activeShareCount: number;
   readonly appearanceStyleLabel: string;
   readonly gateOverrides?: Partial<Record<ChildPrivateModeGate, boolean>> | undefined;
+  readonly exportPreview?: ChildPrivateExportPreview | null | undefined;
+  readonly recoveryPreview?: ChildRecoveryPreview | null | undefined;
 }): ChildShellMyDataView {
   const preparation = presentSelfManagementPreparation(input.gateOverrides);
   const mode = presentChildPrivateModeStatus(input.gateOverrides);
@@ -61,6 +70,27 @@ export function presentChildShellMyData(input: {
 
   const recoveryReady = mode.blockers.every((row) => row.code !== 'supported_recovery');
   const identityReady = mode.blockers.every((row) => row.code !== 'verified_child_identity');
+
+  const recoveryPreview =
+    input.recoveryPreview ?? presentChildRecoveryPreview({ gates: input.gateOverrides });
+  // A preview built for another principal is ignored, never shown as ours.
+  const exportPreview =
+    input.exportPreview != null &&
+    input.exportPreview.available &&
+    input.exportPreview.manifest?.ownerAppUserId === input.session.principal.appUserId
+      ? input.exportPreview
+      : null;
+
+  const recoveryDetail = !(active && recoveryReady)
+    ? recoveryPreview.blockedReason ??
+      'Obnova je ověřená, ale vlastní dětský prostor ještě není aktivní.'
+    : `${recoveryPreview.detail} Rozsah: ${recoveryPreview.scopeLabels.join('; ')}. Nečekej falešné tlačítko Obnovit.`;
+
+  const exportDetail = !active
+    ? 'Export vlastního prostoru není dostupný mimo aktivní dětský režim.'
+    : exportPreview
+      ? `${exportPreview.summaryLines.join(' ')} Soubor se zatím nevytváří. Převzetí cizí rodinné historie není automatické.`
+      : 'Počty pro export se zatím nenačetly, takže nic netvrdíme jako připravené. Převzetí cizí rodinné historie není automatické.';
 
   const sections: ChildShellMyDataSection[] = [
     {
@@ -77,9 +107,7 @@ export function presentChildShellMyData(input: {
       title: 'Obnova přístupu',
       status: active && recoveryReady ? 'summary' : 'unavailable',
       statusLabel: statusLabel(active && recoveryReady ? 'summary' : 'unavailable'),
-      detail: active && recoveryReady
-        ? 'Brána obnovy je splněná pro aktivaci. Samotný živý reset hesla/credentialu tu zatím není napojený — nečekej falešné tlačítko Obnovit.'
-        : 'Podporovaná obnova přístupu dítěte ještě není ověřená.',
+      detail: recoveryDetail,
     },
     {
       id: 'membership',
@@ -106,9 +134,7 @@ export function presentChildShellMyData(input: {
       title: 'Export a obnova dat',
       status: active ? 'summary' : 'unavailable',
       statusLabel: statusLabel(active ? 'summary' : 'unavailable'),
-      detail: active
-        ? 'Owner-scoped export vlastních dat je připravený softwarově. Převzetí cizí rodinné historie není automatické.'
-        : 'Export vlastního prostoru není dostupný mimo aktivní dětský režim.',
+      detail: exportDetail,
     },
     {
       id: 'appearance',
@@ -138,5 +164,7 @@ export function presentChildShellMyData(input: {
     familyHistoryAutoTransfer: false,
     sections,
     screenAvailable: active,
+    recoveryPreview,
+    exportPreview,
   };
 }
