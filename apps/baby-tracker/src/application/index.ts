@@ -265,6 +265,13 @@ export {
   type ChildShellProjectCard,
 } from './childShell';
 export {
+  confirmAndPublishChildShellShare,
+  listChildShellShareCards,
+  prepareChildShellShareProposal,
+  revokeChildShellShare,
+  type ChildShellShareCard,
+} from './childShellShares';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_TABS,
   type ChildShellSession,

@@ -6,6 +6,7 @@ export type AppErrorCode =
   | 'VALIDATION'
   | 'NOT_FOUND'
   | 'CONFLICT'
+  | 'FORBIDDEN'
   | 'STORAGE'
   | 'CRYPTO'
   | 'UNAVAILABLE'

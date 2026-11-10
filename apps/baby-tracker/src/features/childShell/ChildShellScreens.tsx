@@ -3,14 +3,27 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   CHILD_SHELL_FIRST_ENTRY,
+  confirmAndPublishChildShellShare,
   createChildShellBlankProject,
   listChildShellProjectShelves,
+  listChildShellShareCards,
   listChildShellTodayCards,
+  prepareChildShellShareProposal,
+  revokeChildShellShare,
   type ChildShellProjectCard,
   type ChildShellSession,
+  type ChildShellShareCard,
 } from '../../application';
+import { useCompositionRoot } from '../../app/providers';
 import { useBootstrap } from '../../app/session/BootstrapContext';
-import type { ActorId, ChildId } from '../../domain';
+import {
+  asActorId,
+  asEntityId,
+  type ActorId,
+  type ChildId,
+  type EntityId,
+  type PendingShareProposal,
+} from '../../domain';
 
 type ShellProps = {
   readonly session: ChildShellSession;
@@ -182,6 +195,32 @@ export function ChildShellProjectsScreen(props: ShellProps) {
 
 export function ChildShellPortfolioScreen(props: ShellProps) {
   const { colors } = useLumiTheme();
+  const bootstrap = useBootstrap();
+  const { services } = useCompositionRoot();
+  const [shares, setShares] = useState<ChildShellShareCard[]>([]);
+  const [pending, setPending] = useState<PendingShareProposal | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [recipientId, setRecipientId] = useState('parent_named');
+
+  const reloadShares = useCallback(async () => {
+    if (!bootstrap.runtime) return;
+    const next = await listChildShellShareCards({
+      unitOfWork: bootstrap.runtime.unitOfWork,
+      ownerAppUserId: props.session.principal.appUserId as ActorId,
+      childPrivateModeActive: props.childPrivateModeActive,
+    });
+    setShares(next);
+  }, [bootstrap.runtime, props.childPrivateModeActive, props.session.principal.appUserId]);
+
+  useEffect(() => {
+    void reloadShares().catch((err) => {
+      setError(err instanceof Error ? err.message : 'Načtení selhalo');
+    });
+  }, [reloadShares]);
+
+  const ownerAppUserId = props.session.principal.appUserId as ActorId;
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.background }}
@@ -195,6 +234,130 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
           Sem patří jen výtvory, které sám vybereš. Není to žebříček ani automatická historie výkonu.
         </LumiText>
       </LumiCard>
+      <LumiCard testID="child-shell-share-panel">
+        <LumiText variant="h3">Ukázat někomu</LumiText>
+        <LumiText tone="muted">
+          Uvidí jen tuto ukázku. Další úpravy projektu zůstanou u tebe. Připojení samo nic
+          neodešle — musíš potvrdit.
+        </LumiText>
+        <LumiButton
+          title="Připravit ukázku"
+          disabled={busy || !props.childPrivateModeActive || !bootstrap.runtime}
+          onPress={() => {
+            if (!bootstrap.runtime) return;
+            setBusy(true);
+            setError(null);
+            void bootstrap.runtime.unitOfWork
+              .run(async (uow) => {
+                const mine = (await uow.projects.listAll()).find(
+                  (project) =>
+                    project.scope === 'childPrivate' &&
+                    project.ownerAppUserId === ownerAppUserId,
+                );
+                if (!mine) {
+                  throw new Error('Nejdřív založ vlastní projekt v záložce Projekty.');
+                }
+                return prepareChildShellShareProposal({
+                  project: mine,
+                  ownerAppUserId,
+                  publishedTitle: mine.title,
+                  publishedBody: mine.intent,
+                  audienceAppUserIds: [asActorId(recipientId.trim() || 'parent_named')],
+                  now: { epochMs: Date.now() },
+                  childPrivateModeActive: props.childPrivateModeActive,
+                });
+              })
+              .then((proposal) => {
+                setPending(proposal);
+                setRecipientId(proposal.audienceAppUserIds[0] ?? 'parent_named');
+              })
+              .catch((err) => {
+                setError(err instanceof Error ? err.message : 'Příprava selhala');
+              })
+              .finally(() => setBusy(false));
+          }}
+        />
+        {pending ? (
+          <View style={styles.cardRow} testID="child-shell-share-preview">
+            <LumiText>Náhled: {pending.publishedTitle}</LumiText>
+            <LumiText tone="muted">{pending.publishedBody}</LumiText>
+            <LumiText tone="muted">
+              Příjemci: {pending.audienceAppUserIds.join(', ')} · čeká na potvrzení
+            </LumiText>
+            <LumiButton
+              title="Potvrdit odeslání ukázky"
+              disabled={busy}
+              onPress={() => {
+                if (!bootstrap.runtime || !pending) return;
+                setBusy(true);
+                setError(null);
+                void confirmAndPublishChildShellShare({
+                  unitOfWork: bootstrap.runtime.unitOfWork,
+                  ids: services.ids,
+                  now: { epochMs: Date.now() },
+                  proposal: pending,
+                  ownerAppUserId,
+                  explicitConfirm: true,
+                  networkBecameOnline: true,
+                  childPrivateModeActive: props.childPrivateModeActive,
+                })
+                  .then(() => {
+                    setPending(null);
+                    return reloadShares();
+                  })
+                  .catch((err) => {
+                    setError(err instanceof Error ? err.message : 'Odeslání selhalo');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            />
+            <LumiButton
+              title="Zrušit návrh"
+              disabled={busy}
+              onPress={() => setPending(null)}
+            />
+          </View>
+        ) : null}
+      </LumiCard>
+      <LumiCard testID="child-shell-share-list">
+        <LumiText variant="h3">Sdílené ukázky</LumiText>
+        {shares.length === 0 ? (
+          <LumiText tone="muted">Zatím žádná aktivní ukázka.</LumiText>
+        ) : (
+          shares.map((share) => (
+            <View key={share.shareId} style={styles.cardRow}>
+              <LumiText>{share.publishedTitle}</LumiText>
+              <LumiText tone="muted">
+                {share.statusLabel} · příjemců {share.audienceCount}
+              </LumiText>
+              {!share.revoked ? (
+                <LumiButton
+                  title="Odvolat"
+                  disabled={busy}
+                  onPress={() => {
+                    if (!bootstrap.runtime) return;
+                    setBusy(true);
+                    setError(null);
+                    void revokeChildShellShare({
+                      unitOfWork: bootstrap.runtime.unitOfWork,
+                      now: { epochMs: Date.now() },
+                      shareId: asEntityId(share.shareId) as EntityId,
+                      ownerAppUserId,
+                      childPrivateModeActive: props.childPrivateModeActive,
+                    })
+                      .then(() => reloadShares())
+                      .catch((err) => {
+                        setError(err instanceof Error ? err.message : 'Odvolání selhalo');
+                      })
+                      .finally(() => setBusy(false));
+                  }}
+                />
+              ) : null}
+            </View>
+          ))
+        )}
+      </LumiCard>
+      {error ? <LumiText tone="danger">{error}</LumiText> : null}
     </ScrollView>
   );
 }

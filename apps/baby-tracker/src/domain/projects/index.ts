@@ -89,6 +89,12 @@ export {
   type ShareDraft,
 } from './shareLifecycle';
 export {
+  confirmOfflineShareProposal,
+  networkBecameOnlineMustNotAutoPublish,
+  planOfflineShareProposal,
+  type PendingShareProposal,
+} from './shareProposal';
+export {
   acceptParentSuggestionIntoPrivate,
   authorLearnsPrivateAcceptOrDismiss,
   createParentSuggestion,
