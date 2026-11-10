@@ -62,6 +62,13 @@ export {
   type SelfManagementPreparation,
 } from './childMode';
 export {
+  assertProductionChildPrivateGatesClosed,
+  emptyChildPrivateLiveGateEvidence,
+  evaluateChildPrivateLiveGateEvidence,
+  type ChildPrivateLiveGateEvaluation,
+  type ChildPrivateLiveGateEvidence,
+} from './childPrivateLiveGates';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_FORBIDDEN_ROUTES,
   CHILD_SHELL_TABS,

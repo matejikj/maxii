@@ -186,6 +186,12 @@ export {
   type ApplyChildPrivateInboxResult,
 } from './applyChildPrivateInbox';
 export {
+  drillCompleteChildPrivateLiveGateEvidence,
+  runChildPrivateTwoAccountWalkthrough,
+  type ChildPrivateTwoAccountWalkthroughCase,
+  type ChildPrivateTwoAccountWalkthroughResult,
+} from './childPrivateTwoAccountWalkthrough';
+export {
   enqueueChildPrivatePortfolioDelete,
   enqueueChildPrivatePortfolioUpsert,
   enqueueChildPrivateProjectDelete,
