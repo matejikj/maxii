@@ -62,7 +62,10 @@
       "incident playbooks preserving local tracker",
       "family/migration/ops runbooks + readiness script",
       "growth decision triggers without auto-provision",
-      "software incident rehearsal (tabletop; liveDrillEvidence stays null)"
+      "software incident rehearsal (tabletop; liveDrillEvidence stays null)",
+      "Compose stack drill + soft incident rehearsal",
+      "Compose logical dump/restore timing drill (software RPO/RTO only)",
+      "off-host probe contract + patch/upgrade policy + CX23 cost ledger (no host order)"
     ],
     "toTask392Live": [
       "named on-call owner and availability",
@@ -70,7 +73,8 @@
       "monitoring outside a failing VPS",
       "verified LUKS unlock after reboot on the live host",
       "VPS outage / full disk / failed backup / identity-loss drills",
-      "measured RPO/RTO on a real restore"
+      "measured RPO/RTO on a real restore",
+      "order Hetzner CX23 only after remaining implementation tasks finish"
     ],
     "toTask32": [
       "two-phone offline sync acceptance",

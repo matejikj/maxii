@@ -36,6 +36,17 @@ export {
   CRITICAL_SOFTWARE_REHEARSAL_KINDS,
   runFamilyOpsIncidentRehearsal,
 } from './ops/familyOpsIncidentRehearsal.ts';
+export { runFamilyComposeRestoreDrill } from './ops/familyComposeRestoreDrill.ts';
+export {
+  evaluateOffHostProbeConfig,
+  loadOffHostProbeConfig,
+  probeOffHostTarget,
+} from './ops/offHostProbe.ts';
+export {
+  DEFAULT_MONTHLY_COST_LEDGER,
+  summarizeMonthlyCostLedger,
+} from './ops/monthlyCostLedger.ts';
+export { evaluatePatchUpgradePolicy } from './ops/patchUpgradePolicy.ts';
 export {
   createPostgresAttachmentMetadataStore,
   createPostgresAttachmentMetadataStoreFromUrl,
