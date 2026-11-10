@@ -52,7 +52,7 @@ export type PhotoAttachmentsFieldProps = {
    * Conscious full-photo download for one missing item (open / “Stáhnout fotku”).
    * Must not hydrate the whole album.
    */
-  onRequestDisplayDownload?: (attachment: PhotoAttachment) => Promise<void> | void;
+  onRequestDisplayDownload?: ((attachment: PhotoAttachment) => Promise<void> | void) | undefined;
 };
 
 /**

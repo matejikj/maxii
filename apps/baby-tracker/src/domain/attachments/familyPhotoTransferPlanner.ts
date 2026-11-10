@@ -161,7 +161,7 @@ export function planDownloadJobsForRemoteMetadata(input: {
   readonly existingJobs: readonly FamilyPhotoBlobTransferJob[];
   readonly createJobId: (seed: string) => string;
   /** Limit roles when only a subset should transfer (default: display + thumbnail). */
-  readonly roles?: readonly RenditionRole[];
+  readonly roles?: readonly RenditionRole[] | undefined;
 }): {
   readonly jobs: readonly FamilyPhotoBlobTransferJob[];
   readonly placeholders: readonly PhotoAttachment[];
@@ -423,7 +423,7 @@ export function planThumbnailPrefetchJobs(input: {
  */
 export function selectTransferJobsToStart(input: {
   readonly jobs: readonly FamilyPhotoBlobTransferJob[];
-  readonly quotaBlockedAttachmentIds?: ReadonlySet<string>;
+  readonly quotaBlockedAttachmentIds?: ReadonlySet<string> | undefined;
   readonly maxConcurrent?: number;
 }): {
   readonly startJobIds: readonly string[];

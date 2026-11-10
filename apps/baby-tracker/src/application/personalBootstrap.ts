@@ -122,7 +122,7 @@ function asBootstrapAppError(
       : fallbackMessage;
   const details: Record<string, string | number | boolean | null> = { reason };
   if (error instanceof Error && typeof (error as { code?: unknown }).code === 'string') {
-    details.nativeCode = (error as { code: string }).code;
+    details.nativeCode = (error as unknown as { code: string }).code;
   }
   if (error instanceof Error && error.name) {
     details.nativeName = error.name;

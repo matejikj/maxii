@@ -76,7 +76,7 @@ export async function attachPhotosToSavedEvent(
       ) {
         throw new Error('photo_metadata_retained');
       }
-      if (display.byteLength > ATTACHMENT_LIMITS.displayMaxBytes) {
+      if (display.bytes.byteLength > ATTACHMENT_LIMITS.displayMaxBytes) {
         throw new Error('photo_display_too_large');
       }
 

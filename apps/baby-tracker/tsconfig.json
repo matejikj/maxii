@@ -5,6 +5,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "customConditions": ["react-native"]
   },
   "include": ["**/*.ts", "**/*.tsx"]

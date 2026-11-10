@@ -6,8 +6,8 @@ import { PERSONAL_APPLICATION_ID } from './releaseEvidence.ts';
  */
 
 export type NativeIdCheckInput = {
-  androidAppGradle?: string;
-  iosPbxproj?: string;
+  androidAppGradle?: string | undefined;
+  iosPbxproj?: string | undefined;
   expectedId?: string;
 };
 

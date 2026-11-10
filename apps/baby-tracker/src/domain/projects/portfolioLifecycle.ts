@@ -84,7 +84,7 @@ export function filterPortfolioByQuery(
 
 export function updatePortfolioItemDetails(
   item: PortfolioItem,
-  input: { title: string; description?: string | null },
+  input: { title: string; description?: string | null | undefined },
 ): PortfolioItem {
   const title = input.title.trim();
   if (!title) {

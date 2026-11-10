@@ -89,7 +89,7 @@ export async function addChildShellPortfolioSelection(input: {
   readonly projectId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly title: string;
-  readonly description?: string | null;
+  readonly description?: string | null | undefined;
   readonly childPrivateModeActive?: boolean;
 }): Promise<ChildShellPortfolioCard> {
   const active = input.childPrivateModeActive ?? false;
@@ -125,7 +125,7 @@ export async function renameChildShellPortfolioCard(input: {
   readonly portfolioItemId: EntityId;
   readonly ownerAppUserId: ActorId;
   readonly title: string;
-  readonly description?: string | null;
+  readonly description?: string | null | undefined;
   readonly childPrivateModeActive?: boolean;
 }): Promise<ChildShellPortfolioCard> {
   const active = input.childPrivateModeActive ?? false;

@@ -49,7 +49,7 @@ export type ChildPrivateModePresentation = {
  * until identity, consent, shell, and recovery all exist.
  */
 export function presentChildPrivateModeStatus(
-  overrides: Partial<typeof CHILD_PRIVATE_MODE_GATES> = {},
+  overrides: Partial<Record<ChildPrivateModeGate, boolean>> = {},
 ): ChildPrivateModePresentation {
   const gates = { ...CHILD_PRIVATE_MODE_GATES, ...overrides };
   const blockers = canActivateChildPrivateMode(gates).blockers.map((code) => {
@@ -92,7 +92,7 @@ export type SelfManagementPreparation = {
  * is inactive this stays a truthful preview — not a fake private control panel.
  */
 export function presentSelfManagementPreparation(
-  overrides: Partial<typeof CHILD_PRIVATE_MODE_GATES> = {},
+  overrides: Partial<Record<ChildPrivateModeGate, boolean>> = {},
 ): SelfManagementPreparation {
   const childStatus = presentChildPrivateModeStatus(overrides);
   const previewItems = [

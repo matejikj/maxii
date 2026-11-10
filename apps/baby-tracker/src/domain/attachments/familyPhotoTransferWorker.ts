@@ -31,7 +31,7 @@ export async function runFamilyPhotoTransferTick(input: {
     bytes: Uint8Array,
   ) => Promise<void>;
   readonly port: FamilyAttachmentTransferPort;
-  readonly quotaBlockedAttachmentIds?: ReadonlySet<string>;
+  readonly quotaBlockedAttachmentIds?: ReadonlySet<string> | undefined;
 }): Promise<FamilyPhotoTransferTickResult> {
   if (!shouldEnqueueFamilyPhotoTransfers(input.session)) {
     return {

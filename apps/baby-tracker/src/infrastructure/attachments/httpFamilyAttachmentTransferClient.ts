@@ -12,7 +12,7 @@ export type HttpFamilyAttachmentTransferConfig = {
   readonly apiBaseUrl: string;
   /** Resolves bearer or cookie+CSRF credentials for each request. */
   readonly getAccessCredentials: () => Promise<FamilyAccessCredentials | null>;
-  readonly fetchImpl?: typeof fetch;
+  readonly fetchImpl?: typeof fetch | undefined;
 };
 
 type ErrorBody = {
@@ -182,7 +182,7 @@ export function createHttpFamilyAttachmentTransferClient(
             method: 'PUT',
             headers: auth.headers,
             credentials: auth.credentials,
-            body: input.bytes,
+            body: new Blob([input.bytes as BlobPart]),
           },
         );
         if (!response.ok) return mapStatus(response.status, await readError(response));
@@ -258,7 +258,7 @@ export function resolveFamilyAttachmentTransferPort(input: {
   readonly apiBaseUrl: string | null;
   readonly familySyncConfigured: boolean;
   readonly getAccessCredentials: () => Promise<FamilyAccessCredentials | null>;
-  readonly fetchImpl?: typeof fetch;
+  readonly fetchImpl?: typeof fetch | undefined;
 }): FamilyAttachmentTransferPort {
   if (!input.familySyncConfigured || !input.apiBaseUrl?.trim()) {
     return createDisabledFamilyAttachmentTransferPort();

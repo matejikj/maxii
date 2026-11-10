@@ -48,7 +48,7 @@ export async function applyRemoteAttachmentMetadata(input: {
   readonly attachments: AttachmentServices;
   readonly transfer: FamilyPhotoTransferDownloadQueue;
   readonly nowMs: number;
-  readonly erasedAttachmentIds?: ReadonlySet<string>;
+  readonly erasedAttachmentIds?: ReadonlySet<string> | undefined;
 }): Promise<ApplyRemoteAttachmentMetadataResult> {
   const parsed = parseRemoteAttachmentMetadataEntries(input.entries);
   const session = input.transfer.getSession();

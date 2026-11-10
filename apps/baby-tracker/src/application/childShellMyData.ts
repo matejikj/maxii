@@ -53,7 +53,7 @@ export function presentChildShellMyData(input: {
   readonly portfolioCount: number;
   readonly activeShareCount: number;
   readonly appearanceStyleLabel: string;
-  readonly gateOverrides?: Partial<Record<ChildPrivateModeGate, boolean>>;
+  readonly gateOverrides?: Partial<Record<ChildPrivateModeGate, boolean>> | undefined;
 }): ChildShellMyDataView {
   const preparation = presentSelfManagementPreparation(input.gateOverrides);
   const mode = presentChildPrivateModeStatus(input.gateOverrides);

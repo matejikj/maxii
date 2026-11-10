@@ -63,8 +63,8 @@ function markRenditionMissing(
  */
 export async function loadPhotoStorageSnapshot(input: {
   readonly attachments: AttachmentServices;
-  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[];
-  readonly nowMs?: number;
+  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[] | undefined;
+  readonly nowMs?: number | undefined;
 }): Promise<PhotoStorageSnapshot> {
   const rows = await input.attachments.repository.listAll();
   const inventory = buildPhotoStorageInventory({
@@ -84,8 +84,8 @@ export async function loadPhotoStorageSnapshot(input: {
  */
 export async function clearRecoverablePhotoCache(input: {
   readonly attachments: AttachmentServices;
-  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[];
-  readonly nowMs?: number;
+  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[] | undefined;
+  readonly nowMs?: number | undefined;
 }): Promise<ClearRecoverablePhotoCacheResult> {
   const rows = await input.attachments.repository.listAll();
   const inventory = buildPhotoStorageInventory({

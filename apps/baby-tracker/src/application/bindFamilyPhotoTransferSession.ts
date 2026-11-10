@@ -34,8 +34,8 @@ export type FamilyPhotoTransferSessionBinding = {
  */
 export function createFamilyPhotoTransferSessionBinding(input: {
   readonly boundary: FamilyPhotoTransferRemoteGate;
-  readonly fetchImpl?: typeof fetch;
-  readonly createJobId?: (seed: string) => string;
+  readonly fetchImpl?: typeof fetch | undefined;
+  readonly createJobId?: ((seed: string) => string) | undefined;
 }): FamilyPhotoTransferSessionBinding {
   let authSession: FamilyAuthSession | null = null;
   let activeFamilyId: string | null = null;

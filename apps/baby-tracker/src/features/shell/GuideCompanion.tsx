@@ -165,9 +165,9 @@ export function GuideCompanion({
   const styleProps = {
     appearanceStyle: resolved.appearanceStyle,
     ...(resolved.props.length > 0
-      ? { props: resolved.props, prop: resolved.prop ?? undefined }
+      ? { props: resolved.props, prop: resolved.prop ?? null }
       : resolved.prop
-        ? { prop: resolved.prop }
+        ? { prop: resolved.prop ?? null }
         : {}),
   };
 

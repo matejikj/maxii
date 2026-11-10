@@ -28,7 +28,7 @@ export type FamilyPhotoTransferRuntime = {
   readonly enqueueRemoteDownloads: (input: {
     readonly remoteAttachments: readonly PhotoAttachment[];
     readonly localAttachments: readonly PhotoAttachment[];
-    readonly roles?: readonly RenditionRole[];
+    readonly roles?: readonly RenditionRole[] | undefined;
   }) => {
     readonly queued: number;
     readonly placeholders: readonly PhotoAttachment[];
@@ -76,7 +76,7 @@ export function createFamilyPhotoTransferRuntime(input?: {
   readonly session?: FamilyPhotoTransferSession;
   readonly port?: FamilyAttachmentTransferPort;
   readonly getPort?: () => FamilyAttachmentTransferPort;
-  readonly createJobId?: (seed: string) => string;
+  readonly createJobId?: ((seed: string) => string) | undefined;
 }): FamilyPhotoTransferRuntime {
   let session: FamilyPhotoTransferSession = input?.session ?? {
     familySyncConfigured: false,

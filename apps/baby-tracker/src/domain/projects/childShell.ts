@@ -111,8 +111,8 @@ export function attemptChildShellActivation(input: {
   readonly gates: ChildShellActivationGates;
   readonly appUserId: ActorId;
   readonly displayAlias: string;
-  readonly linkedChildProfileId?: ChildId | null;
-  readonly firstEntryCompleted?: boolean;
+  readonly linkedChildProfileId?: ChildId | null | undefined;
+  readonly firstEntryCompleted?: boolean | undefined;
 }): ChildShellActivationResult {
   const activation = canActivateChildPrivateMode(input.gates);
   if (!activation.active) {

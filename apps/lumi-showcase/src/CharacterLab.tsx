@@ -121,7 +121,7 @@ export function CharacterLab() {
                   expression={action.expression}
                   appearanceStyle="workshop"
                   props={action.props}
-                  prop={action.props[0]}
+                  prop={action.props[0] ?? null}
                   width={cardWidth - 18}
                   height={140}
                 />

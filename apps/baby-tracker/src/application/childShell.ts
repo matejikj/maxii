@@ -73,8 +73,8 @@ export function resolveActiveRootShell(input?: {
 export function tryActivateChildShell(input: {
   readonly appUserId: ActorId;
   readonly displayAlias: string;
-  readonly linkedChildProfileId?: ChildId | null;
-  readonly firstEntryCompleted?: boolean;
+  readonly linkedChildProfileId?: ChildId | null | undefined;
+  readonly firstEntryCompleted?: boolean | undefined;
   readonly gateOverrides?: Partial<ChildShellActivationGates>;
 }) {
   return attemptChildShellActivation({

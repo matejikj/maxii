@@ -26,7 +26,7 @@ export async function runFamilySyncTickWithAttachments(input: {
   readonly nowMs: number;
   readonly attachments: AttachmentServices;
   readonly transfer: FamilyPhotoTransferDownloadQueue;
-  readonly erasedAttachmentIds?: ReadonlySet<string>;
+  readonly erasedAttachmentIds?: ReadonlySet<string> | undefined;
   readonly afterDownloadsQueued?: () => Promise<void> | void;
 }): Promise<{
   readonly sync: SyncWorkerResult;

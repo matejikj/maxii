@@ -21,8 +21,8 @@ export type PhotoStorageInventory = {
  */
 export function buildPhotoStorageInventory(input: {
   readonly attachments: readonly PhotoAttachment[];
-  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[];
-  readonly nowMs?: number;
+  readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[] | undefined;
+  readonly nowMs?: number | undefined;
 }): PhotoStorageInventory {
   const nowMs = input.nowMs ?? 0;
   const uploadPendingIds = new Set(

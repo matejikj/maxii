@@ -64,7 +64,7 @@ export function decidePhotoImportSpaceGate(input: {
   readonly freeBytes: number | null;
   readonly reserveBytes: number;
   readonly candidateCount: number;
-  readonly perPhotoReserveBytes?: readonly number[];
+  readonly perPhotoReserveBytes?: readonly number[] | undefined;
   readonly recoverableCacheBytes?: number;
 }): PhotoImportSpaceDecision {
   const reserveBytes = Math.max(0, input.reserveBytes);

@@ -67,7 +67,7 @@ export async function runSyncTick(input: {
   readonly now: string;
   readonly batchSize?: number;
 }): Promise<SyncWorkerResult> {
-  let state = {
+  let state: LocalSyncState = {
     ...input.state,
     familyId: input.familyId,
   };
@@ -123,7 +123,7 @@ export async function runSyncTick(input: {
       entries: page.entries,
       nextCursor: page.nextCursor,
       epoch: page.epoch,
-      syncedAt: input.now,
+      syncedAt: { epochMs: Date.parse(input.now) },
       resyncRequired: page.resyncRequired,
     });
     pulled = page.entries.length;
