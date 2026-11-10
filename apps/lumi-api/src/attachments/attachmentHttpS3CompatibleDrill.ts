@@ -192,6 +192,55 @@ export async function runAttachmentHttpS3CompatibleDrill(input: {
       detail: readOk ? 'display bytes match digest' : `status ${read.statusCode}`,
     });
 
+    // Foreign family must not read or mint intents into another family's path.
+    const strangerId = randomUUID() as AppUserId;
+    const strangerToken = await tokens.mintTestToken({
+      subject: `s3-http-stranger-${strangerId}`,
+      appUserId: strangerId,
+    });
+    const strangerFamily = await app.inject({
+      method: 'POST',
+      url: '/v1/families',
+      headers: { authorization: `Bearer ${strangerToken}` },
+      payload: {
+        protocolVersion: LUMI_API_PROTOCOL_VERSION,
+        idempotencyKey: `fam-s3-http-stranger-${strangerId}`,
+        displayName: 'S3 HTTP stranger family',
+      },
+    });
+    const stolenRead = await app.inject({
+      method: 'GET',
+      url: `/v1/families/${familyId}/attachments/${attachmentId}/display`,
+      headers: { authorization: `Bearer ${strangerToken}` },
+    });
+    const stolenIntent = await app.inject({
+      method: 'POST',
+      url: `/v1/families/${familyId}/attachments/intents`,
+      headers: { authorization: `Bearer ${strangerToken}` },
+      payload: {
+        protocolVersion: LUMI_API_PROTOCOL_VERSION,
+        idempotencyKey: `steal-s3-http-${attachmentId}`,
+        attachmentId: randomUUID(),
+        childId: 'child_x',
+        eventId: 'note_x',
+        role: 'display',
+        expectedBytes: bytes.byteLength,
+        expectedSha256: digest,
+        contentType: 'image/jpeg',
+      },
+    });
+    const idorOk =
+      strangerFamily.statusCode === 201 &&
+      stolenRead.statusCode === 403 &&
+      stolenIntent.statusCode === 403;
+    cases.push({
+      name: 'cross_family_idor_denied',
+      ok: idorOk,
+      detail: idorOk
+        ? 'foreign membership cannot read or upload into another family'
+        : `strangerFamily=${strangerFamily.statusCode} read=${stolenRead.statusCode} intent=${stolenIntent.statusCode}`,
+    });
+
     const erased = await app.inject({
       method: 'POST',
       url: `/v1/families/${familyId}/attachments/${attachmentId}/tombstone`,

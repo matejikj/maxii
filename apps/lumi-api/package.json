@@ -17,6 +17,7 @@
     "attachment:locator-drill": "bash ./deploy/attachment-locator-migration-drill.sh",
     "attachment:s3-drill": "bash ./deploy/attachment-s3-compatible-drill.sh",
     "attachment:http-s3-drill": "bash ./deploy/attachment-http-s3-drill.sh",
+    "attachment:compose-drill": "bash ./deploy/attachment-compose-stack-drill.sh",
     "start": "node --experimental-strip-types ./src/main.ts",
     "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
   },
