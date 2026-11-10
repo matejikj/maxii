@@ -107,6 +107,11 @@ export type PortfolioItem = {
   description: string | null;
   /** Private until an explicit share snapshot is published. */
   visibility: 'private';
+  /**
+   * Owner-controlled display order. Lower values appear first. Older rows may
+   * omit this field — readers fall back to createdAt.
+   */
+  sortIndex?: number;
   createdAt: Instant;
 };
 

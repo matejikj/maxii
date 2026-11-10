@@ -105,7 +105,11 @@ export {
 } from './suggestionLifecycle';
 export {
   createPortfolioItem,
+  filterPortfolioByQuery,
   listPortfolioForChild,
+  movePortfolioItemEarlier,
+  portfolioSortKey,
+  updatePortfolioItemDetails,
 } from './portfolioLifecycle';
 export {
   filterPortfolioForFamilyExport,

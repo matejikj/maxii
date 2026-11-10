@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   CHILD_SHELL_FIRST_ENTRY,
+  addChildShellPortfolioSelection,
   closeChildShellProject,
   confirmAndPublishChildShellShare,
   continueChildShellProject,
@@ -10,17 +11,21 @@ import {
   dismissChildShellParentSuggestion,
   listChildShellDiscoverTemplates,
   listChildShellParentSuggestionCards,
+  listChildShellPortfolioCards,
   listChildShellProjectShelves,
   listChildShellShareCards,
   listChildShellTodayCards,
   loadChildShellProjectDetail,
+  moveChildShellPortfolioCardEarlier,
   pauseChildShellProject,
   prepareChildShellShareProposal,
+  renameChildShellPortfolioCard,
   revokeChildShellShare,
   saveChildShellProjectReflection,
   startChildShellProjectFromTemplate,
   type ChildShellDiscoverTemplateCard,
   type ChildShellParentSuggestionCard,
+  type ChildShellPortfolioCard,
   type ChildShellProjectCard,
   type ChildShellProjectDetailView,
   type ChildShellSession,
@@ -365,6 +370,32 @@ export function ChildShellProjectsScreen(props: ShellProps) {
             }}
           />
           <LumiButton
+            title="Vybrat do portfolia"
+            disabled={busy}
+            onPress={() => {
+              if (!bootstrap.runtime) return;
+              setBusy(true);
+              setError(null);
+              void addChildShellPortfolioSelection({
+                unitOfWork: bootstrap.runtime.unitOfWork,
+                ids: services.ids,
+                now: { epochMs: Date.now() },
+                projectId: asEntityId(detail.projectId) as EntityId,
+                ownerAppUserId,
+                title: detail.title,
+                description: detail.currentStep?.text ?? null,
+                childPrivateModeActive: props.childPrivateModeActive,
+              })
+                .then(() => {
+                  setError(null);
+                })
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : 'Výběr do portfolia selhal');
+                })
+                .finally(() => setBusy(false));
+            }}
+          />
+          <LumiButton
             title="Zavřít detail"
             disabled={busy}
             onPress={() => setDetail(null)}
@@ -411,20 +442,56 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
   const bootstrap = useBootstrap();
   const { services } = useCompositionRoot();
   const [shares, setShares] = useState<ChildShellShareCard[]>([]);
+  const [portfolio, setPortfolio] = useState<ChildShellPortfolioCard[]>([]);
+  const [portfolioQuery, setPortfolioQuery] = useState('');
+  const [renameDrafts, setRenameDrafts] = useState<Record<string, string>>({});
   const [pending, setPending] = useState<PendingShareProposal | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [recipientId, setRecipientId] = useState('parent_named');
 
+  const ownerAppUserId = props.session.principal.appUserId as ActorId;
+  const childId =
+    props.session.principal.linkedChildProfileId ??
+    (bootstrap.profile?.childId as ChildId | undefined);
+
   const reloadShares = useCallback(async () => {
     if (!bootstrap.runtime) return;
     const next = await listChildShellShareCards({
       unitOfWork: bootstrap.runtime.unitOfWork,
-      ownerAppUserId: props.session.principal.appUserId as ActorId,
+      ownerAppUserId,
       childPrivateModeActive: props.childPrivateModeActive,
     });
     setShares(next);
-  }, [bootstrap.runtime, props.childPrivateModeActive, props.session.principal.appUserId]);
+  }, [bootstrap.runtime, ownerAppUserId, props.childPrivateModeActive]);
+
+  const reloadPortfolio = useCallback(async () => {
+    if (!bootstrap.runtime || !childId) {
+      setPortfolio([]);
+      return;
+    }
+    const next = await listChildShellPortfolioCards({
+      unitOfWork: bootstrap.runtime.unitOfWork,
+      childId,
+      ownerAppUserId,
+      query: portfolioQuery,
+      childPrivateModeActive: props.childPrivateModeActive,
+    });
+    setPortfolio(next);
+    setRenameDrafts((prev) => {
+      const drafts: Record<string, string> = {};
+      for (const card of next) {
+        drafts[card.portfolioItemId] = prev[card.portfolioItemId] ?? card.title;
+      }
+      return drafts;
+    });
+  }, [
+    bootstrap.runtime,
+    childId,
+    ownerAppUserId,
+    portfolioQuery,
+    props.childPrivateModeActive,
+  ]);
 
   useEffect(() => {
     void reloadShares().catch((err) => {
@@ -432,7 +499,11 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
     });
   }, [reloadShares]);
 
-  const ownerAppUserId = props.session.principal.appUserId as ActorId;
+  useEffect(() => {
+    void reloadPortfolio().catch((err) => {
+      setError(err instanceof Error ? err.message : 'Načtení portfolia selhalo');
+    });
+  }, [reloadPortfolio]);
 
   return (
     <ScrollView
@@ -441,11 +512,90 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
       testID="child-shell-portfolio"
     >
       <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
-      <LumiCard>
+      <LumiCard testID="child-shell-portfolio-cards">
         <LumiText variant="h3">Portfolio</LumiText>
         <LumiText tone="muted">
           Sem patří jen výtvory, které sám vybereš. Není to žebříček ani automatická historie výkonu.
         </LumiText>
+        <LumiInput
+          label="Filtrovat výtvory"
+          accessibilityLabel="Filtrovat výtvory"
+          placeholder="Název nebo popis"
+          value={portfolioQuery}
+          onChangeText={setPortfolioQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {!props.childPrivateModeActive ? (
+          <LumiText tone="muted">
+            Vlastní výběry se zobrazí až po aktivaci dětského prostoru.
+          </LumiText>
+        ) : portfolio.length === 0 ? (
+          <LumiText tone="muted">
+            Zatím žádný výběr. V detailu projektu zvol „Vybrat do portfolia“.
+          </LumiText>
+        ) : (
+          portfolio.map((card, index) => (
+            <View key={card.portfolioItemId} style={styles.cardRow}>
+              <LumiText>
+                {card.title} · {card.visibilityLabel}
+              </LumiText>
+              {card.description ? <LumiText tone="muted">{card.description}</LumiText> : null}
+              <LumiInput
+                label="Název karty"
+                accessibilityLabel={`Název karty ${card.title}`}
+                value={renameDrafts[card.portfolioItemId] ?? card.title}
+                onChangeText={(value) =>
+                  setRenameDrafts((prev) => ({ ...prev, [card.portfolioItemId]: value }))
+                }
+              />
+              <LumiButton
+                title="Uložit název"
+                disabled={busy}
+                onPress={() => {
+                  if (!bootstrap.runtime) return;
+                  setBusy(true);
+                  setError(null);
+                  void renameChildShellPortfolioCard({
+                    unitOfWork: bootstrap.runtime.unitOfWork,
+                    portfolioItemId: asEntityId(card.portfolioItemId) as EntityId,
+                    ownerAppUserId,
+                    title: renameDrafts[card.portfolioItemId] ?? card.title,
+                    description: card.description,
+                    childPrivateModeActive: props.childPrivateModeActive,
+                  })
+                    .then(() => reloadPortfolio())
+                    .catch((err) => {
+                      setError(err instanceof Error ? err.message : 'Přejmenování selhalo');
+                    })
+                    .finally(() => setBusy(false));
+                }}
+              />
+              {index > 0 ? (
+                <LumiButton
+                  title="Posunout výš"
+                  disabled={busy}
+                  onPress={() => {
+                    if (!bootstrap.runtime) return;
+                    setBusy(true);
+                    setError(null);
+                    void moveChildShellPortfolioCardEarlier({
+                      unitOfWork: bootstrap.runtime.unitOfWork,
+                      portfolioItemId: asEntityId(card.portfolioItemId) as EntityId,
+                      ownerAppUserId,
+                      childPrivateModeActive: props.childPrivateModeActive,
+                    })
+                      .then(() => reloadPortfolio())
+                      .catch((err) => {
+                        setError(err instanceof Error ? err.message : 'Řazení selhalo');
+                      })
+                      .finally(() => setBusy(false));
+                  }}
+                />
+              ) : null}
+            </View>
+          ))
+        )}
       </LumiCard>
       <LumiCard testID="child-shell-share-panel">
         <LumiText variant="h3">Ukázat někomu</LumiText>

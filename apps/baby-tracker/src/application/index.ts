@@ -289,6 +289,13 @@ export {
   type ChildShellProjectDetailView,
 } from './childShellProjectDetail';
 export {
+  addChildShellPortfolioSelection,
+  listChildShellPortfolioCards,
+  moveChildShellPortfolioCardEarlier,
+  renameChildShellPortfolioCard,
+  type ChildShellPortfolioCard,
+} from './childShellPortfolio';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_TABS,
   type ChildShellSession,
