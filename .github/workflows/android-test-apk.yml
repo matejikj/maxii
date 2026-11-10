@@ -33,7 +33,19 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
         with:
-          packages: 'platform-tools platforms;android-37 build-tools;37.0.0'
+          # API 37 ships as platforms;android-37.0 (not android-37).
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
+
+      - name: Alias android-37 platform path for Gradle compileSdk
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$SDK"
+          test -d "$SDK/platforms/android-37.0"
+          if [[ ! -e "$SDK/platforms/android-37" ]]; then
+            ln -s android-37.0 "$SDK/platforms/android-37"
+          fi
+          ls -la "$SDK/platforms" | tee /dev/stderr >/dev/null
 
       - name: Install JS dependencies
         run: npm ci --no-audit --no-fund
