@@ -255,6 +255,21 @@ export {
   type ChildPrivateSyncWorkerResult,
 } from './sync/childPrivateWorker';
 export {
+  enqueuePlannedChildPrivateChange,
+  planChildPrivatePortfolioDelete,
+  planChildPrivatePortfolioUpsert,
+  planChildPrivateProjectDelete,
+  planChildPrivateProjectUpsert,
+  planChildPrivateSharePublish,
+  planChildPrivateShareRevoke,
+  requireChildPrivateOutboxPlan,
+  type ChildPrivateOutboxPlan,
+} from './sync/childPrivateOutboxPlanner';
+export {
+  createMemoryChildPrivateSyncStateStore,
+  type ChildPrivateSyncStateStore,
+} from './sync/childPrivateSyncStateStore';
+export {
   buildSyncTransferPresentation,
   type SyncTransferPresentation,
 } from './sync/presentation';

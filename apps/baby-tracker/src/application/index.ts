@@ -176,6 +176,16 @@ export {
   type ChildPrivateSyncSessionBinding,
 } from './bindChildPrivateSyncSession';
 export {
+  enqueueChildPrivatePortfolioDelete,
+  enqueueChildPrivatePortfolioUpsert,
+  enqueueChildPrivateProjectDelete,
+  enqueueChildPrivateProjectUpsert,
+  enqueueChildPrivateSharePublish,
+  enqueueChildPrivateShareRevoke,
+  enqueueRequiredChildPrivatePlan,
+  type EnqueueChildPrivateSyncChangeResult,
+} from './enqueueChildPrivateSyncChange';
+export {
   setAttachmentOfflinePin,
   type KeepAttachmentOfflineResult,
   type FamilyPhotoTransferPinQueue,
