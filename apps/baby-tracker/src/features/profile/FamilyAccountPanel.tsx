@@ -105,6 +105,8 @@ export function FamilyAccountPanel() {
     (value: FamilyAuthSession | null) => {
       setSession(value);
       bootstrap?.runtime?.bindPhotoTransferAuth(value);
+      // Same login gates the owner-scoped private sync stream; familyId stays absent.
+      bootstrap?.runtime?.bindChildPrivateSyncAuth(value);
       if (!value) {
         setMembershipSelection(null);
         bindFamily(null);

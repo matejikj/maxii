@@ -176,6 +176,12 @@ export {
   type ChildPrivateSyncSessionBinding,
 } from './bindChildPrivateSyncSession';
 export {
+  createChildPrivateSyncLoop,
+  runChildPrivateSyncTickWithStore,
+  type ChildPrivateSyncLoop,
+  type ChildPrivateSyncLoopResult,
+} from './childPrivateSyncLoop';
+export {
   enqueueChildPrivatePortfolioDelete,
   enqueueChildPrivatePortfolioUpsert,
   enqueueChildPrivateProjectDelete,

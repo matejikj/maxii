@@ -73,6 +73,12 @@ export type PersonalRuntime = {
    * network push/pull stays cold until a sync session is configured.
    */
   childPrivateSyncStore: import('../../domain/sync/childPrivateSyncStateStore').ChildPrivateSyncStateStore;
+  /** Push login/logout into the child-private sync transport (no-op when sync env is unset). */
+  bindChildPrivateSyncAuth: (
+    session: import('../../infrastructure/family/familyAuthPort').FamilyAuthSession | null,
+  ) => void;
+  /** Periodic/manual owner-scoped child-private sync ticks against the durable outbox. */
+  childPrivateSyncLoop: import('../../application/childPrivateSyncLoop').ChildPrivateSyncLoop;
   databaseName: string;
   keyStore?: DatabaseKeyStore;
   presence?: DatabasePresence;
@@ -170,6 +176,12 @@ export function BootstrapProvider({
       const { createFamilyPhotoTransferLoop } = await import(
         '../../application/familyPhotoTransferLoop'
       );
+      const { createChildPrivateSyncSessionBinding } = await import(
+        '../../application/bindChildPrivateSyncSession'
+      );
+      const { createChildPrivateSyncLoop } = await import(
+        '../../application/childPrivateSyncLoop'
+      );
       const { resolveRemoteServicesBoundary } = await import('../remoteServicesBoundary');
       const remoteBoundary = resolveRemoteServicesBoundary();
       // Binding stays cold unless EXPO_PUBLIC_LUMI_SYNC_ENABLED and a login exist.
@@ -184,9 +196,20 @@ export function BootstrapProvider({
         runtime: photoTransferBinding.runtime,
         attachments,
       });
+      // Stable per diary install so retries keep the same device claim without SecureStore.
+      const childPrivateSyncBinding = createChildPrivateSyncSessionBinding({
+        boundary: remoteBoundary,
+        deviceId: `diary:${opened.databaseName}`,
+      });
+      const childPrivateSyncLoop = createChildPrivateSyncLoop({
+        binding: childPrivateSyncBinding,
+        store: opened.childPrivateSyncStore,
+        nowIso: () => new Date(services.clock.now().epochMs).toISOString(),
+      });
       // Only schedule network ticks when family sync is explicitly configured.
       if (remoteBoundary.syncConfigured) {
         photoTransferLoop.start();
+        childPrivateSyncLoop.start();
       }
       const next: PersonalRuntime = {
         unitOfWork: opened.unitOfWork,
@@ -201,6 +224,8 @@ export function BootstrapProvider({
         bindPhotoTransferFamily: photoTransferBinding.bindActiveFamily,
         photoTransferLoop,
         childPrivateSyncStore: opened.childPrivateSyncStore,
+        bindChildPrivateSyncAuth: childPrivateSyncBinding.bindAuthSession,
+        childPrivateSyncLoop,
         appLock: opened.appLock,
         operationMetrics,
         databaseName: opened.databaseName,
@@ -208,6 +233,7 @@ export function BootstrapProvider({
         ...(opened.presence ? { presence: opened.presence } : {}),
         close: async () => {
           photoTransferLoop.stop();
+          childPrivateSyncLoop.stop();
           await opened.close();
         },
         deleteDurableStore: opened.deleteDurableStore,
