@@ -171,6 +171,11 @@ export {
 } from './applyRemoteAttachmentMetadata';
 export { runFamilySyncTickWithAttachments } from './runFamilySyncTickWithAttachments';
 export {
+  createChildPrivateSyncSessionBinding,
+  type ChildPrivateSyncRemoteGate,
+  type ChildPrivateSyncSessionBinding,
+} from './bindChildPrivateSyncSession';
+export {
   setAttachmentOfflinePin,
   type KeepAttachmentOfflineResult,
   type FamilyPhotoTransferPinQueue,
