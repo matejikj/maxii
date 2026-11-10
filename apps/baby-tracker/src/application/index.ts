@@ -272,6 +272,15 @@ export {
   type ChildShellShareCard,
 } from './childShellShares';
 export {
+  countPublishedDiscoverTemplates,
+  dismissChildShellParentSuggestion,
+  listChildShellDiscoverTemplates,
+  listChildShellParentSuggestionCards,
+  startChildShellProjectFromTemplate,
+  type ChildShellDiscoverTemplateCard,
+  type ChildShellParentSuggestionCard,
+} from './childShellDiscover';
+export {
   CHILD_SHELL_FIRST_ENTRY,
   CHILD_SHELL_TABS,
   type ChildShellSession,

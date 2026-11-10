@@ -1,15 +1,21 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   CHILD_SHELL_FIRST_ENTRY,
   confirmAndPublishChildShellShare,
   createChildShellBlankProject,
+  dismissChildShellParentSuggestion,
+  listChildShellDiscoverTemplates,
+  listChildShellParentSuggestionCards,
   listChildShellProjectShelves,
   listChildShellShareCards,
   listChildShellTodayCards,
   prepareChildShellShareProposal,
   revokeChildShellShare,
+  startChildShellProjectFromTemplate,
+  type ChildShellDiscoverTemplateCard,
+  type ChildShellParentSuggestionCard,
   type ChildShellProjectCard,
   type ChildShellSession,
   type ChildShellShareCard,
@@ -364,6 +370,44 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
 
 export function ChildShellDiscoverScreen(props: ShellProps) {
   const { colors } = useLumiTheme();
+  const bootstrap = useBootstrap();
+  const { services } = useCompositionRoot();
+  const [query, setQuery] = useState('');
+  const [templates, setTemplates] = useState<ChildShellDiscoverTemplateCard[]>(() =>
+    listChildShellDiscoverTemplates(''),
+  );
+  const [suggestions, setSuggestions] = useState<ChildShellParentSuggestionCard[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const childId =
+    props.session.principal.linkedChildProfileId ??
+    (bootstrap.profile?.childId as ChildId | undefined);
+  const ownerAppUserId = props.session.principal.appUserId as ActorId;
+
+  const reloadSuggestions = useCallback(async () => {
+    if (!bootstrap.runtime || !childId) {
+      setSuggestions([]);
+      return;
+    }
+    const next = await listChildShellParentSuggestionCards({
+      unitOfWork: bootstrap.runtime.unitOfWork,
+      childId,
+      childPrivateModeActive: props.childPrivateModeActive,
+    });
+    setSuggestions(next);
+  }, [bootstrap.runtime, childId, props.childPrivateModeActive]);
+
+  useEffect(() => {
+    setTemplates(listChildShellDiscoverTemplates(query));
+  }, [query]);
+
+  useEffect(() => {
+    void reloadSuggestions().catch((err) => {
+      setError(err instanceof Error ? err.message : 'Načtení návrhů selhalo');
+    });
+  }, [reloadSuggestions]);
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.background }}
@@ -371,13 +415,102 @@ export function ChildShellDiscoverScreen(props: ShellProps) {
       testID="child-shell-discover"
     >
       <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
-      <LumiCard>
+      <LumiCard testID="child-shell-discover-search">
         <LumiText variant="h3">Objevování</LumiText>
         <LumiText tone="muted">
-          Vydané šablony a náměty podle dostupné sady. Rodičovský návrh je oddělený a můžeš ho
-          odložit.
+          Vydané šablony a náměty podle dostupné sady. Lokální hledání běží bez sítě. Rodičovský
+          návrh je oddělený a můžeš ho odložit.
         </LumiText>
+        <LumiInput
+          label="Hledat šablonu"
+          accessibilityLabel="Hledat šablonu"
+          placeholder="Název, téma nebo záměr"
+          value={query}
+          onChangeText={setQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
       </LumiCard>
+      <LumiCard testID="child-shell-parent-suggestions">
+        <LumiText variant="h3">Návrh od pečující osoby</LumiText>
+        {!props.childPrivateModeActive ? (
+          <LumiText tone="muted">
+            Oddělené návrhy se zobrazí až po aktivaci vlastního dětského prostoru.
+          </LumiText>
+        ) : suggestions.length === 0 ? (
+          <LumiText tone="muted">Žádný čekající návrh.</LumiText>
+        ) : (
+          suggestions.map((card) => (
+            <View key={card.suggestionId} style={styles.cardRow}>
+              <LumiText>{card.title}</LumiText>
+              {card.note ? <LumiText tone="muted">{card.note}</LumiText> : null}
+              <LumiButton
+                title="Odložit"
+                disabled={busy}
+                onPress={() => {
+                  if (!bootstrap.runtime) return;
+                  setBusy(true);
+                  setError(null);
+                  void dismissChildShellParentSuggestion({
+                    unitOfWork: bootstrap.runtime.unitOfWork,
+                    suggestionId: asEntityId(card.suggestionId) as EntityId,
+                    now: { epochMs: Date.now() },
+                    childPrivateModeActive: props.childPrivateModeActive,
+                  })
+                    .then(() => reloadSuggestions())
+                    .catch((err) => {
+                      setError(err instanceof Error ? err.message : 'Odložení selhalo');
+                    })
+                    .finally(() => setBusy(false));
+                }}
+              />
+            </View>
+          ))
+        )}
+      </LumiCard>
+      <LumiCard testID="child-shell-discover-templates">
+        <LumiText variant="h3">Vydané šablony</LumiText>
+        {templates.length === 0 ? (
+          <LumiText tone="muted">Nic neodpovídá hledání.</LumiText>
+        ) : (
+          templates.map((card) => (
+            <View key={card.revisionId} style={styles.cardRow}>
+              <LumiText>{card.title}</LumiText>
+              <LumiText tone="muted">
+                {card.theme} · {card.cohort}
+              </LumiText>
+              <LumiText tone="muted">{card.originLabel}</LumiText>
+              <LumiText tone="muted">{card.privacyNote}</LumiText>
+              <LumiButton
+                title="Začít z šablony"
+                disabled={busy || !childId || !props.childPrivateModeActive}
+                onPress={() => {
+                  if (!bootstrap.runtime || !childId) return;
+                  setBusy(true);
+                  setError(null);
+                  void startChildShellProjectFromTemplate({
+                    unitOfWork: bootstrap.runtime.unitOfWork,
+                    ids: services.ids,
+                    now: { epochMs: Date.now() },
+                    childId,
+                    ownerAppUserId,
+                    templateRevisionId: card.revisionId,
+                    childPrivateModeActive: props.childPrivateModeActive,
+                  })
+                    .then(() => {
+                      setError(null);
+                    })
+                    .catch((err) => {
+                      setError(err instanceof Error ? err.message : 'Založení selhalo');
+                    })
+                    .finally(() => setBusy(false));
+                }}
+              />
+            </View>
+          ))
+        )}
+      </LumiCard>
+      {error ? <LumiText tone="danger">{error}</LumiText> : null}
     </ScrollView>
   );
 }
