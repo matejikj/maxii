@@ -38,11 +38,28 @@ type CursorPayload = {
   seq: number;
 };
 
+/** Shared surface for in-memory and durable Postgres child-private sync. */
+export type ChildPrivateSyncStorePort = {
+  push(input: {
+    readonly ownerAppUserId: AppUserId;
+    readonly sessionAppUserId: AppUserId;
+    readonly attemptId: string;
+    readonly operations: readonly SyncOperation[];
+    readonly writerGeneration?: number;
+    readonly now: string;
+  }): Promise<ChildPrivateSyncPushResponse>;
+  pull(input: {
+    readonly sessionAppUserId: AppUserId;
+    readonly cursor: SyncCursor | null;
+    readonly limit?: number;
+  }): Promise<ChildPrivateSyncPullResponse>;
+};
+
 /**
  * Separate owner-scoped changelog for child-private outbox. Family membership
  * never authorizes this stream; recipients only see share snapshot ops.
  */
-export class MemoryChildPrivateSyncStore {
+export class MemoryChildPrivateSyncStore implements ChildPrivateSyncStorePort {
   readonly owners = new Map<string, OwnerState>();
   readonly byOperation = new Map<string, StoredReceipt>();
   readonly log: StoredReceipt[] = [];
@@ -116,11 +133,11 @@ export class MemoryChildPrivateSyncStore {
     });
   }
 
-  pull(input: {
+  async pull(input: {
     sessionAppUserId: AppUserId;
     cursor: SyncCursor | null;
     limit?: number;
-  }): ChildPrivateSyncPullResponse {
+  }): Promise<ChildPrivateSyncPullResponse> {
     const limit = Math.min(
       Math.max(1, input.limit ?? 20),
       LUMI_API_LIMITS.maxSyncPullPage,

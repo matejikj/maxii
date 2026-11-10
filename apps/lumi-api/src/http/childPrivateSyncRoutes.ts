@@ -6,12 +6,12 @@ import type { AccessTokenVerifier } from '../auth/tokenVerifier.ts';
 import type { AuthSessionStore } from '../auth/authSessions.ts';
 import { readCookie } from '../auth/authSessions.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
-import type { MemoryChildPrivateSyncStore } from '../childPrivate/childPrivateSyncStore.ts';
+import type { ChildPrivateSyncStorePort } from '../childPrivate/childPrivateSyncStore.ts';
 import { apiError } from './errors.ts';
 
 type ChildPrivateSyncRouteDeps = {
   readonly config: ApiConfig;
-  readonly childPrivateSync: MemoryChildPrivateSyncStore;
+  readonly childPrivateSync: ChildPrivateSyncStorePort;
   readonly tokens: AccessTokenVerifier;
   readonly sessions: AuthSessionStore;
 };
@@ -131,7 +131,7 @@ export function registerChildPrivateSyncRoutes(
     const query = request.query as { cursor?: string; limit?: string };
     try {
       const parsedLimit = query.limit ? Number(query.limit) : null;
-      const result = childPrivateSync.pull({
+      const result = await childPrivateSync.pull({
         sessionAppUserId: appUserId,
         cursor: (query.cursor as SyncCursor | undefined) ?? null,
         ...(parsedLimit != null && Number.isFinite(parsedLimit)

@@ -18,7 +18,10 @@ import { registerAuthRoutes } from '../auth/loginRoutes.ts';
 import { verifyCsrfDoubleSubmit } from '../auth/csrf.ts';
 import { MemoryFamilyStore } from '../identity/store.ts';
 import { MemorySyncStore } from '../sync/syncStore.ts';
-import { MemoryChildPrivateSyncStore } from '../childPrivate/childPrivateSyncStore.ts';
+import {
+  MemoryChildPrivateSyncStore,
+  type ChildPrivateSyncStorePort,
+} from '../childPrivate/childPrivateSyncStore.ts';
 import { apiError } from './errors.ts';
 import { createFixedWindowRateLimiter } from './rateLimit.ts';
 import { registerFamilyRoutes } from './familyRoutes.ts';
@@ -48,7 +51,9 @@ export type CreatedApi = {
   readonly app: ReturnType<typeof Fastify>;
   readonly store: MemoryFamilyStore;
   readonly sync: MemorySyncStore;
-  readonly childPrivateSync: MemoryChildPrivateSyncStore;
+  readonly childPrivateSync: ChildPrivateSyncStorePort;
+  /** Durable child-private ledger is opt-in; personal boots stay memory. */
+  readonly childPrivateSyncProvider: 'memory' | 'postgres';
   readonly tokens: AccessTokenVerifier;
   readonly sessions: AuthSessionStore;
   readonly oidc: OidcTokenExchanger;
@@ -67,6 +72,12 @@ export type CreateFamilyApiOptions = {
   readonly attachmentMetadataProvider?: 'none' | 'postgres';
   /** Durable quota (e.g. Postgres) — unset keeps the in-process ledger. */
   readonly quota?: FamilyAttachmentQuotaPort;
+  /**
+   * Opt-in durable child-private sync ledger. Unset keeps the in-memory store
+   * so personal tracker boots never require Postgres.
+   */
+  readonly childPrivateSync?: ChildPrivateSyncStorePort;
+  readonly childPrivateSyncProvider?: 'memory' | 'postgres';
 };
 
 export async function createFamilyApi(
@@ -75,7 +86,10 @@ export async function createFamilyApi(
 ): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
   const sync = new MemorySyncStore();
-  const childPrivateSync = new MemoryChildPrivateSyncStore();
+  const childPrivateSync =
+    options.childPrivateSync ?? new MemoryChildPrivateSyncStore();
+  // Explicit provider only — never infer Postgres just because a store was injected.
+  const childPrivateSyncProvider = options.childPrivateSyncProvider ?? 'memory';
   const tokens = new AccessTokenVerifier(config, store);
   const sessions = new AuthSessionStore();
   const oidc = new OidcTokenExchanger(config);
@@ -378,6 +392,7 @@ export async function createFamilyApi(
     store,
     sync,
     childPrivateSync,
+    childPrivateSyncProvider,
     tokens,
     sessions,
     oidc,
