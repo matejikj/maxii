@@ -1,0 +1,149 @@
+# Builds a sideloadable personal test APK for Galaxy / local installs.
+# Download: Actions → Artifacts, or Releases → android-test (rolling prerelease).
+name: Android test APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: android-test-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c4804d46898778ad8554cb37 # v4.1.0
+        with:
+          node-version: '22.16.0'
+          cache: npm
+
+      - uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: 'tools platform-tools platforms;android-37 build-tools;37.0.0'
+
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build forest package consumed by the app
+        run: npm run build
+
+      - name: Restore or create CI signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SIGN_DIR="${RUNNER_TEMP}/lumi-signing"
+          mkdir -p "$SIGN_DIR"
+          KEYSTORE="$SIGN_DIR/personal-release.keystore"
+
+          if [[ -n "${KEYSTORE_BASE64:-}" ]]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+            echo "Using repository signing secrets (stable across builds)."
+            {
+              echo "LUMI_SIGNING_DIR=$SIGN_DIR"
+              echo "LUMI_UPLOAD_STORE_FILE=$KEYSTORE"
+              echo "LUMI_UPLOAD_STORE_PASSWORD=${STORE_PASSWORD:?ANDROID_KEYSTORE_PASSWORD required with ANDROID_KEYSTORE_BASE64}"
+              echo "LUMI_UPLOAD_KEY_ALIAS=${KEY_ALIAS:-lumi-personal}"
+              echo "LUMI_UPLOAD_KEY_PASSWORD=${KEY_PASSWORD:-$STORE_PASSWORD}"
+            } >> "$GITHUB_ENV"
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret — generating ephemeral CI keystore."
+            echo "Reinstall may be required between builds unless you add stable signing secrets."
+            keytool -genkeypair -v -storetype PKCS12 \
+              -keystore "$KEYSTORE" \
+              -alias lumi-ci-test \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass lumi-ci-test-only \
+              -keypass lumi-ci-test-only \
+              -dname 'CN=LUMI CI Test, OU=Personal, O=matejikj, C=CZ'
+            {
+              echo "LUMI_SIGNING_DIR=$SIGN_DIR"
+              echo "LUMI_UPLOAD_STORE_FILE=$KEYSTORE"
+              echo "LUMI_UPLOAD_STORE_PASSWORD=lumi-ci-test-only"
+              echo "LUMI_UPLOAD_KEY_ALIAS=lumi-ci-test"
+              echo "LUMI_UPLOAD_KEY_PASSWORD=lumi-ci-test-only"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Prebuild native Android project
+        working-directory: apps/baby-tracker
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Assemble signed release APK
+        working-directory: apps/baby-tracker
+        run: npm run release:android
+
+      - name: Stage downloadable APK
+        id: stage
+        run: |
+          set -euo pipefail
+          SRC="apps/baby-tracker/android/app/build/outputs/apk/release/app-release.apk"
+          test -f "$SRC"
+          mkdir -p dist-ci
+          OUT="dist-ci/lumi-baby-tracker-${GITHUB_SHA::7}.apk"
+          cp "$SRC" "$OUT"
+          cp "$SRC" dist-ci/lumi-baby-tracker-latest.apk
+          sha256sum "$OUT" | tee dist-ci/SHA256SUMS.txt
+          echo "apk=$OUT" >> "$GITHUB_OUTPUT"
+          echo "bytes=$(wc -c < "$OUT" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lumi-baby-tracker-apk
+          path: |
+            dist-ci/lumi-baby-tracker-*.apk
+            dist-ci/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish rolling GitHub prerelease for phone download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=android-test
+          TITLE="Android test APK (sideload)"
+          NOTES="$(cat <<EOF
+          Personal test build for sideloading (package \`com.matejikj\`).
+
+          - Commit: \`${GITHUB_SHA}\`
+          - Workflow: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          - Size: ${{ steps.stage.outputs.bytes }} bytes
+
+          ## Install on Galaxy S24+
+          1. Open this release on the phone browser and download \`lumi-baby-tracker-latest.apk\`.
+          2. Settings → Security / Privacy → Install unknown apps → allow the browser or Files.
+          3. Open the APK and install.
+
+          Replacing an older CI build may require uninstall first unless you configured stable signing secrets (\`ANDROID_KEYSTORE_*\`).
+          EOF
+          )"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist-ci/lumi-baby-tracker-latest.apk dist-ci/SHA256SUMS.txt --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" --prerelease
+          else
+            gh release create "$TAG" \
+              dist-ci/lumi-baby-tracker-latest.apk \
+              dist-ci/SHA256SUMS.txt \
+              --title "$TITLE" \
+              --notes "$NOTES" \
+              --prerelease
+          fi
