@@ -15,6 +15,9 @@ import {
   saveReminderPreferences,
   setCharacterMotionEnabled,
   setGuideSpecies,
+  setAppMotif,
+  META_APP_MOTIF,
+  type AppMotif,
   shouldShowBackupHint,
   markBackupHintShown,
   wipePersonalData,
@@ -94,6 +97,7 @@ test('preferences default motion on, reminders off, and guide is Lumi rabbit', a
   const prefs = await loadPersonalPreferences(native.unitOfWork, 'Europe/Prague');
   assert.equal(prefs.characterMotionEnabled, true);
   assert.equal(prefs.guideSpecies, 'rabbit');
+  assert.equal(prefs.appMotif, 'forest');
   assert.equal(prefs.reminders.dailyTogetherEnabled, false);
   assert.equal(prefs.reminders.weeklyGlanceEnabled, false);
 
@@ -103,6 +107,29 @@ test('preferences default motion on, reminders off, and guide is Lumi rabbit', a
   assert.equal(next.characterMotionEnabled, false);
   assert.equal(next.guideSpecies, 'fox');
   await native.close();
+});
+
+test('app motif persists across reopening without changing guide or motion preferences', async () => {
+  const native = await openNative(`settings-motif-${Date.now()}`);
+  await setGuideSpecies(native.unitOfWork, 'fox');
+  await setCharacterMotionEnabled(native.unitOfWork, false);
+  await setAppMotif(native.unitOfWork, 'garden');
+  assert.equal((await loadPersonalPreferences(native.unitOfWork, 'Europe/Prague')).appMotif, 'garden');
+  await setAppMotif(native.unitOfWork, 'playground');
+  await assert.rejects(() => setAppMotif(native.unitOfWork, 'ocean' as AppMotif), /Neznámý motiv/);
+  await native.close();
+  const reopened = await openPrivateDatabase({
+    databaseName: native.databaseName, opener: native.opener, keyStore: native.keyStore,
+    presence: native.presence, checkpointStore: createMemoryCheckpointStore(), now: { epochMs: native.clock },
+  });
+  const unitOfWork = createNativeUnitOfWorkFactory(reopened, { nowMs: () => native.clock });
+  const prefs = await loadPersonalPreferences(unitOfWork, 'Europe/Prague');
+  assert.equal(prefs.appMotif, 'playground');
+  assert.equal(prefs.guideSpecies, 'fox');
+  assert.equal(prefs.characterMotionEnabled, false);
+  await unitOfWork.run((uow) => uow.meta.set(META_APP_MOTIF, 'future-world'));
+  assert.equal((await loadPersonalPreferences(unitOfWork, 'Europe/Prague')).appMotif, 'forest');
+  await reopened.close();
 });
 
 test('reminder permission is requested only when enabling and denied leaves core usable', async () => {

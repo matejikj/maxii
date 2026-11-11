@@ -5,6 +5,7 @@ export { careSortAtMs };
 
 export type LastCarePresentation = {
   eventId: string;
+  kind: CareEvent['type'];
   title: string;
   detail: string;
   sortAtMs: number;
@@ -45,6 +46,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
     case 'diaper':
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: diaperLabel(event.contents),
         detail: `v ${clock}`,
         sortAtMs,
@@ -56,6 +58,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
           : `${event.amount.value} ${event.amount.unit}`;
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Lahvička',
         detail: `v ${clock} · ${amountLabel}`,
         sortAtMs,
@@ -68,6 +71,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
           : `${event.description} · ${event.amount.value} ${event.amount.unit}`;
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Jídlo',
         detail: `v ${clock} · ${amountLabel}`,
         sortAtMs,
@@ -81,6 +85,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
       ].filter(Boolean);
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Růst',
         detail: parts.length > 0 ? `měření ${clock} · ${parts.join(', ')}` : `měření ${clock}`,
         sortAtMs,
@@ -89,6 +94,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
     case 'note':
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Poznámka',
         detail: `v ${clock} · ${event.body.slice(0, 80)}`,
         sortAtMs,
@@ -96,6 +102,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
     case 'experience':
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: event.title?.trim() ? event.title : 'Zážitek',
         detail: `v ${clock}${event.area ? ` · ${event.area}` : ''}`,
         sortAtMs,
@@ -103,6 +110,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
     case 'milestone':
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Milník',
         detail: `v ${clock} · ${event.body.slice(0, 80)}`,
         sortAtMs,
@@ -113,6 +121,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
         const end = formatClock(event.occurrence.end.instant.epochMs, timeZone);
         return {
           eventId: event.eventId,
+          kind: event.type,
           title: 'Spánek',
           detail: `${start}–${end}`,
           sortAtMs,
@@ -120,6 +129,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
       }
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Spánek',
         detail: `začátek ${formatClock(event.occurrence.observedAt.instant.epochMs, timeZone)} · bez známého konce`,
         sortAtMs,
@@ -130,6 +140,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
       if (event.occurrence.kind === 'known') {
         return {
           eventId: event.eventId,
+          kind: event.type,
           title: 'Kojení',
           detail: `od ${formatClock(event.occurrence.start.instant.epochMs, timeZone)} · ${side}`,
           sortAtMs,
@@ -137,6 +148,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
       }
       return {
         eventId: event.eventId,
+        kind: event.type,
         title: 'Kojení',
         detail: `pozorováno ${formatClock(event.occurrence.observedAt.instant.epochMs, timeZone)} · bez známé délky · ${side}`,
         sortAtMs,

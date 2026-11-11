@@ -14,7 +14,7 @@ const hash = node => createHash('sha256').update(serializeVectorNode(node)).dige
 function count(node) { return 1 + (node.kind === 'group' ? node.children.reduce((n, child) => n + count(child), 0) : 0); }
 
 for (const species of LUMI_ANIMALS) {
-  test(`v2 anatomy ${species}: semantic parts, unchanged original artwork and no mutation`, () => {
+  test(`v2 anatomy ${species}: semantic parts, shared canonical artwork and no mutation`, () => {
     const blueprint = CHARACTER_BLUEPRINTS[species];
     assert.equal(blueprint.schemaVersion, 2);
     assert.equal(blueprint.species, species);

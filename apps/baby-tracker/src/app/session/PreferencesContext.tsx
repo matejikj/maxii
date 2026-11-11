@@ -14,11 +14,13 @@ import {
   saveGrowthDisplayUnits,
   saveReminderPreferences,
   setAppearanceStyle,
+  setAppMotif,
   setCharacterMotionEnabled,
   setGuideSpecies,
   shouldShowBackupHint,
   updateSummaryTimeZone,
   type AppearanceStyle,
+  type AppMotif,
   type GuideSpecies,
   type PersonalPreferences,
   type ReminderPreferences,
@@ -28,11 +30,13 @@ import { useBootstrap } from './BootstrapContext';
 
 type PreferencesContextValue = {
   preferences: PersonalPreferences;
+  ready: boolean;
   backupHintVisible: boolean;
   refresh: () => Promise<void>;
   setMotionEnabled: (enabled: boolean) => Promise<void>;
   setGuide: (species: GuideSpecies) => Promise<void>;
   setAppearance: (style: AppearanceStyle) => Promise<void>;
+  setMotif: (motif: AppMotif) => Promise<void>;
   setReminders: (prefs: ReminderPreferences) => Promise<void>;
   setUnits: (units: {
     weightUnit: WeightDisplayUnit;
@@ -50,12 +54,14 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     defaultPersonalPreferences('Europe/Prague'),
   );
   const [backupHintVisible, setBackupHintVisible] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!runtime) return;
     const zone = profile?.settings.summaryTimeZone ?? 'Europe/Prague';
     const next = await loadPersonalPreferences(runtime.unitOfWork, zone);
     setPreferences(next);
+    setReady(true);
     setBackupHintVisible(await shouldShowBackupHint(runtime.unitOfWork));
   }, [profile?.settings.summaryTimeZone, runtime]);
 
@@ -72,6 +78,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const value = useMemo<PreferencesContextValue>(
     () => ({
       preferences,
+      ready,
       backupHintVisible,
       refresh,
       async setMotionEnabled(enabled) {
@@ -88,6 +95,11 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         if (!runtime) return;
         await setAppearanceStyle(runtime.unitOfWork, style);
         setPreferences((current) => ({ ...current, appearanceStyle: style }));
+      },
+      async setMotif(motif) {
+        if (!runtime) throw new Error('Nastavení deníku ještě není připravené.');
+        await setAppMotif(runtime.unitOfWork, motif);
+        setPreferences((current) => ({ ...current, appMotif: motif }));
       },
       async setReminders(prefs) {
         if (!runtime) return;
@@ -118,7 +130,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         setBackupHintVisible(false);
       },
     }),
-    [backupHintVisible, preferences, profile, refresh, runtime],
+    [backupHintVisible, preferences, profile, ready, refresh, runtime],
   );
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;

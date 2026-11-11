@@ -8,6 +8,7 @@ import { VectorNodeView } from '../VectorNodeView';
 export interface LumiIconProps {
   readonly name: LumiIconId;
   readonly color: string;
+  readonly accentColor?: string;
   readonly size?: number;
   readonly style?: StyleProp<ViewStyle>;
   readonly accessibilityLabel?: string;
@@ -17,11 +18,14 @@ export interface LumiIconProps {
 export const LumiIcon = React.memo(function LumiIcon({
   name,
   color,
+  accentColor,
   size = LUMI_UI_TOKENS.size.iconLarge,
   style,
   accessibilityLabel,
 }: LumiIconProps) {
-  const document = useMemo(() => compileLumiIcon(name, { color }), [name, color]);
+  const document = useMemo(() => compileLumiIcon(name, {
+    color, ...(accentColor === undefined ? {} : { accentColor }),
+  }), [name, color, accentColor]);
   const labeled = accessibilityLabel != null && accessibilityLabel.length > 0;
   return (
     <View

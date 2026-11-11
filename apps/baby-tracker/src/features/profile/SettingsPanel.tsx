@@ -19,6 +19,7 @@ import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { FamilyAccountPanel } from './FamilyAccountPanel';
 import { PhotoStoragePanel } from './PhotoStoragePanel';
 import { GuideCompanion } from '../shell/GuideCompanion';
+import { AppThemePicker } from './AppThemePicker';
 
 const GUIDE_LABELS: Record<GuideSpecies, string> = {
   rabbit: 'Lumi (králík)',
@@ -94,6 +95,8 @@ export function SettingsPanel() {
       <LumiText tone="muted">
         Osobní deník funguje bez účtu. Základní péče zůstává dostupná i bez notifikací.
       </LumiText>
+
+      <AppThemePicker />
 
       <FamilyAccountPanel />
 

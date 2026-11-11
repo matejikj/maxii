@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet } from 'react-native';
-import { LumiButton, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { LumiButton, LumiIcon, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 type ChildSwitcherProps = {
   /** Optional compact label override in the header chip. */
   accessibilityHint?: string;
+  compact?: boolean;
 };
 
 /**
  * Header control that names the active child in text. Colour alone never
  * identifies who receives the next care write.
  */
-export function ChildSwitcher({ accessibilityHint }: ChildSwitcherProps) {
+export function ChildSwitcher({ accessibilityHint, compact = false }: ChildSwitcherProps) {
   const { colors, ui } = useLumiTheme();
   const { profile, activeProfiles, switchChild } = useBootstrap();
   const [open, setOpen] = useState(false);
@@ -40,12 +41,18 @@ export function ChildSwitcher({ accessibilityHint }: ChildSwitcherProps) {
             paddingVertical: ui.space.xs,
             minHeight: 48,
           },
+          compact ? styles.compactChip : null,
+          compact ? { borderColor: colors.border } : null,
         ]}
       >
-        <LumiText variant="label">{profile.displayName}</LumiText>
-        <LumiText tone="muted" variant="caption">
-          {multi ? 'Přepnout' : 'Dítě'}
-        </LumiText>
+        <LumiText variant="label" style={compact ? { flexShrink: 1 } : undefined}>{profile.displayName}</LumiText>
+        {compact ? (
+          <View style={{ transform: [{ rotate: '90deg' }] }}>
+            <LumiIcon name="arrow-right" color={colors.textMuted} size={14} />
+          </View>
+        ) : (
+          <LumiText tone="muted" variant="caption">{multi ? 'Přepnout' : 'Dítě'}</LumiText>
+        )}
       </Pressable>
       <Modal
         visible={open}
@@ -100,6 +107,8 @@ export function ChildSwitcher({ accessibilityHint }: ChildSwitcherProps) {
 }
 
 const styles = StyleSheet.create({
+  compactChip: { flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 16, paddingHorizontal: 12, maxWidth: 184, flexShrink: 1 },
   chip: {
     borderWidth: 1,
     borderRadius: 12,

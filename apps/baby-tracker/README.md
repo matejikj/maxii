@@ -76,7 +76,13 @@ Produktové UI skládá veřejné Lumi komponenty (`features/ui`): přímé akce
 
 Dnes propojuje `wirePersonalCommands` s plenkovým panelem (tři přímé zápisy + podrobný formulář), poslední péčí z deníku a čtyřmi upravitelnými rychlými akcemi. Historie čte stejný denní výřez; otevření panelu nic nezapisuje.
 
+Úvod Dnes používá světlou lesní mýtinu, zvolenou postavičku a české datum z deníkového pásma. Barevné akční karty zachovávají původní příkazy, pořadí i zachycení dítěte při otevření formuláře. Běžící měření má vlastní čitelný panel; opětovné klepnutí na běžící spánek přejde k existujícímu měření. Poslední zápis vybírá ikonu podle typu události. Dnes a Péče sdílejí botanické materiály i dekorativní krajinu; větší systémové písmo převádí akce do jednoho sloupce a uvolňuje ilustraci pro text.
+
 Spánek: `startSleepSession` / `endSleepSession` ukládají relaci před úspěchem UI; konec drží zamýšlený čas při retry. Na Dnes je rozvinuté měření, na ostatních záložkách kompaktní pruh. Péče nabízí minulý interval a zápis bez délky.
+
+Péče používá botanické ikony Lumi Forest, lesní úvod se zvolenou postavičkou a šest karet denního nebo sedmidenního přehledu. Vizuální hodnoty odvozuje `presentCareOverview` ze stejných projekcí jako popisné souhrny: prázdný den ukazuje „—“, neznámá délka nebo množství zůstávají výslovně neznámé a skutečně zapsaná nula zůstává nulou. Plné popisy jsou zachované pro čtečky. Karty při větším systémovém písmu přecházejí do jednoho sloupce; všechny části respektují světlý a tmavý motiv.
+
+Profil → Vybrat téma nabízí Forest, Garden a Dětské hřiště s náhledy ze stejného vektorového kompilátoru jako aplikace. Výběr se automaticky ukládá do lokální metadata preference `pref_app_motif_v1` a obnovuje po restartu. Starší nebo neznámá hodnota použije výchozí Forest. `ThemePreferenceBridge` mění barvy celé aplikace i prostředí Dnes/Péče bez nového klíče navigace nebo přerušení formuláře. Motiv je nezávislý na zvoleném zvířátku, vzhledu průvodce a pohybu; změna nic nestahuje a nemění deníkové záznamy.
 
 Android má `allowBackup: false`. Ztracený vault klíč nad existující DB se nikdy tiše nepřegeneruje.
 

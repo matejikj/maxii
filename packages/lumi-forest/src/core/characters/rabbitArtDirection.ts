@@ -1,4 +1,5 @@
 import type { CharacterPart } from './blueprint';
+import { sculptCharacterAnatomy } from './sculptedAnatomy';
 
 /**
  * Pilot art direction for Lumi the rabbit. Three comparable variants share the
@@ -10,7 +11,7 @@ export type RabbitArtVariantId = 'A' | 'B' | 'C';
 export const SELECTED_RABBIT_ART_VARIANT: RabbitArtVariantId = 'B';
 
 /** Graphic revision id — independent from blueprint schemaVersion. */
-export const RABBIT_ARTWORK_REVISION = 'lumi.rabbit.art.b1' as const;
+export const RABBIT_ARTWORK_REVISION = 'lumi.rabbit.art.b2' as const;
 
 export type RabbitArtVariant = {
   readonly id: RabbitArtVariantId;
@@ -99,7 +100,7 @@ function buildVariantB(baseline: readonly CharacterPart[]): readonly CharacterPa
       props.transform = 'translate(0 88) scale(0.78)';
     }
   }
-  return parts;
+  return sculptCharacterAnatomy('rabbit', parts);
 }
 
 /**
@@ -141,7 +142,7 @@ export function buildRabbitArtVariants(
     {
       id: 'B',
       label: 'Měkký kompakt',
-      summary: 'Kratší uši a kulatější objemy pro čitelnou siluetu v 48 px i větší výjev.',
+      summary: 'Měkce modelované objemy, jemná srst a záhyby uší; čitelná silueta v 48 px i větší výjev.',
       parts: buildVariantB(baseline),
     },
     {
@@ -169,7 +170,7 @@ export const RABBIT_ART_DIRECTION_NOTES = {
     'Small-size silhouette stays readable with shorter, wider ears.',
     'Softer compact volumes transfer to other species without cloning the rabbit.',
     'Calm face (no sad error pose) and room for UI beside the character.',
-    'Fewer competing belly/mark planes than a denser polish pass.',
+    'Sculpted curves and restrained material details belong to their anatomical part.',
   ],
   handoffForNextSpecies: [
     'Reuse eye/mouth recipes, shared light direction and matte fills.',

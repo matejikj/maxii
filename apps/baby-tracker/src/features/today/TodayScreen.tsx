@@ -1,21 +1,21 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { LUMI_MOTIFS } from '@lumi/forest-design/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  LumiButton,
   LumiCard,
+  LumiIcon,
   LumiText,
   useLumiTheme,
 } from '@lumi/forest-design/native';
 import { asTimeZoneId } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
-import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
 import { useCompositionRoot } from '../../app/providers';
 import { BackupHintBanner } from '../shell/BackupHintBanner';
 import { ChildSwitcher } from '../shell/ChildSwitcher';
-import { GuideCompanion } from '../shell/GuideCompanion';
 import { PRODUCT_COPY } from '../ui';
 import { DiaperRecorder } from './DiaperRecorder';
 import { ExperienceRecorder } from './ExperienceRecorder';
@@ -25,6 +25,7 @@ import { NursingSessionController } from './NursingSessionController';
 import { SleepSessionController, useSleepStarter } from './SleepSessionController';
 import { TodayTogetherCard } from './TodayTogetherCard';
 import { useTodayCareModel } from './useTodayCareModel';
+import { TodayHero, TodayIdleMeasurement, TodayLastCareCard, TodayQuickAction } from './TodayVisuals';
 
 type TodayScreenProps = {
   onOpenProfile: () => void;
@@ -43,9 +44,10 @@ export function TodayScreen({
   onOpenDevelopment,
   onOpenEvent,
 }: TodayScreenProps) {
-  const { colors, mode, ui } = useLumiTheme();
+  const { colors, mode, ui, motif } = useLumiTheme();
   const { profile } = useBootstrap();
-  const { preferences } = usePersonalPreferences();
+  const focused = useIsFocused();
+  const { width, fontScale } = useWindowDimensions();
   const { services } = useCompositionRoot();
   const history = useHistoryTabState();
   const childName = profile?.displayName ?? 'Miminko';
@@ -63,6 +65,8 @@ export function TodayScreen({
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
   const [celebrationKey, setCelebrationKey] = useState(0);
   const diaperOpenerRef = useRef(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const measurementY = useRef(0);
   const celebrateLocalSave = useCallback(() => {
     setCelebrationKey((value) => value + 1);
   }, []);
@@ -120,6 +124,7 @@ export function TodayScreen({
       const result = await sleepStarter.start();
       if (result.alreadyRunning) {
         // Opening the existing session is intentional — never start a second sleep.
+        scrollRef.current?.scrollTo({ y: measurementY.current, animated: false });
         return;
       }
       if (result.ok) celebrateLocalSave();
@@ -139,80 +144,62 @@ export function TodayScreen({
       testID="today-screen"
     >
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.heading}>
-          <View style={styles.headingText}>
-            <LumiText variant="caption" tone="accent">
-              LUMI
-            </LumiText>
-            <LumiText variant="h1" accessibilityRole="header">
-              Dnes s {childName}
-            </LumiText>
-            <LumiText tone="muted">
-              {model.calendarDate ? model.calendarDate : 'Místní deník bez účtu'}
-            </LumiText>
-            <ChildSwitcher />
+          <View style={{ flex: 1 }}>
+            <LumiText variant="overline" tone="muted" style={styles.brand}>{LUMI_MOTIFS[motif].brand}</LumiText>
           </View>
+          <ChildSwitcher compact />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Otevřít profil a nastavení"
             onPress={onOpenProfile}
-            style={[styles.avatar, { borderColor: colors.controlBorder }]}
+            testID="today-open-profile"
+            style={({ pressed }) => [styles.profileButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 }]}
           >
-            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <GuideCompanion
-                species={preferences.guideSpecies}
-                appearanceStyle={preferences.appearanceStyle}
-                semantic="listening"
-                celebrationKey={celebrationKey}
-                width={72}
-                height={78}
-                testID="today-guide"
-              />
-            </View>
+            <LumiIcon name="settings" color={colors.primary} size={23} />
           </Pressable>
         </View>
+        <TodayHero childName={childName} calendarDate={model.calendarDate}
+          celebrationKey={celebrationKey} visible={focused} />
 
-        <BackupHintBanner />
-
-        {childId ? (
-          <>
-            <SleepSessionController
-              childId={childId}
-              timeZone={zone}
-              activeSleep={model.activeSleep}
-              nowEpochMs={nowMs}
-              onSavedLocally={celebrateLocalSave}
-            />
-            <NursingSessionController
-              childId={childId}
-              timeZone={zone}
-              activeNursing={model.activeNursing}
-              nowEpochMs={nowMs}
-              onSavedLocally={celebrateLocalSave}
-            />
-          </>
-        ) : null}
-        {!hasActiveMeasurement ? (
-          <LumiCard>
-            <LumiText variant="caption" tone="muted">
-              {PRODUCT_COPY.measurement.none}
-            </LumiText>
-            {sleepStarter.message ? <LumiText>{sleepStarter.message}</LumiText> : null}
-          </LumiCard>
-        ) : null}
+        <View onLayout={(event) => { measurementY.current = event.nativeEvent.layout.y; }}
+          style={hasActiveMeasurement ? { gap: 12 } : undefined}>
+          {childId ? (
+            <>
+              <SleepSessionController
+                childId={childId}
+                timeZone={zone}
+                activeSleep={model.activeSleep}
+                nowEpochMs={nowMs}
+                onSavedLocally={celebrateLocalSave}
+              />
+              <NursingSessionController
+                childId={childId}
+                timeZone={zone}
+                activeNursing={model.activeNursing}
+                nowEpochMs={nowMs}
+                onSavedLocally={celebrateLocalSave}
+              />
+            </>
+          ) : null}
+          {!hasActiveMeasurement ? (
+            <TodayIdleMeasurement message={sleepStarter.message} />
+          ) : null}
+        </View>
 
         <View style={{ gap: ui.space.sm }}>
           <View style={styles.rowBetween}>
-            <LumiText variant="h2">{PRODUCT_COPY.today.quickActions}</LumiText>
+            <LumiText variant="h2" accessibilityRole="header" style={{ flexShrink: 1 }}>{PRODUCT_COPY.today.quickActions}</LumiText>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={PRODUCT_COPY.actions.editQuickActions}
               onPress={() => setEditingActions((value) => !value)}
               style={styles.editLink}
+              accessibilityState={{ expanded: editingActions }}
             >
-              <LumiText tone="accent">
-                {editingActions ? PRODUCT_COPY.actions.close : PRODUCT_COPY.actions.editQuickActions}
+              <LumiText variant="label" tone="accent">
+                {editingActions ? 'Hotovo' : PRODUCT_COPY.actions.edit}
               </LumiText>
             </Pressable>
           </View>
@@ -224,30 +211,25 @@ export function TodayScreen({
           <View style={styles.quickGrid}>
             {model.quickActions.map((id) => {
               const button = (
-                <LumiButton
+                <TodayQuickAction
+                  id={id}
                   title={actionTitle(id)}
-                  variant={
-                    id === 'diaper' ||
-                    id === 'feeding' ||
-                    (id === 'sleep' && !model.activeSleep)
-                      ? 'primary'
-                      : 'secondary'
-                  }
-                  fullWidth
-                  loading={id === 'sleep' && sleepStarter.pending}
+                  running={(id === 'sleep' && Boolean(model.activeSleep)) || (id === 'feeding' && Boolean(model.activeNursing))}
+                  pending={id === 'sleep' && sleepStarter.pending}
+                  editing={editingActions}
                   onPress={() => void onQuickAction(id)}
-                  testID={`quick-${id}`}
                 />
               );
               if (id === 'diaper') {
                 return (
-                  <View key={id} ref={diaperOpenerRef} collapsable={false} style={styles.quickSlot}>
+                  <View key={id} ref={diaperOpenerRef} collapsable={false}
+                    style={[styles.quickSlot, width < 350 || fontScale > 1.25 ? styles.singleSlot : null]}>
                     {button}
                   </View>
                 );
               }
               return (
-                <View key={id} style={styles.quickSlot}>
+                <View key={id} style={[styles.quickSlot, width < 350 || fontScale > 1.25 ? styles.singleSlot : null]}>
                   {button}
                 </View>
               );
@@ -296,22 +278,9 @@ export function TodayScreen({
           </>
         ) : null}
 
-        <LumiCard>
-          <LumiText variant="h2">{PRODUCT_COPY.today.lastCare}</LumiText>
-          {model.lastCare ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${model.lastCare.title}, ${model.lastCare.detail}`}
-              onPress={() => onOpenEvent?.(model.lastCare!.eventId)}
-              style={{ gap: ui.space.xs, minHeight: 48, justifyContent: 'center' }}
-            >
-              <LumiText>{model.lastCare.title}</LumiText>
-              <LumiText tone="muted">{model.lastCare.detail}</LumiText>
-            </Pressable>
-          ) : (
-            <LumiText tone="muted">{PRODUCT_COPY.empty.noLastCare}</LumiText>
-          )}
-        </LumiCard>
+        <TodayLastCareCard lastCare={model.lastCare} {...(onOpenEvent ? { onOpenEvent } : {})} />
+
+        <BackupHintBanner />
 
         {profile ? (
           <TodayTogetherCard
@@ -326,12 +295,13 @@ export function TodayScreen({
           </LumiCard>
         )}
 
-        <LumiButton
-          title={PRODUCT_COPY.actions.showTodayRecords}
-          variant="secondary"
-          fullWidth
-          onPress={openHistoryToday}
-        />
+        <Pressable onPress={openHistoryToday} accessibilityRole="button"
+          accessibilityLabel={PRODUCT_COPY.actions.showTodayRecords} testID="today-open-history"
+          style={({ pressed }) => [styles.historyLink, { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 }]}>
+          <LumiIcon name="history" color={colors.primary} size={22} />
+          <LumiText variant="label" style={{ flex: 1, color: colors.primary }}>{PRODUCT_COPY.actions.showTodayRecords}</LumiText>
+          <LumiIcon name="arrow-right" color={colors.primary} size={18} />
+        </Pressable>
       </ScrollView>
 
     </SafeAreaView>
@@ -342,20 +312,20 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
     flexGrow: 1,
-    padding: 24,
-    gap: 20,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 28,
+    gap: 18,
     width: '100%',
-    maxWidth: 600,
+    maxWidth: 620,
     alignSelf: 'center',
   },
-  heading: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  headingText: { flex: 1, gap: 8 },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 1,
-    overflow: 'hidden',
+  heading: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  brand: { fontSize: 10, lineHeight: 17, letterSpacing: 1.8 },
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -365,7 +335,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  editLink: { minHeight: 48, justifyContent: 'center' },
+  editLink: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 10 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  quickSlot: { width: '47%', flexGrow: 1, minWidth: 140 },
+  quickSlot: { flexBasis: '47%', flexGrow: 1, minWidth: 140 },
+  singleSlot: { flexBasis: '100%' },
+  historyLink: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, minHeight: 54 },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -46,16 +47,26 @@ function TabWithCompactSleep({
 }
 
 function MainTabs() {
-  const { colors } = useLumiTheme();
+  const { colors, mode } = useLumiTheme();
+  const { bottom } = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.controlBorder },
-        tabBarIcon: ({ color, size }) => (
-          <LumiIcon name={MAIN_TAB_ICONS[route.name]} color={color} size={size} />
+        tabBarStyle: { backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          height: 68 + bottom + Math.max(0, (fontScale - 1) * 24),
+          paddingTop: 6, paddingBottom: Math.max(bottom, 6), elevation: 0 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 3 },
+        tabBarIcon: ({ color, focused }) => (
+          <View style={{ width: 58, height: 34, borderRadius: 17, alignItems: 'center',
+            justifyContent: 'center', backgroundColor: focused ? colors.secondary : 'transparent' }}>
+            <LumiIcon name={MAIN_TAB_ICONS[route.name]} color={color} size={26}
+              accentColor={focused ? (mode === 'dark' ? '#D1B982' : '#AC8A51') : color} />
+          </View>
         ),
       })}
     >

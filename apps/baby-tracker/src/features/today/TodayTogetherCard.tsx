@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { LumiButton, LumiCard, LumiIcon, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { ChildProfile } from '../../domain';
 import { asTimeZoneId, todayInZone } from '../../domain';
 import type { DailyRecommendationView } from '../../application';
@@ -17,6 +17,7 @@ import {
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { PRODUCT_COPY } from '../ui';
+import { ForestIconBadge, forestTone } from '../ui/ForestIconBadge';
 
 type TodayTogetherCardProps = {
   profile: ChildProfile;
@@ -30,7 +31,8 @@ export function TodayTogetherCard({
   sleepRunning,
   onOpenDevelopment,
 }: TodayTogetherCardProps) {
-  const { ui } = useLumiTheme();
+  const { ui, colors, mode, motif } = useLumiTheme();
+  const tone = forestTone(mode, 'experience', motif);
   const { services } = useCompositionRoot();
   const runtime = usePersonalRuntime();
   const [view, setView] = useState<DailyRecommendationView | null>(null);
@@ -72,8 +74,16 @@ export function TodayTogetherCard({
     : null;
 
   return (
-    <LumiCard>
-      <LumiText variant="h2">{PRODUCT_COPY.today.together}</LumiText>
+    <LumiCard padding="none" style={{ padding: 20, borderRadius: 26, gap: 14,
+      backgroundColor: tone.background, borderColor: motif === 'forest' && mode === 'light' ? '#E9DEC5' : colors.border }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <ForestIconBadge name="experience" size={44} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <LumiText variant="overline" tone="muted" style={{ fontSize: 10, letterSpacing: 1.5 }}>CHVILKA PRO VÁS</LumiText>
+          <LumiText variant="h2" accessibilityRole="header">{PRODUCT_COPY.today.together}</LumiText>
+        </View>
+        <LumiIcon name="development" color={tone.ink} accentColor={tone.accent} size={27} />
+      </View>
       {view?.set.status === 'hidden' ? (
         <LumiText tone="muted">{PRODUCT_COPY.actions.careOnlyToday}</LumiText>
       ) : null}
@@ -82,17 +92,18 @@ export function TodayTogetherCard({
       ) : null}
       {revision && primary ? (
         <View style={{ gap: ui.space.sm }}>
-          <LumiText>{revision.title}</LumiText>
-          <LumiText tone="muted">{PRODUCT_COPY.development.filterMoment}</LumiText>
+          <LumiText variant="bodyStrong">{revision.title}</LumiText>
+          <LumiText tone="muted" variant="caption">{PRODUCT_COPY.development.filterMoment}</LumiText>
           <LumiButton
             title={PRODUCT_COPY.today.showGame}
             fullWidth
             onPress={onOpenDevelopment}
             testID="today-show-game"
+            rightAdornment={<LumiIcon name="arrow-right" color={colors.onPrimary} size={18} />}
           />
         </View>
       ) : (
-        <LumiText tone="muted">
+        <LumiText tone="muted" variant="caption">
           {view?.emptyReasonCodes.includes('missing_birth_date')
             ? PRODUCT_COPY.empty.missingBirthDate
             : view?.emptyReasonCodes.includes('age_out_of_content_window')
@@ -100,6 +111,11 @@ export function TodayTogetherCard({
               : PRODUCT_COPY.empty.noEligibleActivity}
         </LumiText>
       )}
+      {!revision ? (
+        <LumiButton title="Otevřít Rozvoj" variant="outline" fullWidth
+          onPress={onOpenDevelopment} testID="today-explore-development"
+          rightAdornment={<LumiIcon name="arrow-right" color={colors.text} size={18} />} />
+      ) : null}
     </LumiCard>
   );
 }

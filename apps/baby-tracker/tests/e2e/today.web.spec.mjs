@@ -25,9 +25,7 @@ test('welcome can be skipped and Today shows without an account', async ({ page 
   await expect(page.getByText('LUMI').first()).toBeVisible();
   await skipWelcomeIfPresent(page);
   await expect(page.getByRole('heading', { name: /Dnes s / })).toBeVisible();
-  await expect(
-    page.getByText('Místní deník bez účtu').or(page.getByText(/\d{4}-\d{2}-\d{2}/)),
-  ).toBeVisible();
+  await expect(page.getByTestId('today-date')).toBeVisible();
 });
 
 test('diaper direct action persists after reload on the prepared web export', async ({ page }) => {

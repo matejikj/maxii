@@ -283,6 +283,7 @@ export function NursingSessionController({
 
       {showExpanded && activeNursing ? (
         <ActiveMeasurement
+          icon="nursing"
           title={title}
           startedAtEpochMs={activeNursing.startedAt.instant.epochMs}
           nowEpochMs={nowEpochMs}

@@ -1,6 +1,5 @@
 /**
- * Original LUMI geometry is now semantically named anatomy.
- * Each shape is preserved exactly (including painter order) from v0.2.1.
+ * Canonical LUMI anatomy, with sculpted artwork authored inside named parts.
  * Author changes here; never duplicate shape definitions in artwork.ts.
  *
  * Every item is an independent part with a stable ID, explicit role and z-order.
@@ -10,6 +9,7 @@ import type { CharacterPart } from './blueprint';
 import { applySoftCompactFleetPolish } from './fleetPolish';
 import { NEW_SPECIES_ANATOMY } from './newSpeciesAnatomy';
 import { selectRabbitAnatomy } from './rabbitArtDirection';
+import { sculptCharacterAnatomy } from './sculptedAnatomy';
 
 /** Pre-direction rabbit geometry used to build comparable art variants A/B/C. */
 export const RABBIT_ANATOMY_BASELINE: readonly CharacterPart[] = [
@@ -1476,11 +1476,11 @@ const HEDGEHOG_ANATOMY_BASE: readonly CharacterPart[] = [
 
 export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
   rabbit: selectRabbitAnatomy(RABBIT_ANATOMY_BASELINE),
-  bear: applySoftCompactFleetPolish(BEAR_ANATOMY_BASE),
-  fox: applySoftCompactFleetPolish(FOX_ANATOMY_BASE),
-  otter: applySoftCompactFleetPolish(OTTER_ANATOMY_BASE),
-  hedgehog: applySoftCompactFleetPolish(HEDGEHOG_ANATOMY_BASE),
-  owl: NEW_SPECIES_ANATOMY.owl,
-  squirrel: NEW_SPECIES_ANATOMY.squirrel,
-  fawn: NEW_SPECIES_ANATOMY.fawn,
+  bear: sculptCharacterAnatomy('bear', applySoftCompactFleetPolish(BEAR_ANATOMY_BASE)),
+  fox: sculptCharacterAnatomy('fox', applySoftCompactFleetPolish(FOX_ANATOMY_BASE)),
+  otter: sculptCharacterAnatomy('otter', applySoftCompactFleetPolish(OTTER_ANATOMY_BASE)),
+  hedgehog: sculptCharacterAnatomy('hedgehog', applySoftCompactFleetPolish(HEDGEHOG_ANATOMY_BASE)),
+  owl: sculptCharacterAnatomy('owl', NEW_SPECIES_ANATOMY.owl),
+  squirrel: sculptCharacterAnatomy('squirrel', NEW_SPECIES_ANATOMY.squirrel),
+  fawn: sculptCharacterAnatomy('fawn', NEW_SPECIES_ANATOMY.fawn),
 };

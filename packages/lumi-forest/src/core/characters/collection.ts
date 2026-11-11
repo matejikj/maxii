@@ -138,7 +138,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   rabbit: {
     species: 'rabbit',
     displayName: 'Lumi',
-    artworkRevision: 'lumi.rabbit.art.b1',
+    artworkRevision: CHARACTER_BLUEPRINTS.rabbit.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'earPerk', labelCs: 'Nastražit uši', prop: null, semantic: 'curiosity' },
@@ -148,7 +148,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   bear: {
     species: 'bear',
     displayName: 'Momo',
-    artworkRevision: 'lumi.bear.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.bear.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'alignBlocks', labelCs: 'Srovnat tvary', prop: 'blocks', semantic: 'pointContent' },
@@ -158,7 +158,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   fox: {
     species: 'fox',
     displayName: 'Nori',
-    artworkRevision: 'lumi.fox.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.fox.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'curlRest', labelCs: 'Uvelebit se', prop: 'scarfProp', semantic: 'rest' },
@@ -168,7 +168,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   otter: {
     species: 'otter',
     displayName: 'Kiko',
-    artworkRevision: 'lumi.otter.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.otter.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'offerExplore', labelCs: 'Nabídnout k prozkoumání', prop: 'blocks', semantic: 'pointContent' },
@@ -178,7 +178,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   hedgehog: {
     species: 'hedgehog',
     displayName: 'Piko',
-    artworkRevision: 'lumi.hedgehog.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.hedgehog.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'softGlance', labelCs: 'Jemné rozhlédnutí', prop: null, semantic: 'curiosity' },
@@ -188,7 +188,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   owl: {
     species: 'owl',
     displayName: 'Eli',
-    artworkRevision: 'lumi.owl.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.owl.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'turnPage', labelCs: 'Otočit stránku', prop: 'book', semantic: 'pointContent' },
@@ -198,7 +198,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   squirrel: {
     species: 'squirrel',
     displayName: 'Tili',
-    artworkRevision: 'lumi.squirrel.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.squirrel.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'stackShapes', labelCs: 'Skládat tvary', prop: 'blocks', semantic: 'pointContent' },
@@ -208,7 +208,7 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
   fawn: {
     species: 'fawn',
     displayName: 'Runi',
-    artworkRevision: 'lumi.fawn.art.c1',
+    artworkRevision: CHARACTER_BLUEPRINTS.fawn.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'pauseAtLeaf', labelCs: 'Zastavit u lístku', prop: 'leaf', semantic: 'curiosity' },

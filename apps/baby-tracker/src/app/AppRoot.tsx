@@ -17,6 +17,7 @@ import { BootstrapProvider, useBootstrap } from './session/BootstrapContext';
 import { HistoryTabProvider } from './session/HistoryTabContext';
 import { MotionPreferenceBridge } from './session/MotionPreferenceBridge';
 import { PreferencesProvider } from './session/PreferencesContext';
+import { ThemePreferenceBridge } from './session/ThemePreferenceBridge';
 import { ContentPackProvider } from './session/ContentPackContext';
 import { registerPublicServiceWorker } from './registerPublicServiceWorker';
 
@@ -121,15 +122,17 @@ function BootstrappedApp() {
   return (
     <BootstrapProvider openPersonalDiary={openPersonalDiary}>
       <PreferencesProvider>
-        <ContentPackProvider>
-          <MotionPreferenceBridge>
-            <AppLockGate>
-              <HistoryTabProvider>
-                <PersonalAppShell />
-              </HistoryTabProvider>
-            </AppLockGate>
-          </MotionPreferenceBridge>
-        </ContentPackProvider>
+        <ThemePreferenceBridge>
+          <ContentPackProvider>
+            <MotionPreferenceBridge>
+              <AppLockGate>
+                <HistoryTabProvider>
+                  <PersonalAppShell />
+                </HistoryTabProvider>
+              </AppLockGate>
+            </MotionPreferenceBridge>
+          </ContentPackProvider>
+        </ThemePreferenceBridge>
       </PreferencesProvider>
     </BootstrapProvider>
   );

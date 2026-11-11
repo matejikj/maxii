@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { LumiButton, LumiCard, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import { PRODUCT_COPY } from './productCopy';
+import { ForestIconBadge, forestTone } from './ForestIconBadge';
 
 export type ActiveMeasurementProps = {
   title: string;
@@ -16,6 +17,7 @@ export type ActiveMeasurementProps = {
   uncertaintyNote?: string | null;
   /** Prefer unit labels (“38 min”) over ambiguous MM:SS for care readability. */
   elapsedLabel?: string;
+  icon?: 'sleep' | 'nursing';
 };
 
 function formatElapsedClock(ms: number): string {
@@ -44,36 +46,43 @@ export function ActiveMeasurement({
   openLabel = PRODUCT_COPY.actions.sleepRunning,
   uncertaintyNote = null,
   elapsedLabel,
+  icon = 'sleep',
 }: ActiveMeasurementProps) {
-  const { ui, colors } = useLumiTheme();
+  const { ui, colors, mode } = useLumiTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const stacked = compact || width < 350 || fontScale > 1.25;
+  const tone = forestTone(mode, icon);
   const elapsedMs = Math.max(0, nowEpochMs - startedAtEpochMs);
   const [announceElapsed, setAnnounceElapsed] = useState(false);
   const display = elapsedLabel ?? formatElapsedClock(elapsedMs);
   const statusLabel = `${PRODUCT_COPY.measurement.running}. ${title}. ${PRODUCT_COPY.measurement.elapsedAvailable}`;
 
   return (
-    <LumiCard>
+    <LumiCard padding="none" style={{ padding: 20, borderRadius: 26 }}>
       <View style={{ gap: ui.space.md }}>
         <View
           accessible
           accessibilityRole="summary"
           accessibilityLabel={statusLabel}
           accessibilityLiveRegion="polite"
+          style={styles.status}
         >
-          <LumiText variant="caption" tone="accent">
-            {PRODUCT_COPY.measurement.running}
-          </LumiText>
-          <LumiText variant={compact ? 'label' : 'h2'}>{title}</LumiText>
+          <ForestIconBadge name={icon} size={44} />
+          <View style={{ flex: 1, gap: 3 }}>
+            <LumiText variant="caption" tone="muted">{PRODUCT_COPY.measurement.running}</LumiText>
+            <LumiText variant={compact ? 'label' : 'h2'}>{title}</LumiText>
+          </View>
         </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Délka ${display}. Klepnutím zopakujete oznámení.`}
           onPress={() => setAnnounceElapsed((value) => !value)}
-          style={[styles.duration, { minHeight: 48, borderColor: colors.controlBorder }]}
+          style={[styles.duration, { minHeight: compact ? 48 : 80, backgroundColor: tone.background, borderColor: colors.controlBorder }]}
         >
           <LumiText
             accessibilityLiveRegion={announceElapsed ? 'polite' : 'none'}
-            variant={compact ? 'label' : 'h1'}
+            variant={compact ? 'label' : 'display'}
+            style={{ color: tone.ink, fontVariant: ['tabular-nums'], letterSpacing: -0.6 }}
           >
             {display}
           </LumiText>
@@ -83,9 +92,13 @@ export function ActiveMeasurement({
             {uncertaintyNote}
           </LumiText>
         ) : null}
-        <View style={{ flexDirection: compact ? 'column' : 'row', gap: ui.space.sm }}>
-          <LumiButton title={openLabel} variant="secondary" onPress={onOpen} fullWidth={compact} />
-          <LumiButton title={stopLabel} onPress={onStop} fullWidth={compact} />
+        <View style={{ flexDirection: stacked ? 'column' : 'row', gap: ui.space.sm }}>
+          <View style={stacked ? undefined : { flex: 1 }}>
+            <LumiButton title={openLabel} variant="secondary" onPress={onOpen} fullWidth style={{ paddingHorizontal: 10 }} />
+          </View>
+          <View style={stacked ? undefined : { flex: 1 }}>
+            <LumiButton title={stopLabel} onPress={onStop} fullWidth style={{ paddingHorizontal: 10 }} />
+          </View>
         </View>
       </View>
     </LumiCard>
@@ -93,12 +106,13 @@ export function ActiveMeasurement({
 }
 
 const styles = StyleSheet.create({
+  status: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   duration: {
     minWidth: 48,
     justifyContent: 'center',
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
 });

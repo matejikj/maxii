@@ -8,6 +8,7 @@ import { asChildId, asTimeZoneId, createChildProfile } from '../domain';
 export const META_CHARACTER_MOTION = 'pref_character_motion_v1';
 export const META_GUIDE_SPECIES = 'pref_guide_species_v1';
 export const META_APPEARANCE_STYLE = 'pref_appearance_style_v1';
+export const META_APP_MOTIF = 'pref_app_motif_v1';
 export const META_REMINDER_PREFS = 'pref_reminders_v1';
 export const META_BACKUP_HINT_SHOWN = 'pref_backup_hint_shown_v1';
 export const META_GROWTH_UNITS = 'growth_display_units_v1';
@@ -30,6 +31,10 @@ export type GuideSpecies = (typeof LOCAL_GUIDE_SPECIES)[number];
 export const LOCAL_APPEARANCE_STYLES = ['forest', 'workshop', 'restrained'] as const;
 export type AppearanceStyle = (typeof LOCAL_APPEARANCE_STYLES)[number];
 
+/** App environment is independent of the guide's graphic treatment. */
+export const LOCAL_APP_MOTIFS = ['forest', 'garden', 'playground'] as const;
+export type AppMotif = (typeof LOCAL_APP_MOTIFS)[number];
+
 export type ReminderPreferences = {
   dailyTogetherEnabled: boolean;
   dailyTogetherHour: number;
@@ -43,6 +48,7 @@ export type PersonalPreferences = {
   characterMotionEnabled: boolean;
   guideSpecies: GuideSpecies;
   appearanceStyle: AppearanceStyle;
+  appMotif: AppMotif;
   reminders: ReminderPreferences;
   backupHintShown: boolean;
   weightUnit: WeightDisplayUnit;
@@ -63,6 +69,7 @@ export function defaultPersonalPreferences(timeZone: string): PersonalPreference
     characterMotionEnabled: true,
     guideSpecies: 'rabbit',
     appearanceStyle: 'forest',
+    appMotif: 'forest',
     reminders: { ...DEFAULT_REMINDER_PREFERENCES, timeZone },
     backupHintShown: false,
     weightUnit: 'kg',
@@ -79,6 +86,7 @@ export async function loadPersonalPreferences(
     const motion = await uow.meta.get(META_CHARACTER_MOTION);
     const guide = await uow.meta.get(META_GUIDE_SPECIES);
     const appearance = await uow.meta.get(META_APPEARANCE_STYLE);
+    const motif = await uow.meta.get(META_APP_MOTIF);
     const remindersRaw = await uow.meta.get(META_REMINDER_PREFS);
     const backupHint = await uow.meta.get(META_BACKUP_HINT_SHOWN);
     const unitsRaw = await uow.meta.get(META_GROWTH_UNITS);
@@ -108,6 +116,7 @@ export async function loadPersonalPreferences(
       characterMotionEnabled: motion == null ? true : motion === '1',
       guideSpecies: isGuideSpecies(guide) ? guide : 'rabbit',
       appearanceStyle: isAppearanceStyle(appearance) ? appearance : 'forest',
+      appMotif: isAppMotif(motif) ? motif : 'forest',
       reminders,
       backupHintShown: backupHint === '1',
       weightUnit,
@@ -135,6 +144,11 @@ export async function setAppearanceStyle(
   style: AppearanceStyle,
 ): Promise<void> {
   await unitOfWork.run((uow) => uow.meta.set(META_APPEARANCE_STYLE, style));
+}
+
+export async function setAppMotif(unitOfWork: UnitOfWorkFactory, motif: AppMotif): Promise<void> {
+  if (!isAppMotif(motif)) throw new RangeError('Neznámý motiv aplikace.');
+  await unitOfWork.run((uow) => uow.meta.set(META_APP_MOTIF, motif));
 }
 
 export async function saveReminderPreferences(
@@ -206,6 +220,10 @@ function isGuideSpecies(value: string | null): value is GuideSpecies {
 
 function isAppearanceStyle(value: string | null): value is AppearanceStyle {
   return value != null && (LOCAL_APPEARANCE_STYLES as readonly string[]).includes(value);
+}
+
+function isAppMotif(value: unknown): value is AppMotif {
+  return typeof value === 'string' && (LOCAL_APP_MOTIFS as readonly string[]).includes(value);
 }
 
 function normalizeReminders(raw: ReminderPreferences, fallbackTimeZone: string): ReminderPreferences {

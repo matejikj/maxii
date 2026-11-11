@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
@@ -27,6 +27,8 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const settingsY = useRef(0);
 
   if (!profile) {
     return (
@@ -39,10 +41,12 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <LumiText variant="h1" accessibilityRole="header">
-          Profil
-        </LumiText>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <LumiText variant="h1" accessibilityRole="header" style={{ flexShrink: 1 }}>Profil</LumiText>
+          <LumiButton title="Vybrat téma" variant="secondary" testID="profile-open-themes"
+            onPress={() => scrollRef.current?.scrollTo({ y: settingsY.current, animated: false })} />
+        </View>
         <LumiText tone="muted">
           Přezdívku a narozeniny doplňte, až budete chtít. Tracker funguje i bez nich.
         </LumiText>
@@ -91,7 +95,9 @@ export function ProfileScreen({ onClose }: ProfileScreenProps) {
           }}
         />
         <ChildrenPanel />
-        <SettingsPanel />
+        <View onLayout={(event) => { settingsY.current = event.nativeEvent.layout.y; }}>
+          <SettingsPanel />
+        </View>
         <FamilyConflictsPanel />
         <BackupRestorePanel />
         <LumiButton title="Zavřít" variant="ghost" onPress={onClose} fullWidth />

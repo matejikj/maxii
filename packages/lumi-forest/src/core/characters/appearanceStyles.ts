@@ -18,10 +18,6 @@ export function applyAppearanceStylePolish(
 
   return parts.map((part) => {
     const geometry = part.geometry;
-    if (geometry.kind !== 'ellipse' && geometry.kind !== 'circle' && geometry.kind !== 'path') {
-      return part;
-    }
-
     const props = { ...geometry.props } as Record<string, unknown>;
     let changed = false;
 
@@ -41,8 +37,15 @@ export function applyAppearanceStylePolish(
       changed = true;
     }
 
-    if (style === 'restrained' && part.role === 'mark' && typeof props.opacity === 'number') {
-      props.opacity = Math.min(props.opacity, 0.35);
+    if (part.id === 'head' && geometry.kind === 'group') {
+      // Sculpted heads use normalized local coordinates; keep all material
+      // layers together when applying the same slight upright style bias.
+      props.transform = `${geometry.props.transform ?? ''} scale(1 ${upright})`.trim();
+      changed = true;
+    }
+
+    if (style === 'restrained' && part.role === 'mark') {
+      props.opacity = Math.min(typeof props.opacity === 'number' ? props.opacity : 1, 0.35);
       changed = true;
     }
 

@@ -1,4 +1,6 @@
 export { LumiCharacter } from './LumiCharacter';
+export { LumiMotifLandscape } from './LumiMotifLandscape';
+export type { LumiMotifLandscapeProps } from './LumiMotifLandscape';
 export type { LumiCharacterProps } from './LumiCharacter';
 export { LumiBlueprintCharacter } from './LumiBlueprintCharacter';
 export type { LumiBlueprintCharacterProps } from './LumiBlueprintCharacter';

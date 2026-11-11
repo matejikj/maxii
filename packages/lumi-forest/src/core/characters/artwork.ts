@@ -1,6 +1,6 @@
 /**
- * v0.2 compatibility: original artwork, reconstructed 1:1 from the named
- * anatomical parts. The v0.3 anatomy is the single source of geometry.
+ * Compatibility façade reconstructed from the current named anatomical parts.
+ * Anatomy remains the single source of geometry across all renderers.
  */
 import type { LumiAnimal } from '../types';
 import type { VectorNode } from '../vector/types';

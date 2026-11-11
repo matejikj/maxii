@@ -4,7 +4,7 @@ import { CHARACTER_BLUEPRINTS } from './blueprint';
 import { compileCharacter } from './compiler';
 import { LUMI_ANIMALS } from '../types';
 
-/** Compatibility façade: the canonical sitting/neutral artwork is identical to v0.2.1. */
+/** Compatibility façade for the current canonical sitting/neutral artwork. */
 export interface CharacterDefinition {
   readonly id: LumiAnimal;
   readonly name: string;

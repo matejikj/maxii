@@ -2,6 +2,7 @@ import { LUMI_UI_TOKENS } from './tokens';
 import { SCENE_CATALOG } from '../scenes/catalog';
 import { lumi } from '../theme/tokens';
 import type { LumiScene, Palette } from '../types';
+import { LUMI_MOTIF_IDS, isLumiMotif, type LumiMotif } from './motifs';
 
 export type LumiResolvedMode = 'light' | 'dark';
 export type LumiMode = LumiResolvedMode | 'system';
@@ -51,6 +52,7 @@ const ACCENTS: Record<LumiScene, { light: string; dark: string; softLight: strin
   milestones: { light: '#3C6D71', dark: '#BEE7E8', softLight: '#D9EBEB', softDark: '#3B585A' },
 };
 export interface LumiTheme {
+  readonly motif: LumiMotif;
   readonly scene: LumiScene;
   readonly mode: LumiResolvedMode;
   readonly colors: LumiSemanticColors;
@@ -61,25 +63,52 @@ export interface LumiTheme {
   /** @deprecated use colors.surface, colors.border, colors.text and colors.textMuted. */
   readonly semantic: { readonly surface: string; readonly surfaceBorder: string; readonly text: string; readonly mutedText: string };
 }
-const themes = {} as Record<LumiResolvedMode, Record<LumiScene, LumiTheme>>;
-for (const mode of ['light', 'dark'] as const) {
-  const lookup = {} as Record<LumiScene, LumiTheme>;
-  for (const scene of Object.keys(SCENE_CATALOG) as LumiScene[]) {
-    const accent = ACCENTS[scene];
-    const base = mode === 'light' ? LIGHT : DARK;
-    const colors: LumiSemanticColors = Object.freeze({ ...base,
-      sceneAccent: accent[mode], sceneAccentSoft: mode === 'light' ? accent.softLight : accent.softDark,
-      onSceneAccent: mode === 'light' ? '#FFFFFF' : '#17221E',
-    });
-    lookup[scene] = Object.freeze({ scene, mode, colors, ui: LUMI_UI_TOKENS,
-      tokens: lumi, palette: SCENE_CATALOG[scene].palette,
-      semantic: Object.freeze({ surface: colors.surface, surfaceBorder: colors.border,
-        text: colors.text, mutedText: colors.textMuted }),
-    });
+type MotifColors = Partial<LumiSemanticColors>;
+const MOTIF_COLORS: Record<LumiMotif, Record<LumiResolvedMode, MotifColors>> = {
+  forest: { light: {}, dark: {} },
+  garden: {
+    light: { background: '#FCF8F4', surfaceSubtle: '#F6EDEF', text: '#40343B', textMuted: '#6B5862',
+      border: '#DCCCD1', controlBorder: '#8B7280', focus: '#7A4359', primary: '#7A4858', onPrimary: '#FFFFFF',
+      secondary: '#F1E4E8', onSecondary: '#40343B' },
+    dark: { background: '#241F24', surface: '#342A32', surfaceSubtle: '#40313C', surfaceElevated: '#493844',
+      text: '#FCF4F7', textMuted: '#DDCAD4', border: '#77616E', controlBorder: '#B499A8', focus: '#F0C9DA',
+      primary: '#F0D3DD', onPrimary: '#3A2631', secondary: '#503B47', onSecondary: '#F8EAF0' },
+  },
+  playground: {
+    light: { background: '#F7F9F7', surfaceSubtle: '#EAF1F3', text: '#2D3D46', textMuted: '#536773',
+      border: '#CAD8DD', controlBorder: '#738894', focus: '#2A6176', primary: '#355F72', onPrimary: '#FFFFFF',
+      secondary: '#E0ECF0', onSecondary: '#2D3D46' },
+    dark: { background: '#1C252C', surface: '#293841', surfaceSubtle: '#31434D', surfaceElevated: '#374C58',
+      text: '#F0F7FA', textMuted: '#C8DCE6', border: '#637D8A', controlBorder: '#99B4C2', focus: '#B9DFEF',
+      primary: '#C7E4EF', onPrimary: '#213A46', secondary: '#3B5664', onSecondary: '#EAF5FA' },
+  },
+};
+const themes = {} as Record<LumiMotif, Record<LumiResolvedMode, Record<LumiScene, LumiTheme>>>;
+for (const motif of LUMI_MOTIF_IDS) {
+  const modes = {} as Record<LumiResolvedMode, Record<LumiScene, LumiTheme>>;
+  for (const mode of ['light', 'dark'] as const) {
+    const lookup = {} as Record<LumiScene, LumiTheme>;
+    for (const scene of Object.keys(SCENE_CATALOG) as LumiScene[]) {
+      const accent = ACCENTS[scene];
+      const base = { ...(mode === 'light' ? LIGHT : DARK), ...MOTIF_COLORS[motif][mode] };
+      const homeAccent = motif !== 'forest' && scene === 'home';
+      const colors: LumiSemanticColors = Object.freeze({ ...base,
+        sceneAccent: homeAccent ? base.primary : accent[mode],
+        sceneAccentSoft: homeAccent ? base.secondary : mode === 'light' ? accent.softLight : accent.softDark,
+        onSceneAccent: homeAccent ? base.onPrimary : mode === 'light' ? '#FFFFFF' : '#17221E',
+      });
+      lookup[scene] = Object.freeze({ scene, mode, motif, colors, ui: LUMI_UI_TOKENS,
+        tokens: lumi, palette: SCENE_CATALOG[scene].palette,
+        semantic: Object.freeze({ surface: colors.surface, surfaceBorder: colors.border,
+          text: colors.text, mutedText: colors.textMuted }),
+      });
+    }
+    modes[mode] = Object.freeze(lookup);
   }
-  themes[mode] = Object.freeze(lookup);
+  themes[motif] = Object.freeze(modes);
 }
 /** Stable, frozen references: no allocations or context churn for identical scene/mode pairs. */
-export function resolveLumiTheme(scene: LumiScene = 'home', mode: LumiResolvedMode = 'light'): LumiTheme {
-  return themes[mode][scene];
+export function resolveLumiTheme(scene: LumiScene = 'home', mode: LumiResolvedMode = 'light', motif: LumiMotif = 'forest'): LumiTheme {
+  if (!isLumiMotif(motif)) throw new RangeError(`Unknown Lumi motif: ${String(motif)}`);
+  return themes[motif][mode][scene];
 }

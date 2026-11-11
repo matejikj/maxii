@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LumiButton, LumiChip, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { LUMI_MOTIFS } from '@lumi/forest-design/core';
+import { LumiButton, LumiChip, LumiIcon, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   asEntityId,
   asOperationId,
@@ -35,6 +36,7 @@ import {
   sideLabel,
 } from '../today/recordFeedingIntent';
 import { CareOverviewPanel } from './CareOverviewPanel';
+import { CareHero, CareIconBadge, CareRecordAction, CareSectionHeading } from './CareVisuals';
 import { GrowthChart } from './GrowthChart';
 import { GrowthRecorder } from './GrowthRecorder';
 import {
@@ -47,7 +49,7 @@ import {
  * Live timers stay on Today and the compact strip.
  */
 export function CareScreen() {
-  const { colors, ui } = useLumiTheme();
+  const { colors, ui, motif } = useLumiTheme();
   const { profile } = useBootstrap();
   const runtime = usePersonalRuntime();
   const { services } = useCompositionRoot();
@@ -304,57 +306,55 @@ export function CareScreen() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md }]}>
-        <LumiText variant="h1" accessibilityRole="header">
-          Péče
-        </LumiText>
-        <LumiText tone="muted">
-          Růst, popisné souhrny a minulý spánek či kojení. Probíhající měření zůstává na Dnes.
-        </LumiText>
+      <ScrollView contentContainerStyle={styles.content} testID="care-screen">
+        <View style={styles.pageHeading}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <LumiText variant="overline" tone="muted" style={styles.eyebrow}>{LUMI_MOTIFS[motif].brand}</LumiText>
+            <LumiText variant="h1" accessibilityRole="header" style={styles.title}>Péče</LumiText>
+          </View>
+          <CareIconBadge name="care" size={52} />
+        </View>
+        <CareHero />
         <SaveFeedback
           state={feedback}
           {...(feedbackMessage !== undefined ? { message: feedbackMessage } : {})}
         />
         <CareOverviewPanel overviewCache={runtime.overviewCache} />
-        <LumiText variant="h2">Růst</LumiText>
-        <GrowthChart
-          series={buildGrowthSeries(growthEvents)}
-          weightUnit={weightUnit}
-          lengthUnit={lengthUnit}
-          formatDate={formatGrowthDate}
-        />
-        <LumiButton
-          title={PRODUCT_COPY.actions.recordGrowth}
-          fullWidth
-          onPress={() => setGrowthOpen(true)}
-          testID="care-record-growth"
-        />
-        <LumiText variant="h2">Spánek a kojení</LumiText>
-        <LumiButton
-          title={PRODUCT_COPY.actions.recordPastSleep}
-          fullWidth
-          onPress={openPast}
-          testID="care-past-sleep"
-        />
-        <LumiButton
-          title={PRODUCT_COPY.actions.recordSleepNoDuration}
-          variant="secondary"
-          fullWidth
-          onPress={openNoDuration}
-        />
-        <LumiButton
-          title={PRODUCT_COPY.actions.recordPastNursing}
-          variant="secondary"
-          fullWidth
-          onPress={openNursingPast}
-          testID="care-past-nursing"
-        />
-        <LumiButton
-          title={PRODUCT_COPY.actions.recordNursingNoDuration}
-          variant="ghost"
-          fullWidth
-          onPress={openNursingNoDuration}
-        />
+        <View style={[styles.growthCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <CareSectionHeading title="Rosteme spolu" subtitle="Každý malý pokrok má svůj příběh" icon="growth" />
+          <GrowthChart
+            series={buildGrowthSeries(growthEvents)}
+            weightUnit={weightUnit}
+            lengthUnit={lengthUnit}
+            formatDate={formatGrowthDate}
+          />
+          <LumiButton title={PRODUCT_COPY.actions.recordGrowth} onPress={() => setGrowthOpen(true)}
+            testID="care-record-growth" fullWidth style={styles.growthButton}
+            leftAdornment={<LumiIcon name="plus" color={colors.onPrimary} size={20} />} />
+        </View>
+        <View style={{ gap: 14 }}>
+          <CareSectionHeading title="Doplnit do deníku" subtitle="Chvíle, na které zbyl čas až teď" icon="care" />
+          <CareRecordAction title={PRODUCT_COPY.actions.recordPastSleep} subtitle="Začátek a konec odpočinku"
+            icon="sleep" onPress={openPast} testID="care-past-sleep" />
+          <Pressable accessibilityRole="button" onPress={openNoDuration}
+            testID="care-sleep-no-duration" style={styles.quietAction}>
+            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>{PRODUCT_COPY.actions.recordSleepNoDuration}</LumiText>
+            <LumiIcon name="arrow-right" color={colors.sceneAccent} size={17} />
+          </Pressable>
+          <CareRecordAction title={PRODUCT_COPY.actions.recordPastNursing} subtitle="Dokončené kojení se známou délkou"
+            icon="nursing" onPress={openNursingPast} testID="care-past-nursing" />
+          <Pressable accessibilityRole="button" onPress={openNursingNoDuration}
+            testID="care-nursing-no-duration" style={styles.quietAction}>
+            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>{PRODUCT_COPY.actions.recordNursingNoDuration}</LumiText>
+            <LumiIcon name="arrow-right" color={colors.sceneAccent} size={17} />
+          </Pressable>
+          <View style={[styles.timerNote, { backgroundColor: colors.surfaceSubtle }]}>
+            <LumiIcon name="history" color={colors.textMuted} size={22} />
+            <LumiText variant="caption" tone="muted" style={{ flex: 1 }}>
+              Probíhající měření spánku a kojení najdete na záložce Dnes.
+            </LumiText>
+          </View>
+        </View>
       </ScrollView>
 
       {childId ? (
@@ -476,5 +476,14 @@ export function CareScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { padding: 24, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32,
+    maxWidth: 620, width: '100%', alignSelf: 'center', gap: 26 },
+  pageHeading: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  eyebrow: { fontSize: 10, letterSpacing: 2, lineHeight: 16 },
+  title: { fontSize: 34, lineHeight: 42, letterSpacing: -1 },
+  growthCard: { padding: 20, borderRadius: 26, borderWidth: 1, gap: 20 },
+  growthButton: { minHeight: 52, borderRadius: 17, paddingHorizontal: 16, paddingVertical: 12 },
+  quietAction: { minHeight: 48, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  timerNote: { padding: 16, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

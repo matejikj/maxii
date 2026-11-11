@@ -2,10 +2,14 @@
 
 ## 1.0.0 — source release candidate (unreleased)
 
+- Added independent Forest, Garden and Playground app environments: semantic light/dark palettes, validated motif IDs, display metadata and retained day/dusk card scenery in pure vector IR. `LumiThemeProvider` accepts `motif`; `LumiMotifLandscape` renders the same geometry as `compileLumiMotifLandscape`. Existing scene/character APIs remain supported. Contrast, document roundtrips, bounded geometry and twelve image references cover the new motifs.
+- Added a botanical flower for diary experiences and a soft settings glyph; all 14 icons retain the same renderer-neutral, optional two-tint API.
+- Botanical icon refresh with softly carved silhouettes, translucent planes and optional `accentColor` on core/native icons. Preserved all four navigation IDs and added sleep, nursing, bottle, food, diaper, growth, plus and arrow-right glyphs. Single-tint callers remain supported; no font or remote asset dependency.
+- Refreshed all eight character artworks with sculpted silhouettes, species-specific body shapes, matte volume shading, glinting neutral eyes, ear folds, paw/toe detail, otter whiskers and owl wing feathers. Artwork revisions advance to rabbit `b2` / fleet `c2`; blueprint schema, part IDs, rig landmarks and public API stay stable. Material details remain inside their anatomical owners across poses, proportions and motion. Forehead highlights now follow the head; appearance styles also reach grouped anatomy. Updated scene hashes and character/scene/studio/procedural/motion image baselines cover the intentional art refresh.
 - `LumiInput` links error/hint text to the field, supports multiline notes, and keeps the system keyboard (optional dictation) without a custom microphone control.
 - `LumiBottomSheet` closes on Escape (web), moves accessibility focus into the sheet, and can restore focus to the opener via `returnFocusRef`.
 - `LumiChartContainer` accepts an optional `table` of label/value rows so charts always expose a non-visual alternative.
-- `LumiButton` compact size uses a 48 logical-unit minimum touch target for primary care actions.
+- `LumiButton` compact size uses a 48 logical-unit minimum touch target for primary care actions. Full-width labels use the available row width so complete action names stay readable with larger system text and optional adornments.
 - Stable public entrypoints (`.`, `./core`, `./native`) with public-name snapshot/compatibility gate.
 - Versioned, strict, serializable Scene Recipe v2 and pure v1→v2 migration; exact SVG preservation.
 - Blueprint v1/v2 validation with fail-closed, lossless-only conversion of matching legacy artwork.

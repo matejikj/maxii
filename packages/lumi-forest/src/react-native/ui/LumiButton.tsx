@@ -36,9 +36,10 @@ export const LumiButton = React.memo(function LumiButton({ title, variant = 'pri
       backgroundColor: background, borderColor: focused ? (variant === 'primary' || variant === 'destructive' ? foreground : colors.focus) : outlined ? colors.controlBorder : background,
       borderWidth: focused ? 2 : outlined ? 1 : 0, opacity: inactive ? ui.opacity.disabled : pressed ? .84 : 1,
       width: fullWidth ? '100%' : undefined }, styles.base, style]}>
-    <View style={styles.inner}>
+    <View style={[styles.inner, fullWidth ? { width: '100%' } : null]}>
       {loading ? <ActivityIndicator color={foreground} accessibilityElementsHidden /> : leftAdornment}
-      <LumiText variant="label" style={{ color: foreground, textAlign: 'center' }}>{title}</LumiText>
+      <LumiText variant="label" style={{ color: foreground, textAlign: 'center',
+        flexShrink: 1, ...(fullWidth ? { flexGrow: 1, flexBasis: 0 } : {}) }}>{title}</LumiText>
       {!loading && rightAdornment}
     </View>
   </Pressable>;

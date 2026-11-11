@@ -271,6 +271,7 @@ export function SleepSessionController({
 
       {showExpanded && activeSleep ? (
         <ActiveMeasurement
+          icon="sleep"
           title={PRODUCT_COPY.actions.sleepRunning}
           startedAtEpochMs={activeSleep.startedAt.instant.epochMs}
           nowEpochMs={nowEpochMs}

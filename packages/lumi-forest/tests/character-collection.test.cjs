@@ -68,7 +68,7 @@ test('collection complexity summary stays install-local', () => {
   assert.equal(summary.speciesCount, 8);
   assert.equal(summary.semanticStates, 8);
   assert.equal(summary.signatureActions, 16);
-  assert.equal(summary.blueprintRevisions.owl, 'lumi.owl.art.c1');
+  assert.equal(summary.blueprintRevisions.owl, 'lumi.owl.art.c2');
 });
 
 test('collection fixtures cover scales, extremes and eight semantic poses', () => {

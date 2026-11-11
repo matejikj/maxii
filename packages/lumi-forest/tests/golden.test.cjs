@@ -5,11 +5,11 @@ const { createHash } = require('node:crypto');
 const { createLumiSvg } = require('../.test-dist/core/index.js');
 
 const expected = {
-  home: '103673692b6810261a84fa19b01fa14305ca54aa2dabbcb0f42359003ae263df',
-  growth: 'b23ae9518f03d0e4a21e6b651d42e100fa64e72a5988f9fdea09859d2824cfff',
-  sleep: 'fa2ca6b9ab465943785d8b3983b48ebcb222aa3697eef78a4df363afad2598c2',
-  feeding: '2a295a6ca74a7aaa68779969c9257acfe795f255f0fb9ecbd0593e2da50eec9a',
-  milestones: 'c006f8f662a3ffe2df8b96bf0c68ab69e5f43aaa867d755783f5b92cb64b8bbe',
+  home: '4c2367d65772c20968dcec69c2354ad477f376551dd2391ae80406c01e167821',
+  growth: '55a73b186a7f0a56df7f32c37c4713a974924fa10caa5d355f384b12a4a5d502',
+  sleep: '2cd8d3f132b7c891a8f03d73225d86a5c1ec60e9901366e0587110035a885ac3',
+  feeding: '0098bbbebcd61c9bc3ce702f834d70f77fbab92b0ae5995774d2cf5f098043cd',
+  milestones: 'af1866e872206dcd01b026d32e0eb8ce0ae3c452a42fdd7cea141eddf7a11416',
 };
 for (const [scene, hash] of Object.entries(expected)) {
   test(`golden: ${scene}`, () => {
