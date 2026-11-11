@@ -329,7 +329,7 @@ test('sync loop materializes pulled project into UoW after HTTP tick', async () 
       syncConfigured: true,
     },
     deviceId: 'device-apply',
-    fetchImpl: async (url, init) => {
+    fetchImpl: async (url, _init) => {
       if (String(url).endsWith('/push')) {
         return new Response(
           JSON.stringify({
