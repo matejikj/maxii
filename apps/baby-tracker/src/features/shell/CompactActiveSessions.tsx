@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import {
   listActiveSessionsForStrip,
@@ -15,19 +16,26 @@ type CompactActiveSessionsProps = {
   /** When true, Today already shows the expanded block — hide this strip. */
   hidden?: boolean;
   onOpenSleep: () => void;
+  onVisibilityChange?: (visible: boolean) => void;
 };
+
+/** Screens can avoid applying the status-bar inset twice when the strip owns it. */
+export const CompactActiveSessionsVisibleContext = createContext(false);
 
 /**
  * Compact strip above tab content for non-Today screens. Names the child on
  * every running measurement so two timers never look interchangeable.
  */
-export function CompactActiveSessions({ hidden = false, onOpenSleep }: CompactActiveSessionsProps) {
+export function CompactActiveSessions({ hidden = false, onOpenSleep, onVisibilityChange }: CompactActiveSessionsProps) {
   const { colors, ui } = useLumiTheme();
+  const insets = useSafeAreaInsets();
   const { profiles, switchChild } = useBootstrap();
   const runtime = usePersonalRuntime();
   const { services } = useCompositionRoot();
   const [items, setItems] = useState<ActiveSessionStripItem[]>([]);
   const [nowMs, setNowMs] = useState(() => services.clock.now().epochMs);
+  const visible = !hidden && items.length > 0;
+  useEffect(() => { onVisibilityChange?.(visible); }, [onVisibilityChange, visible]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +73,7 @@ export function CompactActiveSessions({ hidden = false, onOpenSleep }: CompactAc
           borderBottomColor: colors.controlBorder,
           paddingHorizontal: ui.space.md,
           paddingVertical: ui.space.sm,
+          paddingTop: ui.space.sm + insets.top,
           gap: ui.space.sm,
         },
       ]}

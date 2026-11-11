@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LUMI_MOTIFS } from '@lumi/forest-design/core';
@@ -39,6 +39,7 @@ import { CareOverviewPanel } from './CareOverviewPanel';
 import { CareHero, CareIconBadge, CareRecordAction, CareSectionHeading } from './CareVisuals';
 import { GrowthChart } from './GrowthChart';
 import { GrowthRecorder } from './GrowthRecorder';
+import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
 import {
   loadGrowthDisplayUnits,
   saveGrowthDisplayUnits,
@@ -49,6 +50,7 @@ import {
  * Live timers stay on Today and the compact strip.
  */
 export function CareScreen() {
+  const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { colors, ui, motif } = useLumiTheme();
   const { profile } = useBootstrap();
   const runtime = usePersonalRuntime();
@@ -305,7 +307,7 @@ export function CareScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={stripVisible ? [] : ['top']}>
       <ScrollView contentContainerStyle={styles.content} testID="care-screen">
         <View style={styles.pageHeading}>
           <View style={{ flex: 1, gap: 4 }}>

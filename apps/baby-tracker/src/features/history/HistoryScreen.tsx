@@ -1,482 +1,246 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useContext, useMemo, useRef, useState } from 'react';
+import { Alert, Keyboard, Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  LumiButton,
-  LumiChip,
-  LumiInput,
-  LumiText,
-  useLumiTheme,
-} from '@lumi/forest-design/native';
-import {
-  asOperationId,
-  asRevisionId,
-  asTimeZoneId,
-  endOfCalendarDayExclusive,
-  formatCalendarDate,
-  parseCalendarDate,
-  startOfCalendarDay,
-  todayInZone,
-  type CareEvent,
-  type CareSubtype,
-  type DeletionMarker,
-  type Draft,
-  type TimelineCursor,
-} from '../../domain';
-import {
-  careEventFromTrashMarker,
-  loadDraftsForChild,
-  loadHistoryDay,
-  loadHistoryPage,
-  loadRestorableTrash,
-  rebuildSearchIndex,
-} from '../../application';
-import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
+import { LumiButton, LumiCard, LumiChip, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import type { CareSubtype, Draft } from '../../domain';
+import { careEventFromTrashMarker } from '../../application';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
-import { useCompositionRoot } from '../../app/providers';
-import {
-  clearHistoryFilters,
-  formatIsoCalendarDate,
-  historyFiltersActive,
-  type HistoryFilter,
-  type HistorySection,
-} from '../../app/navigation/historyTabState';
+import { clearHistoryFilters, historyFiltersActive, type HistoryFilter, type HistorySection } from '../../app/navigation/historyTabState';
+import { ChildSwitcher } from '../shell/ChildSwitcher';
+import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
 import { FamilyConflictsPanel } from '../family/FamilyConflictsPanel';
+import { ForestIconBadge } from '../ui/ForestIconBadge';
+import { CareActionSheet, PRODUCT_COPY } from '../ui';
 import { presentCareEvent } from '../today/carePresentation';
-import { PRODUCT_COPY } from '../ui';
+import {
+  draftPreviewFields, groupHistoryByDay, HISTORY_EVENT_LABELS, historyCountLabel,
+  historyDateLabel, historyDayLabel, parseHistoryDateInput, shiftHistoryDay,
+} from './historyPresentation';
+import { HistoryDayArrow, HistoryDayHeading, HistoryEmpty, HistoryEventRow, HistoryHero, HistoryPeriodButton, HistorySectionTabs, HISTORY_TONES } from './HistoryVisuals';
+import { useHistoryModel } from './useHistoryModel';
 
 const FILTERS: { id: HistoryFilter; label: string }[] = [
-  { id: 'all', label: 'Vše' },
-  { id: 'care', label: 'Péče' },
-  { id: 'activities', label: 'Aktivity' },
-  { id: 'notes', label: 'Poznámky' },
+  { id: 'all', label: 'Vše' }, { id: 'care', label: 'Péče' },
+  { id: 'activities', label: 'Zážitky' }, { id: 'notes', label: 'Poznámky' },
 ];
-
 const CARE_SUBTYPES: { id: CareSubtype; label: string }[] = [
-  { id: 'diaper', label: 'Plenka' },
-  { id: 'sleep', label: 'Spánek' },
-  { id: 'nursing', label: 'Kojení' },
-  { id: 'bottle', label: 'Lahvička' },
-  { id: 'food', label: 'Jídlo' },
-  { id: 'growth', label: 'Růst' },
+  { id: 'diaper', label: 'Plenky' }, { id: 'sleep', label: 'Spánek' }, { id: 'nursing', label: 'Kojení' },
+  { id: 'bottle', label: 'Lahvička' }, { id: 'food', label: 'Jídlo' }, { id: 'growth', label: 'Růst' },
 ];
 
-const SECTIONS: { id: HistorySection; label: string }[] = [
-  { id: 'timeline', label: PRODUCT_COPY.history.timeline },
-  { id: 'drafts', label: PRODUCT_COPY.history.drafts },
-  { id: 'trash', label: PRODUCT_COPY.history.trash },
-];
-
-const PAGE_SIZE = 40;
-
-type HistoryScreenProps = {
-  onOpenEvent?: (eventId: string) => void;
-};
-
-/**
- * Shared care memory: day/timeline filters, local search, drafts and trash.
- * Never mixes soft-deleted or draft rows into the real event list.
- */
-export function HistoryScreen({ onOpenEvent }: HistoryScreenProps) {
-  const { colors, ui } = useLumiTheme();
-  const { profile } = useBootstrap();
-  const runtime = usePersonalRuntime();
-  const { services } = useCompositionRoot();
+/** A themed diary with civil-day groups; draft and trash records never enter the timeline. */
+export function HistoryScreen({ onOpenEvent }: { onOpenEvent?: (eventId: string) => void }) {
+  const { colors, mode } = useLumiTheme();
+  const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { state, setState } = useHistoryTabState();
-  const [events, setEvents] = useState<CareEvent[]>([]);
-  const [nextCursor, setNextCursor] = useState<TimelineCursor | null>(null);
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [trash, setTrash] = useState<DeletionMarker[]>([]);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  const zone = asTimeZoneId(profile?.settings.summaryTimeZone ?? 'Europe/Prague');
-  const childId = profile?.childId ?? null;
-  const todayIso = formatCalendarDate(todayInZone(services.clock.now(), zone));
-  const yesterdayIso = useMemo(() => {
-    const todayStart = startOfCalendarDay(parseCalendarDate(todayIso), zone);
-    return formatIsoCalendarDate(todayStart.epochMs - 12 * 60 * 60 * 1000, zone);
-  }, [todayIso, zone]);
-
+  const model = useHistoryModel(state);
+  const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const scrollY = useRef(state.scrollOffsetY);
+  const initialOffset = useRef({ x: 0, y: state.scrollOffsetY });
+  const [searchOpen, setSearchOpen] = useState(!!state.searchQuery);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [dateInput, setDateInput] = useState('');
+  const [dateError, setDateError] = useState<string | undefined>();
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState<Draft | null>(null);
+  const groups = useMemo(() => groupHistoryByDay(model.events, model.zone), [model.events, model.zone]);
+  const yesterday = shiftHistoryDay(model.todayIso, -1);
   const filtersOn = historyFiltersActive(state);
+  const instantLabel = (epochMs: number) => new Intl.DateTimeFormat('cs-CZ', {
+    dateStyle: 'medium', timeStyle: 'short', timeZone: model.zone,
+  }).format(new Date(epochMs));
 
-  const loadTimeline = useCallback(async () => {
-    if (!childId) {
-      setEvents([]);
-      setNextCursor(null);
-      return;
-    }
-    if (state.focusDate) {
-      const day = parseCalendarDate(state.focusDate);
-      const fromMs = startOfCalendarDay(day, zone).epochMs;
-      const toMs = endOfCalendarDayExclusive(day, zone).epochMs;
-      const rows = await runtime.unitOfWork.run((uow) =>
-        loadHistoryDay(uow, {
-          childId,
-          fromSortAtMsInclusive: fromMs,
-          toSortAtMsExclusive: toMs,
-          bucket: state.filter,
-          careSubtype: state.careSubtype,
-          searchQuery: state.searchQuery,
-        }),
-      );
-      setEvents(rows);
-      setNextCursor(null);
-      return;
-    }
-    const page = await runtime.unitOfWork.run((uow) =>
-      loadHistoryPage(uow, {
-        childId,
-        bucket: state.filter,
-        careSubtype: state.careSubtype,
-        searchQuery: state.searchQuery,
-        limit: PAGE_SIZE,
-        before: null,
-      }),
-    );
-    setEvents(page.events);
-    setNextCursor(page.nextCursor);
-  }, [
-    childId,
-    runtime.unitOfWork,
-    state.careSubtype,
-    state.filter,
-    state.focusDate,
-    state.searchQuery,
-    zone,
-  ]);
+  function changeSection(section: HistorySection) {
+    Keyboard.dismiss(); setDateOpen(false);
+    scroll.current?.scrollTo({ y: 0, animated: false }); scrollY.current = 0;
+    setState({ ...state, section, scrollOffsetY: 0 });
+  }
 
-  const loadAux = useCallback(async () => {
-    if (!childId) {
-      setDrafts([]);
-      setTrash([]);
-      return;
-    }
-    const nowMs = services.clock.now().epochMs;
-    const [draftRows, trashRows] = await runtime.unitOfWork.run(async (uow) => [
-      await loadDraftsForChild(uow, childId),
-      await loadRestorableTrash(uow, nowMs),
+  function chooseDay(focusDate: string | null) {
+    Keyboard.dismiss(); setDateOpen(false); setDateError(undefined);
+    setState({ ...state, focusDate, scrollOffsetY: 0 });
+  }
+
+  function openDatePicker() {
+    if (dateOpen) { setDateOpen(false); return; }
+    setDateInput((state.focusDate ?? model.todayIso).split('-').reverse().join('.'));
+    setDateError(undefined); setDateOpen(true);
+  }
+
+  function applyDate() {
+    const next = parseHistoryDateInput(dateInput);
+    if (!next) { setDateError('Zadejte platné datum, například 11.11.2026.'); return; }
+    chooseDay(next);
+  }
+
+  function clearFilters() {
+    Keyboard.dismiss(); setDateOpen(false); setDateError(undefined);
+    setState(clearHistoryFilters(state));
+  }
+
+  function openEvent(eventId: string) {
+    Keyboard.dismiss(); setState({ ...state, scrollOffsetY: scrollY.current }); onOpenEvent?.(eventId);
+  }
+
+  function confirmDiscard(draft: Draft) {
+    Alert.alert('Zahodit koncept?', 'Rozepsaný zápis se odstraní. Uložené záznamy v deníku zůstanou zachované.', [
+      { text: 'Ponechat', style: 'cancel' },
+      { text: 'Zahodit', style: 'destructive', onPress: () => void model.discardDraft(draft) },
     ]);
-    setDrafts(draftRows);
-    setTrash(trashRows);
-  }, [childId, runtime.unitOfWork, services.clock]);
-
-  useEffect(() => {
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      void loadTimeline();
-      void loadAux();
-    });
-    const unsubscribe = runtime.readModels.subscribe((topics) => {
-      if (
-        topics.includes('care') ||
-        topics.includes('drafts') ||
-        topics.includes('revisions')
-      ) {
-        void loadTimeline();
-        void loadAux();
-      }
-    });
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, [loadAux, loadTimeline, runtime.readModels]);
-
-  async function loadOlder() {
-    if (!childId || !nextCursor || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const page = await runtime.unitOfWork.run((uow) =>
-        loadHistoryPage(uow, {
-          childId,
-          bucket: state.filter,
-          careSubtype: state.careSubtype,
-          searchQuery: state.searchQuery,
-          limit: PAGE_SIZE,
-          before: nextCursor,
-        }),
-      );
-      setEvents((prev) => [...prev, ...page.events]);
-      setNextCursor(page.nextCursor);
-    } finally {
-      setLoadingMore(false);
-    }
   }
 
-  async function restoreTrashItem(marker: DeletionMarker) {
-    const intentMs = services.clock.now().epochMs;
-    const result = await runtime.commands.dispatch({
-      type: 'restoreCare',
-      operationId: asOperationId(services.ids.createId('op')),
-      intentCapturedAt: { epochMs: intentMs },
-      eventId: marker.entityId,
-      deletionId: marker.deletionId,
-      revisionId: asRevisionId(services.ids.createId('rev')),
-      expectedDeletionRevisionId: marker.revisionId,
-    });
-    setStatusMessage(result.ok ? PRODUCT_COPY.feedback.restored : PRODUCT_COPY.feedback.saveFailed);
-  }
-
-  async function discardDraft(draft: Draft) {
-    const intentMs = services.clock.now().epochMs;
-    await runtime.commands.dispatch({
-      type: 'discardDraft',
-      operationId: asOperationId(services.ids.createId('op')),
-      intentCapturedAt: { epochMs: intentMs },
-      draftId: draft.draftId,
-      revisionId: asRevisionId(services.ids.createId('rev')),
-    });
-  }
-
-  async function onRebuildSearch() {
-    if (!childId) return;
-    const count = await runtime.unitOfWork.run((uow) => rebuildSearchIndex(uow, childId));
-    setStatusMessage(`${PRODUCT_COPY.feedback.searchRebuilt} (${count})`);
-    void loadTimeline();
-  }
-
-  const emptyTimelineMessage = filtersOn
-    ? PRODUCT_COPY.feedback.filtersEmpty
-    : PRODUCT_COPY.empty.littleHistory;
-
-  return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md }]}>
-        <LumiText variant="h1" accessibilityRole="header">
-          Historie
-        </LumiText>
-        <LumiText tone="muted">
-          {state.focusDate
-            ? `Zobrazený den ${state.focusDate}. Filtry zůstávají při běžném návratu zachované.`
-            : 'Časová osa péče a vzpomínek. Filtry se při návratu ze záložky zachovají.'}
-        </LumiText>
-
-        <FamilyConflictsPanel />
-
-        <View style={styles.filters} accessibilityRole="summary">
-          {SECTIONS.map((section) => (
-            <LumiChip
-              key={section.id}
-              label={section.label}
-              selected={state.section === section.id}
-              onPress={() => setState({ ...state, section: section.id })}
-            />
-          ))}
+  return <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}
+    edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']} testID="history-screen">
+    <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
+    <ScrollView ref={scroll} contentContainerStyle={styles.content} stickyHeaderIndices={[1]}
+      contentOffset={initialOffset.current} keyboardShouldPersistTaps="handled" scrollEventThrottle={100}
+      onScroll={(event) => { scrollY.current = event.nativeEvent.contentOffset.y; }}>
+      <View style={styles.header}>
+        <View style={{ flex: 1, gap: 3 }}>
+          <LumiText variant="overline" tone="muted" style={styles.eyebrow}>VAŠE SPOLEČNÁ PAMĚŤ</LumiText>
+          <LumiText variant="h1" accessibilityRole="header">Historie</LumiText>
         </View>
+        <View style={{ maxWidth: '48%' }}><ChildSwitcher compact /></View>
+      </View>
+      <View style={{ backgroundColor: colors.background, paddingVertical: 4 }}>
+        <HistorySectionTabs value={state.section} draftsCount={model.drafts.length} trashCount={model.trash.length} onChange={changeSection} />
+      </View>
 
-        {state.section === 'timeline' ? (
-          <>
-            <View style={styles.filters}>
-              <LumiChip
-                label={PRODUCT_COPY.actions.today}
-                selected={state.focusDate === todayIso}
-                onPress={() => setState({ ...state, focusDate: todayIso })}
-              />
-              <LumiChip
-                label={PRODUCT_COPY.actions.yesterday}
-                selected={state.focusDate === yesterdayIso}
-                onPress={() => setState({ ...state, focusDate: yesterdayIso })}
-              />
-              <LumiChip
-                label="Všechny dny"
-                selected={state.focusDate == null}
-                onPress={() => setState({ ...state, focusDate: null })}
-              />
-            </View>
+      {state.section === 'timeline' ? <View style={styles.section}>
+        <HistoryHero />
+        <View style={styles.periods} accessibilityLabel="Období deníku">
+          <HistoryPeriodButton label="Dnes" selected={state.focusDate === model.todayIso} onPress={() => chooseDay(model.todayIso)} testID="history-day-today" />
+          <HistoryPeriodButton label="Včera" selected={state.focusDate === yesterday} onPress={() => chooseDay(yesterday)} testID="history-day-yesterday" />
+          <HistoryPeriodButton label="Všechny dny" wide selected={!state.focusDate} onPress={() => chooseDay(null)} testID="history-day-all" />
+          <HistoryPeriodButton label="Datum" selected={dateOpen} onPress={openDatePicker} testID="history-date-toggle" />
+        </View>
+        {state.focusDate || dateOpen ?
+        <LumiCard padding="md" style={styles.panel}>
+          <View style={styles.dateNavigation}>
+            <HistoryDayArrow previous disabled={!state.focusDate} onPress={() => state.focusDate && chooseDay(shiftHistoryDay(state.focusDate, -1))} />
+            <Pressable onPress={openDatePicker} accessibilityRole="button" accessibilityState={{ expanded: dateOpen }}
+              accessibilityLabel={state.focusDate ? `Zobrazený den ${historyDateLabel(state.focusDate)}. Vybrat datum.` : 'Všechny dny. Vybrat datum.'}
+              style={({ pressed }) => [styles.dateLabel, { opacity: pressed ? 0.7 : 1 }]}>
+              <LumiText variant="bodyStrong" style={{ textAlign: 'center' }}>
+                {state.focusDate ? historyDayLabel(state.focusDate, model.todayIso) : 'Všechny dny'}
+              </LumiText>
+              <LumiText variant="caption" tone="muted" style={{ textAlign: 'center' }}>
+                {state.focusDate ? historyDateLabel(state.focusDate) : 'Vybrat konkrétní datum'}
+              </LumiText>
+            </Pressable>
+            <HistoryDayArrow disabled={!state.focusDate} onPress={() => state.focusDate && chooseDay(shiftHistoryDay(state.focusDate, 1))} />
+          </View>
+          {dateOpen ? <View style={styles.panel} testID="history-date-picker">
+            <LumiInput label="Datum" hint="Den.měsíc.rok nebo RRRR-MM-DD" placeholder="11.11.2026" value={dateInput}
+              onChangeText={(value) => { setDateInput(value); setDateError(undefined); }}
+              {...(dateError ? { error: dateError } : {})} autoCorrect={false} autoCapitalize="none"
+              onSubmitEditing={applyDate} returnKeyType="done" testID="history-date-input" />
+            <LumiButton title="Zobrazit den" onPress={applyDate} fullWidth testID="history-date-apply" />
+          </View> : null}
+        </LumiCard> : null}
 
-            <LumiInput
-              label={PRODUCT_COPY.history.pickDate}
-              accessibilityLabel={PRODUCT_COPY.history.pickDate}
-              placeholder={PRODUCT_COPY.history.pickDate}
-              value={state.focusDate ?? ''}
-              onChangeText={(value) =>
-                setState({
-                  ...state,
-                  focusDate: value.trim().length === 0 ? null : value.trim(),
-                })
-              }
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+        <View style={styles.resultsHeading}>
+          <LumiText variant="h2" accessibilityRole="header" style={{ flex: 1 }}>{state.searchQuery ? 'Výsledky hledání' : 'Váš deník'}</LumiText>
+          <LumiButton title={searchOpen ? 'Skrýt' : 'Hledat'} variant="secondary"
+            onPress={() => setSearchOpen((value) => !value)} accessibilityState={{ expanded: searchOpen }} testID="history-search-toggle" />
+        </View>
+        {searchOpen ? <LumiInput label={PRODUCT_COPY.history.search} placeholder="Název nebo slova z poznámky…"
+          value={state.searchQuery} onChangeText={(searchQuery) => setState({ ...state, searchQuery })}
+          autoCapitalize="none" autoCorrect={false} returnKeyType="search" testID="history-search" /> : null}
+        {state.searchQuery && !searchOpen ? <LumiText variant="caption" tone="muted">Hledáte „{state.searchQuery}“</LumiText> : null}
+        <View style={styles.wrap} accessibilityLabel="Typ záznamu">
+          {FILTERS.map((filter) => <LumiChip key={filter.id} label={filter.label} selected={state.filter === filter.id}
+            onPress={() => setState({ ...state, filter: filter.id, careSubtype: filter.id === 'care' ? state.careSubtype : null })}
+            testID={`history-filter-${filter.id}`} />)}
+        </View>
+        {state.filter === 'care' ? <View style={styles.wrap} accessibilityLabel={PRODUCT_COPY.history.careSubtypes}>
+          {CARE_SUBTYPES.map((subtype) => <LumiChip key={subtype.id} label={subtype.label} selected={state.careSubtype === subtype.id}
+            onPress={() => setState({ ...state, careSubtype: state.careSubtype === subtype.id ? null : subtype.id })}
+            testID={`history-subtype-${subtype.id}`} />)}
+        </View> : null}
+        {filtersOn ? <LumiButton title={PRODUCT_COPY.actions.clearFilters} variant="ghost" onPress={clearFilters} fullWidth testID="history-clear-filters" /> : null}
+          <LumiText variant="caption" tone="muted" accessibilityLiveRegion="polite" testID="history-result-count">
+            {model.loading ? 'Načítám…' : `Načteno: ${historyCountLabel(model.events.length)}`}
+          </LumiText>
+        {model.events.length === 0 && !model.loading && !model.error ? <HistoryEmpty
+          title={filtersOn ? 'Tady je zatím klid' : 'První chvíle teprve přijdou'}
+          description={filtersOn ? 'Pro tento výběr tu nejsou žádné záznamy. Můžete změnit den nebo zrušit filtry.' : 'Uložená péče, zážitky a poznámky se tu postupně poskládají do vašeho příběhu.'}>
+          {filtersOn ? <LumiButton title="Zobrazit všechny záznamy" variant="secondary" onPress={clearFilters} fullWidth /> : null}
+        </HistoryEmpty> : null}
+        {groups.map((group) => <View key={group.day} style={styles.dayGroup} testID={`history-group-${group.day}`}>
+          <HistoryDayHeading day={group.day} todayIso={model.todayIso} />
+          {group.events.map((event, index) => <HistoryEventRow key={event.eventId} event={event} zone={model.zone}
+            last={index === group.events.length - 1} {...(onOpenEvent ? { onPress: () => openEvent(event.eventId) } : {})} />)}
+        </View>)}
+        {model.nextCursor && !state.focusDate ? <LumiButton title="Načíst starší záznamy" variant="secondary"
+          loading={model.loadingMore} onPress={() => void model.loadOlder()} fullWidth testID="history-load-more" /> : null}
+        <LumiButton title="Možnosti hledání" variant="ghost" onPress={() => setOptionsOpen((value) => !value)} accessibilityState={{ expanded: optionsOpen }} fullWidth />
+        {optionsOpen ? <LumiCard style={styles.panel}>
+          <LumiText variant="caption" tone="muted">Pokud hledání nenachází dříve uložené poznámky, obnovte místní vyhledávání.</LumiText>
+          <LumiButton title={PRODUCT_COPY.actions.rebuildSearch} variant="secondary" onPress={() => void model.onRebuildSearch()}
+            loading={model.pendingId === 'search-index'} disabled={!!model.pendingId && model.pendingId !== 'search-index'} fullWidth />
+        </LumiCard> : null}
+      </View> : null}
 
-            <LumiInput
-              label={PRODUCT_COPY.history.search}
-              accessibilityLabel={PRODUCT_COPY.history.search}
-              placeholder={PRODUCT_COPY.history.search}
-              value={state.searchQuery}
-              onChangeText={(searchQuery) => setState({ ...state, searchQuery })}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+      {state.section === 'drafts' ? <View style={styles.section}>
+        <LumiText variant="h2" accessibilityRole="header">Rozepsané chvíle</LumiText>
+        <LumiText variant="caption" tone="muted">Koncepty ještě nejsou uložené události. Jejich původní čas zůstává zachovaný.</LumiText>
+        {model.drafts.length === 0 ? <HistoryEmpty title="Nic nezůstalo rozepsané" description="Když při zápisu přerušíte práci, uložené koncepty najdete tady." /> : model.drafts.map((draft) => <LumiCard key={draft.draftId} style={styles.panel} testID={`history-draft-${draft.draftId}`}>
+          <View style={styles.cardHeading}><ForestIconBadge name={HISTORY_TONES[draft.formType]} size={42} />
+            <LumiText variant="bodyStrong" style={{ flex: 1 }}>{HISTORY_EVENT_LABELS[draft.formType]}</LumiText></View>
+          <LumiText variant="caption" tone="muted">Původní čas: {instantLabel(draft.originalEventTime.epochMs)}</LumiText>
+          {draftPreviewFields(draft).slice(0, 2).map((field) => <LumiText key={field.label} variant="caption" numberOfLines={2}>{field.label}: {field.value}</LumiText>)}
+          <LumiButton title="Zobrazit koncept" variant="secondary" onPress={() => setSelectedDraft(draft)} fullWidth />
+          <LumiButton title={PRODUCT_COPY.actions.discardDraft} variant="ghost" disabled={!!model.pendingId}
+            onPress={() => confirmDiscard(draft)} fullWidth />
+        </LumiCard>)}
+      </View> : null}
 
-            <View style={styles.filters}>
-              {FILTERS.map((filter) => (
-                <LumiChip
-                  key={filter.id}
-                  label={filter.label}
-                  selected={state.filter === filter.id}
-                  onPress={() =>
-                    setState({
-                      ...state,
-                      filter: filter.id,
-                      careSubtype: filter.id === 'care' ? state.careSubtype : null,
-                    })
-                  }
-                />
-              ))}
-            </View>
+      {state.section === 'trash' ? <View style={styles.section}>
+        <LumiText variant="h2" accessibilityRole="header">Nedávno smazané</LumiText>
+        <LumiText variant="caption" tone="muted">Dokud neuplyne uvedená lhůta, můžete záznam vrátit do deníku.</LumiText>
+        {model.trash.length === 0 ? <HistoryEmpty title="Koš je prázdný" description="Tady se objeví smazané záznamy, které ještě můžete obnovit." /> : model.trash.map((marker) => {
+          const event = careEventFromTrashMarker(marker);
+          return <LumiCard key={marker.deletionId} style={styles.panel} testID={`history-trash-${marker.deletionId}`}>
+            <View style={styles.cardHeading}><ForestIconBadge name={event ? HISTORY_TONES[event.type] : 'history'} size={42} />
+              <LumiText variant="bodyStrong" style={{ flex: 1 }}>{event ? presentCareEvent(event, model.zone).title : 'Smazaný záznam'}</LumiText></View>
+            <LumiText variant="caption" tone="muted">Smazáno {instantLabel(marker.deletedAt.epochMs)}</LumiText>
+            <LumiText variant="caption" tone="muted">Lze obnovit do {instantLabel(marker.retainUntil.epochMs)}</LumiText>
+            <LumiButton title={PRODUCT_COPY.actions.restore} onPress={() => void model.restoreTrashItem(marker)}
+              loading={model.pendingId === marker.deletionId} disabled={!!model.pendingId && model.pendingId !== marker.deletionId} fullWidth />
+          </LumiCard>;
+        })}
+      </View> : null}
 
-            {state.filter === 'care' ? (
-              <View style={styles.filters} accessibilityLabel={PRODUCT_COPY.history.careSubtypes}>
-                {CARE_SUBTYPES.map((subtype) => (
-                  <LumiChip
-                    key={subtype.id}
-                    label={subtype.label}
-                    selected={state.careSubtype === subtype.id}
-                    onPress={() =>
-                      setState({
-                        ...state,
-                        careSubtype: state.careSubtype === subtype.id ? null : subtype.id,
-                      })
-                    }
-                  />
-                ))}
-              </View>
-            ) : null}
-
-            {filtersOn ? (
-              <LumiButton
-                title={PRODUCT_COPY.actions.clearFilters}
-                onPress={() => setState(clearHistoryFilters(state))}
-                fullWidth
-              />
-            ) : null}
-
-            {events.length === 0 ? (
-              <LumiText tone="muted">{emptyTimelineMessage}</LumiText>
-            ) : (
-              events.map((event) => {
-                const item = presentCareEvent(event, zone);
-                return (
-                  <Pressable
-                    key={event.eventId}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.title}, ${item.detail}`}
-                    onPress={() => onOpenEvent?.(event.eventId)}
-                    style={[
-                      styles.row,
-                      {
-                        borderColor: colors.controlBorder,
-                        minHeight: 48,
-                        padding: ui.space.md,
-                      },
-                    ]}
-                  >
-                    <LumiText>{item.title}</LumiText>
-                    <LumiText tone="muted">{item.detail}</LumiText>
-                  </Pressable>
-                );
-              })
-            )}
-
-            {nextCursor && state.focusDate == null ? (
-              <LumiButton
-                title={loadingMore ? 'Načítám…' : PRODUCT_COPY.actions.loadMore}
-                onPress={() => void loadOlder()}
-                fullWidth
-                disabled={loadingMore}
-              />
-            ) : null}
-
-            <LumiButton
-              title={PRODUCT_COPY.actions.rebuildSearch}
-              onPress={() => void onRebuildSearch()}
-              fullWidth
-            />
-          </>
-        ) : null}
-
-        {state.section === 'drafts' ? (
-          drafts.length === 0 ? (
-            <LumiText tone="muted">{PRODUCT_COPY.feedback.draftsEmpty}</LumiText>
-          ) : (
-            drafts.map((draft) => (
-              <View
-                key={draft.draftId}
-                style={[
-                  styles.row,
-                  { borderColor: colors.controlBorder, padding: ui.space.md, gap: ui.space.sm },
-                ]}
-              >
-                <LumiText>{draft.formType}</LumiText>
-                <LumiText tone="muted">
-                  {PRODUCT_COPY.history.originalDraftTime}:{' '}
-                  {formatIsoCalendarDate(draft.originalEventTime.epochMs, zone)}
-                </LumiText>
-                <View style={styles.rowActions}>
-                  <LumiButton
-                    title={PRODUCT_COPY.actions.continueDraft}
-                    onPress={() =>
-                      setState({
-                        ...state,
-                        section: 'timeline',
-                        openDraftFormType: draft.formType,
-                      })
-                    }
-                  />
-                  <LumiButton
-                    title={PRODUCT_COPY.actions.discardDraft}
-                    onPress={() => void discardDraft(draft)}
-                  />
-                </View>
-              </View>
-            ))
-          )
-        ) : null}
-
-        {state.section === 'trash' ? (
-          trash.length === 0 ? (
-            <LumiText tone="muted">{PRODUCT_COPY.feedback.trashEmpty}</LumiText>
-          ) : (
-            trash.map((marker) => {
-              const event = careEventFromTrashMarker(marker);
-              const label = event
-                ? presentCareEvent(event, zone).title
-                : `Smazaný záznam ${marker.entityId}`;
-              return (
-                <View
-                  key={marker.deletionId}
-                  style={[
-                    styles.row,
-                    { borderColor: colors.controlBorder, padding: ui.space.md, gap: ui.space.sm },
-                  ]}
-                >
-                  <LumiText>{label}</LumiText>
-                  <LumiText tone="muted">
-                    Koš do {formatIsoCalendarDate(marker.retainUntil.epochMs, zone)}
-                  </LumiText>
-                  <LumiButton
-                    title={PRODUCT_COPY.actions.restore}
-                    onPress={() => void restoreTrashItem(marker)}
-                  />
-                </View>
-              );
-            })
-          )
-        ) : null}
-
-        {statusMessage ? <LumiText tone="muted">{statusMessage}</LumiText> : null}
-      </ScrollView>
-    </SafeAreaView>
-  );
+      {model.error ? <LumiCard style={styles.panel}><LumiText tone="danger" accessibilityRole="alert">{model.error}</LumiText>
+        <LumiButton title="Zkusit znovu" variant="secondary" onPress={() => void model.reload()} fullWidth /></LumiCard> : null}
+      {model.feedback ? <LumiText tone={model.feedback.error ? 'danger' : 'success'} accessibilityLiveRegion="polite">{model.feedback.message}</LumiText> : null}
+      <FamilyConflictsPanel />
+    </ScrollView>
+    <CareActionSheet visible={!!selectedDraft && selectedDraft.childId === model.childId} title="Rozepsaný záznam"
+      subtitle="Náhled konceptu. Do časové osy patří až uložené události." onClose={() => setSelectedDraft(null)}>
+      {selectedDraft ? <>
+        <LumiText variant="h2">{HISTORY_EVENT_LABELS[selectedDraft.formType]}</LumiText>
+        <LumiText variant="caption" tone="muted">Původní čas: {instantLabel(selectedDraft.originalEventTime.epochMs)}</LumiText>
+        {draftPreviewFields(selectedDraft).map((field) => <View key={field.label} style={{ gap: 4 }}>
+          <LumiText variant="label">{field.label}</LumiText><LumiText>{field.value}</LumiText></View>)}
+      </> : null}
+    </CareActionSheet>
+  </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { padding: 24, maxWidth: 600, width: '100%', alignSelf: 'center' },
-  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  row: { borderWidth: 1, borderRadius: 12, gap: 4 },
-  rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  content: { padding: 20, paddingBottom: 32, width: '100%', maxWidth: 620, alignSelf: 'center', gap: 18 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  eyebrow: { fontSize: 9, lineHeight: 15, letterSpacing: 1.2 },
+  section: { gap: 16 },
+  panel: { gap: 12, borderRadius: 24 },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
+  periods: { flexDirection: 'row', gap: 6 },
+  dateNavigation: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dateLabel: { flex: 1, minHeight: 48, justifyContent: 'center', gap: 3 },
+  resultsHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  dayGroup: { gap: 12, marginBottom: 8 },
+  cardHeading: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

@@ -12,7 +12,7 @@ import { DevelopmentScreen } from '../../features/development/DevelopmentScreen'
 import { EventDetailScreen } from '../../features/history/EventDetailScreen';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
-import { CompactActiveSessions } from '../../features/shell/CompactActiveSessions';
+import { CompactActiveSessions, CompactActiveSessionsVisibleContext } from '../../features/shell/CompactActiveSessions';
 import { WelcomeScreen } from '../../features/shell/WelcomeScreen';
 import { TodayScreen } from '../../features/today/TodayScreen';
 import { useBootstrap } from '../session/BootstrapContext';
@@ -38,10 +38,13 @@ function TabWithCompactSleep({
   hideCompact?: boolean;
   onOpenSleep: () => void;
 }) {
+  const [stripVisible, setStripVisible] = React.useState(false);
   return (
     <View style={{ flex: 1 }}>
-      <CompactActiveSessions hidden={hideCompact === true} onOpenSleep={onOpenSleep} />
-      {children}
+      <CompactActiveSessionsVisibleContext.Provider value={stripVisible}>
+        <CompactActiveSessions hidden={hideCompact === true} onOpenSleep={onOpenSleep} onVisibilityChange={setStripVisible} />
+        {children}
+      </CompactActiveSessionsVisibleContext.Provider>
     </View>
   );
 }
@@ -95,6 +98,7 @@ function MainTabs() {
         {({ navigation }) => (
           <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
             <DevelopmentScreen
+              onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
               onOpenEvent={(eventId) =>
                 navigation.getParent()?.navigate('EventDetail', { eventId })
               }

@@ -8,6 +8,7 @@ import {
   asRevisionId,
   asTimeZoneId,
   createNoteEvent,
+  createSleepEvent,
   zonedInstant,
 } from '../src/domain/index.ts';
 import {
@@ -364,4 +365,86 @@ test('history tab helpers clear filters without wiping section memory', () => {
   assert.equal(cleared.focusDate, null);
   assert.equal(cleared.section, 'trash');
   assert.equal(historyFiltersActive(createInitialHistoryTabState()), false);
+});
+
+test('trash for the selected child excludes deleted care belonging to another child', async () => {
+  const ctx = await openNative('hist-child-trash.db');
+  const otherChild = asChildId('child_history_other');
+  try {
+    await ctx.db.connection.runAsync(
+      'INSERT INTO child_profiles (child_id, display_name, birth_date, summary_time_zone, payload_json) VALUES (?, ?, ?, ?, ?)',
+      otherChild, 'Druhé dítě', '2025-01-01', 'Europe/Prague', '{}',
+    );
+    for (const [suffix, selectedChild] of [['trash_first', childId], ['trash_other', otherChild]] as const) {
+      const saved = await ctx.dispatcher.dispatch({ ...noteCommand(suffix, ctx.clock, 'Poznámka dítěte'), childId: selectedChild });
+      assert.equal(saved.ok, true);
+      const deleted = await ctx.dispatcher.dispatch({
+        type: 'softDeleteCare', operationId: asOperationId(`op_delete_${suffix}`),
+        intentCapturedAt: { epochMs: ctx.clock }, eventId: asEntityId(`note_${suffix}`),
+        deletionId: asEntityId(`del_${suffix}`), revisionId: asRevisionId(`rev_delete_${suffix}`),
+      });
+      assert.equal(deleted.ok, true);
+    }
+    const firstTrash = await ctx.unitOfWork.run((uow) => loadRestorableTrash(uow, ctx.clock, childId));
+    const otherTrash = await ctx.unitOfWork.run((uow) => loadRestorableTrash(uow, ctx.clock, otherChild));
+    const allTrash = await ctx.unitOfWork.run((uow) => loadRestorableTrash(uow, ctx.clock));
+    assert.deepEqual(firstTrash.map((marker) => marker.entityId), ['note_trash_first']);
+    assert.deepEqual(otherTrash.map((marker) => marker.entityId), ['note_trash_other']);
+    assert.equal(allTrash.length, 2);
+  } finally { await ctx.db.close(); }
+});
+
+test('a sparse sleep filter scans past long runs of newer notes and keeps a stable visible cursor', async () => {
+  const ctx = await openNative('hist-sparse-filter.db');
+  try {
+    await ctx.unitOfWork.run(async (uow) => {
+      for (let i = 0; i < 200; i++) {
+        await uow.care.save(createNoteEvent({ eventId: asEntityId(`sparse_note_${i}`), childId,
+          revisionId: asRevisionId(`rev_sparse_note_${i}`), occurredAt: zonedInstant({ epochMs: ctx.clock + i * 1000 }, zone),
+          body: 'společný marker', createdAt: zonedInstant({ epochMs: ctx.clock }, zone) }));
+      }
+      for (let i = 0; i < 3; i++) {
+        const observedAt = zonedInstant({ epochMs: ctx.clock - (i + 1) * 1000 }, zone);
+        await uow.care.save(createSleepEvent({ eventId: asEntityId(`sparse_sleep_${i}`), childId,
+          revisionId: asRevisionId(`rev_sparse_sleep_${i}`), occurrence: { kind: 'unknownDuration', observedAt },
+          note: 'společný marker', createdAt: observedAt }));
+      }
+      await rebuildSearchIndex(uow, childId);
+    });
+    for (const searchQuery of ['', 'spolecny marker']) {
+      const first = await ctx.unitOfWork.run((uow) => loadHistoryPage(uow, {
+        childId, bucket: 'care', careSubtype: 'sleep', searchQuery, limit: 2, before: null,
+      }));
+      assert.deepEqual(first.events.map((event) => event.eventId), ['sparse_sleep_0', 'sparse_sleep_1']);
+      assert.ok(first.nextCursor);
+      const second = await ctx.unitOfWork.run((uow) => loadHistoryPage(uow, {
+        childId, bucket: 'care', careSubtype: 'sleep', searchQuery, limit: 2, before: first.nextCursor,
+      }));
+      assert.deepEqual(second.events.map((event) => event.eventId), ['sparse_sleep_2']);
+      assert.equal(second.nextCursor, null);
+    }
+  } finally { await ctx.db.close(); }
+});
+
+test('day search finds matching older days even behind more than five hundred newer matches', async () => {
+  const ctx = await openNative('hist-day-search-depth.db');
+  const dayStart = Date.UTC(2026, 0, 1, 23);
+  try {
+    await ctx.unitOfWork.run(async (uow) => {
+      for (let i = 0; i < 510; i++) {
+        const occurredAt = zonedInstant({ epochMs: dayStart + 2 * 86_400_000 + i * 1000 }, zone);
+        await uow.care.save(createNoteEvent({ eventId: asEntityId(`day_newer_${i}`), childId,
+          revisionId: asRevisionId(`rev_day_newer_${i}`), body: 'hledaná vzpomínka', occurredAt, createdAt: occurredAt }));
+      }
+      const occurredAt = zonedInstant({ epochMs: dayStart + 12 * 3_600_000 }, zone);
+      await uow.care.save(createNoteEvent({ eventId: asEntityId('day_older_hit'), childId,
+        revisionId: asRevisionId('rev_day_older_hit'), body: 'hledaná vzpomínka', occurredAt, createdAt: occurredAt }));
+      await rebuildSearchIndex(uow, childId);
+    });
+    const rows = await ctx.unitOfWork.run((uow) => loadHistoryDay(uow, {
+      childId, bucket: 'all', careSubtype: null, searchQuery: 'hledana vzpominka',
+      fromSortAtMsInclusive: dayStart, toSortAtMsExclusive: dayStart + 86_400_000,
+    }));
+    assert.deepEqual(rows.map((event) => event.eventId), ['day_older_hit']);
+  } finally { await ctx.db.close(); }
 });

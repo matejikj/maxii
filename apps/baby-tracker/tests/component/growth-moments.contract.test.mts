@@ -48,7 +48,9 @@ test('dispatcher and history cover notes experiences milestones growth', () => {
   assert.match(dispatcher, /recordMilestone/);
   assert.match(dispatcher, /recordGrowth/);
   const history = read('features/history/HistoryScreen.tsx');
-  assert.match(history, /loadHistoryDay|loadHistoryPage/);
+  assert.match(history, /useHistoryModel/);
+  const historyModel = read('features/history/useHistoryModel.ts');
+  assert.match(historyModel, /loadHistoryDay|loadHistoryPage/);
   assert.match(history, /notes|activities|care/);
   const query = read('domain/projections/historyQuery.ts');
   assert.match(query, /event\.type === 'note'/);

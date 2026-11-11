@@ -34,6 +34,7 @@ import {
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { PRODUCT_COPY } from '../ui';
+import { DevelopmentHeading } from './DevelopmentVisuals';
 
 type FamilyProjectsSectionProps = {
   childId: ChildId;
@@ -85,6 +86,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
   const [sourceVerified, setSourceVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [preparationOpen, setPreparationOpen] = useState(false);
 
   const cohort8Availability = useMemo(() => describeFamilyGuidedCohort8to11Availability(), []);
   const cohort12Availability = useMemo(() => describeFamilyGuidedCohort12to14Availability(), []);
@@ -803,8 +805,8 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
 
   return (
     <View style={{ gap: ui.space.md }}>
-      <LumiCard testID="family-projects-today">
-        <LumiText variant="h2">{PRODUCT_COPY.development.familyProjectsToday}</LumiText>
+      <LumiCard style={{ gap: 14, borderRadius: 25 }} testID="family-projects-today">
+        <DevelopmentHeading title={PRODUCT_COPY.development.familyProjectsToday} icon="today" />
         <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsTodayHint}</LumiText>
         {today.length === 0 ? (
           <LumiText tone="muted">{PRODUCT_COPY.empty.noFamilyProjects}</LumiText>
@@ -826,12 +828,9 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
         )}
       </LumiCard>
 
-      <LumiCard testID="family-projects-section">
-        <LumiText variant="h2">{PRODUCT_COPY.development.familyProjects}</LumiText>
-        <LumiText tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
-        <LumiText tone="muted">{PRODUCT_COPY.development.cohort8to11Offline}</LumiText>
-        <LumiText tone="muted">{PRODUCT_COPY.development.cohort12to14Offline}</LumiText>
-        <LumiText tone="muted">{PRODUCT_COPY.development.cohort15to17Offline}</LumiText>
+      <LumiCard style={{ gap: 14, borderRadius: 25 }} testID="family-projects-section">
+        <DevelopmentHeading title={PRODUCT_COPY.development.familyProjects} icon="experience" />
+        <LumiText variant="caption" tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {(
             [
@@ -845,11 +844,14 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
               title={`${label} (${shelves[key].length})`}
               variant={shelf === key ? 'primary' : 'ghost'}
               onPress={() => setShelf(key)}
+              accessibilityState={{ selected: shelf === key }}
             />
           ))}
         </View>
         {shelfRows.length === 0 ? (
-          <LumiText tone="muted">{PRODUCT_COPY.empty.noFamilyProjects}</LumiText>
+          <LumiText tone="muted">{shelf === 'active' ? PRODUCT_COPY.empty.noFamilyProjects
+            : shelf === 'paused' ? 'Žádné odložené projekty. Až si dáte pauzu, najdete je tady.'
+              : 'Žádné uzavřené projekty. Vaše společné vzpomínky tu zůstanou.'}</LumiText>
         ) : (
           shelfRows.map((row) => (
             <Pressable
@@ -861,7 +863,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             >
               <LumiText>{row.project.title}</LumiText>
               <LumiText tone="muted">
-                {row.scopeLabel} · {row.project.status}
+                {row.scopeLabel} · {{ active: 'Aktivní', paused: 'Odložený', closed: 'Uzavřený', idea: 'Nápad', archived: 'Archivovaný' }[row.project.status]}
                 {row.cohort !== 'blank' ? ` · ${row.cohort}` : ''}
               </LumiText>
             </Pressable>
@@ -885,29 +887,14 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
           }}
           disabled={busy || !runtime?.unitOfWork}
         />
-        <LumiButton
-          title={PRODUCT_COPY.development.startOwnIdeaWithVariants}
-          variant="secondary"
-          onPress={() => {
-            setBlankStyle('variants');
-            setBlanking(true);
-          }}
-          disabled={busy || !runtime?.unitOfWork}
-        />
-        <LumiButton
-          title={PRODUCT_COPY.development.startOwnBrief}
-          variant="secondary"
-          onPress={() => {
-            setBlankStyle('ownBrief');
-            setBlanking(true);
-          }}
-          disabled={busy || !runtime?.unitOfWork}
-        />
+        <LumiText variant="caption" tone="muted">U vlastního nápadu si můžete zvolit i varianty nebo vlastní zadání.</LumiText>
         {error ? <LumiText tone="muted">{error}</LumiText> : null}
       </LumiCard>
 
-      <LumiCard testID="self-management-prep">
-        <LumiText variant="h2">{PRODUCT_COPY.development.selfManagementTitle}</LumiText>
+      <LumiCard style={{ gap: 12, borderRadius: 25 }} testID="self-management-prep">
+        <LumiButton title={PRODUCT_COPY.development.selfManagementTitle} variant="ghost"
+          accessibilityState={{ expanded: preparationOpen }} onPress={() => setPreparationOpen((value) => !value)} />
+        {preparationOpen ? <View style={{ gap: 10 }}>
         <LumiText tone="muted">{selfManagement.headline}</LumiText>
         <LumiText tone="muted">{selfManagement.detail}</LumiText>
         {selfManagement.previewItems.map((item) => (
@@ -920,10 +907,11 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             Cizí rodinná historie se nepřevádí automaticky.
           </LumiText>
         ) : null}
+        </View> : null}
       </LumiCard>
 
-      <LumiCard testID="parent-suggestions-section">
-        <LumiText variant="h2">{PRODUCT_COPY.development.parentSuggestions}</LumiText>
+      <LumiCard style={{ gap: 14, borderRadius: 25 }} testID="parent-suggestions-section">
+        <DevelopmentHeading title={PRODUCT_COPY.development.parentSuggestions} icon="care" />
         <LumiText tone="muted">{PRODUCT_COPY.development.parentSuggestionsHint}</LumiText>
         {suggestions.length === 0 ? (
           <LumiText tone="muted">{PRODUCT_COPY.development.noParentSuggestions}</LumiText>

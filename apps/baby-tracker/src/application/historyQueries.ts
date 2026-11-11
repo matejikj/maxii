@@ -43,16 +43,23 @@ export async function loadHistoryDay(
   query: HistoryDayQuery,
 ): Promise<CareEvent[]> {
   const needle = normalizeSearchText(query.searchQuery);
-  const source = needle
-    ? (await uow.search.search(query.childId, needle, 500, null)).events.filter((event) => {
+  const source: CareEvent[] = [];
+  if (needle) {
+    let before: TimelineCursor | null = null;
+    // Search pages span the whole diary. A busy newer day must not hide this day.
+    for (;;) {
+      const page = await uow.search.search(query.childId, needle, 500, before);
+      source.push(...page.events.filter((event) => {
         const sortAt = careSortAtMs(event);
         return sortAt >= query.fromSortAtMsInclusive && sortAt < query.toSortAtMsExclusive;
-      })
-    : await uow.care.listInSortRange(
-        query.childId,
-        query.fromSortAtMsInclusive,
-        query.toSortAtMsExclusive,
-      );
+      }));
+      const last = page.events[page.events.length - 1];
+      if (!page.nextCursor || !last || careSortAtMs(last) < query.fromSortAtMsInclusive) break;
+      before = page.nextCursor;
+    }
+  } else {
+    source.push(...await uow.care.listInSortRange(query.childId, query.fromSortAtMsInclusive, query.toSortAtMsExclusive));
+  }
   return source.filter((event) =>
     eventMatchesHistoryBucket(event, query.bucket, query.careSubtype),
   );
@@ -64,29 +71,33 @@ export async function loadHistoryPage(
 ): Promise<{ events: CareEvent[]; nextCursor: TimelineCursor | null }> {
   const needle = normalizeSearchText(query.searchQuery);
   const needsClientFilter = query.bucket !== 'all' || query.careSubtype != null;
-  // Over-fetch when subtype/bucket filters apply so a dense day of other types
-  // cannot starve the visible page.
+  // Scan bounded source pages until the visible page is full or the source ends.
+  // A long run of other care types must not make an older matching record vanish.
   const fetchLimit = needsClientFilter ? Math.max(query.limit * 4, query.limit) : query.limit;
-  const page = needle
-    ? await uow.search.search(query.childId, needle, fetchLimit, query.before)
-    : await uow.care.listPage(query.childId, fetchLimit, query.before);
-  const events = page.events
-    .filter((event) => eventMatchesHistoryBucket(event, query.bucket, query.careSubtype))
-    .slice(0, query.limit);
-  return {
-    events,
-    nextCursor: events.length < query.limit ? null : nextTimelineCursor(events),
-  };
+  const events: CareEvent[] = [];
+  let before = query.before;
+  for (;;) {
+    const page = needle
+      ? await uow.search.search(query.childId, needle, fetchLimit, before)
+      : await uow.care.listPage(query.childId, fetchLimit, before);
+    for (const event of page.events) {
+      if (eventMatchesHistoryBucket(event, query.bucket, query.careSubtype)) events.push(event);
+      if (events.length === query.limit) return { events, nextCursor: nextTimelineCursor(events) };
+    }
+    if (!page.nextCursor || page.events.length === 0) return { events, nextCursor: null };
+    before = page.nextCursor;
+  }
 }
 
 export async function loadDraftsForChild(uow: UnitOfWork, childId: ChildId): Promise<Draft[]> {
   return uow.drafts.listByChild(childId);
 }
 
-/** Soft-deleted care still within retention, newest first. */
+/** Soft-deleted care still within retention, newest first; optionally scoped to the selected child. */
 export async function loadRestorableTrash(
   uow: UnitOfWork,
   nowEpochMs: number,
+  childId?: ChildId,
 ): Promise<DeletionMarker[]> {
   const markers = await uow.revisions.listDeletions();
   return markers
@@ -94,7 +105,8 @@ export async function loadRestorableTrash(
       (marker) =>
         !marker.payloadPurged &&
         marker.payload != null &&
-        marker.retainUntil.epochMs > nowEpochMs,
+        marker.retainUntil.epochMs > nowEpochMs &&
+        (childId == null || careEventFromTrashMarker(marker)?.childId === childId),
     )
     .sort((a, b) => b.deletedAt.epochMs - a.deletedAt.epochMs);
 }

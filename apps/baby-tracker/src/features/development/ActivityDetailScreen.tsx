@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LumiButton, LumiChip, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import { LumiButton, LumiCard, LumiChip, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { ChildId, ExperienceCareEvent, TimeZoneId } from '../../domain';
 import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../content';
 import { DEVELOPMENT_AREA_LABELS_CS, READINESS_LABELS_CS } from '../../content';
@@ -19,6 +19,8 @@ import {
 } from '../today/recordMomentIntent';
 import { buildEditCareCommand } from '../history/buildEditCareCommand';
 import { asOperationId, asRevisionId, todayInZone } from '../../domain';
+import { ActivityMetadata, DevelopmentHeading } from './DevelopmentVisuals';
+import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
 
 export type ActivityDetailScreenProps = {
   revision: ActivityRevision;
@@ -31,6 +33,8 @@ export type ActivityDetailScreenProps = {
   readinessByKey?: Partial<Record<string, ReadinessState>>;
   onConfirmReadiness?: (key: ReadinessKey, state: 'yes' | 'no') => void;
   onClearReadiness?: (key: ReadinessKey) => void;
+  mutationError?: string | null;
+  mutationBusy?: boolean;
 };
 
 /**
@@ -48,8 +52,11 @@ export function ActivityDetailScreen({
   readinessByKey = {},
   onConfirmReadiness,
   onClearReadiness,
+  mutationError,
+  mutationBusy = false,
 }: ActivityDetailScreenProps) {
   const { colors, ui } = useLumiTheme();
+  const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { services } = useCompositionRoot();
   const runtime = usePersonalRuntime();
   const [expandedWhy, setExpandedWhy] = useState(false);
@@ -149,15 +156,16 @@ export function ActivityDetailScreen({
     : null;
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
+    <SafeAreaView edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']}
+      style={[styles.root, { backgroundColor: colors.background }]} testID="activity-detail-screen">
       <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md }]}>
-        <LumiButton title="Zpět" variant="secondary" onPress={onClose} />
-        <LumiText variant="h1">{revision.title}</LumiText>
-        <LumiText tone="muted">
-          {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
-          {' · '}
-          {durationLabel(revision)}
-        </LumiText>
+        <LumiButton title="Zpět na Rozvoj" variant="ghost" onPress={onClose} testID="activity-back" />
+        <LumiCard variant="soft" style={styles.detailHeading}>
+          <LumiText variant="overline" tone="muted">SPOLEČNÁ CHVÍLE</LumiText>
+          <LumiText variant="h1" accessibilityRole="header">{revision.title}</LumiText>
+          <LumiText variant="label" tone="accent">{DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}</LumiText>
+          <ActivityMetadata revision={revision} />
+        </LumiCard>
         {isDraft ? (
           <View style={{ gap: ui.space.xs }}>
             <LumiText>{PRODUCT_COPY.development.draftBadge}</LumiText>
@@ -166,7 +174,7 @@ export function ActivityDetailScreen({
         ) : null}
 
         {readinessKeys.length > 0 ? (
-          <View style={{ gap: ui.space.sm }} testID="activity-readiness">
+          <LumiCard style={styles.detailHeading} testID="activity-readiness">
             <LumiText variant="h2">{PRODUCT_COPY.development.readinessTitle}</LumiText>
             <LumiText tone="muted">{PRODUCT_COPY.development.readinessHint}</LumiText>
             {readinessKeys.map((key) => {
@@ -178,60 +186,67 @@ export function ActivityDetailScreen({
                     <LumiChip
                       label={PRODUCT_COPY.development.readinessYes}
                       selected={state === 'yes'}
+                      disabled={mutationBusy}
                       onPress={() => onConfirmReadiness?.(key, 'yes')}
                     />
                     <LumiChip
                       label={PRODUCT_COPY.development.readinessNo}
                       selected={state === 'no'}
+                      disabled={mutationBusy}
                       onPress={() => onConfirmReadiness?.(key, 'no')}
                     />
                     <LumiChip
                       label={PRODUCT_COPY.development.readinessUnknown}
                       selected={state === 'unknown'}
+                      disabled={mutationBusy}
                       onPress={() => onClearReadiness?.(key)}
                     />
                   </View>
                 </View>
               );
             })}
-          </View>
+          </LumiCard>
         ) : null}
 
         {revision.constraints.length > 0 ? (
-          <View style={{ gap: ui.space.xs }} testID="activity-conditions">
+          <LumiCard style={styles.detailHeading} testID="activity-conditions">
             <LumiText variant="h2">{PRODUCT_COPY.development.watchOut}</LumiText>
             {revision.constraints.map((item) => (
               <LumiText key={item}>{item}</LumiText>
             ))}
-          </View>
+          </LumiCard>
         ) : null}
 
-        <View style={{ gap: ui.space.xs }}>
-          <LumiText variant="h2">{PRODUCT_COPY.development.materials}</LumiText>
+        <LumiCard style={styles.detailHeading}>
+          <DevelopmentHeading title={PRODUCT_COPY.development.materials} icon="experience" />
           <LumiText>
             {revision.materials.length === 0
               ? PRODUCT_COPY.development.noMaterials
               : revision.materials.join(', ')}
           </LumiText>
-        </View>
+        </LumiCard>
 
         <View style={{ gap: ui.space.xs }} testID="activity-steps">
-          <LumiText variant="h2">{PRODUCT_COPY.development.howTo}</LumiText>
+          <DevelopmentHeading title={PRODUCT_COPY.development.howTo} subtitle="Krok za krokem, bez spěchu" />
           {revision.steps.map((step, index) => (
-            <LumiText key={`${revision.revisionId}-step-${index}`}>
-              {index + 1}. {step}
-            </LumiText>
+            <LumiCard key={`${revision.revisionId}-step-${index}`} style={styles.step} padding="md">
+              <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}>
+                <LumiText variant="bodyStrong" tone="accent">{index + 1}</LumiText>
+              </View>
+              <LumiText style={{ flex: 1 }}>{step}</LumiText>
+            </LumiCard>
           ))}
         </View>
 
         {revision.conversationPrompt ? (
-          <View style={{ gap: ui.space.xs }}>
+          <LumiCard variant="soft" style={styles.detailHeading}>
             <LumiText variant="h2">{PRODUCT_COPY.development.say}</LumiText>
             <LumiText>{revision.conversationPrompt}</LumiText>
-          </View>
+          </LumiCard>
         ) : null}
 
-        <Pressable onPress={() => setExpandedWhy((value) => !value)} style={styles.expand}>
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: expandedWhy }}
+          onPress={() => setExpandedWhy((value) => !value)} style={[styles.expand, { borderBottomColor: colors.border }]}>
           <LumiText>{PRODUCT_COPY.actions.showWhy}</LumiText>
         </Pressable>
         {expandedWhy ? (
@@ -241,7 +256,8 @@ export function ActivityDetailScreen({
           </LumiText>
         ) : null}
 
-        <Pressable onPress={() => setExpandedSources((value) => !value)} style={styles.expand}>
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: expandedSources }}
+          onPress={() => setExpandedSources((value) => !value)} style={[styles.expand, { borderBottomColor: colors.border }]}>
           <LumiText>{PRODUCT_COPY.actions.showSources}</LumiText>
         </Pressable>
         {expandedSources ? (
@@ -304,8 +320,10 @@ export function ActivityDetailScreen({
           title={isFavorite ? PRODUCT_COPY.actions.unfavorite : PRODUCT_COPY.actions.favorite}
           variant="secondary"
           fullWidth
+          loading={mutationBusy}
           onPress={onToggleFavorite}
         />
+        {mutationError ? <LumiText tone="danger" accessibilityRole="alert">{mutationError}</LumiText> : null}
         <SaveFeedback state={feedback} />
       </ScrollView>
     </SafeAreaView>
@@ -320,11 +338,6 @@ function requiredReadinessKeys(revision: ActivityRevision): ReadinessKey[] {
     }
   }
   return keys;
-}
-
-function durationLabel(revision: ActivityRevision): string {
-  if (revision.duration.kind === 'moment') return PRODUCT_COPY.development.filterMoment;
-  return `${revision.duration.minutes} minut`;
 }
 
 function formatClock(epochMs: number, timeZone: TimeZoneId): string {
@@ -342,11 +355,15 @@ function formatClock(epochMs: number, timeZone: TimeZoneId): string {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
-    padding: 24,
+    padding: 20,
+    paddingBottom: 32,
     width: '100%',
-    maxWidth: 600,
+    maxWidth: 620,
     alignSelf: 'center',
   },
-  expand: { minHeight: 48, justifyContent: 'center' },
+  detailHeading: { gap: 12, borderRadius: 25 },
+  step: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderRadius: 22 },
+  stepNumber: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  expand: { minHeight: 52, justifyContent: 'center', borderBottomWidth: 1 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 });

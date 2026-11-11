@@ -44,7 +44,8 @@ test('history screen exposes filters, search, drafts and trash without network',
   assert.match(history, /Zrušit filtry|clearHistoryFilters/);
   assert.match(history, /Nedávno smazané|trash/);
   assert.match(history, /Koncepty|drafts/);
-  assert.match(history, /rebuildSearchIndex|Obnovit hledání/);
+  assert.match(history, /onRebuildSearch/);
+  assert.match(read('features/history/useHistoryModel.ts'), /rebuildSearchIndex/);
   assert.doesNotMatch(history, /fetch\(|EXPO_PUBLIC_LUMI_API_URL|signIn/i);
   const detail = read('features/history/EventDetailScreen.tsx');
   assert.match(detail, /softDeleteCare|Upravit/);

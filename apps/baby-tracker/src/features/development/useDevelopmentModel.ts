@@ -230,6 +230,7 @@ export function useDevelopmentModel() {
 
   return {
     childId: childId as ChildId | null,
+    missingBirthDate: !profile?.birthDate,
     zone: zone as TimeZoneId,
     localDay,
     filters,
