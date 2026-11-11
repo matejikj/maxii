@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LumiIcon, useLumiTheme } from '@lumi/forest-design/native';
+import { BlurTargetView } from 'expo-blur';
+import { LumiIcon, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { LumiIconId } from '@lumi/forest-design/core';
 import { resolveActiveRootShell } from '../../application';
 import { CareScreen } from '../../features/care/CareScreen';
@@ -18,6 +19,8 @@ import { TodayScreen } from '../../features/today/TodayScreen';
 import { useBootstrap } from '../session/BootstrapContext';
 import { createAppLinking } from './linking';
 import type { MainTabParamList, RootStackParamList } from './types';
+import { ForestDockButton, ForestGlassNavigationBar, ForestGlassSurface, useGlassAccessibility, type ForestBlurTarget } from './ForestGlassTabBar';
+import { forestDockMetrics, forestGlassColors } from './forestGlass';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,49 +36,69 @@ function TabWithCompactSleep({
   children,
   hideCompact,
   onOpenSleep,
+  blurTarget,
 }: {
   children: React.ReactNode;
   hideCompact?: boolean;
   onOpenSleep: () => void;
+  blurTarget: ForestBlurTarget;
 }) {
   const [stripVisible, setStripVisible] = React.useState(false);
   return (
-    <View style={{ flex: 1 }}>
+    <BlurTargetView ref={blurTarget} collapsable={false} style={{ flex: 1 }}>
       <CompactActiveSessionsVisibleContext.Provider value={stripVisible}>
         <CompactActiveSessions hidden={hideCompact === true} onOpenSleep={onOpenSleep} onVisibilityChange={setStripVisible} />
         {children}
       </CompactActiveSessionsVisibleContext.Provider>
-    </View>
+    </BlurTargetView>
   );
 }
 
 function MainTabs() {
-  const { colors, mode } = useLumiTheme();
-  const { bottom } = useSafeAreaInsets();
-  const { fontScale } = useWindowDimensions();
+  const { colors, mode, motif } = useLumiTheme();
+  const insets = useSafeAreaInsets();
+  const { width, fontScale } = useWindowDimensions();
+  const metrics = forestDockMetrics(width, fontScale, insets);
+  const material = forestGlassColors(colors, mode, motif);
+  const accessibility = useGlassAccessibility();
+  const targets = React.useMemo(() => ({ Today: React.createRef<React.ComponentRef<typeof View>>(),
+    Care: React.createRef<React.ComponentRef<typeof View>>(), Development: React.createRef<React.ComponentRef<typeof View>>(),
+    History: React.createRef<React.ComponentRef<typeof View>>() }), []);
   return (
     <Tab.Navigator
+      tabBar={(props) => <ForestGlassNavigationBar {...props} />}
+      safeAreaInsets={{ bottom: 0, left: 0, right: 0 }}
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 68 + bottom + Math.max(0, (fontScale - 1) * 24),
-          paddingTop: 6, paddingBottom: Math.max(bottom, 6), elevation: 0 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 3 },
+        tabBarHideOnKeyboard: true,
+        tabBarLabelPosition: 'below-icon',
+        tabBarAllowFontScaling: true,
+        tabBarIconStyle: { width: 28, height: 28 },
+        tabBarActiveTintColor: material.activeInk,
+        tabBarInactiveTintColor: material.inactiveInk,
+        tabBarActiveBackgroundColor: 'transparent',
+        tabBarStyle: { position: 'absolute', start: metrics.left, end: metrics.right, bottom: metrics.bottom,
+          height: metrics.height, borderRadius: metrics.radius, borderCurve: 'continuous', borderTopWidth: 0,
+          backgroundColor: 'transparent', paddingTop: 3, paddingBottom: 3, paddingHorizontal: 4, elevation: 0,
+          boxShadow: [{ offsetX: 0, offsetY: 9, blurRadius: 28, spreadDistance: 0, color: material.shadow }] },
+        tabBarItemStyle: { marginHorizontal: 3, marginVertical: 5, borderRadius: 29 },
+        tabBarBackground: () => <ForestGlassSurface target={targets[route.name]}
+          reducedTransparency={accessibility.reducedTransparency} radius={metrics.radius} />,
+        tabBarButton: (props) => <ForestDockButton {...props} reducedMotion={accessibility.reducedMotion} />,
+        tabBarButtonTestID: `forest-tab-${route.name.toLowerCase()}`,
+        tabBarLabel: ({ color, children }) => <LumiText variant="caption" style={{ color,
+          fontSize: 11, lineHeight: 15, fontWeight: '600', textAlign: 'center', alignSelf: 'stretch', marginTop: 2 }}>{children}</LumiText>,
         tabBarIcon: ({ color, focused }) => (
-          <View style={{ width: 58, height: 34, borderRadius: 17, alignItems: 'center',
-            justifyContent: 'center', backgroundColor: focused ? colors.secondary : 'transparent' }}>
+          <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
             <LumiIcon name={MAIN_TAB_ICONS[route.name]} color={color} size={26}
-              accentColor={focused ? (mode === 'dark' ? '#D1B982' : '#AC8A51') : color} />
+              accentColor={focused ? material.accent : color} />
           </View>
         ),
       })}
     >
       <Tab.Screen name="Today" options={{ title: 'Dnes' }}>
         {({ navigation }) => (
-          <TabWithCompactSleep hideCompact onOpenSleep={() => navigation.navigate('Today')}>
+          <TabWithCompactSleep blurTarget={targets.Today} hideCompact onOpenSleep={() => navigation.navigate('Today')}>
             <TodayScreen
               onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
               onOpenHistoryToday={() => navigation.navigate('History')}
@@ -89,14 +112,14 @@ function MainTabs() {
       </Tab.Screen>
       <Tab.Screen name="Care" options={{ title: 'Péče' }}>
         {({ navigation }) => (
-          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+          <TabWithCompactSleep blurTarget={targets.Care} onOpenSleep={() => navigation.navigate('Today')}>
             <CareScreen />
           </TabWithCompactSleep>
         )}
       </Tab.Screen>
       <Tab.Screen name="Development" options={{ title: 'Rozvoj' }}>
         {({ navigation }) => (
-          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+          <TabWithCompactSleep blurTarget={targets.Development} onOpenSleep={() => navigation.navigate('Today')}>
             <DevelopmentScreen
               onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
               onOpenEvent={(eventId) =>
@@ -108,7 +131,7 @@ function MainTabs() {
       </Tab.Screen>
       <Tab.Screen name="History" options={{ title: 'Historie' }}>
         {({ navigation }) => (
-          <TabWithCompactSleep onOpenSleep={() => navigation.navigate('Today')}>
+          <TabWithCompactSleep blurTarget={targets.History} onOpenSleep={() => navigation.navigate('Today')}>
             <HistoryScreen
               onOpenEvent={(eventId) =>
                 navigation.getParent()?.navigate('EventDetail', { eventId })

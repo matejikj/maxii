@@ -21,6 +21,7 @@ import { buildEditCareCommand } from '../history/buildEditCareCommand';
 import { asOperationId, asRevisionId, todayInZone } from '../../domain';
 import { ActivityMetadata, DevelopmentHeading } from './DevelopmentVisuals';
 import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
+import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 
 export type ActivityDetailScreenProps = {
   revision: ActivityRevision;
@@ -56,6 +57,7 @@ export function ActivityDetailScreen({
   mutationBusy = false,
 }: ActivityDetailScreenProps) {
   const { colors, ui } = useLumiTheme();
+  const dockInset = useForestDockInset();
   const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { services } = useCompositionRoot();
   const runtime = usePersonalRuntime();
@@ -158,7 +160,7 @@ export function ActivityDetailScreen({
   return (
     <SafeAreaView edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']}
       style={[styles.root, { backgroundColor: colors.background }]} testID="activity-detail-screen">
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md }]}>
+      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md, paddingBottom: dockInset + 32 }]}>
         <LumiButton title="Zpět na Rozvoj" variant="ghost" onPress={onClose} testID="activity-back" />
         <LumiCard variant="soft" style={styles.detailHeading}>
           <LumiText variant="overline" tone="muted">SPOLEČNÁ CHVÍLE</LumiText>

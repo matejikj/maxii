@@ -13,6 +13,7 @@ import { asTimeZoneId } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
 import { formatIsoCalendarDate } from '../../app/navigation/historyTabState';
+import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 import { useCompositionRoot } from '../../app/providers';
 import { BackupHintBanner } from '../shell/BackupHintBanner';
 import { ChildSwitcher } from '../shell/ChildSwitcher';
@@ -45,6 +46,7 @@ export function TodayScreen({
   onOpenEvent,
 }: TodayScreenProps) {
   const { colors, mode, ui, motif } = useLumiTheme();
+  const dockInset = useForestDockInset();
   const { profile } = useBootstrap();
   const focused = useIsFocused();
   const { width, fontScale } = useWindowDimensions();
@@ -144,7 +146,7 @@ export function TodayScreen({
       testID="today-screen"
     >
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={scrollRef} contentContainerStyle={[styles.content, { paddingBottom: dockInset + 28 }]} keyboardShouldPersistTaps="handled">
         <View style={styles.heading}>
           <View style={{ flex: 1 }}>
             <LumiText variant="overline" tone="muted" style={styles.brand}>{LUMI_MOTIFS[motif].brand}</LumiText>

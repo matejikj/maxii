@@ -18,6 +18,7 @@ import {
 } from '../../domain';
 import { useBootstrap, usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { useCompositionRoot } from '../../app/providers';
+import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 import {
   CareActionSheet,
   DateTimeField,
@@ -50,6 +51,7 @@ import {
  * Live timers stay on Today and the compact strip.
  */
 export function CareScreen() {
+  const dockInset = useForestDockInset();
   const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { colors, ui, motif } = useLumiTheme();
   const { profile } = useBootstrap();
@@ -308,7 +310,7 @@ export function CareScreen() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={stripVisible ? [] : ['top']}>
-      <ScrollView contentContainerStyle={styles.content} testID="care-screen">
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: dockInset + 32 }]} testID="care-screen">
         <View style={styles.pageHeading}>
           <View style={{ flex: 1, gap: 4 }}>
             <LumiText variant="overline" tone="muted" style={styles.eyebrow}>{LUMI_MOTIFS[motif].brand}</LumiText>

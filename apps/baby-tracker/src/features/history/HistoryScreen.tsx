@@ -5,6 +5,7 @@ import { LumiButton, LumiCard, LumiChip, LumiInput, LumiText, useLumiTheme } fro
 import type { CareSubtype, Draft } from '../../domain';
 import { careEventFromTrashMarker } from '../../application';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
+import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 import { clearHistoryFilters, historyFiltersActive, type HistoryFilter, type HistorySection } from '../../app/navigation/historyTabState';
 import { ChildSwitcher } from '../shell/ChildSwitcher';
 import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
@@ -31,6 +32,7 @@ const CARE_SUBTYPES: { id: CareSubtype; label: string }[] = [
 /** A themed diary with civil-day groups; draft and trash records never enter the timeline. */
 export function HistoryScreen({ onOpenEvent }: { onOpenEvent?: (eventId: string) => void }) {
   const { colors, mode } = useLumiTheme();
+  const dockInset = useForestDockInset();
   const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { state, setState } = useHistoryTabState();
   const model = useHistoryModel(state);
@@ -92,7 +94,7 @@ export function HistoryScreen({ onOpenEvent }: { onOpenEvent?: (eventId: string)
   return <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}
     edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']} testID="history-screen">
     <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-    <ScrollView ref={scroll} contentContainerStyle={styles.content} stickyHeaderIndices={[1]}
+    <ScrollView ref={scroll} contentContainerStyle={[styles.content, { paddingBottom: dockInset + 32 }]} stickyHeaderIndices={[1]}
       contentOffset={initialOffset.current} keyboardShouldPersistTaps="handled" scrollEventThrottle={100}
       onScroll={(event) => { scrollY.current = event.nativeEvent.contentOffset.y; }}>
       <View style={styles.header}>

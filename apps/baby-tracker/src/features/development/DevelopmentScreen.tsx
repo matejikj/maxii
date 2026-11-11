@@ -8,6 +8,7 @@ import type { ActivityRevision } from '../../content';
 import { DEVELOPMENT_AREA_LABELS_CS } from '../../content';
 import { ChildSwitcher } from '../shell/ChildSwitcher';
 import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
+import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 import { PRODUCT_COPY } from '../ui';
 import { ActivityDetailScreen } from './ActivityDetailScreen';
 import { FamilyProjectsSection } from './FamilyProjectsSection';
@@ -23,6 +24,7 @@ export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
   onOpenEvent?: (eventId: string) => void; onOpenProfile?: () => void;
 }) {
   const { colors, mode } = useLumiTheme();
+  const dockInset = useForestDockInset();
   const focused = useIsFocused();
   const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const model = useDevelopmentModel();
@@ -104,7 +106,7 @@ export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
         { backgroundColor: colors.background, display: detailRevision ? 'none' : 'flex' }]}
         testID="development-screen">
         <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-        <ScrollView ref={libraryScroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[1]}>
+        <ScrollView ref={libraryScroll} contentContainerStyle={[styles.content, { paddingBottom: dockInset + 32 }]} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[1]}>
           <View style={styles.header}>
             <View style={styles.headerCopy}>
               <LumiText variant="overline" tone="muted" style={styles.eyebrow}>MALÉ KROKY, VELKÉ CHVÍLE</LumiText>
