@@ -104,6 +104,11 @@ export const PRODUCT_COPY = {
     backupDistinctFromSync:
       'Záloha je oddělená od synchronizace mezi telefony.',
     saveFailed: 'Uložení se nepovedlo. Zadané hodnoty zůstaly zachované.',
+    saveFailedStorage:
+      'Uložení se nepovedlo kvůli úložišti. Zadané hodnoty zůstaly zachované — zkuste znovu.',
+    saveFailedConflict:
+      'Uložení se nepovedlo, protože se záznam mezitím změnil. Zadané hodnoty zůstaly zachované.',
+    saveFailedValidation: 'Uložení se nepovedlo — zkontrolujte zadané hodnoty.',
     draftUnprotected: 'Rozepsané hodnoty zatím nejsou chráněné.',
     clockMovedBack: 'Systémový čas je dřívější než začátek. Délku neupravujeme automaticky.',
     monotonicLost: 'Po restartu nemáme monotónní kotvu; délka vychází jen z uložených časů.',

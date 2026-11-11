@@ -23,3 +23,5 @@ export { LumiSectionHeader } from './LumiSectionHeader';
 export type { LumiSectionHeaderProps } from './LumiSectionHeader';
 export { LumiEmptyState } from './LumiEmptyState';
 export type { LumiEmptyStateProps } from './LumiEmptyState';
+export { LumiIcon } from './LumiIcon';
+export type { LumiIconProps } from './LumiIcon';

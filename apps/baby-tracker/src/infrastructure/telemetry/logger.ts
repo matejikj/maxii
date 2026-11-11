@@ -5,6 +5,7 @@
  */
 export const LOG_FIELD_ALLOWLIST = new Set([
   'code',
+  'reason',
   'retryable',
   'platform',
   'operation',

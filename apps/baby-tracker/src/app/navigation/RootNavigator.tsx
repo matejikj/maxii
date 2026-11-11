@@ -3,7 +3,8 @@ import { View } from 'react-native';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useLumiTheme } from '@lumi/forest-design/native';
+import { LumiIcon, useLumiTheme } from '@lumi/forest-design/native';
+import type { LumiIconId } from '@lumi/forest-design/core';
 import { resolveActiveRootShell } from '../../application';
 import { CareScreen } from '../../features/care/CareScreen';
 import { DevelopmentScreen } from '../../features/development/DevelopmentScreen';
@@ -19,6 +20,13 @@ import type { MainTabParamList, RootStackParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const MAIN_TAB_ICONS: Record<keyof MainTabParamList, LumiIconId> = {
+  Today: 'today',
+  Care: 'care',
+  Development: 'development',
+  History: 'history',
+};
 
 function TabWithCompactSleep({
   children,
@@ -41,12 +49,15 @@ function MainTabs() {
   const { colors } = useLumiTheme();
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.controlBorder },
-      }}
+        tabBarIcon: ({ color, size }) => (
+          <LumiIcon name={MAIN_TAB_ICONS[route.name]} color={color} size={size} />
+        ),
+      })}
     >
       <Tab.Screen name="Today" options={{ title: 'Dnes' }}>
         {({ navigation }) => (

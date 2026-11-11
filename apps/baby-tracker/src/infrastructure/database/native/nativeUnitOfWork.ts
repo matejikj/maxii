@@ -986,17 +986,26 @@ async function listCarePage(
 }
 
 async function upsertSearchDocument(txn: SqlConnection, event: CareEvent): Promise<void> {
-  const doc = searchDocumentFromCareEvent(event);
-  await txn.runAsync('DELETE FROM search_documents WHERE entity_id = ?', doc.entityId);
-  await txn.runAsync(
-    `INSERT INTO search_documents (entity_id, child_id, sort_at_ms, doc_type, text_normalized)
-     VALUES (?, ?, ?, ?, ?)`,
-    doc.entityId,
-    doc.childId,
-    doc.sortAtMs,
-    doc.docType,
-    doc.textNormalized,
-  );
+  // Search documents are rebuildable from care_events. Isolate failures in a
+  // savepoint so a missing index table cannot abort the surrounding care write.
+  await txn.execAsync('SAVEPOINT lumi_search_doc');
+  try {
+    const doc = searchDocumentFromCareEvent(event);
+    await txn.runAsync('DELETE FROM search_documents WHERE entity_id = ?', doc.entityId);
+    await txn.runAsync(
+      `INSERT INTO search_documents (entity_id, child_id, sort_at_ms, doc_type, text_normalized)
+       VALUES (?, ?, ?, ?, ?)`,
+      doc.entityId,
+      doc.childId,
+      doc.sortAtMs,
+      doc.docType,
+      doc.textNormalized,
+    );
+    await txn.execAsync('RELEASE SAVEPOINT lumi_search_doc');
+  } catch {
+    await txn.execAsync('ROLLBACK TO SAVEPOINT lumi_search_doc').catch(() => undefined);
+    await txn.execAsync('RELEASE SAVEPOINT lumi_search_doc').catch(() => undefined);
+  }
 }
 
 function escapeLike(value: string): string {

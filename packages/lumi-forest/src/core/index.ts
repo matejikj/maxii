@@ -132,6 +132,9 @@ export type { Rect, SafeZone, ProceduralSceneConfig, ProceduralSceneRequest, Pro
 // v0.5 renderer-independent semantic UI system.
 export * from './ui';
 
+// Monochrome forest UI icons (tab bar / chrome), Vector IR.
+export * from './icons';
+
 // v0.6 renderer-agnostic animation recipes and motion topology.
 export * from './motion';
 

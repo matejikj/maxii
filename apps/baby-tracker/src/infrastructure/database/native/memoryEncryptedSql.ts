@@ -154,6 +154,18 @@ function createConnection(
       meta.persistSnapshot(state);
       return;
     }
+    // Nested savepoints are no-ops in the memory driver; outer BEGIN/COMMIT
+    // still owns the snapshot used by contract tests.
+    if (
+      txn.startsWith('SAVEPOINT ') ||
+      txn.startsWith('RELEASE SAVEPOINT ') ||
+      txn.startsWith('RELEASE ') ||
+      txn.startsWith('ROLLBACK TO SAVEPOINT ') ||
+      txn.startsWith('ROLLBACK TO ')
+    ) {
+      assertUnlocked(state);
+      return;
+    }
     return originalExec(source);
   };
   const originalRun = api.runAsync.bind(api);

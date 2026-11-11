@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useLumiTheme } from '@lumi/forest-design/native';
+import { LumiIcon, useLumiTheme } from '@lumi/forest-design/native';
+import type { LumiIconId } from '@lumi/forest-design/core';
 import type { ChildShellSession } from '../../application';
 import {
   ChildShellDiscoverScreen,
@@ -18,6 +19,13 @@ export type ChildShellTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<ChildShellTabParamList>();
+
+const CHILD_TAB_ICONS: Record<keyof ChildShellTabParamList, LumiIconId> = {
+  ChildToday: 'today',
+  ChildProjects: 'development',
+  ChildPortfolio: 'history',
+  ChildDiscover: 'care',
+};
 
 /**
  * Four-tab child root. Mounted only for an activated child principal — caregiver
@@ -51,12 +59,15 @@ export function ChildShellNavigator(props: {
 
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.controlBorder },
-      }}
+        tabBarIcon: ({ color, size }) => (
+          <LumiIcon name={CHILD_TAB_ICONS[route.name]} color={color} size={size} />
+        ),
+      })}
     >
       <Tab.Screen name="ChildToday" options={{ title: 'Dnes' }}>
         {() => <ChildShellTodayScreen {...shellProps} />}

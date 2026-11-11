@@ -2,6 +2,7 @@ export { PRODUCT_COPY, type ProductCopy } from './productCopy';
 export { FormSection, type FormSectionProps } from './FormSection';
 export { DateTimeField, type DateTimeFieldProps } from './DateTimeField';
 export { QuantityField, type QuantityFieldProps, type QuantityUnitOption } from './QuantityField';
+export { copyForDispatchFailure } from './dispatchFailureCopy';
 export { NoteField, type NoteFieldProps } from './NoteField';
 export {
   SaveFeedback,

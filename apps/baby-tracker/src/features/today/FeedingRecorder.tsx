@@ -22,10 +22,14 @@ import {
   PRODUCT_COPY,
   QuantityField,
   SaveFeedback,
+  copyForDispatchFailure,
   useUndoWindow,
   type QuantityUnitOption,
   type SaveFeedbackState,
 } from '../ui';
+import { createLogger } from '../../infrastructure/telemetry/logger';
+
+const log = createLogger();
 import { formatWallDateTime, parseWallDateTime } from './recordDiaperIntent';
 import {
   loadLastFeedingKind,
@@ -263,6 +267,11 @@ export function FeedingRecorder({
     setPending(true);
     setFeedback('pending');
     retryRef.current = () => commitBottle(expectedRevisionId);
+    try {
+      await autosave.current.flush();
+    } catch {
+      /* draft is best-effort; care write still proceeds */
+    }
     const result = await runtime.commands.dispatch(
       buildRecordBottleCommand({
         ids,
@@ -279,8 +288,18 @@ export function FeedingRecorder({
     );
     setPending(false);
     if (!result.ok) {
+      log.warn('feeding.save_failed', {
+        operation: 'recordBottle',
+        code: result.error.code,
+        reason:
+          typeof result.error.details.reason === 'string' ? result.error.details.reason : null,
+        ok: false,
+      });
+      if (result.error.details.reason === 'entity_exists') {
+        setSavedIds(null);
+      }
       setFeedback('error');
-      setFeedbackMessage(PRODUCT_COPY.feedback.saveFailed);
+      setFeedbackMessage(copyForDispatchFailure(result.error));
       return;
     }
     setSavedEventId(ids.eventId);
@@ -318,6 +337,11 @@ export function FeedingRecorder({
     setPending(true);
     setFeedback('pending');
     retryRef.current = () => commitFood(expectedRevisionId);
+    try {
+      await autosave.current.flush();
+    } catch {
+      /* draft is best-effort; care write still proceeds */
+    }
     const result = await runtime.commands.dispatch(
       buildRecordFoodCommand({
         ids,
@@ -334,8 +358,18 @@ export function FeedingRecorder({
     );
     setPending(false);
     if (!result.ok) {
+      log.warn('feeding.save_failed', {
+        operation: 'recordFood',
+        code: result.error.code,
+        reason:
+          typeof result.error.details.reason === 'string' ? result.error.details.reason : null,
+        ok: false,
+      });
+      if (result.error.details.reason === 'entity_exists') {
+        setSavedIds(null);
+      }
       setFeedback('error');
-      setFeedbackMessage(PRODUCT_COPY.feedback.saveFailed);
+      setFeedbackMessage(copyForDispatchFailure(result.error));
       return;
     }
     setSavedEventId(ids.eventId);

@@ -194,7 +194,13 @@ export function createCommandDispatcher(deps: {
         }
 
         if (outcome.ok) {
-          deps.onCommitted?.(outcome.topics);
+          // Listeners refresh UI only — a thrown listener must not flip a durable
+          // commit into a false save failure for the caregiver.
+          try {
+            deps.onCommitted?.(outcome.topics);
+          } catch {
+            /* ignore read-model listener faults */
+          }
         }
         recordDispatchMetric(deps.metrics, {
           operation: command.type,
@@ -204,12 +210,7 @@ export function createCommandDispatcher(deps: {
         });
         return outcome;
       } catch (error) {
-        const appError = isAppError(error)
-          ? error
-          : new AppError('INTERNAL', 'Command dispatch failed', {
-              details: { reason: 'dispatch' },
-              cause: error,
-            });
+        const appError = isAppError(error) ? error : wrapUnknownDispatchError(error);
         deps.metrics?.record({
           operation: command.type,
           ok: false,
@@ -1227,6 +1228,29 @@ function maybeFault(
       retryable: true,
     });
   }
+}
+
+/** Map raw SQLite/SQLCipher failures to allowlisted STORAGE reasons — never care text. */
+function wrapUnknownDispatchError(error: unknown): AppError {
+  const message = error instanceof Error ? error.message : String(error);
+  const lower = message.toLowerCase();
+  let reason = 'dispatch';
+  let retryable = false;
+  if (lower.includes('foreign key')) reason = 'foreign_key';
+  else if (lower.includes('file is not a database') || lower.includes('notadb')) reason = 'sqlcipher';
+  else if (lower.includes('no such table')) reason = 'schema_missing';
+  else if (lower.includes('sqlite_full') || lower.includes('disk i/o') || lower.includes('database or disk is full')) {
+    reason = 'storage_full';
+    retryable = true;
+  } else if (lower.includes('database is locked') || lower.includes('sqlite_busy') || lower.includes('locked')) {
+    reason = 'storage_busy';
+    retryable = true;
+  }
+  return new AppError('STORAGE', 'Command dispatch failed', {
+    details: { reason },
+    cause: error,
+    retryable,
+  });
 }
 
 async function appendOutbox(
