@@ -62,6 +62,8 @@ export function buildRecordMilestoneCommand(input: {
   childId: ChildId;
   occurredAt: ZonedInstant;
   body: string;
+  milestoneKey?: string;
+  note?: string | null;
   intentCapturedAtMs: number;
   expectedRevisionId?: RevisionId;
 }): RecordMilestoneCommand & { expectedRevisionId?: RevisionId } {
@@ -74,6 +76,8 @@ export function buildRecordMilestoneCommand(input: {
     childId: input.childId,
     occurredAt: input.occurredAt,
     body: input.body,
+    ...(input.milestoneKey !== undefined ? { milestoneKey: input.milestoneKey } : {}),
+    ...(input.note !== undefined ? { note: input.note } : {}),
     ...(input.expectedRevisionId !== undefined
       ? { expectedRevisionId: input.expectedRevisionId }
       : {}),

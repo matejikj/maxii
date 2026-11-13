@@ -12,6 +12,7 @@ import { useForestDockInset } from '../../app/navigation/ForestGlassTabBar';
 import { PRODUCT_COPY } from '../ui';
 import { ActivityDetailScreen } from './ActivityDetailScreen';
 import { FamilyProjectsSection } from './FamilyProjectsSection';
+import { MilestonesSection } from './MilestonesSection';
 import { useDevelopmentModel, type SituationFilters } from './useDevelopmentModel';
 import {
   DevelopmentActivityCard, DevelopmentEmpty, DevelopmentHeading, DevelopmentHero, DevelopmentTabs,
@@ -19,7 +20,7 @@ import {
 } from './DevelopmentVisuals';
 import { activityCountLabel, selectLibraryActivities } from './developmentPresentation';
 
-/** Daily inspiration, a searchable library and shared projects have distinct places. */
+/** Inspiration, activities, shared projects and milestone memories have distinct places. */
 export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
   onOpenEvent?: (eventId: string) => void; onOpenProfile?: () => void;
 }) {
@@ -43,6 +44,7 @@ export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
   const [alternativesOpen, setAlternativesOpen] = useState(false);
   const [libraryLimit, setLibraryLimit] = useState(12);
   const [projectsVisited, setProjectsVisited] = useState(false);
+  const [milestonesVisited, setMilestonesVisited] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const inFlightRef = useRef(false);
@@ -94,6 +96,7 @@ export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
     setSection(next);
     libraryScroll.current?.scrollTo({ y: 0, animated: false });
     if (next === 'together') setProjectsVisited(true);
+    if (next === 'milestones') setMilestonesVisited(true);
   }
 
   function resetLibrary() {
@@ -212,6 +215,11 @@ export function DevelopmentScreen({ onOpenEvent, onOpenProfile }: {
           <View style={[styles.section, { display: section === 'together' ? 'flex' : 'none' }]}>
             <DevelopmentHeading title="Váš společný příběh" subtitle="Delší nápady a projekty, ke kterým se můžete vracet." icon="care" />
             {projectsVisited && model.childId ? <FamilyProjectsSection key={model.childId} childId={model.childId} /> : null}
+          </View>
+          <View style={[styles.section, { display: section === 'milestones' ? 'flex' : 'none' }]}>
+            {milestonesVisited && model.childId ? <MilestonesSection key={model.childId} childId={model.childId}
+              zone={model.zone} active={section === 'milestones' && focused && !detailRevision}
+              {...(onOpenEvent ? { onOpenEvent } : {})} /> : null}
           </View>
         </ScrollView>
       </SafeAreaView>

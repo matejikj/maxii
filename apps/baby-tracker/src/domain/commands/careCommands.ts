@@ -134,6 +134,7 @@ export type RecordMilestoneCommand = CommandIntent & {
   childId: ChildId;
   occurredAt: ZonedInstant;
   body: string;
+  milestoneKey?: string;
   note?: string | null;
   recordedBy?: ActorId | null;
 };
@@ -270,6 +271,7 @@ export function buildCareEventFromCommand(
         revisionId: command.revisionId,
         occurredAt: command.occurredAt,
         body: command.body,
+        ...(command.milestoneKey !== undefined ? { milestoneKey: command.milestoneKey } : {}),
         createdAt,
         ...(command.note !== undefined ? { note: command.note } : {}),
         ...(command.recordedBy !== undefined ? { recordedBy: command.recordedBy } : {}),

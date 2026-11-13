@@ -33,10 +33,16 @@ export function useGlassAccessibility() {
   useEffect(() => {
     let cancelled = false;
     void AccessibilityInfo.isReduceMotionEnabled().then((value) => { if (!cancelled) setReducedMotion(value); }).catch(() => {});
-    void AccessibilityInfo.isReduceTransparencyEnabled().then((value) => { if (!cancelled) setReducedTransparency(value); }).catch(() => {});
+    // React Native Web does not expose the native transparency API.
+    const supportsTransparency = typeof AccessibilityInfo.isReduceTransparencyEnabled === 'function';
+    if (supportsTransparency) void AccessibilityInfo.isReduceTransparencyEnabled().then((value) => { if (!cancelled) setReducedTransparency(value); }).catch(() => {});
     const motion = AccessibilityInfo.addEventListener('reduceMotionChanged', setReducedMotion);
-    const transparency = AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReducedTransparency);
-    return () => { cancelled = true; motion.remove(); transparency.remove(); };
+    const transparency = supportsTransparency ? AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReducedTransparency) : null;
+    const webPreference = Platform.OS === 'web' && typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-transparency: reduce)') : null;
+    const onWebPreference = () => { if (webPreference) setReducedTransparency(webPreference.matches); };
+    if (webPreference) { onWebPreference(); webPreference.addEventListener('change', onWebPreference); }
+    return () => { cancelled = true; motion.remove(); transparency?.remove(); webPreference?.removeEventListener('change', onWebPreference); };
   }, []);
   return { reducedMotion, reducedTransparency };
 }

@@ -13,6 +13,7 @@ export const LumiChip = React.memo(function LumiChip({ label, selected = false, 
     onFocus={event => { setFocused(true); onFocus?.(event); }}
     onBlur={event => { setFocused(false); onBlur?.(event); }} accessibilityLabel={accessibilityLabel ?? label}
     accessibilityRole="checkbox" accessibilityState={{ checked: selected, disabled: !!disabled }}
+    aria-checked={selected} aria-disabled={!!disabled}
     style={({ pressed }) => [styles.chip, { borderRadius: ui.radius.pill,
       backgroundColor: selected ? colors.primary : colors.surface,
       borderColor: focused ? colors.focus : selected ? colors.primary : colors.controlBorder,

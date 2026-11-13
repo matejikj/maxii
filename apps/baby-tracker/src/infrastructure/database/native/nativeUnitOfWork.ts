@@ -158,6 +158,14 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       const page = await listCarePage(txn, childId, limit, null);
       return page.events;
     },
+    async listByType(childId, type) {
+      const rows = await txn.getAllAsync<CareEventRow>(
+        `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
+         FROM care_events WHERE child_id = ? AND event_type = ?
+         ORDER BY sort_at_ms DESC, event_id DESC`, childId, type,
+      );
+      return rows.map(careEventFromRow);
+    },
     async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
       const rows = await txn.getAllAsync<CareEventRow>(
         `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json

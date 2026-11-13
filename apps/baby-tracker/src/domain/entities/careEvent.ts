@@ -110,6 +110,8 @@ export type MilestoneCareEvent = CareEventBase & {
   type: 'milestone';
   occurredAt: ZonedInstant;
   body: string;
+  /** Optional stable atlas reference. Older and custom observations omit it. */
+  milestoneKey?: string;
 };
 
 export type CareEvent =
@@ -392,6 +394,7 @@ export function createMilestoneEvent(input: {
   revisionId: RevisionId;
   occurredAt: ZonedInstant;
   body: string;
+  milestoneKey?: string;
   note?: string | null;
   recordedBy?: ActorId | null;
   createdAt: ZonedInstant;
@@ -402,6 +405,11 @@ export function createMilestoneEvent(input: {
       details: { reason: 'empty_milestone' },
     });
   }
+  if (input.milestoneKey !== undefined && !/^[a-z][a-z0-9-]{0,79}$/.test(input.milestoneKey)) {
+    throw new AppError('VALIDATION', 'Invalid milestone reference', {
+      details: { reason: 'milestone_key' },
+    });
+  }
   return {
     type: 'milestone',
     eventId: input.eventId,
@@ -409,6 +417,7 @@ export function createMilestoneEvent(input: {
     revisionId: input.revisionId,
     occurredAt: input.occurredAt,
     body,
+    ...(input.milestoneKey !== undefined ? { milestoneKey: input.milestoneKey } : {}),
     note: input.note ?? null,
     recordedBy: input.recordedBy ?? null,
     createdAt: input.createdAt,

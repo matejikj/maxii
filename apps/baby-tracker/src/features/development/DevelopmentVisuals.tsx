@@ -10,11 +10,12 @@ import { ForestCardLandscape } from '../ui/ForestCardLandscape';
 import { ForestIconBadge, forestTone, type ForestTone } from '../ui/ForestIconBadge';
 import { activityAgeLabel, activityDurationLabel } from './developmentPresentation';
 
-export type DevelopmentSection = 'inspiration' | 'library' | 'together';
+export type DevelopmentSection = 'inspiration' | 'library' | 'together' | 'milestones';
 const SECTIONS: readonly { id: DevelopmentSection; label: string; icon: LumiIconId }[] = [
   { id: 'inspiration', label: 'Pro vás', icon: 'development' },
   { id: 'library', label: 'Aktivity', icon: 'experience' },
   { id: 'together', label: 'Společně', icon: 'care' },
+  { id: 'milestones', label: 'Milníky', icon: 'growth' },
 ];
 const AREA_TONES: Record<DevelopmentArea, ForestTone> = {
   relationship: 'care', speech: 'experience', movement: 'development', senses: 'today',
@@ -57,7 +58,7 @@ export function DevelopmentTabs({ value, onChange }: {
       accessibilityRole="tablist" accessibilityLabel="Sekce rozvoje">
       {SECTIONS.map((section) => <DevelopmentTab key={section.id} {...section}
         selected={value === section.id} onPress={() => onChange(section.id)}
-        stacked={fontScale > 1.25 || width < 350} />)}
+        stacked={fontScale > 1.1 || width < 480} />)}
     </View>
   );
 }
@@ -68,6 +69,7 @@ function DevelopmentTab({ id, label, icon, selected, stacked, onPress }: {
   const { colors } = useLumiTheme();
   const [focused, setFocused] = useState(false);
   return <Pressable onPress={onPress} accessibilityRole="tab" accessibilityState={{ selected }}
+    aria-selected={selected}
     accessibilityLabel={label} testID={`development-tab-${id}`}
     onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
     style={({ pressed }) => [styles.tab, { flexDirection: stacked ? 'column' : 'row',

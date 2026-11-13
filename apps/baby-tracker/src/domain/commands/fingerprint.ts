@@ -233,6 +233,7 @@ function careBody(command: CareWriteCommand): unknown {
         occurredAtMs: command.occurredAt.instant.epochMs,
         body: command.body,
         note: command.note ?? null,
+        ...(command.milestoneKey !== undefined ? { milestoneKey: command.milestoneKey } : {}),
       };
   }
 }

@@ -311,6 +311,11 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (careById) {
     return ensureTable(state, 'care_events').rows.filter((row) => row.event_id === params[0]);
   }
+  if (/^SELECT .+ FROM care_events WHERE child_id = \? AND event_type = \? ORDER BY sort_at_ms DESC, event_id DESC$/i.test(sql)) {
+    return sortCareDesc(ensureTable(state, 'care_events').rows.filter(
+      (row) => row.child_id === params[0] && row.event_type === params[1],
+    ));
+  }
   const careRecent =
     /^SELECT .+ FROM care_events WHERE child_id = \? ORDER BY sort_at_ms DESC(?:, event_id DESC)? LIMIT \?$/i.exec(
       sql,

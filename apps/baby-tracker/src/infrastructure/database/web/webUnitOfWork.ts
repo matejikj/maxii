@@ -129,6 +129,7 @@ export function createWebUnitOfWorkFactory(
             runtime.db.portfolioItems,
             runtime.db.shareSnapshots,
             runtime.db.parentSuggestions,
+            runtime.db.childPrivateSyncState,
           ],
           async () => {
             const uow = createRepositories(runtime.db, topics);
@@ -203,6 +204,13 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     async listRecent(childId: ChildId, limit: number) {
       const page = await listWebCarePage(db, childId, limit, null);
       return page.events;
+    },
+    async listByType(childId, type) {
+      const rows = await db.careEvents.where('childId').equals(childId)
+        .and((row) => row.eventType === type).toArray();
+      return rows.map((row) => careEventFromRow({ event_id: row.eventId, child_id: row.childId,
+        event_type: row.eventType, revision_id: row.revisionId, sort_at_ms: row.sortAtMs,
+        payload_json: row.payloadJson })).sort(compareCareTimelineDesc);
     },
     async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
       const rows = await db.careEvents

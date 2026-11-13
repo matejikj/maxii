@@ -120,6 +120,7 @@ export function buildEditCareCommand(input: {
         type: 'recordMilestone',
         occurredAt: event.occurredAt,
         body: patch?.body ?? event.body,
+        ...(event.milestoneKey !== undefined ? { milestoneKey: event.milestoneKey } : {}),
         note: patch?.note !== undefined ? patch.note : event.note,
       };
   }

@@ -18,7 +18,7 @@ export interface LumiButtonProps extends Omit<PressableProps, 'children' | 'styl
 /** Primary touch targets stay at least 48 logical units for comfortable care taps. */
 const heights: Record<LumiButtonSize, number> = { compact: 48, regular: 48, large: 56 };
 export const LumiButton = React.memo(function LumiButton({ title, variant = 'primary', size = 'regular', loading = false,
-  disabled = false, fullWidth = false, leftAdornment, rightAdornment, style, accessibilityLabel, onFocus, onBlur, ...rest }: LumiButtonProps) {
+  disabled = false, fullWidth = false, leftAdornment, rightAdornment, style, accessibilityLabel, accessibilityState, onFocus, onBlur, ...rest }: LumiButtonProps) {
   const { colors, ui } = useLumiTheme();
   const [focused, setFocused] = useState(false);
   const inactive = disabled || loading;
@@ -30,7 +30,8 @@ export const LumiButton = React.memo(function LumiButton({ title, variant = 'pri
   return <Pressable {...rest} disabled={inactive}
     onFocus={event => { setFocused(true); onFocus?.(event); }}
     onBlur={event => { setFocused(false); onBlur?.(event); }} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? title}
-    accessibilityState={{ disabled: inactive, busy: loading }}
+    accessibilityState={{ ...accessibilityState, disabled: inactive, busy: loading }}
+    aria-expanded={rest['aria-expanded'] ?? accessibilityState?.expanded} aria-busy={loading} aria-disabled={inactive}
     style={({ pressed }) => [{ minHeight: heights[size], borderRadius: ui.radius.md,
       paddingHorizontal: size === 'compact' ? ui.space.md : ui.space.xl,
       backgroundColor: background, borderColor: focused ? (variant === 'primary' || variant === 'destructive' ? foreground : colors.focus) : outlined ? colors.controlBorder : background,
