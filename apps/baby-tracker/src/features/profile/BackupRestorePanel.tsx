@@ -78,17 +78,17 @@ export function BackupRestorePanel() {
         Záloha a obnova
       </LumiText>
       <LumiText tone="muted">
-        Osobní deník funguje bez účtu. Rozlišujte místní bod na tomto zařízení, přenosný
-        šifrovaný soubor a volitelnou vzdálenou zálohu (jen v rodinném režimu).
+        Pro přechod na jiný telefon si vytvořte přenosnou zálohu a uložte ji mimo aplikaci.
+        Místní body obnovy pomáhají vrátit deník do dřívějšího stavu na tomto zařízení.
       </LumiText>
 
       <RemoteBackupStatusCard />
 
-      <LumiCard>
+      <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">Obnova v tomto zařízení</LumiText>
         <LumiText tone="muted">
-          Automatické body zůstávají jen v tomto telefonu. Ztráta zařízení je nesmaže z
-          přenosné zálohy.
+          Tyto body zůstávají jen v tomto zařízení. Pro případ ztráty telefonu si uložte
+          také přenosnou zálohu mimo aplikaci.
         </LumiText>
         {points.length === 0 ? (
           <LumiText tone="muted">Zatím není žádný místní bod obnovy.</LumiText>
@@ -133,7 +133,7 @@ export function BackupRestorePanel() {
         )}
       </LumiCard>
 
-      <LumiCard>
+      <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">Přenosná záloha</LumiText>
         <LumiText tone="muted">
           Úplný šifrovaný soubor pro jiné zařízení. Heslo si uložte sami — ztracené heslo
@@ -147,7 +147,7 @@ export function BackupRestorePanel() {
         {activeProfiles.length > 1 ? (
           <View style={styles.row}>
             <LumiButton
-              title={exportScope === 'all' ? 'Rozsah: všechna děti' : 'Rozsah: jen aktivní dítě'}
+              title={exportScope === 'all' ? 'Rozsah: všechny děti' : 'Rozsah: jen aktivní dítě'}
               variant="secondary"
               onPress={() => setExportScope((value) => (value === 'all' ? 'active' : 'all'))}
             />
@@ -484,11 +484,11 @@ export function BackupRestorePanel() {
         ) : null}
       </LumiCard>
 
-      <LumiCard>
+      <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">CSV pro čtení</LumiText>
         <LumiText tone="muted">
-          Čitelný výpis péče pro tabulky. Obsahuje soukromá rodinná data a není úplným
-          recovery souborem.
+          Čitelný výpis péče pro tabulky. Obsahuje soukromá rodinná data.
+          K obnovení celého deníku použijte přenosnou zálohu.
         </LumiText>
         <LumiButton
           title="Připravit CSV"
@@ -516,7 +516,7 @@ export function BackupRestorePanel() {
         ) : null}
       </LumiCard>
 
-      <LumiCard>
+      <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">Vzdálená záloha</LumiText>
         <LumiText tone="muted">
           Automatická vzdálená ochrana před ztrátou telefonu není v osobní verzi k dispozici.

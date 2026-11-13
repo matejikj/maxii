@@ -121,7 +121,7 @@ function MainTabs() {
         {({ navigation }) => (
           <TabWithCompactSleep blurTarget={targets.Development} onOpenSleep={() => navigation.navigate('Today')}>
             <DevelopmentScreen
-              onOpenProfile={() => navigation.getParent()?.navigate('Profile')}
+              onOpenProfile={() => navigation.getParent()?.navigate('Profile', { section: 'children' })}
               onOpenEvent={(eventId) =>
                 navigation.getParent()?.navigate('EventDetail', { eventId })
               }
@@ -191,7 +191,7 @@ export function RootNavigator() {
               onSkip={() => {
                 void bootstrap.skipWelcome().then(() => navigation.replace('MainTabs'));
               }}
-              onOpenProfile={() => navigation.navigate('Profile')}
+              onOpenProfile={() => navigation.navigate('Profile', { section: 'children' })}
             />
           )}
         </Stack.Screen>
@@ -206,7 +206,7 @@ export function RootNavigator() {
           }}
         </Stack.Screen>
         <Stack.Screen name="Profile" options={{ presentation: 'modal' }}>
-          {({ navigation }) => <ProfileScreen onClose={() => navigation.goBack()} />}
+          {({ navigation, route }) => <ProfileScreen initialSection={route.params?.section} onClose={() => navigation.goBack()} />}
         </Stack.Screen>
         <Stack.Screen name="EventDetail">
           {({ navigation, route }) => (

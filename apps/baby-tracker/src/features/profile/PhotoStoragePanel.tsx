@@ -6,10 +6,7 @@ import {
   loadPhotoStorageSnapshot,
   releaseDurableOwnPhotoCopy,
 } from '../../application';
-import {
-  estimateFamilyPhotoCapacityModel,
-  presentPhotoCapacityModelSummary,
-} from '../../domain/attachments';
+import { SettingsDisclosureButton } from './SettingsVisuals';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 /**
@@ -21,9 +18,7 @@ export function PhotoStoragePanel() {
   const [protectedLabel, setProtectedLabel] = useState('Trvalé / připnuté fotky: …');
   const [cacheLabel, setCacheLabel] = useState('Obnovitelná cache: …');
   const [cacheCopyCount, setCacheCopyCount] = useState(0);
-  const [capacitySummary] = useState(() =>
-    presentPhotoCapacityModelSummary(estimateFamilyPhotoCapacityModel()),
-  );
+  const [releaseOpen, setReleaseOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,7 +54,7 @@ export function PhotoStoragePanel() {
   if (!runtime?.attachments) return null;
 
   return (
-    <LumiCard testID="photo-storage-panel">
+    <LumiCard testID="photo-storage-panel" style={{ gap: 14, borderRadius: 24 }}>
       <LumiText variant="h3">Fotografie a místo</LumiText>
       <LumiText tone="muted">
         Uložíme menší kopii. Originál ve vašich Fotkách zůstane. Trvalé a připnuté kopie
@@ -67,13 +62,11 @@ export function PhotoStoragePanel() {
       </LumiText>
       <LumiText>{protectedLabel}</LumiText>
       <LumiText>{cacheLabel}</LumiText>
-      <LumiText tone="muted">
-        Plánovací kapacita (bajty/requesty, bez měny — ceny doplní provoz při nasazení):
-      </LumiText>
-      <LumiText tone="muted">{capacitySummary}</LumiText>
 
       <LumiButton
-        title="Vyčistit staženou cache"
+        title="Uvolnit stažené kopie"
+        fullWidth
+        variant="secondary"
         disabled={busy || cacheCopyCount === 0}
         loading={busy}
         onPress={() => {
@@ -102,7 +95,11 @@ export function PhotoStoragePanel() {
         }}
       />
 
-      <View style={styles.releaseBlock}>
+      <SettingsDisclosureButton expanded={releaseOpen} title={releaseOpen ? 'Skrýt pokročilou správu fotografií' : 'Pokročilá správa fotografií'}
+        disabled={busy}
+        onPress={() => setReleaseOpen(!releaseOpen)} />
+      <View style={[styles.releaseBlock, { display: releaseOpen ? 'flex' : 'none' }]}
+        accessibilityElementsHidden={!releaseOpen} importantForAccessibility={releaseOpen ? 'auto' : 'no-hide-descendants'}>
         <LumiText variant="h3">Uvolnit trvalou vlastní kopii</LumiText>
         <LumiText tone="muted">
           Jen vědomě a jen když je ověřená vzdálená kopie a nezávislá záloha. Offline dostupnost
@@ -115,6 +112,7 @@ export function PhotoStoragePanel() {
           autoCapitalize="none"
         />
         <LumiButton
+          fullWidth
           title={
             remoteVerified
               ? 'Vzdálená kopie: ověřena'
@@ -124,6 +122,7 @@ export function PhotoStoragePanel() {
           onPress={() => setRemoteVerified((value) => !value)}
         />
         <LumiButton
+          fullWidth
           title={
             backupConfirmed
               ? 'Nezávislá záloha: potvrzena'
@@ -139,6 +138,7 @@ export function PhotoStoragePanel() {
           autoCapitalize="characters"
         />
         <LumiButton
+          fullWidth
           title="Uvolnit místní trvalou kopii"
           disabled={busy}
           onPress={() => {
@@ -194,7 +194,7 @@ export function PhotoStoragePanel() {
       </View>
 
       {message ? <LumiText>{message}</LumiText> : null}
-      {error ? <LumiText tone="muted">{error}</LumiText> : null}
+      {error ? <LumiText tone="danger" accessibilityLiveRegion="polite">{error}</LumiText> : null}
     </LumiCard>
   );
 }

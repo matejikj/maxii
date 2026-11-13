@@ -358,6 +358,16 @@ open_profile() {
     || tap_text "$RESULT_DIR/today.xml" "Profil" \
     || true
   sleep 3
+  # Settings now opens a hub. Enter the backup section before looking for forms.
+  for attempt in 1 2 3 4 5 6; do
+    dump_ui /sdcard/lumi-pb.xml "$RESULT_DIR/settings-hub.xml"
+    if tap_id "$RESULT_DIR/settings-hub.xml" settings-open-backup; then
+      sleep 2
+      break
+    fi
+    adb shell input swipe 540 1850 540 900 300
+    sleep 1
+  done
 }
 
 # --- Welcome + wet diaper marker ---
@@ -577,7 +587,7 @@ PY
   dump_ui /sdcard/lumi-pb8b.xml "$RESULT_DIR/8b-staged.xml" || true
 done
 # Prefer a short swipe-tap; plain taps near the modal edge sometimes miss Pressable.
-python3 - "$RESULT_DIR/8b-staged.xml" <<'PY'
+if ! python3 - "$RESULT_DIR/8b-staged.xml" <<'PY'
 import re, sys, subprocess
 xml = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
 for m in re.finditer(r"<node [^>]*>", xml):
@@ -595,8 +605,10 @@ for m in re.finditer(r"<node [^>]*>", xml):
 print("MISSING activate for swipe-tap", file=sys.stderr)
 raise SystemExit(1)
 PY
- || tap_id "$RESULT_DIR/8b-staged.xml" backup-import-activate \
- || tap_text "$RESULT_DIR/8b-staged.xml" "Potvrdit nahrazení deníku"
+then
+  tap_id "$RESULT_DIR/8b-staged.xml" backup-import-activate \
+    || tap_text "$RESULT_DIR/8b-staged.xml" "Potvrdit nahrazení deníku"
+fi
 
 # Wait until replace finishes; keep the profile sheet open until success copy appears.
 activated=0
@@ -620,7 +632,7 @@ if [[ "$activated" != "1" ]]; then
   exit 2
 fi
 
-# Profile is a stack modal — one BACK returns to MainTabs (Zavřít is often below the fold).
+# First BACK returns from the backup section to the settings hub; the next closes settings.
 adb shell input keyevent KEYCODE_BACK
 sleep 2
 dump_ui /sdcard/lumi-pb9.xml "$RESULT_DIR/9-nav.xml" || true

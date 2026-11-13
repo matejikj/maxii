@@ -1,512 +1,134 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { LumiButton, LumiCard, LumiInput, LumiText, useLumiMotion } from '@lumi/forest-design/native';
-import { workshopGuidePreviewHint } from '@lumi/forest-design';
-import {
-  LOCAL_APPEARANCE_STYLES,
-  LOCAL_GUIDE_SPECIES,
-  buildDiagnosticsSnapshot,
-  buildSupportReport,
-  presentChildShellAvailability,
-  readChildPrivateModeSettingsStatus,
-  serializeSupportReport,
-  type AppearanceStyle,
-  type GuideSpecies,
-} from '../../application';
-import { createChildProfile } from '../../domain';
+import { View } from 'react-native';
+import { LumiButton, LumiInput, LumiText } from '@lumi/forest-design/native';
+import { buildDiagnosticsSnapshot, buildSupportReport, presentChildShellAvailability,
+  readChildPrivateModeSettingsStatus, serializeSupportReport } from '../../application';
 import { useBootstrap } from '../../app/session/BootstrapContext';
-import { usePersonalPreferences } from '../../app/session/PreferencesContext';
-import { FamilyAccountPanel } from './FamilyAccountPanel';
-import { PhotoStoragePanel } from './PhotoStoragePanel';
-import { GuideCompanion } from '../shell/GuideCompanion';
-import { AppThemePicker } from './AppThemePicker';
+import { AppearanceSettings } from './AppearanceSettings';
+import { ReminderSettings } from './ReminderSettings';
+import { UnitsSettings } from './UnitsSettings';
+import type { SettingsSection } from './settingsPresentation';
+import { SettingsCard, SettingsDisclosureButton, SettingsFeedback, useSettingsAction } from './SettingsVisuals';
 
-const GUIDE_LABELS: Record<GuideSpecies, string> = {
-  rabbit: 'Lumi (králík)',
-  bear: 'Momo (medvěd)',
-  fox: 'Nori (liška)',
-  otter: 'Kiko (vydra)',
-  hedgehog: 'Piko (ježek)',
-  owl: 'Eli (sova)',
-  squirrel: 'Tili (veverka)',
-  fawn: 'Runi (koloušek)',
-};
-
-const STYLE_LABELS: Record<AppearanceStyle, string> = {
-  forest: 'Les',
-  workshop: 'Dílna',
-  restrained: 'Střídmý',
-};
-
-/**
- * Grouped personal settings: units/zone, appearance, single motion switch,
- * optional reminders, optional app lock, diagnostics and full wipe.
- */
-export function SettingsPanel() {
-  const { runtime, profile, wipeAllLocalData, saveProfile } = useBootstrap();
-  const {
-    preferences,
-    setMotionEnabled,
-    setGuide,
-    setAppearance,
-    setReminders,
-    setUnits,
-    setTimeZone,
-  } = usePersonalPreferences();
-  const motion = useLumiMotion();
-  const [timeZone, setTimeZoneDraft] = useState(profile?.settings.summaryTimeZone ?? 'Europe/Prague');
-  const [dailyHour, setDailyHour] = useState(String(preferences.reminders.dailyTogetherHour));
-  const [pin, setPin] = useState('');
-  const [pinConfirm, setPinConfirm] = useState('');
-  const [lockStatus, setLockStatus] = useState({
-    enabled: false,
-    locked: false,
-    fault: null as string | null,
-    protection: 'unavailable' as 'secure_store' | 'origin_storage' | 'unavailable',
-  });
-  const [diagnostics, setDiagnostics] = useState<string | null>(null);
-  const [wipeConfirm, setWipeConfirm] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled || !runtime) return;
-      void runtime.appLock.getStatus().then((status) => {
-        if (!cancelled) setLockStatus(status);
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [runtime]);
-
-  if (!runtime || !profile) return null;
-
-  const caps = runtime.reminders.getCapabilities();
-
-  return (
-    <View style={styles.root}>
-      <LumiText variant="h2" accessibilityRole="header">
-        Nastavení
-      </LumiText>
-      <LumiText tone="muted">
-        Osobní deník funguje bez účtu. Základní péče zůstává dostupná i bez notifikací.
-      </LumiText>
-
-      <AppThemePicker />
-
-      <FamilyAccountPanel />
-
-      <PhotoStoragePanel />
-
-      <LumiCard>
-        <LumiText variant="h3">Jednotky a pásmo</LumiText>
-        <LumiText tone="muted">
-          Souhrnné pásmo mění denní hranice; jednotlivé záznamy si drží původní čas.
-        </LumiText>
-        <LumiInput
-          label="Souhrnné pásmo (IANA)"
-          value={timeZone}
-          onChangeText={setTimeZoneDraft}
-          autoCapitalize="none"
-        />
-        <LumiButton
-          title="Uložit pásmo"
-          disabled={busy}
-          onPress={() => {
-            setBusy(true);
-            setError(null);
-            const nextZone = timeZone.trim();
-            void setTimeZone(nextZone)
-              .then(() =>
-                saveProfile(
-                  createChildProfile({
-                    childId: profile.childId,
-                    displayName: profile.displayName,
-                    birthDate: profile.birthDate,
-                    summaryTimeZone: nextZone,
-                  }),
-                ),
-              )
-              .then(() => setMessage('Pásmo uloženo.'))
-              .catch((err: unknown) => {
-                setError(err instanceof Error ? err.message : 'Uložení pásma selhalo');
-              })
-              .finally(() => setBusy(false));
-          }}
-        />
-        <View style={styles.row}>
-          <LumiButton
-            title={`Hmotnost: ${preferences.weightUnit}`}
-            variant="ghost"
-            onPress={() => {
-              void setUnits({
-                weightUnit: preferences.weightUnit === 'kg' ? 'lb' : 'kg',
-                lengthUnit: preferences.lengthUnit,
-              });
-            }}
-          />
-          <LumiButton
-            title={`Délka: ${preferences.lengthUnit}`}
-            variant="ghost"
-            onPress={() => {
-              void setUnits({
-                weightUnit: preferences.weightUnit,
-                lengthUnit: preferences.lengthUnit === 'cm' ? 'in' : 'cm',
-              });
-            }}
-          />
-        </View>
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Průvodce</LumiText>
-        <LumiText tone="muted">
-          Výchozí je Lumi. Změna průvodce nemění historii ani doporučení.
-        </LumiText>
-        {LOCAL_GUIDE_SPECIES.map((species) => (
-          <LumiButton
-            key={species}
-            title={`${GUIDE_LABELS[species]}${preferences.guideSpecies === species ? ' · zvoleno' : ''}`}
-            variant={preferences.guideSpecies === species ? 'primary' : 'ghost'}
-            onPress={() => void setGuide(species)}
-          />
-        ))}
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Vzhled průvodce</LumiText>
-        <LumiText tone="muted">
-          Les zůstává bezpečným základem. Dílna a Střídmý jsou volba vzhledu, ne věkové
-          zamknutí. Stažení se nevyžaduje — sada je součástí instalace.
-        </LumiText>
-        <View
-          style={{ alignItems: 'center', marginVertical: 8 }}
-          accessible={false}
-          importantForAccessibility="no-hide-descendants"
-          accessibilityElementsHidden
-        >
-          <GuideCompanion
-            species={preferences.guideSpecies}
-            appearanceStyle={preferences.appearanceStyle}
-            semantic="calm"
-            visible={false}
-            width={96}
-            height={104}
-          />
-        </View>
-        <LumiText tone="muted">
-          {workshopGuidePreviewHint(preferences.guideSpecies, preferences.appearanceStyle)}
-        </LumiText>
-        {LOCAL_APPEARANCE_STYLES.map((style) => (
-          <LumiButton
-            key={style}
-            title={`${STYLE_LABELS[style]}${preferences.appearanceStyle === style ? ' · zvoleno' : ''}`}
-            accessibilityLabel={`Vzhled průvodce ${STYLE_LABELS[style]}${
-              preferences.appearanceStyle === style ? ', zvoleno' : ''
-            }`}
-            accessibilityHint="Mění jen vzhled průvodce. Neodemyká funkce ani věkové omezení."
-            variant={preferences.appearanceStyle === style ? 'primary' : 'ghost'}
-            onPress={() => void setAppearance(style)}
-          />
-        ))}
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Pohyb postav</LumiText>
-        <LumiText tone="muted">
-          Jediné nastavení pohybu postav. Systémové omezení pohybu má vždy přednost.
-        </LumiText>
-        {motion.reduceMotion ? (
-          <LumiText tone="muted">
-            Systém omezuje pohyb — aplikace to respektuje a nevyzývá k obcházení.
-          </LumiText>
-        ) : null}
-        <LumiButton
-          title={
-            preferences.characterMotionEnabled ? 'Pohyb postav: zapnuto' : 'Pohyb postav: vypnuto'
-          }
-          onPress={() => void setMotionEnabled(!preferences.characterMotionEnabled)}
-        />
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Připomínky</LumiText>
-        <LumiText tone="muted">
-          Volitelná denní společná chvíle a týdenní ohlédnutí. Nejsou streak, tlak ani zdravotní
-          předpověď. Výchozí stav je vypnuto.
-        </LumiText>
-        {!caps.osLocalNotifications ? (
-          <LumiText tone="muted">
-            Na webu první verze nezobrazuje upozornění při zavřeném prohlížeči. Týdenní ohlédnutí
-            uvidíte uvnitř aplikace.
-          </LumiText>
-        ) : null}
-        <LumiButton
-          title={
-            preferences.reminders.dailyTogetherEnabled
-              ? 'Denní připomínka: zapnuta'
-              : 'Denní připomínka: vypnuta'
-          }
-          onPress={() => {
-            void (async () => {
-              setError(null);
-              const enabling = !preferences.reminders.dailyTogetherEnabled;
-              if (enabling && caps.osLocalNotifications) {
-                const permission = await runtime.reminders.requestPermission();
-                if (permission === 'denied') {
-                  setError(
-                    'Oprávnění k oznámením bylo odmítnuto. Péče funguje dál; zapněte oznámení v systému, pokud je budete chtít.',
-                  );
-                  return;
-                }
-              }
-              const hour = Number(dailyHour);
-              await setReminders({
-                ...preferences.reminders,
-                dailyTogetherEnabled: enabling,
-                dailyTogetherHour: Number.isFinite(hour) ? hour : 18,
-                timeZone: profile.settings.summaryTimeZone,
-              });
-            })();
-          }}
-        />
-        <LumiInput
-          label="Hodina denní připomínky (0–23)"
-          value={dailyHour}
-          onChangeText={setDailyHour}
-          autoCapitalize="none"
-        />
-        <LumiButton
-          title={
-            preferences.reminders.weeklyGlanceEnabled
-              ? 'Týdenní ohlédnutí: zapnuto'
-              : 'Týdenní ohlédnutí: vypnuto'
-          }
-          onPress={() => {
-            void (async () => {
-              const enabling = !preferences.reminders.weeklyGlanceEnabled;
-              if (enabling && caps.osLocalNotifications) {
-                const permission = await runtime.reminders.requestPermission();
-                if (permission === 'denied') {
-                  setError(
-                    'Oprávnění k oznámením bylo odmítnuto. Základní funkce zůstávají použitelné.',
-                  );
-                  return;
-                }
-              }
-              await setReminders({
-                ...preferences.reminders,
-                weeklyGlanceEnabled: enabling,
-                timeZone: profile.settings.summaryTimeZone,
-              });
-            })();
-          }}
-        />
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Zámek aplikace</LumiText>
-        <LumiText tone="muted">
-          Volitelný PIN chrání náhled deníku. Neotáčí šifrovací klíč databáze. Při ztrátě PINu
-          použijte přenosnou zálohu — klíč se potichu neregeneruje.
-        </LumiText>
-        <LumiText tone="muted">
-          Stav: {lockStatus.enabled ? (lockStatus.locked ? 'zamčeno' : 'odemčeno') : 'vypnuto'}
-          {lockStatus.protection === 'origin_storage'
-            ? ' · web: ochrana jen v rámci stejného prohlížeče/originu'
-            : lockStatus.protection === 'secure_store'
-              ? ' · systémové úložiště zařízení'
-              : ''}
-        </LumiText>
-        {lockStatus.fault ? (
-          <LumiText tone="muted">
-            Úložiště zámku hlásí chybu a deník zůstává zamčený: {lockStatus.fault}
-          </LumiText>
-        ) : null}
-        <LumiInput
-          label="PIN (4–8 číslic)"
-          value={pin}
-          onChangeText={setPin}
-          secureTextEntry
-          autoCapitalize="none"
-        />
-        {!lockStatus.enabled ? (
-          <>
-            <LumiInput
-              label="Potvrzení PIN"
-              value={pinConfirm}
-              onChangeText={setPinConfirm}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-            <LumiButton
-              title="Zapnout zámek"
-              onPress={() => {
-                if (pin !== pinConfirm) {
-                  setError('PIN a potvrzení se musí shodovat.');
-                  return;
-                }
-                void runtime.appLock
-                  .enableWithPin(pin)
-                  .then(() => runtime.appLock.getStatus())
-                  .then((status) => {
-                    setLockStatus(status);
-                    setPin('');
-                    setPinConfirm('');
-                    setMessage('Zámek aplikace je zapnutý.');
-                  })
-                  .catch((err: unknown) => {
-                    setError(err instanceof Error ? err.message : 'Zapnutí zámku selhalo');
-                  });
-              }}
-            />
-          </>
-        ) : (
-          <LumiButton
-            title="Vypnout zámek"
-            onPress={() => {
-              void runtime.appLock
-                .disable(pin)
-                .then(() => runtime.appLock.getStatus())
-                .then((status) => {
-                  setLockStatus(status);
-                  setPin('');
-                  setMessage('Zámek aplikace je vypnutý.');
-                })
-                .catch((err: unknown) => {
-                  setError(err instanceof Error ? err.message : 'Vypnutí zámku selhalo');
-                });
-            }}
-          />
-        )}
-      </LumiCard>
-
-      <LumiCard testID="child-private-mode-status">
-        <LumiText variant="h3">Soukromý prostor dítěte</LumiText>
-        {(() => {
-          const status = readChildPrivateModeSettingsStatus();
-          const shell = presentChildShellAvailability();
-          return (
-            <>
-              <LumiText>{status.headline}</LumiText>
-              <LumiText tone="muted">{status.detail}</LumiText>
-              {status.blockers.map((blocker) => (
-                <LumiText key={blocker.code} tone="muted">
-                  · {blocker.label}
-                </LumiText>
-              ))}
-              <LumiText tone="muted" testID="child-shell-tab-preview">
-                Připravený dětský shell: {shell.tabs.map((tab) => tab.title).join(' · ')}. Profil je
-                v hlavičce, ne jako pátá záložka. Bez ověřené identity zůstává pečovatelský režim.
-              </LumiText>
-            </>
-          );
-        })()}
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Diagnostika</LumiText>
-        <LumiText tone="muted">
-          Technické verze, počty a kódy lokálních operací. Neobsahuje jméno dítěte,
-          poznámky ani datum narození. Zálohu deníku nepřikládá.
-        </LumiText>
-        <LumiButton
-          title="Připravit support report"
-          onPress={() => {
-            void (async () => {
-              const nowMs = Date.now();
-              const points = await runtime.checkpoints.list();
-              const lock = await runtime.appLock.getStatus();
-              const snapshot = await buildDiagnosticsSnapshot({
-                unitOfWork: runtime.unitOfWork,
-                checkpointCount: points.length,
-                appLockEnabled: lock.enabled,
-                nowMs,
-                platform: caps.platform,
-              });
-              const report = buildSupportReport({
-                nowMs,
-                release: snapshot.releaseEvidence!,
-                diagnostics: snapshot,
-                localOperations: runtime.operationMetrics.snapshot(),
-              });
-              setDiagnostics(serializeSupportReport(report));
-            })();
-          }}
-        />
-        {diagnostics ? (
-          <LumiInput
-            label="Support report (zkopírujte)"
-            value={diagnostics}
-            onChangeText={setDiagnostics}
-            multiline
-          />
-        ) : null}
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Úplné smazání</LumiText>
-        <LumiText tone="muted">
-          Odstraní místní deník, koncepty, koš, indexy, body obnovy, naplánované připomínky a
-          místní klíče. Externí exporty smažte ručně tam, kam jste je uložili.
-        </LumiText>
-        <LumiInput
-          label='Pro potvrzení napište SMAZAT'
-          value={wipeConfirm}
-          onChangeText={setWipeConfirm}
-          autoCapitalize="characters"
-        />
-        <LumiButton
-          title="Smazat všechna místní data"
-          loading={busy}
-          onPress={() => {
-            if (wipeConfirm.trim() !== 'SMAZAT') {
-              setError('Pro výmaz napište SMAZAT.');
-              return;
-            }
-            setBusy(true);
-            setError(null);
-            void wipeAllLocalData()
-              .then((result) => {
-                setMessage(
-                  `Místní data smazána (${result.clearedCheckpoints} bodů obnovy). ${result.externalExportNote}`,
-                );
-                setWipeConfirm('');
-              })
-              .catch((err: unknown) => {
-                setError(err instanceof Error ? err.message : 'Výmaz selhal');
-              })
-              .finally(() => setBusy(false));
-          }}
-        />
-      </LumiCard>
-
-      <LumiCard>
-        <LumiText variant="h3">Stavy dat</LumiText>
-        <LumiText tone="muted">Uloženo v zařízení — operace je místně dokončená.</LumiText>
-        <LumiText tone="muted">
-          Obnova v tomto zařízení — místní body; nepřežijí ztrátu telefonu.
-        </LumiText>
-        <LumiText tone="muted">
-          Přenosná záloha — šifrovaný soubor mimo živý deník; datum exportu nepotvrzuje existenci
-          souboru.
-        </LumiText>
-        <LumiText tone="muted">
-          Vzdálená záloha — v osobní verzi není k dispozici.
-        </LumiText>
-      </LumiCard>
-
-      {message ? <LumiText>{message}</LumiText> : null}
-      {error ? <LumiText tone="muted">{error}</LumiText> : null}
-    </View>
-  );
+/** Section bodies stay independent: drafts and feedback belong to the relevant setting. */
+export function SettingsPanel({ section }: { section: SettingsSection }) {
+  if (section === 'appearance') return <AppearanceSettings />;
+  if (section === 'reminders') return <ReminderSettings />;
+  if (section === 'units') return <UnitsSettings />;
+  if (section === 'privacy') return <PrivacySettings />;
+  if (section === 'help') return <HelpSettings />;
+  return null;
 }
 
-const styles = StyleSheet.create({
-  root: { gap: 16 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-});
+function PrivacySettings() {
+  const { runtime, wipeAllLocalData } = useBootstrap();
+  const [pin, setPin] = useState('');
+  const [pinConfirm, setPinConfirm] = useState('');
+  const [lockStatus, setLockStatus] = useState<{
+    enabled: boolean; locked: boolean; fault: string | null;
+    protection: 'secure_store' | 'origin_storage' | 'unavailable';
+  } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [wipeOpen, setWipeOpen] = useState(false);
+  const [wipeConfirm, setWipeConfirm] = useState('');
+  const lock = useSettingsAction();
+  const wipe = useSettingsAction();
+  useEffect(() => {
+    let cancelled = false;
+    void runtime?.appLock.getStatus().then((status) => {
+      if (!cancelled) setLockStatus(status);
+    }).catch(() => { if (!cancelled) setLoadError(true); });
+    return () => { cancelled = true; };
+  }, [runtime]);
+  if (!runtime) return null;
+  return <View style={{ gap: 18 }}>
+    <SettingsCard title="Zámek aplikace" description="Volitelný PIN chrání otevření deníku. Po návratu do aplikace ho zadáte znovu.">
+      <LumiText variant="bodyStrong">{loadError ? 'Stav zámku se nepodařilo načíst.' : !lockStatus ? 'Načítám stav zámku…' : lockStatus.enabled ? 'Zámek je zapnutý' : 'Zámek je vypnutý'}</LumiText>
+      <LumiText variant="caption" tone="muted">PIN nemění šifrovací klíč deníku. Pro případ ztráty PINu si uchovejte přenosnou zálohu a její heslo.</LumiText>
+      {lockStatus?.protection === 'origin_storage' ? <LumiText variant="caption" tone="muted">Na webu je zámek vázaný na tento prohlížeč.</LumiText> : null}
+      {lockStatus?.fault ? <LumiText tone="danger">Úložiště zámku hlásí chybu. Deník zůstává zamčený.</LumiText> : null}
+      <LumiInput label={lockStatus?.enabled ? 'Současný PIN' : 'Nový PIN (4–8 číslic)'} value={pin}
+        onChangeText={setPin} secureTextEntry keyboardType="number-pad" maxLength={8} editable={!lock.busy && !!lockStatus}
+        testID="settings-lock-pin" />
+      {!lockStatus?.enabled ? <LumiInput label="Zopakujte nový PIN" value={pinConfirm} onChangeText={setPinConfirm}
+        secureTextEntry keyboardType="number-pad" maxLength={8} editable={!lock.busy && !!lockStatus} /> : null}
+      <LumiButton title={lockStatus?.enabled ? 'Vypnout zámek' : 'Zapnout zámek'} fullWidth loading={lock.busy}
+        disabled={!lockStatus || !!lockStatus.fault} onPress={() => void lock.run(async () => {
+          if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN musí obsahovat 4 až 8 číslic.');
+          if (lockStatus?.enabled) await runtime.appLock.disable(pin);
+          else {
+            if (pin !== pinConfirm) throw new Error('PIN a jeho potvrzení se musí shodovat.');
+            await runtime.appLock.enableWithPin(pin);
+          }
+          setLockStatus(await runtime.appLock.getStatus());
+          setPin(''); setPinConfirm('');
+        }, lockStatus?.enabled ? 'Zámek je vypnutý.' : 'Zámek je zapnutý.')} />
+      <SettingsFeedback action={lock} />
+    </SettingsCard>
+    <SettingsCard title="Vaše data, vaše rozhodnutí" description="Deník funguje bez účtu. Místní data zůstávají v tomto zařízení.">
+      <LumiText variant="caption" tone="muted">Před výměnou telefonu nebo mazáním si v sekci Zálohy a fotografie uložte přenosnou zálohu mimo aplikaci.</LumiText>
+    </SettingsCard>
+    <SettingsCard title="Úplné smazání" danger description="Trvale odstraní místní data všech dětí v tomto zařízení.">
+      <SettingsDisclosureButton expanded={wipeOpen} title={wipeOpen ? 'Zrušit mazání' : 'Možnosti smazání dat'} disabled={wipe.busy}
+        testID="settings-open-wipe" onPress={() => { setWipeOpen(!wipeOpen); setWipeConfirm(''); }} />
+      {wipeOpen ? <>
+        <LumiText variant="caption" tone="muted">Odstraní deník, koncepty, koš, body obnovy, připomínky a místní klíče. Externí exporty smažte ručně tam, kam jste je uložili.</LumiText>
+        <LumiInput label="Pro potvrzení napište SMAZAT" value={wipeConfirm} onChangeText={setWipeConfirm}
+          autoCapitalize="characters" autoCorrect={false} editable={!wipe.busy} />
+        <LumiButton title="Smazat všechna místní data" fullWidth variant="destructive" loading={wipe.busy}
+          disabled={wipeConfirm.trim() !== 'SMAZAT'} onPress={() => void wipe.run(async () => {
+            if (wipeConfirm.trim() !== 'SMAZAT') throw new Error('Pro výmaz napište SMAZAT.');
+            await wipeAllLocalData();
+            setWipeConfirm(''); setWipeOpen(false);
+          }, 'Místní data smazána. Externí exporty zůstávají tam, kam jste je uložili.')} />
+      </> : null}
+      <SettingsFeedback action={wipe} />
+    </SettingsCard>
+  </View>;
+}
+
+function HelpSettings() {
+  const { runtime } = useBootstrap();
+  const [diagnostics, setDiagnostics] = useState<string | null>(null);
+  const [details, setDetails] = useState(false);
+  const report = useSettingsAction();
+  if (!runtime) return null;
+  const status = readChildPrivateModeSettingsStatus();
+  return <View style={{ gap: 18 }}>
+    <SettingsCard title="Kde jsou vaše vzpomínky?">
+      <LumiText variant="bodyStrong">Uloženo v zařízení</LumiText>
+      <LumiText variant="caption" tone="muted">Záznam je uložený v tomto telefonu nebo prohlížeči. K psaní nepotřebujete účet ani připojení.</LumiText>
+      <LumiText variant="bodyStrong">Obnova v tomto zařízení</LumiText>
+      <LumiText variant="caption" tone="muted">Místní body obnovy pomohou vrátit deník do dřívějšího stavu. Při ztrátě telefonu se ztratí také.</LumiText>
+      <LumiText variant="bodyStrong">Přenosná záloha</LumiText>
+      <LumiText variant="caption" tone="muted">Šifrovaný soubor, který si uložíte mimo aplikaci. K obnovení potřebujete soubor a jeho heslo.</LumiText>
+      <LumiText variant="bodyStrong">Vzdálená záloha</LumiText>
+      <LumiText variant="caption" tone="muted">V osobní verzi není k dispozici. Vzdálená záloha nenahrazuje vlastní přenosný soubor.</LumiText>
+    </SettingsCard>
+    <SettingsCard title="Diagnostika" description="Pokud řešíte potíže s aplikací, můžete připravit podklady pro podporu.">
+      <LumiText variant="caption" tone="muted">Zpráva obsahuje technické verze, počty a kódy operací. Neobsahuje jméno dítěte, datum narození, poznámky ani zálohu deníku. Nic se samo neodesílá.</LumiText>
+      <LumiButton title="Připravit zprávu pro podporu" fullWidth variant="secondary" loading={report.busy}
+        onPress={() => void report.run(async () => {
+          const nowMs = Date.now();
+          const points = await runtime.checkpoints.list();
+          const lock = await runtime.appLock.getStatus();
+          const snapshot = await buildDiagnosticsSnapshot({ unitOfWork: runtime.unitOfWork,
+            checkpointCount: points.length, appLockEnabled: lock.enabled, nowMs,
+            platform: runtime.reminders.getCapabilities().platform });
+          setDiagnostics(serializeSupportReport(buildSupportReport({ nowMs, release: snapshot.releaseEvidence!,
+            diagnostics: snapshot, localOperations: runtime.operationMetrics.snapshot() })));
+        }, 'Zpráva je připravená. Text můžete označit a zkopírovat.')} />
+      <SettingsFeedback action={report} />
+      {diagnostics ? <LumiText selectable variant="caption" accessibilityLabel="Zpráva pro podporu">{diagnostics}</LumiText> : null}
+    </SettingsCard>
+    <SettingsCard title="Soukromý prostor dítěte" testID="child-private-mode-status">
+      <LumiText>{status.headline}</LumiText>
+      <LumiText variant="caption" tone="muted">{status.detail}</LumiText>
+      <SettingsDisclosureButton expanded={details} title={details ? 'Skrýt podrobnosti' : 'Zobrazit podrobnosti dostupnosti'}  onPress={() => setDetails(!details)} />
+      {details ? <>
+        {status.blockers.map((blocker) => <LumiText key={blocker.code} variant="caption" tone="muted">· {blocker.label}</LumiText>)}
+        <LumiText variant="caption" tone="muted" testID="child-shell-tab-preview">Připravované sekce: {presentChildShellAvailability().tabs.map((tab) => tab.title).join(' · ')}.</LumiText>
+      </> : null}
+    </SettingsCard>
+  </View>;
+}

@@ -10,7 +10,8 @@ const profilePath = path.join(here, '../../src/features/profile/ProfileScreen.ts
 const lockPath = path.join(here, '../../src/features/shell/AppLockGate.tsx');
 
 test('settings UI groups privacy controls without a second calm-mode switch', () => {
-  const settings = fs.readFileSync(settingsPath, 'utf8');
+  const settings = ['SettingsPanel.tsx', 'AppearanceSettings.tsx', 'ReminderSettings.tsx', 'settingsPresentation.ts'].map((file) =>
+    fs.readFileSync(path.join(path.dirname(settingsPath), file), 'utf8')).join('\n');
   const profile = fs.readFileSync(profilePath, 'utf8');
   assert.match(profile, /SettingsPanel/);
   assert.match(settings, /Pohyb postav/);

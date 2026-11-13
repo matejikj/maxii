@@ -1,3 +1,4 @@
+import type { SettingsSection } from '../../features/profile/settingsPresentation';
 import type { EntityId } from '../../domain';
 
 export type MainTabParamList = {
@@ -20,7 +21,7 @@ export type RootStackParamList = {
   /** Mounted only after verified child shell activation. */
   ChildShell: undefined;
   Welcome: undefined;
-  Profile: undefined;
+  Profile: { section?: SettingsSection } | undefined;
   /** Opaque entity id only — never display names or notes in the path. */
   EventDetail: { eventId: EntityId };
 };
