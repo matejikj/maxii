@@ -12,6 +12,8 @@ import type { SessionRecord } from '../entities/activeSession';
 import type { DiaryArchive } from '../backup/diaryArchive';
 import { createDiaryArchive } from '../backup/diaryArchive';
 
+export const META_CHILD_AVATAR_PREFIX = 'pref_baby_avatar_v1:';
+
 export type ChildContextBinding = {
   /** Child the open form or draft was started for — never silent-rewritten. */
   boundChildId: ChildId;
@@ -268,6 +270,7 @@ export function filterDiaryArchiveByScope(
   );
   const meta = archive.meta.filter((entry) => {
     if (entry.key === 'active_child_id') return entry.value === childId;
+    if (entry.key.startsWith(META_CHILD_AVATAR_PREFIX)) return entry.key === `${META_CHILD_AVATAR_PREFIX}${childId}`;
     return true;
   });
   return createDiaryArchive({

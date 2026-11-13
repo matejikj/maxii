@@ -16,3 +16,8 @@ export type { LumiProceduralBackgroundProps } from './LumiProceduralBackground';
 
 // v0.6 UI-thread motion adapters. Never imported by './core'.
 export * from './motion';
+
+export { LumiBaby } from './LumiBaby';
+export type { LumiBabyProps } from './LumiBaby';
+export { LumiPlayScene } from './LumiPlayScene';
+export type { LumiPlaySceneProps } from './LumiPlayScene';

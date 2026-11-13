@@ -23,6 +23,8 @@ export const LOCAL_GUIDE_SPECIES = [
   'owl',
   'squirrel',
   'fawn',
+  'tiger',
+  'hippo',
 ] as const;
 
 export type GuideSpecies = (typeof LOCAL_GUIDE_SPECIES)[number];

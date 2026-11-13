@@ -1,3 +1,4 @@
+import { BabyAvatarPicker } from './BabyAvatarPicker';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
@@ -90,7 +91,7 @@ export function ProfileScreen({ onClose, initialSection }: ProfileScreenProps) {
             <SettingsSectionIntro title={info.title} description={info.description} icon={info.icon} />
             {id === 'children' ? <>
               {profile ? <ChildProfileEditor key={profile.childId} profile={profile} /> : null}
-              <ChildrenPanel /><FamilyAccountPanel /><FamilyConflictsPanel />
+              <BabyAvatarPicker /><ChildrenPanel /><FamilyAccountPanel /><FamilyConflictsPanel />
             </> : id === 'backup' ? <><BackupRestorePanel /><PhotoStoragePanel /></> :
               ready ? (id !== 'privacy' || visible) && <SettingsPanel section={id} key={id === 'units' ? `${id}-${profile?.childId}` : id} /> :
                 <LumiText tone="muted">Načítám vaše nastavení…</LumiText>}

@@ -1,6 +1,7 @@
 import type { GuideSpecies } from '../../application';
 
 export const GUIDE_NAMES: Record<GuideSpecies, { name: string; animal: string }> = {
+  tiger: { name: 'Timi', animal: 'Tygřík' }, hippo: { name: 'Hugo', animal: 'Hroch' },
   rabbit: { name: 'Lumi', animal: 'Králík' }, bear: { name: 'Momo', animal: 'Medvěd' },
   fox: { name: 'Nori', animal: 'Liška' }, otter: { name: 'Kiko', animal: 'Vydra' },
   hedgehog: { name: 'Piko', animal: 'Ježek' }, owl: { name: 'Eli', animal: 'Sova' },
@@ -8,7 +9,7 @@ export const GUIDE_NAMES: Record<GuideSpecies, { name: string; animal: string }>
 };
 export const SETTINGS_SECTIONS = [
   { id: 'appearance', title: 'Vzhled a průvodce', description: 'Váš svět, postavička a pohyb', icon: 'development', group: 'personal' },
-  { id: 'children', title: 'Dítě a rodina', description: 'Přezdívka, narozeniny a další děti', icon: 'care', group: 'personal' },
+  { id: 'children', title: 'Dítě a rodina', description: 'Profil, postavička miminka a další děti', icon: 'care', group: 'personal' },
   { id: 'reminders', title: 'Připomínky', description: 'Čas na společné chvíle', icon: 'today', group: 'personal' },
   { id: 'units', title: 'Jednotky a čas', description: 'Měření růstu a časové pásmo', icon: 'growth', group: 'personal' },
   { id: 'backup', title: 'Zálohy a fotografie', description: 'Uchování vzpomínek a místo v zařízení', icon: 'experience', group: 'data' },

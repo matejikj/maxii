@@ -1,3 +1,4 @@
+import { loadBabyAvatar, saveBabyAvatar, type BabyAvatarVariant } from '../../application/babyAvatar';
 import React, {
   createContext,
   useCallback,
@@ -32,6 +33,9 @@ type PreferencesContextValue = {
   preferences: PersonalPreferences;
   ready: boolean;
   backupHintVisible: boolean;
+  babyAvatar: BabyAvatarVariant;
+  babyAvatarReady: boolean;
+  setBabyAvatar: (variant: BabyAvatarVariant) => Promise<void>;
   refresh: () => Promise<void>;
   setMotionEnabled: (enabled: boolean) => Promise<void>;
   setGuide: (species: GuideSpecies) => Promise<void>;
@@ -53,17 +57,21 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<PersonalPreferences>(
     defaultPersonalPreferences('Europe/Prague'),
   );
+  const [baby, setBaby] = useState<{ childId: string; variant: BabyAvatarVariant } | null>(null);
   const [backupHintVisible, setBackupHintVisible] = useState(false);
   const [ready, setReady] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!runtime) return;
     const zone = profile?.settings.summaryTimeZone ?? 'Europe/Prague';
-    const next = await loadPersonalPreferences(runtime.unitOfWork, zone);
+    const childId = profile?.childId;
+    const [next, avatar] = await Promise.all([loadPersonalPreferences(runtime.unitOfWork, zone),
+      childId ? loadBabyAvatar(runtime.unitOfWork, childId) : Promise.resolve('neutral' as const)]);
+    if (childId) setBaby({ childId, variant: avatar });
     setPreferences(next);
     setReady(true);
     setBackupHintVisible(await shouldShowBackupHint(runtime.unitOfWork));
-  }, [profile?.settings.summaryTimeZone, runtime]);
+  }, [profile?.childId, profile?.settings.summaryTimeZone, runtime]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +88,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       preferences,
       ready,
       backupHintVisible,
+      babyAvatar: baby?.childId === profile?.childId ? baby?.variant ?? 'neutral' : 'neutral',
+      babyAvatarReady: ready && baby?.childId === profile?.childId,
+      async setBabyAvatar(variant) {
+        if (!runtime || !profile) throw new Error('Profil ještě není připravený.');
+        await saveBabyAvatar(runtime.unitOfWork, profile.childId, variant);
+        setBaby({ childId: profile.childId, variant });
+      },
       refresh,
       async setMotionEnabled(enabled) {
         if (!runtime) return;
@@ -130,7 +145,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         setBackupHintVisible(false);
       },
     }),
-    [backupHintVisible, preferences, profile, ready, refresh, runtime],
+    [baby, backupHintVisible, preferences, profile, ready, refresh, runtime],
   );
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;

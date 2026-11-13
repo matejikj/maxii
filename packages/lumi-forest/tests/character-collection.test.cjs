@@ -20,10 +20,10 @@ const {
   summarizeCollectionComplexity,
 } = require('../.test-dist/core/index.js');
 
-test('collection ships eight species with revisions and two signature actions', () => {
-  assert.equal(LUMI_ANIMALS.length, 8);
+test('collection ships ten species with revisions and two signature actions', () => {
+  assert.equal(LUMI_ANIMALS.length, 10);
   assert.deepEqual([...LUMI_ANIMALS], [
-    'rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn',
+    'rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn', 'tiger', 'hippo',
   ]);
   for (const species of LUMI_ANIMALS) {
     const entry = CHARACTER_COLLECTION[species];
@@ -34,7 +34,7 @@ test('collection ships eight species with revisions and two signature actions', 
     assert.equal(CHARACTER_BLUEPRINTS[species].artworkRevision, entry.artworkRevision);
     assert.equal(CHARACTER_BLUEPRINTS[species].displayName, entry.displayName);
   }
-  assert.equal(listCollectionEntries().length, 8);
+  assert.equal(listCollectionEntries().length, 10);
   assert.equal(CHARACTER_SEMANTIC_STATES.length, 8);
 });
 
@@ -65,9 +65,9 @@ test('offline props compile against every species rig', () => {
 test('collection complexity summary stays install-local', () => {
   const summary = summarizeCollectionComplexity();
   assert.equal(summary.version, CHARACTER_COLLECTION_VERSION);
-  assert.equal(summary.speciesCount, 8);
+  assert.equal(summary.speciesCount, 10);
   assert.equal(summary.semanticStates, 8);
-  assert.equal(summary.signatureActions, 16);
+  assert.equal(summary.signatureActions, 20);
   assert.equal(summary.blueprintRevisions.owl, 'lumi.owl.art.c2');
 });
 

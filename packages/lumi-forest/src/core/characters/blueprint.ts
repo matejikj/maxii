@@ -129,6 +129,20 @@ const pivots = (leftEarX: number, rightEarX: number, earY: number) => ({
 });
 
 export const CHARACTER_BLUEPRINTS: Readonly<Record<LumiAnimal, CharacterBlueprintV2>> = {
+  tiger: {
+    schemaVersion: 2, species: 'tiger', displayName: 'Timi', artworkRevision: 'lumi.tiger.art.v1',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.tiger }, ...COMMON,
+    rig: { leftEye: P(-29, 3), rightEye: P(29, 3), mouth: P(0, 32),
+      pivots: pivots(-64, 64, -60), accessoryAnchors: { head: P(57, -67), neck: P(0, 57), hand: P(72, 94) },
+      ink: '#655247', blush: '#E6A590', soft: '#E3B27D' },
+  },
+  hippo: {
+    schemaVersion: 2, species: 'hippo', displayName: 'Hugo', artworkRevision: 'lumi.hippo.art.v1',
+    base: { kind: 'parts', parts: CHARACTER_ANATOMY.hippo }, ...COMMON,
+    rig: { leftEye: P(-30, 3), rightEye: P(30, 3), mouth: P(0, 43),
+      pivots: pivots(-70, 70, -71), accessoryAnchors: { head: P(59, -65), neck: P(0, 63), hand: P(73, 97) },
+      ink: '#626379', blush: '#DFAEBB', soft: '#BFC0D1' },
+  },
   rabbit: {
     schemaVersion: 2, species: 'rabbit', displayName: 'Lumi',
     artworkRevision: RABBIT_ARTWORK_REVISION,

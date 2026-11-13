@@ -1,5 +1,6 @@
 import {
   AppError,
+  META_CHILD_AVATAR_PREFIX,
   asChildId,
   asOperationId,
   asRevisionId,
@@ -250,7 +251,7 @@ export async function wipeSingleChildDiaryScope(input: {
       remainingActive[0]!.childId,
     )!;
     const meta = [
-      ...full.meta.filter((entry) => entry.key !== META_ACTIVE_CHILD_ID),
+      ...full.meta.filter((entry) => entry.key !== META_ACTIVE_CHILD_ID && entry.key !== `${META_CHILD_AVATAR_PREFIX}${input.childId}`),
       { key: META_ACTIVE_CHILD_ID, value: nextActive.childId },
     ];
     const nextArchive = createDiaryArchive({

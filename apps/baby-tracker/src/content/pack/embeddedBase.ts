@@ -1,7 +1,7 @@
 import { FIRST_YEAR_PUBLISHED_CONTENT_VERSION } from '../catalog/firstYearPublished';
 import { RECOMMENDATION_RULES_VERSION } from '../../domain/recommendation/types';
 import { CONTENT_READER_VERSION } from './limits';
-import { listInstalledArtCapabilities } from './capabilities';
+import { listBasePackArtCapabilities } from './capabilities';
 
 export const EMBEDDED_BASE_PACK_ID = 'lumi.first-year.base' as const;
 /** Must match packages/lumi-forest CHARACTER_COLLECTION_VERSION. */
@@ -24,6 +24,6 @@ export function describeEmbeddedBasePack(): {
     catalogVersion: FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
     collectionVersion: EMBEDDED_COLLECTION_VERSION,
     rulesVersion: RECOMMENDATION_RULES_VERSION,
-    capabilities: listInstalledArtCapabilities(),
+    capabilities: listBasePackArtCapabilities(),
   };
 }

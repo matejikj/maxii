@@ -140,3 +140,10 @@ export * from './motion';
 
 // v1.0 persistence boundary: opt-in schemas and migrations, not frame-loop work.
 export * from './versioning';
+
+export * from './play/baby';
+export * from './play/types';
+export * from './play/motion';
+export * from './play/scene';
+
+export * from './play/playback';

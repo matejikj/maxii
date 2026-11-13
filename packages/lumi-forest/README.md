@@ -1,7 +1,7 @@
 # LUMI Forest — v1.0.0 source release candidate
 
 **Declarative, deterministic vector design system for React Native / Expo.**
-The library contains Character Engine (8 animals; expressions, poses, accessories, semantic states and offline props), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
+The library contains Character Engine (10 animals; expressions, poses, accessories, semantic states and offline props), Procedural Scene Engine with safe zones, accessible UI components, motion and themed illustration assets.
 
 **Certification status:** Automated checks cover core contracts, image regressions, public API, TypeScript, package outputs and Metro exports. A passing result belongs to the tested commit and build. Physical-device rendering, frame/memory metrics, signed native builds and store distribution remain **NOT verified**. The release and npm publication workflows fail closed until real device evidence and the remaining release requirements are provided. Do not claim a production-certified v1.0.0 yet.
 
@@ -113,3 +113,35 @@ Bundled character artwork uses sculpted Bézier silhouettes, matte light/shadow 
 The 24-unit icon family uses botanical silhouettes, round strokes and translucent material planes. The four stable navigation IDs (`today`, `care`, `development`, `history`) are joined by `sleep`, `nursing`, `bottle`, `food`, `diaper`, `growth`, `plus`, `arrow-right`, `experience` and `settings`. Both `compileLumiIcon()` and native `LumiIcon` accept an optional `accentColor`; omitting it preserves single-tint rendering. Icons remain renderer-neutral vectors, and decorative icons stay outside the accessibility tree unless explicitly labeled.
 
 Task plans and supporting Markdown documents are local-only and excluded from Git and the npm package. Standard project READMEs and changelogs remain versioned.
+
+## Baby avatars and play demonstrations
+
+`LumiBaby` renders the optional `neutral`, `girl` or `boy` avatar. Its named anatomy
+and authored `reclined`, `tummy`, `sitting` and `standing` poses use the same vector
+IR and part roles as the animal collection, with a separate `BabyBlueprint` and
+human rig. Babies are not animal guide IDs. Timi (`tiger`) and Hugo (`hippo`) extend
+the existing animal blueprint, expression and appearance pipeline.
+
+`LumiPlayScene` composes a baby, any selected guide and an offline play recipe on
+one SVG surface. The caller supplies `action`, optional `object`, `babyVariant`,
+`babyPose`, `guideSpecies`, `step`, `stepCount`, `cycle` and `playing`. One continuous
+UI-thread clock drives the entire clip, native part transforms and progress line;
+geometry is not rebuilt per frame. `onStepChange` reports instruction boundaries
+and `onComplete` reports the final frame. `step` and `cycle` are seek/restart
+commands: keep reported steps in separate display state to avoid seeking on every
+callback. Pausing preserves the exact position and resuming keeps the original
+speed. Set `playing={false}` whenever the scene is offscreen or its route loses
+focus; foreground changes are also guarded internally.
+
+The default `motionIntent="automatic"` follows the live system/user motion policy.
+Use `motionIntent="user"` only for instructional playback deliberately started by
+the user. This permits requested demonstrations even with decorative animations
+disabled, without changing system settings or enabling other animations. The
+activity app starts paused, supports play/pause/resume, step selection and replay,
+and binds every bundled published revision explicitly in
+`activityDemonstrations.ts`. Viewing a demonstration does not confirm readiness
+conditions; the original instructions and conditions still govern doing the game.
+
+`npm run export:play --workspace @lumi/forest-design` exports deterministic SVG
+frames for all recipes, both new guides and every baby pose. Generated previews
+stay outside Git; core tests check geometry budgets, motion bounds and coverage.

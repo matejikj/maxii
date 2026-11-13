@@ -20,7 +20,7 @@ test('workshop acceptance matrix passes offline without claiming device metrics'
     report.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
   );
   assert.equal(report.physicalDeviceMeasured, false);
-  assert.equal(report.compiledStyleSemanticCells, 8 * 3 * 8);
+  assert.equal(report.compiledStyleSemanticCells, 10 * 3 * 8);
   assert.equal(report.compiledStudioActions, 8);
   assert.deepEqual([...WORKSHOP_PORTRAIT_SIZES_PX], [24, 32, 48, 144, 256]);
 });

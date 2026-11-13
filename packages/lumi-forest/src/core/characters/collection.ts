@@ -135,6 +135,22 @@ export type CharacterCollectionEntry = {
 const ALL_STATES = CHARACTER_SEMANTIC_STATES;
 
 export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollectionEntry>> = {
+  tiger: {
+    species: 'tiger', displayName: 'Timi', artworkRevision: CHARACTER_BLUEPRINTS.tiger.artworkRevision!,
+    supportedSemanticStates: ALL_STATES,
+    signatureActions: [
+      { id: 'tigerWave', labelCs: 'Jemně pozdravit', prop: null, semantic: 'greeting' },
+      { id: 'tigerExplore', labelCs: 'Prozkoumat hračku', prop: 'blocks', semantic: 'curiosity' },
+    ],
+  },
+  hippo: {
+    species: 'hippo', displayName: 'Hugo', artworkRevision: CHARACTER_BLUEPRINTS.hippo.artworkRevision!,
+    supportedSemanticStates: ALL_STATES,
+    signatureActions: [
+      { id: 'hippoListen', labelCs: 'Naslouchat', prop: null, semantic: 'listening' },
+      { id: 'hippoSmile', labelCs: 'Usmát se', prop: null, semantic: 'gentleJoy' },
+    ],
+  },
   rabbit: {
     species: 'rabbit',
     displayName: 'Lumi',

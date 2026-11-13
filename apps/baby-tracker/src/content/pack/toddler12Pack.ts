@@ -5,7 +5,7 @@ import {
 import { RECOMMENDATION_RULES_VERSION } from '../../domain/recommendation/types';
 import { buildContentPackManifest } from './buildManifest';
 import { utf8Bytes } from './canonicalize';
-import { listInstalledArtCapabilities } from './capabilities';
+import { listBasePackArtCapabilities } from './capabilities';
 import { EMBEDDED_COLLECTION_VERSION } from './embeddedBase';
 import type { ContentPackFileBytes, ContentPackManifest } from './types';
 
@@ -38,7 +38,7 @@ export function buildToddler12Manifest(
     rulesVersion: RECOMMENDATION_RULES_VERSION,
     ageMonths: { fromInclusive: 12, toInclusive: 23 },
     activityRevisionIds: TODDLER_1_2_PUBLISHED_REVISIONS.map((item) => item.revisionId),
-    capabilities: listInstalledArtCapabilities(),
+    capabilities: listBasePackArtCapabilities(),
     files,
     createdAt,
   });

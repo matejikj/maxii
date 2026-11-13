@@ -1,3 +1,4 @@
+import { ActivityDemonstration } from './ActivityDemonstration';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -61,6 +62,15 @@ export function ActivityDetailScreen({
   const stripVisible = useContext(CompactActiveSessionsVisibleContext);
   const { services } = useCompositionRoot();
   const runtime = usePersonalRuntime();
+  const detailScroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const [demoVisible, setDemoVisible] = useState(false);
+  const demoVisibility = useRef({ offset: 0, height: 0, sectionTop: 0, localTop: 0, demoHeight: 0, visible: false });
+  const checkDemoVisibility = () => {
+    const bounds = demoVisibility.current;
+    const top = bounds.sectionTop + bounds.localTop;
+    const visible = bounds.height > 0 && bounds.demoHeight > 0 && top + bounds.demoHeight > bounds.offset && top < bounds.offset + bounds.height;
+    if (visible !== bounds.visible) { bounds.visible = visible; setDemoVisible(visible); }
+  };
   const [expandedWhy, setExpandedWhy] = useState(false);
   const [expandedSources, setExpandedSources] = useState(false);
   const [todayExperience, setTodayExperience] = useState<ExperienceCareEvent | null>(null);
@@ -160,7 +170,9 @@ export function ActivityDetailScreen({
   return (
     <SafeAreaView edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']}
       style={[styles.root, { backgroundColor: colors.background }]} testID="activity-detail-screen">
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md, paddingBottom: dockInset + 32 }]}>
+      <ScrollView ref={detailScroll} onLayout={(event) => { demoVisibility.current.height = Math.max(0, event.nativeEvent.layout.height - dockInset); checkDemoVisibility(); }}
+        onScroll={(event) => { demoVisibility.current.offset = event.nativeEvent.contentOffset.y; checkDemoVisibility(); }} scrollEventThrottle={80}
+        contentContainerStyle={[styles.content, { gap: ui.space.md, paddingBottom: dockInset + 32 }]}>
         <LumiButton title="Zpět na Rozvoj" variant="ghost" onPress={onClose} testID="activity-back" />
         <LumiCard variant="soft" style={styles.detailHeading}>
           <LumiText variant="overline" tone="muted">SPOLEČNÁ CHVÍLE</LumiText>
@@ -210,15 +222,6 @@ export function ActivityDetailScreen({
           </LumiCard>
         ) : null}
 
-        {revision.constraints.length > 0 ? (
-          <LumiCard style={styles.detailHeading} testID="activity-conditions">
-            <LumiText variant="h2">{PRODUCT_COPY.development.watchOut}</LumiText>
-            {revision.constraints.map((item) => (
-              <LumiText key={item}>{item}</LumiText>
-            ))}
-          </LumiCard>
-        ) : null}
-
         <LumiCard style={styles.detailHeading}>
           <DevelopmentHeading title={PRODUCT_COPY.development.materials} icon="experience" />
           <LumiText>
@@ -228,8 +231,20 @@ export function ActivityDetailScreen({
           </LumiText>
         </LumiCard>
 
-        <View style={{ gap: ui.space.xs }} testID="activity-steps">
+        <View style={{ gap: ui.space.xs }} testID="activity-steps" onLayout={(event) => {
+          demoVisibility.current.sectionTop = event.nativeEvent.layout.y;
+          checkDemoVisibility();
+        }}>
           <DevelopmentHeading title={PRODUCT_COPY.development.howTo} subtitle="Krok za krokem, bez spěchu" />
+          <View onLayout={(event) => {
+            demoVisibility.current.localTop = event.nativeEvent.layout.y;
+            checkDemoVisibility();
+          }}>
+            <ActivityDemonstration revision={revision} visible={demoVisible}
+              onShowScene={() => detailScroll.current?.scrollTo({ y: Math.max(0, demoVisibility.current.sectionTop - 16), animated: false })}
+              onSceneLayout={(height) => { demoVisibility.current.demoHeight = height; checkDemoVisibility(); }}
+              />
+          </View>
           {revision.steps.map((step, index) => (
             <LumiCard key={`${revision.revisionId}-step-${index}`} style={styles.step} padding="md">
               <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}>
@@ -327,6 +342,14 @@ export function ActivityDetailScreen({
         />
         {mutationError ? <LumiText tone="danger" accessibilityRole="alert">{mutationError}</LumiText> : null}
         <SaveFeedback state={feedback} />
+        {revision.constraints.length > 0 ? (
+          <LumiCard style={styles.detailHeading} testID="activity-conditions">
+            <LumiText variant="h2">{PRODUCT_COPY.development.watchOut}</LumiText>
+            {revision.constraints.map((item) => (
+              <LumiText key={item}>{item}</LumiText>
+            ))}
+          </LumiCard>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

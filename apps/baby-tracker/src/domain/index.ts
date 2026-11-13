@@ -298,6 +298,7 @@ export {
   type TombstoneRecord,
 } from './sync/causality';
 export {
+  META_CHILD_AVATAR_PREFIX,
   assertDraftChildUnchanged,
   assertSingleChildMigrationPreserved,
   bindOpenFormToChild,

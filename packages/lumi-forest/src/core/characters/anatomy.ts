@@ -1,3 +1,4 @@
+import { TIGER_ANATOMY, HIPPO_ANATOMY } from './playmatesAnatomy';
 /**
  * Canonical LUMI anatomy, with sculpted artwork authored inside named parts.
  * Author changes here; never duplicate shape definitions in artwork.ts.
@@ -1475,6 +1476,8 @@ const HEDGEHOG_ANATOMY_BASE: readonly CharacterPart[] = [
   ];
 
 export const CHARACTER_ANATOMY: Readonly<Record<LumiAnimal, readonly CharacterPart[]>> = {
+  tiger: TIGER_ANATOMY,
+  hippo: HIPPO_ANATOMY,
   rabbit: selectRabbitAnatomy(RABBIT_ANATOMY_BASELINE),
   bear: sculptCharacterAnatomy('bear', applySoftCompactFleetPolish(BEAR_ANATOMY_BASE)),
   fox: sculptCharacterAnatomy('fox', applySoftCompactFleetPolish(FOX_ANATOMY_BASE)),

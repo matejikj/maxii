@@ -11,6 +11,8 @@ export const LUMI_ANIMALS = [
   'owl',
   'squirrel',
   'fawn',
+  'tiger',
+  'hippo',
 ] as const;
 export const LUMI_DENSITIES = ['quiet', 'regular', 'playful'] as const;
 

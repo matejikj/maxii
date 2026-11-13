@@ -40,6 +40,7 @@
     "motifs:visual:approve": "npm run export:motifs && python3 tools/motifs-visual-regression.py approve",
     "visual:approve": "npm run export:svg && python3 tools/visual-regression.py approve",
     "test:device-parser": "python3 -m unittest discover -s tests -p \"*_test.py\"",
+    "export:play": "npm run typecheck:core && node tools/export-play-scenes.cjs",
     "export:characters": "npm run typecheck:core && node tools/export-characters.cjs",
     "test:characters:visual": "npm run export:characters && python3 tools/characters-visual-regression.py verify",
     "characters:visual:approve": "npm run export:characters && python3 tools/characters-visual-regression.py approve",

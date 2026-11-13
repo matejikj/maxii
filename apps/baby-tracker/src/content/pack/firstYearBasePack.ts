@@ -2,7 +2,7 @@ import { FIRST_YEAR_PUBLISHED_REVISIONS } from '../catalog/firstYearPublished';
 import { buildContentPackManifest } from './buildManifest';
 import { utf8Bytes } from './canonicalize';
 import { describeEmbeddedBasePack } from './embeddedBase';
-import { listInstalledArtCapabilities } from './capabilities';
+import { listBasePackArtCapabilities } from './capabilities';
 import type { ContentPackFileBytes, ContentPackManifest } from './types';
 
 /** Deterministic payload bytes for the install-local first-year base pack. */
@@ -16,7 +16,7 @@ export function buildFirstYearBaseFiles(): ContentPackFileBytes[] {
     collectionVersion: meta.collectionVersion,
     studioCollectionVersion: 'lumi.characters.studio.v1',
     appearanceStyles: ['forest', 'workshop', 'restrained'],
-    capabilities: listInstalledArtCapabilities(),
+    capabilities: listBasePackArtCapabilities(),
   };
   return [
     {
@@ -44,7 +44,7 @@ export function buildFirstYearBaseManifest(
     rulesVersion: meta.rulesVersion,
     ageMonths: { fromInclusive: 0, toInclusive: 11 },
     activityRevisionIds: FIRST_YEAR_PUBLISHED_REVISIONS.map((item) => item.revisionId),
-    capabilities: listInstalledArtCapabilities(),
+    capabilities: listBasePackArtCapabilities(),
     files,
     createdAt,
   });

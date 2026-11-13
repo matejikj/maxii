@@ -1,9 +1,11 @@
 /**
  * Renderer capabilities declared by the installed forest design. Packs may only
  * request IDs this list already understands — never remote executable code.
- * Keep in sync with the eight-species collection, workshop catalog, and props.
+ * Keep in sync with the ten-species collection, workshop catalog, and props.
  */
-export const INSTALLED_ART_CAPABILITIES = [
+/** Immutable capabilities used to serialize the already signed generation-1 packs.
+ * Reader additions must never change their bytes or invalidate their signatures. */
+export const BASE_PACK_ART_CAPABILITIES = [
   'art.collection.v1',
   'art.studio.v1',
   'art.appearance-styles.v1',
@@ -46,6 +48,14 @@ export const INSTALLED_ART_CAPABILITIES = [
   'studio.arrangePattern',
   'studio.presentCreation',
 ] as const;
+
+/** The installed renderer may be a strict superset of the signed base pack. */
+export const INSTALLED_ART_CAPABILITIES = [
+  ...BASE_PACK_ART_CAPABILITIES, 'art.species.tiger', 'art.species.hippo',
+] as const;
+export function listBasePackArtCapabilities(): readonly string[] {
+  return BASE_PACK_ART_CAPABILITIES;
+}
 
 export function listInstalledArtCapabilities(): readonly string[] {
   return INSTALLED_ART_CAPABILITIES;
