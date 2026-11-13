@@ -7,9 +7,7 @@ import { revokeShareSnapshot } from './shareLifecycle';
 export const CHILD_PRIVATE_WIPE_CONFIRMATION = 'SMAZAT VLASTNI' as const;
 
 export type ChildPrivateWipeFailureReason =
-  | 'child_mode_inactive'
-  | 'denied_not_owner'
-  | 'confirmation_mismatch';
+  'child_mode_inactive' | 'denied_not_owner' | 'confirmation_mismatch';
 
 export type ChildPrivateWipePlan =
   | {
@@ -55,10 +53,7 @@ export function planChildPrivateWorkspaceWipe(input: {
   if (!input.childPrivateModeActive) {
     return { ok: false, reason: 'child_mode_inactive' };
   }
-  if (
-    input.principalKind !== 'owner' ||
-    input.principalAppUserId !== input.ownerAppUserId
-  ) {
+  if (input.principalKind !== 'owner' || input.principalAppUserId !== input.ownerAppUserId) {
     return { ok: false, reason: 'denied_not_owner' };
   }
 
@@ -73,13 +68,11 @@ export function planChildPrivateWorkspaceWipe(input: {
   });
   const projectIds = new Set(projects.map((project) => project.projectId as string));
   const portfolio = input.portfolio.filter(
-    (item) =>
-      item.ownerAppUserId === input.ownerAppUserId && projectIds.has(item.projectId),
+    (item) => item.ownerAppUserId === input.ownerAppUserId && projectIds.has(item.projectId),
   );
   const shares = input.shares.filter(
     (share) =>
-      share.ownerAppUserId === input.ownerAppUserId &&
-      projectIds.has(share.sourceProjectId),
+      share.ownerAppUserId === input.ownerAppUserId && projectIds.has(share.sourceProjectId),
   );
 
   return {
@@ -125,9 +118,7 @@ export function applyChildPrivateWorkspaceWipe(input: {
     projects: input.projects.filter((project) => !dropProjects.has(project.projectId)),
     portfolio: input.portfolio.filter((item) => !dropPortfolio.has(item.portfolioItemId)),
     shares: input.shares
-      .map((share) =>
-        dropShares.has(share.shareId) ? revokeShareSnapshot(share, now) : share,
-      )
+      .map((share) => (dropShares.has(share.shareId) ? revokeShareSnapshot(share, now) : share))
       .filter((share) => !dropShares.has(share.shareId)),
   };
 }

@@ -2,10 +2,7 @@ export {
   buildParentRecommendationContext,
   type RecommendationFilterInput,
 } from './buildParentContext';
-export {
-  candidateFromRevision,
-  candidatesFromRevisions,
-} from './candidateFromRevision';
+export { candidateFromRevision, candidatesFromRevisions } from './candidateFromRevision';
 export {
   META_RECOMMENDATION_SET_PREFIX,
   ensureDailyRecommendationSet,

@@ -44,9 +44,7 @@ export async function requestAttachmentDisplayDownload(input: {
   readonly attachments: AttachmentServices;
   readonly transfer?: FamilyPhotoTransferDisplayQueue | null;
 }): Promise<RequestAttachmentDisplayDownloadResult> {
-  const current = await input.attachments.repository.getById(
-    asAttachmentId(input.attachmentId),
-  );
+  const current = await input.attachments.repository.getById(asAttachmentId(input.attachmentId));
   if (!current) {
     return {
       ok: false,
@@ -70,9 +68,7 @@ export async function requestAttachmentDisplayDownload(input: {
       ok: true,
       attachment: current,
       downloadJobsQueued: 0,
-      outcome: attachmentNeedsConsciousDisplayDownload(current)
-        ? 'personal_cold'
-        : 'already_local',
+      outcome: attachmentNeedsConsciousDisplayDownload(current) ? 'personal_cold' : 'already_local',
     };
   }
 

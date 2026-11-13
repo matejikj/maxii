@@ -77,11 +77,7 @@ export function readCookie(header: string | undefined, name: string): string | u
   return undefined;
 }
 
-export function sessionCookieHeader(
-  name: string,
-  value: string,
-  maxAgeSec: number,
-): string {
+export function sessionCookieHeader(name: string, value: string, maxAgeSec: number): string {
   return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSec}`;
 }
 

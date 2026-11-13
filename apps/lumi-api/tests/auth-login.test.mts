@@ -7,7 +7,10 @@ import { createFamilyApi } from '../src/http/createServer.ts';
 function cookieHeaderFromSetCookie(setCookie: string | string[] | undefined): string {
   if (!setCookie) return '';
   const parts = Array.isArray(setCookie) ? setCookie : [setCookie];
-  return parts.map((item) => item.split(';')[0] ?? '').filter(Boolean).join('; ');
+  return parts
+    .map((item) => item.split(';')[0] ?? '')
+    .filter(Boolean)
+    .join('; ');
 }
 
 async function boot() {
@@ -119,9 +122,9 @@ test('login rejects unknown redirect URIs and completes PKCE cookie session', as
   assert.equal(me.json().appUserId, callback.json().appUserId);
   assert.ok(Array.isArray(me.json().memberships));
   assert.ok(
-    me.json().memberships.some(
-      (item: { familyId: string }) => item.familyId === created.json().familyId,
-    ),
+    me
+      .json()
+      .memberships.some((item: { familyId: string }) => item.familyId === created.json().familyId),
   );
 
   const logout = await app.inject({

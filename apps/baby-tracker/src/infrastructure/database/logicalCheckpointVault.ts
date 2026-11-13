@@ -1,8 +1,4 @@
-import {
-  parseDiaryArchive,
-  type DiaryArchive,
-  type DiaryArchiveManifest,
-} from '../../domain';
+import { parseDiaryArchive, type DiaryArchive, type DiaryArchiveManifest } from '../../domain';
 import { AppError } from '../../domain/errors';
 
 export const DAILY_CHECKPOINT_RETENTION = 7;
@@ -72,11 +68,9 @@ export function createLogicalCheckpointVault(
         );
       }
       if (archiveJson.length === 0) {
-        throw new AppError(
-          'STORAGE',
-          'Empty recovery point is not consistent; operation refused',
-          { details: { reason: 'checkpoint_empty' } },
-        );
+        throw new AppError('STORAGE', 'Empty recovery point is not consistent; operation refused', {
+          details: { reason: 'checkpoint_empty' },
+        });
       }
 
       const existing = await backend.listRecords();

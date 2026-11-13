@@ -1,4 +1,9 @@
-import type { ActivityRevision, EditorialEvent, EditorialStage, FieldValidationError } from './types';
+import type {
+  ActivityRevision,
+  EditorialEvent,
+  EditorialStage,
+  FieldValidationError,
+} from './types';
 
 const PUBLISH_PATH: EditorialStage[] = [
   'draft',

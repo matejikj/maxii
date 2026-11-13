@@ -15,7 +15,11 @@ function sha256Hex(bytes: Uint8Array): string {
  */
 export async function runAttachmentLocatorMigrationDrill(): Promise<{
   readonly ok: boolean;
-  readonly cases: readonly { readonly name: string; readonly ok: boolean; readonly detail: string }[];
+  readonly cases: readonly {
+    readonly name: string;
+    readonly ok: boolean;
+    readonly detail: string;
+  }[];
 }> {
   const cases: Array<{ name: string; ok: boolean; detail: string }> = [];
 

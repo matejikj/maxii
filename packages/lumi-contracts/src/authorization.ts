@@ -10,11 +10,7 @@ export type AuthorizationDecision =
   | { readonly allow: false; readonly reason: 'not_member' | 'revoked' | 'role_denied' };
 
 export type FamilyAdminAction =
-  | 'invite'
-  | 'revoke_member'
-  | 'transfer_admin'
-  | 'erase_family'
-  | 'recovery_preview';
+  'invite' | 'revoke_member' | 'transfer_admin' | 'erase_family' | 'recovery_preview';
 
 export function authorizeFamilyAccess(input: {
   readonly memberships: readonly FamilyMembership[];
@@ -83,9 +79,7 @@ export function resolveActiveBinding(input: {
 }): AppUserId | null {
   const hit = input.bindings.find(
     (item) =>
-      item.issuer === input.issuer &&
-      item.subject === input.subject &&
-      item.revokedAt == null,
+      item.issuer === input.issuer && item.subject === input.subject && item.revokedAt == null,
   );
   return hit?.appUserId ?? null;
 }

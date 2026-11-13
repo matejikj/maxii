@@ -23,7 +23,11 @@ import { createSyntheticPhotoProcessor } from '../../src/infrastructure/attachme
 function services(): AttachmentServices {
   const key = randomBytes(32);
   return {
-    picker: { async pickPhotos() { return { status: 'cancelled' }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -81,9 +85,7 @@ function row(input: {
         sha256: 'b'.repeat(64),
         normalizationVersion: 'v1',
         blobKey:
-          availability === 'missing'
-            ? `missing:${input.id}_t`
-            : `att/${input.id}/thumb.jpe.sealed`,
+          availability === 'missing' ? `missing:${input.id}_t` : `att/${input.id}/thumb.jpe.sealed`,
         availability,
       },
     ],
@@ -94,7 +96,13 @@ test('inventory separates protected own/pinned bytes from recoverable cache', ()
   const inventory = buildPhotoStorageInventory({
     attachments: [
       row({ id: 'own', origin: 'imported', availability: 'durable', bytes: 100 }),
-      row({ id: 'pin', origin: 'downloaded', availability: 'durable', offlinePinned: true, bytes: 40 }),
+      row({
+        id: 'pin',
+        origin: 'downloaded',
+        availability: 'durable',
+        offlinePinned: true,
+        bytes: 40,
+      }),
       row({ id: 'cache', origin: 'downloaded', availability: 'cache', bytes: 25 }),
     ],
     nowMs: 10,
@@ -140,9 +148,15 @@ test('clearRecoverablePhotoCache deletes only cache sealed bytes', async () => {
   assert.equal(await attachments.blobs.hasDurable(cached.renditions[0]!.blobKey), false);
 
   const afterCache = await attachments.repository.getById(cached.attachmentId);
-  assert.equal(afterCache?.renditions.every((r) => r.availability === 'missing'), true);
+  assert.equal(
+    afterCache?.renditions.every((r) => r.availability === 'missing'),
+    true,
+  );
   const afterOwn = await attachments.repository.getById(own.attachmentId);
-  assert.equal(afterOwn?.renditions.every((r) => r.availability === 'durable'), true);
+  assert.equal(
+    afterOwn?.renditions.every((r) => r.availability === 'durable'),
+    true,
+  );
 });
 
 test('releaseDurableOwnPhotoCopy requires remote proof and backup confirmation', async () => {
@@ -181,7 +195,10 @@ test('releaseDurableOwnPhotoCopy requires remote proof and backup confirmation',
   if (!allowed.ok) return;
   assert.equal(allowed.releasedBlobCount, 2);
   assert.equal(await attachments.blobs.hasDurable(own.renditions[0]!.blobKey), false);
-  assert.equal(allowed.attachment.renditions.every((r) => r.availability === 'missing'), true);
+  assert.equal(
+    allowed.attachment.renditions.every((r) => r.availability === 'missing'),
+    true,
+  );
 });
 
 test('downloaded family rows cannot use the sole-own release path', async () => {

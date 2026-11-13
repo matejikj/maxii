@@ -45,10 +45,7 @@ export function buildCoverageReport(
 
   for (const revision of revisions) {
     for (let month = ageFrom; month <= ageTo; month += 1) {
-      if (
-        revision.ageMonths.fromInclusive <= month &&
-        revision.ageMonths.toInclusive >= month
-      ) {
+      if (revision.ageMonths.fromInclusive <= month && revision.ageMonths.toInclusive >= month) {
         byAgeMonth[month] = (byAgeMonth[month] ?? 0) + 1;
       }
     }

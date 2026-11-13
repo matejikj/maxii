@@ -64,10 +64,7 @@ export function enqueueDurableOutbox(
   },
 ): LocalSyncState {
   // Private workspace changes use a separate owner-scoped outbox/stream.
-  if (
-    isChildPrivateSyncKind(input.commandType) ||
-    input.commandType.startsWith('child_private.')
-  ) {
+  if (isChildPrivateSyncKind(input.commandType) || input.commandType.startsWith('child_private.')) {
     throw new AppError(
       'FORBIDDEN',
       'Child-private operations must not enter the family care outbox',
@@ -103,9 +100,7 @@ export function markOutboxAttempt(
   return {
     ...state,
     outbox: state.outbox.map((item) =>
-      wanted.has(item.operationId)
-        ? { ...item, attemptCount: item.attemptCount + 1 }
-        : item,
+      wanted.has(item.operationId) ? { ...item, attemptCount: item.attemptCount + 1 } : item,
     ),
   };
 }

@@ -6,7 +6,11 @@ import type { VectorNode } from '../core/vector/types';
 function renderNode(node: VectorNode, key: number): React.ReactElement {
   switch (node.kind) {
     case 'group':
-      return <G key={key} {...node.props}>{node.children.map(renderNode)}</G>;
+      return (
+        <G key={key} {...node.props}>
+          {node.children.map(renderNode)}
+        </G>
+      );
     case 'path':
       return <Path key={key} {...node.props} />;
     case 'circle':
@@ -18,6 +22,10 @@ function renderNode(node: VectorNode, key: number): React.ReactElement {
   }
 }
 
-export const VectorNodeView = React.memo(function VectorNodeView({ nodes }: { readonly nodes: readonly VectorNode[] }) {
+export const VectorNodeView = React.memo(function VectorNodeView({
+  nodes,
+}: {
+  readonly nodes: readonly VectorNode[];
+}) {
   return <>{nodes.map(renderNode)}</>;
 });

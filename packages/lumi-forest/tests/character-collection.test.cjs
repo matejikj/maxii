@@ -22,9 +22,10 @@ const {
 
 test('collection ships ten species with revisions and two signature actions', () => {
   assert.equal(LUMI_ANIMALS.length, 10);
-  assert.deepEqual([...LUMI_ANIMALS], [
-    'rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn', 'tiger', 'hippo',
-  ]);
+  assert.deepEqual(
+    [...LUMI_ANIMALS],
+    ['rabbit', 'bear', 'fox', 'otter', 'hedgehog', 'owl', 'squirrel', 'fawn', 'tiger', 'hippo'],
+  );
   for (const species of LUMI_ANIMALS) {
     const entry = CHARACTER_COLLECTION[species];
     assert.equal(entry.species, species);

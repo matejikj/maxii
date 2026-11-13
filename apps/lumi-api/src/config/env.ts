@@ -46,12 +46,13 @@ export type ApiConfig = {
 
 function readList(value: string | undefined): readonly string[] {
   if (!value?.trim()) return [];
-  return value.split(',').map((item) => item.trim()).filter(Boolean);
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
-export function loadApiConfig(
-  env: NodeJS.ProcessEnv = process.env,
-): ApiConfig {
+export function loadApiConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   const role = env.LUMI_PROCESS_ROLE === 'worker' ? 'worker' : 'api';
   const port = Number(env.LUMI_API_PORT ?? '8787');
   const issuer = env.LUMI_OIDC_ISSUER?.trim() || 'http://127.0.0.1:8080/realms/lumi';
@@ -71,9 +72,7 @@ export function loadApiConfig(
     oidcJwksUrl: env.LUMI_OIDC_JWKS_URL?.trim() || null,
     oidcClientId: env.LUMI_OIDC_CLIENT_ID?.trim() || 'lumi-api',
     oidcClientSecret: env.LUMI_OIDC_CLIENT_SECRET?.trim() || null,
-    oidcTokenUrl:
-      env.LUMI_OIDC_TOKEN_URL?.trim() ||
-      `${issuer}/protocol/openid-connect/token`,
+    oidcTokenUrl: env.LUMI_OIDC_TOKEN_URL?.trim() || `${issuer}/protocol/openid-connect/token`,
     oidcMock: env.LUMI_OIDC_MOCK === '1',
     allowedRedirectUris: readList(
       env.LUMI_OIDC_REDIRECT_URIS ||

@@ -102,10 +102,7 @@ export class MemoryChildPrivateSyncStore implements ChildPrivateSyncStorePort {
 
     return this.withOwnerLock(input.ownerAppUserId, async () => {
       const state = this.ensureOwner(input.ownerAppUserId);
-      if (
-        input.writerGeneration != null &&
-        input.writerGeneration !== state.writerGeneration
-      ) {
+      if (input.writerGeneration != null && input.writerGeneration !== state.writerGeneration) {
         return {
           ownerAppUserId: input.ownerAppUserId,
           attemptId: input.attemptId,
@@ -120,9 +117,7 @@ export class MemoryChildPrivateSyncStore implements ChildPrivateSyncStorePort {
 
       const receipts: SyncOperationReceipt[] = [];
       for (const operation of input.operations) {
-        receipts.push(
-          this.acceptOne(state, input.sessionAppUserId, operation, input.now),
-        );
+        receipts.push(this.acceptOne(state, input.sessionAppUserId, operation, input.now));
       }
       return {
         ownerAppUserId: input.ownerAppUserId,
@@ -138,10 +133,7 @@ export class MemoryChildPrivateSyncStore implements ChildPrivateSyncStorePort {
     cursor: SyncCursor | null;
     limit?: number;
   }): Promise<ChildPrivateSyncPullResponse> {
-    const limit = Math.min(
-      Math.max(1, input.limit ?? 20),
-      LUMI_API_LIMITS.maxSyncPullPage,
-    );
+    const limit = Math.min(Math.max(1, input.limit ?? 20), LUMI_API_LIMITS.maxSyncPullPage);
 
     let afterSeq = 0;
     if (input.cursor) {
@@ -274,10 +266,7 @@ export class MemoryChildPrivateSyncStore implements ChildPrivateSyncStorePort {
     return receipt;
   }
 
-  private async withOwnerLock<T>(
-    ownerAppUserId: AppUserId,
-    run: () => Promise<T>,
-  ): Promise<T> {
+  private async withOwnerLock<T>(ownerAppUserId: AppUserId, run: () => Promise<T>): Promise<T> {
     const key = String(ownerAppUserId);
     const previous = this.locks.get(key) ?? Promise.resolve();
     let release!: () => void;
@@ -304,20 +293,13 @@ function entryVisibleTo(item: StoredReceipt, sessionAppUserId: AppUserId): boole
   if (!isChildPrivateShareKind(item.operation.kind)) {
     return false;
   }
-  return childPrivateShareAudience(item.operation.payload).includes(
-    String(sessionAppUserId),
-  );
+  return childPrivateShareAudience(item.operation.payload).includes(String(sessionAppUserId));
 }
 
-function presentEntry(
-  item: StoredReceipt,
-  sessionAppUserId: AppUserId,
-): SyncChangelogEntry {
+function presentEntry(item: StoredReceipt, sessionAppUserId: AppUserId): SyncChangelogEntry {
   const isOwner = String(item.ownerAppUserId) === String(sessionAppUserId);
   // Non-owners only ever see share snapshot kinds already filtered above.
-  const payload = isOwner
-    ? item.operation.payload
-    : stripLivePrivateFields(item.operation.payload);
+  const payload = isOwner ? item.operation.payload : stripLivePrivateFields(item.operation.payload);
   return {
     changelogSeq: item.globalSeq,
     operationId: item.operationId,
@@ -343,12 +325,8 @@ function stripLivePrivateFields(
   return next;
 }
 
-export function hashChildPrivatePayload(
-  payload: Readonly<Record<string, unknown>>,
-): string {
-  return createHash('sha256')
-    .update(stableStringify(payload), 'utf8')
-    .digest('hex');
+export function hashChildPrivatePayload(payload: Readonly<Record<string, unknown>>): string {
+  return createHash('sha256').update(stableStringify(payload), 'utf8').digest('hex');
 }
 
 function encodeCursor(payload: CursorPayload): SyncCursor {

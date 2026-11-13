@@ -5,10 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  buildPrimary58Files,
-  buildPrimary58Manifest,
-} from '../src/content/pack/primary58Pack.ts';
+import { buildPrimary58Files, buildPrimary58Manifest } from '../src/content/pack/primary58Pack.ts';
 import { signContentPackManifest } from '../src/content/pack/sign.ts';
 import { verifyContentPack } from '../src/content/pack/verify.ts';
 

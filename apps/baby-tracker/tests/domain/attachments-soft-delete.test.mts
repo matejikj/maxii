@@ -23,7 +23,11 @@ import { createSyntheticPhotoProcessor } from '../../src/infrastructure/attachme
 function services(): AttachmentServices {
   const key = randomBytes(32);
   return {
-    picker: { async pickPhotos() { return { status: 'cancelled' }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -106,25 +110,17 @@ test('soft-delete keeps sealed bytes and cancels open transfer jobs', async () =
   });
   assert.ok(deleted);
   assert.equal(deleted!.attachment.deletedAtMs, 1_000);
-  assert.equal(
-    deleted!.attachment.retainUntilMs,
-    1_000 + ATTACHMENT_TRASH_RETENTION_MS,
-  );
+  assert.equal(deleted!.attachment.retainUntilMs, 1_000 + ATTACHMENT_TRASH_RETENTION_MS);
   assert.equal(deleted!.metadataOutbox.commandType, 'attachment.tombstone');
   assert.equal(await attachments.blobs.hasDurable(photo.renditions[0]!.blobKey), true);
   assert.equal(
     (await attachments.repository.listAll()).some((row) => row.attachmentId === photo.attachmentId),
     false,
   );
-  assert.equal(
-    (await attachments.repository.listSoftDeleted()).length,
-    1,
-  );
+  assert.equal((await attachments.repository.listSoftDeleted()).length, 1);
   assert.ok(deleted!.cancelledJobIds.length > 0);
   assert.equal(
-    transfer.getJobs().every(
-      (job) => job.state === 'cancelled' || job.state === 'succeeded',
-    ),
+    transfer.getJobs().every((job) => job.state === 'cancelled' || job.state === 'succeeded'),
     true,
   );
 });
@@ -196,7 +192,10 @@ test('purge after retention removes sealed bytes but keeps metadata tombstone', 
   assert.equal(await attachments.blobs.hasDurable(photo.renditions[0]!.blobKey), false);
   const tombstone = await attachments.repository.getById(photo.attachmentId);
   assert.ok(tombstone?.deletedAtMs != null);
-  assert.equal(tombstone?.renditions.every((row) => row.availability === 'missing'), true);
+  assert.equal(
+    tombstone?.renditions.every((row) => row.availability === 'missing'),
+    true,
+  );
 });
 
 test('cancelTransferJobsForAttachment leaves succeeded jobs alone', () => {

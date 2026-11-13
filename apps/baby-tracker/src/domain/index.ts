@@ -1,28 +1,11 @@
 export { AppError, isAppError } from './errors';
 export type { AppErrorCode, AppErrorDetails } from './errors';
-export type {
-  ActorId,
-  ChildId,
-  DeviceId,
-  EntityId,
-  OperationId,
-  RevisionId,
-} from './ids';
-export {
-  asActorId,
-  asChildId,
-  asDeviceId,
-  asEntityId,
-  asOperationId,
-  asRevisionId,
-} from './ids';
+export type { ActorId, ChildId, DeviceId, EntityId, OperationId, RevisionId } from './ids';
+export { asActorId, asChildId, asDeviceId, asEntityId, asOperationId, asRevisionId } from './ids';
 export * from './time';
 export * from './entities';
 export * from './commands';
-export {
-  DOMAIN_VOCABULARY,
-  type DomainVocabularyKey,
-} from './vocabulary';
+export { DOMAIN_VOCABULARY, type DomainVocabularyKey } from './vocabulary';
 export {
   knownNursingActiveMs,
   knownSleepDurationMs,
@@ -127,10 +110,7 @@ export {
   isExportableMetaKey,
   parseDiaryArchive,
 } from './backup/parseDiaryArchive';
-export {
-  careEventsToPrivateCsv,
-  escapeCsvCell,
-} from './backup/diaryCsv';
+export { careEventsToPrivateCsv, escapeCsvCell } from './backup/diaryCsv';
 export {
   bottleContentsSchema,
   careOccurrenceSchema,
@@ -271,10 +251,7 @@ export {
   createMemoryChildPrivateSyncStateStore,
   type ChildPrivateSyncStateStore,
 } from './sync/childPrivateSyncStateStore';
-export {
-  buildSyncTransferPresentation,
-  type SyncTransferPresentation,
-} from './sync/presentation';
+export { buildSyncTransferPresentation, type SyncTransferPresentation } from './sync/presentation';
 export {
   buildFamilyDurabilityPresentation,
   describeRecordTransferLine,

@@ -50,12 +50,8 @@ export async function runFamilyComposeStackDrill(input: {
     'restore-runbook.txt',
     'migration-cutover-runbook.txt',
   ];
-  const existing = new Set(
-    runbooks.filter((name) => existsSync(join(input.deployDir, name))),
-  );
-  const owners = parseOperationsOwners(
-    JSON.parse(readFileSync(ownersPath, 'utf8')) as unknown,
-  );
+  const existing = new Set(runbooks.filter((name) => existsSync(join(input.deployDir, name))));
+  const owners = parseOperationsOwners(JSON.parse(readFileSync(ownersPath, 'utf8')) as unknown);
   const readiness = evaluateFamilyOpsReadiness({
     owners,
     requiredRunbookPaths: runbooks,
@@ -67,9 +63,7 @@ export async function runFamilyComposeStackDrill(input: {
   cases.push({
     name: 'ops_software_ready',
     ok: readiness.softwareReady,
-    detail: readiness.softwareReady
-      ? 'software checklist ready'
-      : readiness.blockers.join(','),
+    detail: readiness.softwareReady ? 'software checklist ready' : readiness.blockers.join(','),
   });
   cases.push({
     name: 'ops_live_ready_stays_false',
@@ -205,9 +199,7 @@ export async function runFamilyComposeStackDrill(input: {
       cases.push({
         name: 's3mock_reachable',
         ok: response.ok,
-        detail: response.ok
-          ? 'local S3-compatible endpoint healthy'
-          : `status ${response.status}`,
+        detail: response.ok ? 'local S3-compatible endpoint healthy' : `status ${response.status}`,
       });
     } catch (error) {
       cases.push({
@@ -234,7 +226,6 @@ export async function runFamilyComposeStackDrill(input: {
 
 export const LOCAL_COMPOSE_STACK_DRILL_DEFAULTS = {
   databaseUrl: 'postgres://lumi_app:lumi_app_dev_only@127.0.0.1:5433/lumi_app',
-  adminDatabaseUrl:
-    'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
+  adminDatabaseUrl: 'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
   s3Endpoint: 'http://127.0.0.1:9090',
 } as const;

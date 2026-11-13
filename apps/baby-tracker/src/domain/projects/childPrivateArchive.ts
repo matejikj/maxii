@@ -89,8 +89,7 @@ export function createChildPrivateArchive(input: {
   if (!plan.ok) {
     return { ok: false, reason: 'child_mode_inactive' };
   }
-  const schemaCompatibility =
-    input.schemaCompatibility ?? CHILD_PRIVATE_ARCHIVE_MAX_COMPAT;
+  const schemaCompatibility = input.schemaCompatibility ?? CHILD_PRIVATE_ARCHIVE_MAX_COMPAT;
   const manifest = buildChildPrivateArchiveManifest({
     ownerAppUserId: input.ownerAppUserId,
     createdAtMs: input.createdAtMs,

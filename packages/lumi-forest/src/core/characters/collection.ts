@@ -136,7 +136,9 @@ const ALL_STATES = CHARACTER_SEMANTIC_STATES;
 
 export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollectionEntry>> = {
   tiger: {
-    species: 'tiger', displayName: 'Timi', artworkRevision: CHARACTER_BLUEPRINTS.tiger.artworkRevision!,
+    species: 'tiger',
+    displayName: 'Timi',
+    artworkRevision: CHARACTER_BLUEPRINTS.tiger.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'tigerWave', labelCs: 'Jemně pozdravit', prop: null, semantic: 'greeting' },
@@ -144,7 +146,9 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
     ],
   },
   hippo: {
-    species: 'hippo', displayName: 'Hugo', artworkRevision: CHARACTER_BLUEPRINTS.hippo.artworkRevision!,
+    species: 'hippo',
+    displayName: 'Hugo',
+    artworkRevision: CHARACTER_BLUEPRINTS.hippo.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
       { id: 'hippoListen', labelCs: 'Naslouchat', prop: null, semantic: 'listening' },
@@ -187,7 +191,12 @@ export const CHARACTER_COLLECTION: Readonly<Record<LumiAnimal, CharacterCollecti
     artworkRevision: CHARACTER_BLUEPRINTS.otter.artworkRevision!,
     supportedSemanticStates: ALL_STATES,
     signatureActions: [
-      { id: 'offerExplore', labelCs: 'Nabídnout k prozkoumání', prop: 'blocks', semantic: 'pointContent' },
+      {
+        id: 'offerExplore',
+        labelCs: 'Nabídnout k prozkoumání',
+        prop: 'blocks',
+        semantic: 'pointContent',
+      },
       { id: 'playfulLean', labelCs: 'Hravé naklonění', prop: null, semantic: 'gentleJoy' },
     ],
   },

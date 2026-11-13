@@ -68,10 +68,7 @@ function fixture() {
       now,
       childPrivateModeActive: true,
     });
-  const portfolio = [
-    item(mine, OWNER, 'port_mine'),
-    item(theirs, SIBLING, 'port_sibling'),
-  ];
+  const portfolio = [item(mine, OWNER, 'port_mine'), item(theirs, SIBLING, 'port_sibling')];
   const share = (project: Project, owner: typeof OWNER, id: string) =>
     publishShareSnapshot({
       shareId: asEntityId(id),
@@ -110,10 +107,7 @@ test('owner export includes only own childPrivate project, portfolio and share c
     shares: f.shares,
   });
   assert.equal(plan.ok, true);
-  assert.deepEqual(
-    plan.projects.map((p) => p.projectId).sort(),
-    ['proj_mine', 'proj_mine_closed'],
-  );
+  assert.deepEqual(plan.projects.map((p) => p.projectId).sort(), ['proj_mine', 'proj_mine_closed']);
   assert.ok(plan.projects.every((p) => p.scope === 'childPrivate' && p.ownerAppUserId === OWNER));
   assert.equal(plan.manifest?.ownerAppUserId, OWNER);
   assert.equal(plan.manifest?.projectCount, 2);
@@ -165,16 +159,28 @@ test('filters narrow the owner export without widening it', () => {
     shares: f.shares,
   } as const;
   const closedOnly = planChildPrivateExport({ ...base, filters: { statuses: ['closed'] } });
-  assert.deepEqual(closedOnly.projects.map((p) => p.projectId), ['proj_mine_closed']);
+  assert.deepEqual(
+    closedOnly.projects.map((p) => p.projectId),
+    ['proj_mine_closed'],
+  );
   assert.equal(closedOnly.manifest?.portfolioCount, 0);
-  const noPortfolio = planChildPrivateExport({ ...base, filters: { includePortfolio: false, includeShares: false } });
+  const noPortfolio = planChildPrivateExport({
+    ...base,
+    filters: { includePortfolio: false, includeShares: false },
+  });
   assert.equal(noPortfolio.manifest?.portfolioCount, 0);
   assert.equal(noPortfolio.manifest?.shareCount, 0);
   assert.equal(noPortfolio.manifest?.projectCount, 2);
-  const otherChild = planChildPrivateExport({ ...base, filters: { childId: asChildId('child_zzz') } });
+  const otherChild = planChildPrivateExport({
+    ...base,
+    filters: { childId: asChildId('child_zzz') },
+  });
   assert.equal(otherChild.manifest?.projectCount, 0);
   // Asking for a sibling's status never exposes the sibling's rows.
-  const wide = planChildPrivateExport({ ...base, filters: { statuses: ['idea', 'active', 'paused', 'closed', 'archived'] } });
+  const wide = planChildPrivateExport({
+    ...base,
+    filters: { statuses: ['idea', 'active', 'paused', 'closed', 'archived'] },
+  });
   assert.ok(!wide.projects.some((p) => p.ownerAppUserId === SIBLING));
 });
 

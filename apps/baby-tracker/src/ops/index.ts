@@ -15,10 +15,7 @@ export {
   type NativeIdCheckInput,
   type NativeIdCheckResult,
 } from './nativeApplicationId';
-export {
-  assertSchemaCompatibleWithBinary,
-  canBinaryOpenSchema,
-} from './schemaCompatibility';
+export { assertSchemaCompatibleWithBinary, canBinaryOpenSchema } from './schemaCompatibility';
 export {
   createLocalOperationMetrics,
   metricFieldNames,

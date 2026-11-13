@@ -14,8 +14,7 @@ export type ChildPrivateSyncStateStore = {
 export function createMemoryChildPrivateSyncStateStore(
   initial?: LocalChildPrivateSyncState,
 ): ChildPrivateSyncStateStore {
-  let state: LocalChildPrivateSyncState =
-    initial ?? createEmptyChildPrivateSyncState();
+  let state: LocalChildPrivateSyncState = initial ?? createEmptyChildPrivateSyncState();
   return {
     async load() {
       return state;

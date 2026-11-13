@@ -35,7 +35,9 @@ export function normalizeQuickActionOrder(raw: unknown): QuickActionId[] {
   return ordered.slice(0, DEFAULT_QUICK_ACTIONS.length);
 }
 
-export async function loadQuickActionOrder(unitOfWork: UnitOfWorkFactory): Promise<QuickActionId[]> {
+export async function loadQuickActionOrder(
+  unitOfWork: UnitOfWorkFactory,
+): Promise<QuickActionId[]> {
   const raw = await unitOfWork.run((uow) => uow.meta.get(META_KEY));
   if (!raw) return [...DEFAULT_QUICK_ACTIONS];
   try {

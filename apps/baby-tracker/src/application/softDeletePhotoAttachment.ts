@@ -41,11 +41,7 @@ export function cancelTransferJobsForAttachment(
   const cancelledJobIds: string[] = [];
   const next = jobs.map((job) => {
     if (job.attachmentId !== attachmentId) return job;
-    if (
-      job.state === 'succeeded' ||
-      job.state === 'cancelled' ||
-      job.state === 'isolated'
-    ) {
+    if (job.state === 'succeeded' || job.state === 'cancelled' || job.state === 'isolated') {
       return job;
     }
     cancelledJobIds.push(job.jobId);
@@ -69,9 +65,7 @@ export async function softDeletePhotoAttachment(input: {
   readonly transferJobs?: readonly FamilyPhotoBlobTransferJob[];
   readonly replaceTransferJobs?: (next: readonly FamilyPhotoBlobTransferJob[]) => void;
 }): Promise<SoftDeletePhotoAttachmentResult | null> {
-  const current = await input.attachments.repository.getById(
-    asAttachmentId(input.attachmentId),
-  );
+  const current = await input.attachments.repository.getById(asAttachmentId(input.attachmentId));
   if (!current || current.deletedAtMs != null) return null;
 
   const deletedAtMs = input.nowMs;
@@ -87,10 +81,7 @@ export async function softDeletePhotoAttachment(input: {
     retainUntilMs,
   };
 
-  const cancelled = cancelTransferJobsForAttachment(
-    input.transferJobs ?? [],
-    current.attachmentId,
-  );
+  const cancelled = cancelTransferJobsForAttachment(input.transferJobs ?? [], current.attachmentId);
   if (cancelled.cancelledJobIds.length > 0) {
     input.replaceTransferJobs?.(cancelled.jobs);
   }
@@ -111,13 +102,10 @@ export async function restorePhotoAttachment(input: {
   readonly attachments: AttachmentServices;
   readonly nowMs: number;
 }): Promise<RestorePhotoAttachmentResult> {
-  const current = await input.attachments.repository.getById(
-    asAttachmentId(input.attachmentId),
-  );
+  const current = await input.attachments.repository.getById(asAttachmentId(input.attachmentId));
   if (!current) return { ok: false, reason: 'not_found' };
   if (current.deletedAtMs == null) return { ok: false, reason: 'not_deleted' };
-  const retainUntil =
-    current.retainUntilMs ?? attachmentTrashRetainUntilMs(current.deletedAtMs);
+  const retainUntil = current.retainUntilMs ?? attachmentTrashRetainUntilMs(current.deletedAtMs);
   if (input.nowMs >= retainUntil) {
     return { ok: false, reason: 'retention_expired' };
   }
@@ -146,9 +134,7 @@ export async function purgeExpiredPhotoPayloads(input: {
     (input.transferJobs ?? [])
       .filter(
         (job) =>
-          job.state === 'queued' ||
-          job.state === 'in_flight' ||
-          job.state === 'quota_waiting',
+          job.state === 'queued' || job.state === 'in_flight' || job.state === 'quota_waiting',
       )
       .map((job) => job.attachmentId),
   );
@@ -160,10 +146,8 @@ export async function purgeExpiredPhotoPayloads(input: {
       attachmentId: row.attachmentId,
       deletedAtMs: row.deletedAtMs,
       retainUntilMs: row.retainUntilMs,
-      referencedByCheckpoint:
-        input.referencedByCheckpointIds?.has(row.attachmentId) === true,
-      referencedByConflict:
-        input.referencedByConflictIds?.has(row.attachmentId) === true,
+      referencedByCheckpoint: input.referencedByCheckpointIds?.has(row.attachmentId) === true,
+      referencedByConflict: input.referencedByConflictIds?.has(row.attachmentId) === true,
       hasActiveTransferJob: activeJobIds.has(row.attachmentId),
       localCopyKinds: [],
       nowMs: input.nowMs,

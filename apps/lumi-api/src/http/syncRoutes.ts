@@ -1,10 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type {
-  AppUserId,
-  FamilyId,
-  SyncCursor,
-  SyncPushRequest,
-} from '@lumi/contracts';
+import type { AppUserId, FamilyId, SyncCursor, SyncPushRequest } from '@lumi/contracts';
 import { LUMI_API_PROTOCOL_VERSION } from '@lumi/contracts';
 import type { ApiConfig } from '../config/env.ts';
 import type { AccessTokenVerifier } from '../auth/tokenVerifier.ts';
@@ -34,17 +29,21 @@ export function registerSyncRoutes(app: FastifyInstance, deps: SyncRouteDeps): v
     },
     reply: { code: (status: number) => { send: (body: unknown) => unknown } },
   ): Promise<AppUserId | null> {
-    const usesBearer = typeof request.headers.authorization === 'string'
-      && String(request.headers.authorization).startsWith('Bearer ');
+    const usesBearer =
+      typeof request.headers.authorization === 'string' &&
+      String(request.headers.authorization).startsWith('Bearer ');
     const cookieHeader = typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
-    if (!verifyCsrfDoubleSubmit({
-      method: request.method,
-      cookieToken: readCookie(cookieHeader, config.csrfCookieName),
-      headerToken: typeof request.headers['x-csrf-token'] === 'string'
-        ? request.headers['x-csrf-token']
-        : undefined,
-      usesBearerAuth: usesBearer,
-    })) {
+    if (
+      !verifyCsrfDoubleSubmit({
+        method: request.method,
+        cookieToken: readCookie(cookieHeader, config.csrfCookieName),
+        headerToken:
+          typeof request.headers['x-csrf-token'] === 'string'
+            ? request.headers['x-csrf-token']
+            : undefined,
+        usesBearerAuth: usesBearer,
+      })
+    ) {
       const err = apiError('csrf_rejected', 'CSRF token mismatch', String(request.id));
       reply.code(err.status).send(err.body);
       return null;
@@ -105,9 +104,7 @@ export function registerSyncRoutes(app: FastifyInstance, deps: SyncRouteDeps): v
         memberships: store.allMemberships(),
         attemptId: body.attemptId,
         operations: body.operations ?? [],
-        ...(body.writerGeneration != null
-          ? { writerGeneration: body.writerGeneration }
-          : {}),
+        ...(body.writerGeneration != null ? { writerGeneration: body.writerGeneration } : {}),
         now: new Date().toISOString(),
       });
       return result;
@@ -140,9 +137,7 @@ export function registerSyncRoutes(app: FastifyInstance, deps: SyncRouteDeps): v
           appUserId,
           memberships: store.allMemberships(),
           cursor: (query.cursor as SyncCursor | undefined) ?? null,
-          ...(parsedLimit != null && Number.isFinite(parsedLimit)
-            ? { limit: parsedLimit }
-            : {}),
+          ...(parsedLimit != null && Number.isFinite(parsedLimit) ? { limit: parsedLimit } : {}),
         });
         if (result.resyncRequired) {
           const err = apiError(

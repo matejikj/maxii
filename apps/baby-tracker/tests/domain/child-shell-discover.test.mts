@@ -22,10 +22,7 @@ const now = { epochMs: 1_700_000_400_000 };
 const childId = asChildId('child_discover');
 const owner = asActorId('child_owner_discover');
 
-function memoryDiscoverUow(seed: {
-  suggestions?: ParentSuggestion[];
-  projects?: Project[];
-}): {
+function memoryDiscoverUow(seed: { suggestions?: ParentSuggestion[]; projects?: Project[] }): {
   unitOfWork: UnitOfWorkFactory;
   suggestions: Map<string, ParentSuggestion>;
   projects: Map<string, Project>;
@@ -43,8 +40,7 @@ function memoryDiscoverUow(seed: {
             projects.set(project.projectId, project);
           },
           listAll: async () => [...projects.values()],
-          listByChild: async (id) =>
-            [...projects.values()].filter((row) => row.childId === id),
+          listByChild: async (id) => [...projects.values()].filter((row) => row.childId === id),
           delete: async () => undefined,
           deleteByChild: async () => 0,
           clearAll: async () => {
@@ -56,8 +52,7 @@ function memoryDiscoverUow(seed: {
           save: async (suggestion) => {
             suggestions.set(suggestion.suggestionId, suggestion);
           },
-          listByChild: async (id) =>
-            [...suggestions.values()].filter((row) => row.childId === id),
+          listByChild: async (id) => [...suggestions.values()].filter((row) => row.childId === id),
           listByAuthor: async () => [...suggestions.values()],
           listAll: async () => [...suggestions.values()],
           deleteByChild: async () => 0,

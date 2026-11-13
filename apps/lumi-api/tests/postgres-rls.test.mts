@@ -71,10 +71,9 @@ test('RLS blocks cross-family object reads on pooled connections', async (t) => 
       pool,
       { appUserId: userA as AppUserId, familyId: familyA as FamilyId },
       async (client) => {
-        const result = await client.query(
-          `select label from family_object where object_id = $1`,
-          [objectA],
-        );
+        const result = await client.query(`select label from family_object where object_id = $1`, [
+          objectA,
+        ]);
         return result.rows[0]?.label as string | undefined;
       },
     );
@@ -84,10 +83,9 @@ test('RLS blocks cross-family object reads on pooled connections', async (t) => 
       pool,
       { appUserId: userB as AppUserId, familyId: familyA as FamilyId },
       async (client) => {
-        const result = await client.query(
-          `select label from family_object where object_id = $1`,
-          [objectA],
-        );
+        const result = await client.query(`select label from family_object where object_id = $1`, [
+          objectA,
+        ]);
         return result.rowCount;
       },
     );
@@ -98,10 +96,9 @@ test('RLS blocks cross-family object reads on pooled connections', async (t) => 
       pool,
       { appUserId: userB as AppUserId, familyId: familyB as FamilyId },
       async (client) => {
-        const result = await client.query(
-          `select label from family_object where object_id = $1`,
-          [objectA],
-        );
+        const result = await client.query(`select label from family_object where object_id = $1`, [
+          objectA,
+        ]);
         return result.rowCount;
       },
     );

@@ -1,4 +1,11 @@
-import React, { Component, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from 'react';
+import React, {
+  Component,
+  useEffect,
+  useMemo,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react';
 import {
   LumiAnimatedCharacter,
   LumiCharacter,
@@ -147,9 +154,12 @@ export function GuideCompanion({
 
   useEffect(() => {
     if (!base.settlesToCalm || !base.animate) return;
-    const handle = setTimeout(() => {
-      setSettled(true);
-    }, studioSettleDelayMs(isStudioActionId(base.studioActionId) ? base.studioActionId : null));
+    const handle = setTimeout(
+      () => {
+        setSettled(true);
+      },
+      studioSettleDelayMs(isStudioActionId(base.studioActionId) ? base.studioActionId : null),
+    );
     return () => clearTimeout(handle);
   }, [presentationKey, base.settlesToCalm, base.animate, base.studioActionId]);
 

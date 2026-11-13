@@ -9,11 +9,7 @@ import {
   CONTENT_READER_VERSION,
 } from './limits';
 import { findTrustedKey } from './trust';
-import type {
-  ContentPackFileBytes,
-  ContentPackManifest,
-  ContentPackSignature,
-} from './types';
+import type { ContentPackFileBytes, ContentPackManifest, ContentPackSignature } from './types';
 import { validateContentPackManifest } from './validatePack';
 
 export type VerifyPackOptions = {
@@ -51,7 +47,11 @@ export function verifyContentPack(
 
   const validated = validateContentPackManifest(manifestRaw);
   if (!validated.ok) {
-    return { ok: false, code: validated.errors[0]?.code ?? 'manifest', message: validated.errors[0]?.message ?? 'Invalid manifest' };
+    return {
+      ok: false,
+      code: validated.errors[0]?.code ?? 'manifest',
+      message: validated.errors[0]?.message ?? 'Invalid manifest',
+    };
   }
   const manifest = validated.manifest;
 
@@ -90,7 +90,11 @@ export function verifyContentPack(
   }
   const publicKey = hexToUint8(trusted.publicKeyHex);
   if (!ed25519.verify(signatureBytes, message, publicKey)) {
-    return { ok: false, code: 'signature_invalid', message: 'Manifest signature verification failed.' };
+    return {
+      ok: false,
+      code: 'signature_invalid',
+      message: 'Manifest signature verification failed.',
+    };
   }
 
   const floor = options.highestAcceptedGenerationByPackId?.get(manifest.packId) ?? 0;

@@ -21,7 +21,11 @@ function alpha(hex: string, opacity: number): string {
 }
 
 /** The same forest, garden and playground materials as the rest of the app. */
-export function forestGlassColors(colors: LumiSemanticColors, mode: LumiResolvedMode, motif: LumiMotif) {
+export function forestGlassColors(
+  colors: LumiSemanticColors,
+  mode: LumiResolvedMode,
+  motif: LumiMotif,
+) {
   const dark = mode === 'dark';
   const accent = {
     forest: dark ? '#806638' : '#E8D6A7',

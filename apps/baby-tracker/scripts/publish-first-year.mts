@@ -25,24 +25,21 @@ const STEPS: EditorialEvent[] = [
     stage: 'expert_reviewed',
     author: 'Tomáš Holý',
     atMs: expertAt,
-    note:
-      'Odborná kontrola celé sady 0–11 měsíců: věkové meze, readiness podmínky, bezpečnostní constraints a soulad zdrojů s principy. Schváleno pro vydání.',
+    note: 'Odborná kontrola celé sady 0–11 měsíců: věkové meze, readiness podmínky, bezpečnostní constraints a soulad zdrojů s principy. Schváleno pro vydání.',
     outcome: 'passed',
   },
   {
     stage: 'language_ux',
     author: 'Alena Světlá',
     atMs: languageAt,
-    note:
-      'Jazyková a UX kontrola české copy: názvy, kroky (max. 3), tón, conversation prompt a stop signály. Schváleno.',
+    note: 'Jazyková a UX kontrola české copy: názvy, kroky (max. 3), tón, conversation prompt a stop signály. Schváleno.',
     outcome: 'passed',
   },
   {
     stage: 'parent_verified',
     author: 'Barbora Bílá',
     atMs: parentAt,
-    note:
-      'Rodičovské ověření proveditelnosti doma: délka moment, srozumitelný postup, dobrovolný zápis zkušenosti. Schváleno.',
+    note: 'Rodičovské ověření proveditelnosti doma: délka moment, srozumitelný postup, dobrovolný zápis zkušenosti. Schváleno.',
     outcome: 'passed',
   },
   {

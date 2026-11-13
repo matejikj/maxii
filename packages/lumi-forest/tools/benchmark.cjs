@@ -10,5 +10,7 @@ const t1 = performance.now();
 const doc = composeScene(args);
 for (let i = 0; i < n; i++) serializeScene(doc);
 const t2 = performance.now();
-const f = (a,b) => ((b-a)/n).toFixed(4);
-console.log(`compile: ${f(t0,t1)} ms/scene; serialize: ${f(t1,t2)} ms/scene (Node, not native FPS)`);
+const f = (a, b) => ((b - a) / n).toFixed(4);
+console.log(
+  `compile: ${f(t0, t1)} ms/scene; serialize: ${f(t1, t2)} ms/scene (Node, not native FPS)`,
+);

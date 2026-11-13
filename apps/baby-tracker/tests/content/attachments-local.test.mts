@@ -105,12 +105,12 @@ test('attachPhotos saves durable local copies and keeps host text independent', 
   const display = stored[0]!.renditions.find((item) => item.role === 'display')!;
   assert.equal(display.availability, 'durable');
   assert.equal(await services.blobs.hasDurable(display.blobKey), true);
-  const bytes = await services.blobs.readDurable({ blobKey: display.blobKey, aad: display.blobKey });
+  const bytes = await services.blobs.readDurable({
+    blobKey: display.blobKey,
+    aad: display.blobKey,
+  });
   assert.equal(jpegContainsAsciiCanary(bytes, 'GPS:'), false);
-  assert.equal(
-    localAvailabilityLabel({ importState: 'linked', hasDurableDisplay: true }),
-    'local',
-  );
+  assert.equal(localAvailabilityLabel({ importState: 'linked', hasDurableDisplay: true }), 'local');
 });
 
 test('six-photo slot guard blocks a seventh candidate', () => {

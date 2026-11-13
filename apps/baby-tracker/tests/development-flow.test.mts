@@ -21,11 +21,11 @@ import {
   loadWeeklyDevelopmentGlance,
   removeFavorite,
 } from '../src/application/index.ts';
+import { LOCAL_LIBRARY_CONTENT_VERSION, LOCAL_LIBRARY_REVISIONS } from '../src/content/index.ts';
 import {
-  LOCAL_LIBRARY_CONTENT_VERSION,
-  LOCAL_LIBRARY_REVISIONS,
-} from '../src/content/index.ts';
-import { buildRecordExperienceCommand, mintMomentIds } from '../src/features/today/recordMomentIntent.ts';
+  buildRecordExperienceCommand,
+  mintMomentIds,
+} from '../src/features/today/recordMomentIntent.ts';
 import { createMemoryCheckpointStore } from '../src/infrastructure/database/native/checkpoint.ts';
 import { createMemoryDatabasePresence } from '../src/infrastructure/database/native/databasePresence.ts';
 import { createMemoryDatabaseKeyStore } from '../src/infrastructure/database/native/memoryKeyStore.ts';

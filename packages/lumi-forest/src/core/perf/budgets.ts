@@ -18,6 +18,10 @@ export const LUMI_PERFORMANCE_BUDGETS = {
 
 import type { VectorNode, SceneDocument } from '../vector/types';
 export function countVectorNodes(document: SceneDocument): number {
-  const count = (node: VectorNode): number => 1 + (node.kind === 'group' ? node.children.reduce((sum, child) => sum + count(child), 0) : 0);
-  return document.layers.reduce((sum, layer) => sum + layer.nodes.reduce((n, item) => n + count(item), 0), 0);
+  const count = (node: VectorNode): number =>
+    1 + (node.kind === 'group' ? node.children.reduce((sum, child) => sum + count(child), 0) : 0);
+  return document.layers.reduce(
+    (sum, layer) => sum + layer.nodes.reduce((n, item) => n + count(item), 0),
+    0,
+  );
 }

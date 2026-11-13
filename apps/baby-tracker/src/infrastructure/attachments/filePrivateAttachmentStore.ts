@@ -1,5 +1,9 @@
 import type { PrivateAttachmentBlobStore } from '../../domain/attachments';
-import { openAttachmentBlob, sealAttachmentBlob, type SealedAttachmentBlob } from './sealedBlobCodec';
+import {
+  openAttachmentBlob,
+  sealAttachmentBlob,
+  type SealedAttachmentBlob,
+} from './sealedBlobCodec';
 
 const ROOT_SEGMENT = 'lumi-private-attachments/';
 

@@ -246,12 +246,13 @@ export async function wipeSingleChildDiaryScope(input: {
       receipt.entityIds.some((id) => entityIds.has(id)),
     );
     const deletions = full.deletions.filter((deletion) => entityIds.has(deletion.entityId));
-    const nextActive = resolveActiveChildProfile(
-      remainingProfiles,
-      remainingActive[0]!.childId,
-    )!;
+    const nextActive = resolveActiveChildProfile(remainingProfiles, remainingActive[0]!.childId)!;
     const meta = [
-      ...full.meta.filter((entry) => entry.key !== META_ACTIVE_CHILD_ID && entry.key !== `${META_CHILD_AVATAR_PREFIX}${input.childId}`),
+      ...full.meta.filter(
+        (entry) =>
+          entry.key !== META_ACTIVE_CHILD_ID &&
+          entry.key !== `${META_CHILD_AVATAR_PREFIX}${input.childId}`,
+      ),
       { key: META_ACTIVE_CHILD_ID, value: nextActive.childId },
     ];
     const nextArchive = createDiaryArchive({

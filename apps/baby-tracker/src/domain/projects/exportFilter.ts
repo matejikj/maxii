@@ -67,10 +67,7 @@ export function filterSharesForRequester(input: {
   }
   return input.shares.filter((share) => {
     if (share.revokedAt != null) return false;
-    if (
-      input.principalAppUserId != null &&
-      share.ownerAppUserId === input.principalAppUserId
-    ) {
+    if (input.principalAppUserId != null && share.ownerAppUserId === input.principalAppUserId) {
       return true;
     }
     if (

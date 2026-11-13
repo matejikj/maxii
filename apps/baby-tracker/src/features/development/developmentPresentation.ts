@@ -8,7 +8,10 @@ export type LibrarySelection = {
 };
 
 function searchable(value: string): string {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('cs-CZ');
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('cs-CZ');
 }
 
 /** Search only published library metadata, never a child's diary. All criteria intersect. */

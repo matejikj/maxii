@@ -119,16 +119,16 @@ export class MemorySyncStore {
     if (!access.allow) {
       throw coded('forbidden', access.reason === 'revoked' ? 'revoked' : 'forbidden');
     }
-    if (input.operations.length === 0 || input.operations.length > LUMI_API_LIMITS.maxSyncPushBatch) {
+    if (
+      input.operations.length === 0 ||
+      input.operations.length > LUMI_API_LIMITS.maxSyncPushBatch
+    ) {
       throw coded('validation', 'invalid_batch_size');
     }
 
     return this.withFamilyLock(input.familyId, async () => {
       const state = this.ensureFamily(input.familyId);
-      if (
-        input.writerGeneration != null &&
-        input.writerGeneration !== state.writerGeneration
-      ) {
+      if (input.writerGeneration != null && input.writerGeneration !== state.writerGeneration) {
         return {
           familyId: input.familyId,
           attemptId: input.attemptId,
@@ -253,10 +253,7 @@ export class MemorySyncStore {
     }
 
     const state = this.ensureFamily(input.familyId);
-    const limit = Math.min(
-      Math.max(1, input.limit ?? 20),
-      LUMI_API_LIMITS.maxSyncPullPage,
-    );
+    const limit = Math.min(Math.max(1, input.limit ?? 20), LUMI_API_LIMITS.maxSyncPullPage);
 
     let afterSeq = 0;
     if (input.cursor) {
@@ -434,9 +431,7 @@ function mapOperationKind(
 }
 
 export function hashSyncPayload(payload: Readonly<Record<string, unknown>>): string {
-  return createHash('sha256')
-    .update(stableStringify(payload), 'utf8')
-    .digest('hex');
+  return createHash('sha256').update(stableStringify(payload), 'utf8').digest('hex');
 }
 
 export function encodeCursor(payload: CursorPayload): SyncCursor {

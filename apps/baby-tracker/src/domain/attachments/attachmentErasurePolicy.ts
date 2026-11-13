@@ -31,11 +31,7 @@ export type AttachmentPurgeDecision =
   | {
       readonly purge: false;
       readonly reason:
-        | 'still_active'
-        | 'still_in_trash'
-        | 'checkpoint_pin'
-        | 'conflict_pin'
-        | 'active_job';
+        'still_active' | 'still_in_trash' | 'checkpoint_pin' | 'conflict_pin' | 'active_job';
     };
 
 /**
@@ -48,8 +44,7 @@ export function planAttachmentPayloadPurge(
   if (input.deletedAtMs == null) {
     return { purge: false, reason: 'still_active' };
   }
-  const retainUntil =
-    input.retainUntilMs ?? attachmentTrashRetainUntilMs(input.deletedAtMs);
+  const retainUntil = input.retainUntilMs ?? attachmentTrashRetainUntilMs(input.deletedAtMs);
   if (input.nowMs < retainUntil) {
     return { purge: false, reason: 'still_in_trash' };
   }

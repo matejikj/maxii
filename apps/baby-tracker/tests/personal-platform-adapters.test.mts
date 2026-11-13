@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import 'fake-indexeddb/auto';
-import {
-  asChildId,
-  asTimeZoneId,
-  createDiaryArchive,
-} from '../src/domain/index.ts';
+import { asChildId, asTimeZoneId, createDiaryArchive } from '../src/domain/index.ts';
 import {
   createEncryptedFileCheckpointBackend,
   createMemoryCheckpointKeyVault,
@@ -16,9 +12,7 @@ import {
   createLogicalCheckpointVault,
   createMemoryLogicalCheckpointVault,
 } from '../src/infrastructure/database/logicalCheckpointVault.ts';
-import {
-  createExpoReminderScheduler,
-} from '../src/infrastructure/notifications/expoReminderScheduler.ts';
+import { createExpoReminderScheduler } from '../src/infrastructure/notifications/expoReminderScheduler.ts';
 import {
   createFaultedAppLockStore,
   createMemoryAppLockStore,
@@ -61,9 +55,7 @@ test('encrypted file checkpoint vault survives a new backend instance', async ()
   const files = createMemoryCheckpointTextFileStore();
   const sharedKey = randomBytes(32);
   const keysA = createMemoryCheckpointKeyVault(sharedKey);
-  const vaultA = createLogicalCheckpointVault(
-    createEncryptedFileCheckpointBackend(files, keysA),
-  );
+  const vaultA = createLogicalCheckpointVault(createEncryptedFileCheckpointBackend(files, keysA));
   const archive = sampleArchive(1_700_000_000_000);
   const created = await vaultA.create({
     kind: 'pre_import',
@@ -73,9 +65,7 @@ test('encrypted file checkpoint vault survives a new backend instance', async ()
   assert.equal(files.files.size, 1);
 
   const keysB = createMemoryCheckpointKeyVault(sharedKey);
-  const vaultB = createLogicalCheckpointVault(
-    createEncryptedFileCheckpointBackend(files, keysB),
-  );
+  const vaultB = createLogicalCheckpointVault(createEncryptedFileCheckpointBackend(files, keysB));
   const listed = await vaultB.list();
   assert.equal(listed.length, 1);
   assert.equal(listed[0]?.checkpointId, created.checkpointId);

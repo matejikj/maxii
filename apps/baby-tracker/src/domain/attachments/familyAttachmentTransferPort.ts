@@ -28,9 +28,7 @@ export type FamilyAttachmentUploadIntent = {
 };
 
 export type FamilyAttachmentTransferPort = {
-  readonly getQuota: (input: {
-    readonly familyId: string;
-  }) => Promise<
+  readonly getQuota: (input: { readonly familyId: string }) => Promise<
     FamilyAttachmentTransferResult<{
       readonly remainingBytes: number;
       readonly usedBytes: number;

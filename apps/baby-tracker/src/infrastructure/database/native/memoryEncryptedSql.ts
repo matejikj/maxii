@@ -19,11 +19,13 @@ type DatabaseState = {
  * store stays opaque, exclusive transactions roll back, and serialize captures
  * a durable snapshot. Not a cryptographic cipher — production uses expo-sqlite.
  */
-export function createMemoryEncryptedSqlOpener(options: {
-  cipherVersion?: string;
-  /** When false, assertSqlCipherAvailable-style probes fail. */
-  cipherAvailable?: boolean;
-} = {}): SqlDatabaseOpener & {
+export function createMemoryEncryptedSqlOpener(
+  options: {
+    cipherVersion?: string;
+    /** When false, assertSqlCipherAvailable-style probes fail. */
+    cipherAvailable?: boolean;
+  } = {},
+): SqlDatabaseOpener & {
   cipherVersion: string;
   cipherAvailable: boolean;
   getRawState(name: string): DatabaseState | undefined;
@@ -245,13 +247,21 @@ function normalizeSql(source: string): string {
   return source.replace(/\s+/g, ' ').trim();
 }
 
-async function execute(state: DatabaseState, source: string, params: SqlBindValue[]): Promise<number> {
+async function execute(
+  state: DatabaseState,
+  source: string,
+  params: SqlBindValue[],
+): Promise<number> {
   const sql = normalizeSql(source);
   if (/^CREATE TABLE IF NOT EXISTS schema_migrations\b/i.test(sql)) {
     ensureTable(state, 'schema_migrations');
     return 0;
   }
-  if (/^CREATE TABLE\b/i.test(sql) || /^CREATE UNIQUE INDEX\b/i.test(sql) || /^CREATE INDEX\b/i.test(sql)) {
+  if (
+    /^CREATE TABLE\b/i.test(sql) ||
+    /^CREATE UNIQUE INDEX\b/i.test(sql) ||
+    /^CREATE INDEX\b/i.test(sql)
+  ) {
     const table = tableNameFromCreate(sql);
     if (table) ensureTable(state, table);
     return 0;
@@ -306,15 +316,20 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM change_notifications/i.test(sql)) {
     return [...ensureTable(state, 'change_notifications').rows];
   }
-  const careById =
-    /^SELECT .+ FROM care_events WHERE event_id = \?$/i.exec(sql);
+  const careById = /^SELECT .+ FROM care_events WHERE event_id = \?$/i.exec(sql);
   if (careById) {
     return ensureTable(state, 'care_events').rows.filter((row) => row.event_id === params[0]);
   }
-  if (/^SELECT .+ FROM care_events WHERE child_id = \? AND event_type = \? ORDER BY sort_at_ms DESC, event_id DESC$/i.test(sql)) {
-    return sortCareDesc(ensureTable(state, 'care_events').rows.filter(
-      (row) => row.child_id === params[0] && row.event_type === params[1],
-    ));
+  if (
+    /^SELECT .+ FROM care_events WHERE child_id = \? AND event_type = \? ORDER BY sort_at_ms DESC, event_id DESC$/i.test(
+      sql,
+    )
+  ) {
+    return sortCareDesc(
+      ensureTable(state, 'care_events').rows.filter(
+        (row) => row.child_id === params[0] && row.event_type === params[1],
+      ),
+    );
   }
   const careRecent =
     /^SELECT .+ FROM care_events WHERE child_id = \? ORDER BY sort_at_ms DESC(?:, event_id DESC)? LIMIT \?$/i.exec(
@@ -360,8 +375,7 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
       ),
     );
   }
-  const careByChild =
-    /^SELECT .+ FROM care_events WHERE child_id = \?$/i.exec(sql);
+  const careByChild = /^SELECT .+ FROM care_events WHERE child_id = \?$/i.exec(sql);
   if (careByChild) {
     return ensureTable(state, 'care_events').rows.filter((row) => row.child_id === params[0]);
   }
@@ -424,7 +438,10 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
   if (/FROM drafts/i.test(sql)) {
     return [...ensureTable(state, 'drafts').rows];
   }
-  if (/^SELECT payload_json FROM child_profiles$/i.test(sql) || /^SELECT \* FROM child_profiles$/i.test(sql)) {
+  if (
+    /^SELECT payload_json FROM child_profiles$/i.test(sql) ||
+    /^SELECT \* FROM child_profiles$/i.test(sql)
+  ) {
     return [...ensureTable(state, 'child_profiles').rows];
   }
   if (/FROM child_profiles/i.test(sql)) {
@@ -476,13 +493,11 @@ async function query(state: DatabaseState, source: string, params: SqlBindValue[
     return ensureTable(state, 'projects').rows.filter((row) => row.child_id === params[0]);
   }
   if (/FROM projects/i.test(sql)) {
-    return [...ensureTable(state, 'projects').rows]
-      .slice()
-      .sort((a, b) => {
-        const updated = Number(b.updated_at_ms) - Number(a.updated_at_ms);
-        if (updated !== 0) return updated;
-        return String(b.project_id).localeCompare(String(a.project_id));
-      });
+    return [...ensureTable(state, 'projects').rows].slice().sort((a, b) => {
+      const updated = Number(b.updated_at_ms) - Number(a.updated_at_ms);
+      if (updated !== 0) return updated;
+      return String(b.project_id).localeCompare(String(a.project_id));
+    });
   }
   const portfolioByChild =
     /^SELECT .+ FROM portfolio_items WHERE child_id = \? ORDER BY created_at_ms DESC(?:, portfolio_item_id DESC)?$/i.exec(
@@ -605,7 +620,9 @@ function insertRow(state: DatabaseState, sql: string, params: SqlBindValue[]): n
       throw new Error('UNIQUE constraint failed: sessions_one_local_active');
     }
   }
-  const existingIndex = table.rows.findIndex((existing) => primaryKeyMatch(tableName, existing, row));
+  const existingIndex = table.rows.findIndex((existing) =>
+    primaryKeyMatch(tableName, existing, row),
+  );
   if (existingIndex >= 0) {
     table.rows[existingIndex] = row;
   } else {
@@ -634,12 +651,19 @@ function sortCareDesc(rows: Row[]): Row[] {
   return rows.slice().sort((a, b) => {
     const sortDelta = Number(b.sort_at_ms) - Number(a.sort_at_ms);
     if (sortDelta !== 0) return sortDelta;
-    return String(b.event_id) < String(a.event_id) ? -1 : String(b.event_id) > String(a.event_id) ? 1 : 0;
+    return String(b.event_id) < String(a.event_id)
+      ? -1
+      : String(b.event_id) > String(a.event_id)
+        ? 1
+        : 0;
   });
 }
 
 function unwrapLike(pattern: string): string {
-  return pattern.replace(/^%/, '').replace(/%$/, '').replace(/\\([%_\\])/g, '$1');
+  return pattern
+    .replace(/^%/, '')
+    .replace(/%$/, '')
+    .replace(/\\([%_\\])/g, '$1');
 }
 
 function updateRows(state: DatabaseState, sql: string, params: SqlBindValue[]): number {

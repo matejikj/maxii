@@ -73,9 +73,9 @@ export function SleepSessionController({
   const [feedback, setFeedback] = useState<SaveFeedbackState>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState<string | undefined>();
   const [undoAvailable, setUndoAvailable] = useState(false);
-  const [panel, setPanel] = useState<'none' | 'running' | 'forgotten' | 'editStart' | 'endedEarlier'>(
-    'none',
-  );
+  const [panel, setPanel] = useState<
+    'none' | 'running' | 'forgotten' | 'editStart' | 'endedEarlier'
+  >('none');
   const [startWall, setStartWall] = useState('');
   const [endWall, setEndWall] = useState('');
   const [note, setNote] = useState('');

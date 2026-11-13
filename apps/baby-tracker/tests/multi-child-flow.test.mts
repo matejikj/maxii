@@ -214,7 +214,10 @@ test('scoped export and wipe keep the sibling diary intact', async () => {
     firstCare: await uow.care.listRecent(first.childId, 10),
     secondCare: await uow.care.listRecent(second.childId, 10),
   }));
-  assert.equal(remaining.profiles.some((row) => row.childId === first.childId), false);
+  assert.equal(
+    remaining.profiles.some((row) => row.childId === first.childId),
+    false,
+  );
   assert.equal(remaining.firstCare.length, 0);
   assert.equal(remaining.secondCare.length, 1);
 

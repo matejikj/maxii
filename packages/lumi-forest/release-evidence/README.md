@@ -3,6 +3,7 @@
 There is **no** `manifest.json` in this source release because real devices have not been profiled. Never fabricate one to bypass the gate.
 
 When measured:
+
 1. Gather raw, anonymized native frames and memory traces under `release-evidence/traces/`.
 2. Construct `manifest.json` conforming to `manifest.example.json` for the **exact release git commit**.
 3. `node tools/device/verify-release-evidence.cjs release-evidence/manifest.json`.

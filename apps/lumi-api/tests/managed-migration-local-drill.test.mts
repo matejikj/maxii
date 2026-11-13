@@ -31,9 +31,7 @@ test('local managed migration drill preserves receipts, conflicts, and erasure r
     assert.equal(report.allChecksPassed, true);
     assert.ok(report.findings.includes('cloud_migration_not_claimed'));
     assert.equal(report.cutoverPlan.mode, 'drill');
-    assert.ok(
-      report.cutoverPlan.steps.every((step) => step.allowedInDrill),
-    );
+    assert.ok(report.cutoverPlan.steps.every((step) => step.allowedInDrill));
   } finally {
     await api.app.close();
   }
@@ -54,10 +52,7 @@ test('migration drill report never claims a completed cloud cutover', async () =
       erasureRegistry: api.erasureRegistry,
     });
     assert.equal(report.cloudMigrationClaimed, false);
-    assert.equal(
-      JSON.stringify(report).includes('"cloudMigrationClaimed":true'),
-      false,
-    );
+    assert.equal(JSON.stringify(report).includes('"cloudMigrationClaimed":true'), false);
   } finally {
     await api.app.close();
   }

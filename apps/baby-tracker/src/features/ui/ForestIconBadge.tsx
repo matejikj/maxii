@@ -3,8 +3,18 @@ import { View } from 'react-native';
 import { LumiIcon, useLumiTheme } from '@lumi/forest-design/native';
 import type { LumiMotif } from '@lumi/forest-design/core';
 
-export type ForestTone = 'sleep' | 'nursing' | 'bottle' | 'food' | 'diaper' | 'growth'
-  | 'care' | 'experience' | 'development' | 'today' | 'history';
+export type ForestTone =
+  | 'sleep'
+  | 'nursing'
+  | 'bottle'
+  | 'food'
+  | 'diaper'
+  | 'growth'
+  | 'care'
+  | 'experience'
+  | 'development'
+  | 'today'
+  | 'history';
 const LIGHT: Record<ForestTone, readonly [string, string, string]> = {
   sleep: ['#EEE8F4', '#65537E', '#A48ABB'],
   nursing: ['#F7E8E0', '#855645', '#BE886D'],
@@ -35,10 +45,14 @@ const DARK: Record<ForestTone, readonly [string, string, string]> = {
 /** Shared botanical materials for care cards, diary actions and illustrations. */
 export function forestTone(mode: 'light' | 'dark', name: ForestTone, motif: LumiMotif = 'forest') {
   const [background, ink, accent] = (mode === 'dark' ? DARK : LIGHT)[name];
-  if (['care', 'experience', 'development', 'today', 'history'].includes(name) && motif !== 'forest') {
-    if (motif === 'garden') return mode === 'dark'
-      ? { background: '#49343E', ink: '#F0D2DC', accent: '#D4A397' }
-      : { background: '#F4E4E7', ink: '#87515F', accent: '#C5987E' };
+  if (
+    ['care', 'experience', 'development', 'today', 'history'].includes(name) &&
+    motif !== 'forest'
+  ) {
+    if (motif === 'garden')
+      return mode === 'dark'
+        ? { background: '#49343E', ink: '#F0D2DC', accent: '#D4A397' }
+        : { background: '#F4E4E7', ink: '#87515F', accent: '#C5987E' };
     return mode === 'dark'
       ? { background: '#334B59', ink: '#CEE6F0', accent: '#D9B889' }
       : { background: '#E2EDF1', ink: '#3E6877', accent: '#B89B6B' };
@@ -50,8 +64,16 @@ export function ForestIconBadge({ name, size = 44 }: { name: ForestTone; size?: 
   const { mode, motif } = useLumiTheme();
   const tone = forestTone(mode, name, motif);
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.36,
-      backgroundColor: tone.background, alignItems: 'center', justifyContent: 'center' }}>
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size * 0.36,
+        backgroundColor: tone.background,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <LumiIcon name={name} color={tone.ink} accentColor={tone.accent} size={size * 0.61} />
     </View>
   );

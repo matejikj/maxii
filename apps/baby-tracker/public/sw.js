@@ -67,8 +67,7 @@ self.addEventListener('fetch', (event) => {
   // Never put private API/auth/diagnostic responses into the public cache.
   if (url.pathname.includes('/api/') || url.pathname.includes('diagnostics')) return;
 
-  const isDocument =
-    request.mode === 'navigate' || request.destination === 'document';
+  const isDocument = request.mode === 'navigate' || request.destination === 'document';
 
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {

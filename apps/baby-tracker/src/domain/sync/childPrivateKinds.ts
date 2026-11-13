@@ -13,17 +13,12 @@ export const CHILD_PRIVATE_SYNC_KINDS = [
 
 export type ChildPrivateSyncOperationKind = (typeof CHILD_PRIVATE_SYNC_KINDS)[number];
 
-export function isChildPrivateSyncKind(
-  kind: string,
-): kind is ChildPrivateSyncOperationKind {
+export function isChildPrivateSyncKind(kind: string): kind is ChildPrivateSyncOperationKind {
   return (CHILD_PRIVATE_SYNC_KINDS as readonly string[]).includes(kind);
 }
 
 export function isChildPrivateShareKind(kind: string): boolean {
-  return (
-    kind === 'child_private.share.publish' ||
-    kind === 'child_private.share.revoke'
-  );
+  return kind === 'child_private.share.publish' || kind === 'child_private.share.revoke';
 }
 
 /**

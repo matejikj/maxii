@@ -5,12 +5,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
-    "customConditions": [
-      "react-native"
-    ]
+    "customConditions": ["react-native"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ]
+  "include": ["**/*.ts", "**/*.tsx"]
 }

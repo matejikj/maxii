@@ -7,12 +7,7 @@ import type {
   TimeZoneId,
   ZonedInstant,
 } from '../../domain';
-import {
-  asEntityId,
-  asOperationId,
-  asRevisionId,
-  zonedInstant,
-} from '../../domain';
+import { asEntityId, asOperationId, asRevisionId, zonedInstant } from '../../domain';
 
 export type DiaperIntentIds = {
   operationId: ReturnType<typeof asOperationId>;

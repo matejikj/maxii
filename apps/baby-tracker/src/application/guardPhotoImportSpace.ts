@@ -36,7 +36,7 @@ export async function guardPhotoImportSpace(input: {
     reserveBytes = estimateWorstCasePhotoImportReserveBytes(candidateCount);
   }
 
-  let recoverableCacheBytes = 0;
+  let recoverableCacheBytes: number;
   try {
     const rows = await input.attachments.repository.listAll();
     recoverableCacheBytes = buildPhotoStorageInventory({ attachments: rows }).cacheBytes;

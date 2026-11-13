@@ -85,7 +85,8 @@ async function loadDayExperiences(
   const rows = await uow.care.listInSortRange(input.childId, fromMs, toMs);
   return rows.filter(
     (event): event is ExperienceCareEvent =>
-      event.type === 'experience' && careEventTouchesLocalDay(event, input.day, input.summaryTimeZone),
+      event.type === 'experience' &&
+      careEventTouchesLocalDay(event, input.day, input.summaryTimeZone),
   );
 }
 

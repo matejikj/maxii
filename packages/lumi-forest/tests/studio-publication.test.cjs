@@ -19,10 +19,10 @@ test('current publication lists workshop styles and studio capabilities without 
   assert.ok(pub.readerCapabilities.includes('studio.planPath'));
   assert.equal(resolvePublishedAppearanceStyle('workshop', pub), 'workshop');
   assert.equal(resolvePublishedAppearanceStyle('unknown', pub), 'forest');
-  assert.deepEqual([...studioActionsPublishedForSpecies('rabbit', pub)], [
-    'planPath',
-    'tryAlternatePath',
-  ]);
+  assert.deepEqual(
+    [...studioActionsPublishedForSpecies('rabbit', pub)],
+    ['planPath', 'tryAlternatePath'],
+  );
   assert.deepEqual([...studioActionsPublishedForSpecies('fox', pub)], []);
 });
 

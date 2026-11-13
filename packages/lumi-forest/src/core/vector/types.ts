@@ -21,11 +21,24 @@ export interface VectorProps {
   readonly clipRule?: 'nonzero' | 'evenodd';
 }
 
-type Leaf<T extends string> = { readonly kind: T; readonly props: VectorProps; readonly children?: never };
-export type VectorNode = Leaf<'path'> | Leaf<'ellipse'> | Leaf<'circle'> | Leaf<'rect'> |
-  { readonly kind: 'group'; readonly props: VectorProps; readonly children: readonly VectorNode[] };
+type Leaf<T extends string> = {
+  readonly kind: T;
+  readonly props: VectorProps;
+  readonly children?: never;
+};
+export type VectorNode =
+  | Leaf<'path'>
+  | Leaf<'ellipse'>
+  | Leaf<'circle'>
+  | Leaf<'rect'>
+  | {
+      readonly kind: 'group';
+      readonly props: VectorProps;
+      readonly children: readonly VectorNode[];
+    };
 
-export type LayerId = 'canvas' | 'landscape' | 'microdetails' | 'plants' | 'sky' | 'character' | 'objects';
+export type LayerId =
+  'canvas' | 'landscape' | 'microdetails' | 'plants' | 'sky' | 'character' | 'objects';
 export interface SceneLayer {
   readonly id: LayerId;
   readonly nodes: readonly VectorNode[];

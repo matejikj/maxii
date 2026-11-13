@@ -137,8 +137,5 @@ test('resolution draft stays a concept when remote heads change mid-review', () 
 
   const committed = markResolutionDraftCommitted(draft);
   assert.equal(committed.status, 'committed');
-  assert.equal(
-    refreshResolutionDraftAgainstHeads(committed, ['rX']).status,
-    'committed',
-  );
+  assert.equal(refreshResolutionDraftAgainstHeads(committed, ['rX']).status, 'committed');
 });

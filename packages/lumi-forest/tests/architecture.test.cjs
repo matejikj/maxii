@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../src/core');
 function scan(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
     return entry.isDirectory() ? scan(file) : entry.name.endsWith('.ts') ? [file] : [];
   });

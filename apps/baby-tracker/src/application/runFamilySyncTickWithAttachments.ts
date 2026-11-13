@@ -1,8 +1,4 @@
-import {
-  runSyncTick,
-  type SyncTransportPort,
-  type SyncWorkerResult,
-} from '../domain/sync/worker';
+import { runSyncTick, type SyncTransportPort, type SyncWorkerResult } from '../domain/sync/worker';
 import type { LocalSyncState } from '../domain/sync/transport';
 import type { AttachmentServices } from '../domain/attachments';
 import {

@@ -159,11 +159,7 @@ export function createWebUnitOfWorkFactory(
       }
 
       if (topics.size > 0) {
-        await runtime.changeFeed.publish(
-          [...topics],
-          options.nowMs?.() ?? Date.now(),
-          dataVersion,
-        );
+        await runtime.changeFeed.publish([...topics], options.nowMs?.() ?? Date.now(), dataVersion);
       }
       return result as T;
     },
@@ -206,13 +202,29 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       return page.events;
     },
     async listByType(childId, type) {
-      const rows = await db.careEvents.where('childId').equals(childId)
-        .and((row) => row.eventType === type).toArray();
-      return rows.map((row) => careEventFromRow({ event_id: row.eventId, child_id: row.childId,
-        event_type: row.eventType, revision_id: row.revisionId, sort_at_ms: row.sortAtMs,
-        payload_json: row.payloadJson })).sort(compareCareTimelineDesc);
+      const rows = await db.careEvents
+        .where('childId')
+        .equals(childId)
+        .and((row) => row.eventType === type)
+        .toArray();
+      return rows
+        .map((row) =>
+          careEventFromRow({
+            event_id: row.eventId,
+            child_id: row.childId,
+            event_type: row.eventType,
+            revision_id: row.revisionId,
+            sort_at_ms: row.sortAtMs,
+            payload_json: row.payloadJson,
+          }),
+        )
+        .sort(compareCareTimelineDesc);
     },
-    async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
+    async listInSortRange(
+      childId: ChildId,
+      fromSortAtMsInclusive: number,
+      toSortAtMsExclusive: number,
+    ) {
       const rows = await db.careEvents
         .where('childId')
         .equals(childId)
@@ -338,7 +350,12 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       }
       return rows.length;
     },
-    async search(childId: ChildId, normalizedQuery: string, limit: number, before: TimelineCursor | null) {
+    async search(
+      childId: ChildId,
+      normalizedQuery: string,
+      limit: number,
+      before: TimelineCursor | null,
+    ) {
       if (!normalizedQuery) {
         return listWebCarePage(db, childId, limit, before);
       }
@@ -552,9 +569,7 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
     },
     async getById(attachmentId) {
       const row = await db.photoAttachments.get(attachmentId);
-      return row
-        ? withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment)
-        : null;
+      return row ? withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment) : null;
     },
     async save(attachment) {
       await db.photoAttachments.put({
@@ -627,7 +642,11 @@ function createRepositories(db: LumiWebDatabase, topics: Set<ChangeTopic>): Unit
       topics.add('projects');
     },
     async listByChild(childId) {
-      const rows = await db.projects.where('childId').equals(childId).reverse().sortBy('updatedAtMs');
+      const rows = await db.projects
+        .where('childId')
+        .equals(childId)
+        .reverse()
+        .sortBy('updatedAtMs');
       return rows.map((row) => JSON.parse(row.payloadJson) as Project);
     },
     async listAll() {
@@ -916,9 +935,7 @@ async function listWebCarePage(
         payload_json: row.payloadJson,
       }),
     )
-    .filter((event) =>
-      isBeforeTimelineCursor(careSortAtMs(event), event.eventId, before),
-    )
+    .filter((event) => isBeforeTimelineCursor(careSortAtMs(event), event.eventId, before))
     .sort(compareCareTimelineDesc)
     .slice(0, safeLimit);
   return {

@@ -48,9 +48,7 @@ test('personal release gate fails when family remote clients would start', () =>
   });
   assert.equal(result.ok, false);
   assert.ok(
-    result.findings.some(
-      (item) => item.id === 'remote.boundary.cold' && item.ok === false,
-    ),
+    result.findings.some((item) => item.id === 'remote.boundary.cold' && item.ok === false),
   );
 });
 
@@ -71,7 +69,9 @@ test('personal release gate rejects storage probe and keystores on production ca
   assert.equal(result.ok, false);
   assert.ok(result.findings.some((item) => item.id === 'env.storageProbe.off' && !item.ok));
   assert.ok(
-    result.findings.some((item) => item.id === 'env.forbidden.EXPO_PUBLIC_LUMI_SERVICE_ROLE_KEY' && !item.ok),
+    result.findings.some(
+      (item) => item.id === 'env.forbidden.EXPO_PUBLIC_LUMI_SERVICE_ROLE_KEY' && !item.ok,
+    ),
   );
   assert.ok(result.findings.some((item) => item.id === 'repo.signing.absent' && !item.ok));
   assert.ok(

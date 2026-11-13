@@ -41,10 +41,7 @@ import { CareHero, CareIconBadge, CareRecordAction, CareSectionHeading } from '.
 import { GrowthChart } from './GrowthChart';
 import { GrowthRecorder } from './GrowthRecorder';
 import { CompactActiveSessionsVisibleContext } from '../shell/CompactActiveSessions';
-import {
-  loadGrowthDisplayUnits,
-  saveGrowthDisplayUnits,
-} from './growthUnitPreference';
+import { loadGrowthDisplayUnits, saveGrowthDisplayUnits } from './growthUnitPreference';
 
 /**
  * Care tab hosts growth overview plus past / no-duration sleep and nursing.
@@ -309,12 +306,22 @@ export function CareScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={stripVisible ? [] : ['top']}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: dockInset + 32 }]} testID="care-screen">
+    <SafeAreaView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      edges={stripVisible ? [] : ['top']}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: dockInset + 32 }]}
+        testID="care-screen"
+      >
         <View style={styles.pageHeading}>
           <View style={{ flex: 1, gap: 4 }}>
-            <LumiText variant="overline" tone="muted" style={styles.eyebrow}>{LUMI_MOTIFS[motif].brand}</LumiText>
-            <LumiText variant="h1" accessibilityRole="header" style={styles.title}>Péče</LumiText>
+            <LumiText variant="overline" tone="muted" style={styles.eyebrow}>
+              {LUMI_MOTIFS[motif].brand}
+            </LumiText>
+            <LumiText variant="h1" accessibilityRole="header" style={styles.title}>
+              Péče
+            </LumiText>
           </View>
           <CareIconBadge name="care" size={52} />
         </View>
@@ -324,32 +331,72 @@ export function CareScreen() {
           {...(feedbackMessage !== undefined ? { message: feedbackMessage } : {})}
         />
         <CareOverviewPanel overviewCache={runtime.overviewCache} />
-        <View style={[styles.growthCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <CareSectionHeading title="Rosteme spolu" subtitle="Každý malý pokrok má svůj příběh" icon="growth" />
+        <View
+          style={[
+            styles.growthCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <CareSectionHeading
+            title="Rosteme spolu"
+            subtitle="Každý malý pokrok má svůj příběh"
+            icon="growth"
+          />
           <GrowthChart
             series={buildGrowthSeries(growthEvents)}
             weightUnit={weightUnit}
             lengthUnit={lengthUnit}
             formatDate={formatGrowthDate}
           />
-          <LumiButton title={PRODUCT_COPY.actions.recordGrowth} onPress={() => setGrowthOpen(true)}
-            testID="care-record-growth" fullWidth style={styles.growthButton}
-            leftAdornment={<LumiIcon name="plus" color={colors.onPrimary} size={20} />} />
+          <LumiButton
+            title={PRODUCT_COPY.actions.recordGrowth}
+            onPress={() => setGrowthOpen(true)}
+            testID="care-record-growth"
+            fullWidth
+            style={styles.growthButton}
+            leftAdornment={<LumiIcon name="plus" color={colors.onPrimary} size={20} />}
+          />
         </View>
         <View style={{ gap: 14 }}>
-          <CareSectionHeading title="Doplnit do deníku" subtitle="Chvíle, na které zbyl čas až teď" icon="care" />
-          <CareRecordAction title={PRODUCT_COPY.actions.recordPastSleep} subtitle="Začátek a konec odpočinku"
-            icon="sleep" onPress={openPast} testID="care-past-sleep" />
-          <Pressable accessibilityRole="button" onPress={openNoDuration}
-            testID="care-sleep-no-duration" style={styles.quietAction}>
-            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>{PRODUCT_COPY.actions.recordSleepNoDuration}</LumiText>
+          <CareSectionHeading
+            title="Doplnit do deníku"
+            subtitle="Chvíle, na které zbyl čas až teď"
+            icon="care"
+          />
+          <CareRecordAction
+            title={PRODUCT_COPY.actions.recordPastSleep}
+            subtitle="Začátek a konec odpočinku"
+            icon="sleep"
+            onPress={openPast}
+            testID="care-past-sleep"
+          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={openNoDuration}
+            testID="care-sleep-no-duration"
+            style={styles.quietAction}
+          >
+            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>
+              {PRODUCT_COPY.actions.recordSleepNoDuration}
+            </LumiText>
             <LumiIcon name="arrow-right" color={colors.sceneAccent} size={17} />
           </Pressable>
-          <CareRecordAction title={PRODUCT_COPY.actions.recordPastNursing} subtitle="Dokončené kojení se známou délkou"
-            icon="nursing" onPress={openNursingPast} testID="care-past-nursing" />
-          <Pressable accessibilityRole="button" onPress={openNursingNoDuration}
-            testID="care-nursing-no-duration" style={styles.quietAction}>
-            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>{PRODUCT_COPY.actions.recordNursingNoDuration}</LumiText>
+          <CareRecordAction
+            title={PRODUCT_COPY.actions.recordPastNursing}
+            subtitle="Dokončené kojení se známou délkou"
+            icon="nursing"
+            onPress={openNursingPast}
+            testID="care-past-nursing"
+          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={openNursingNoDuration}
+            testID="care-nursing-no-duration"
+            style={styles.quietAction}
+          >
+            <LumiText variant="label" tone="accent" style={{ flex: 1 }}>
+              {PRODUCT_COPY.actions.recordNursingNoDuration}
+            </LumiText>
             <LumiIcon name="arrow-right" color={colors.sceneAccent} size={17} />
           </Pressable>
           <View style={[styles.timerNote, { backgroundColor: colors.surfaceSubtle }]}>
@@ -480,14 +527,28 @@ export function CareScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32,
-    maxWidth: 620, width: '100%', alignSelf: 'center', gap: 26 },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+    maxWidth: 620,
+    width: '100%',
+    alignSelf: 'center',
+    gap: 26,
+  },
   pageHeading: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   eyebrow: { fontSize: 10, letterSpacing: 2, lineHeight: 16 },
   title: { fontSize: 34, lineHeight: 42, letterSpacing: -1 },
   growthCard: { padding: 20, borderRadius: 26, borderWidth: 1, gap: 20 },
   growthButton: { minHeight: 52, borderRadius: 17, paddingHorizontal: 16, paddingVertical: 12 },
-  quietAction: { minHeight: 48, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row',
-    alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  quietAction: {
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
   timerNote: { padding: 16, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

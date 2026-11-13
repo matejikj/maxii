@@ -21,10 +21,7 @@ import {
   type ChildId,
   type DiaperContents,
 } from '../../domain';
-import {
-  buildReassignCareChildCommand,
-  rebuildSearchAfterReassign,
-} from '../../application';
+import { buildReassignCareChildCommand, rebuildSearchAfterReassign } from '../../application';
 import { isOpaqueEntityId } from '../../app/navigation/linking';
 import {
   resolveRemoteServicesBoundary,
@@ -124,14 +121,23 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
 
   const presentation = event ? presentCareEvent(event, zone) : null;
   const historyItem = event ? presentHistoryEvent(event, zone) : null;
-  const precisionLabels = { exact: 'přesný čas', approximate: 'přibližný čas', unknown: 'přesnost neuvedena' };
+  const precisionLabels = {
+    exact: 'přesný čas',
+    approximate: 'přibližný čas',
+    unknown: 'přesnost neuvedena',
+  };
 
   async function guardMutation(action: () => Promise<void>) {
     if (mutationBusy.current) return;
     mutationBusy.current = true;
-    try { await action(); }
-    catch { setFeedback('error'); setFeedbackMessage(PRODUCT_COPY.feedback.saveFailed); }
-    finally { mutationBusy.current = false; }
+    try {
+      await action();
+    } catch {
+      setFeedback('error');
+      setFeedbackMessage(PRODUCT_COPY.feedback.saveFailed);
+    } finally {
+      mutationBusy.current = false;
+    }
   }
 
   function cancelEdit() {
@@ -144,8 +150,7 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
     setEditing(false);
   }
   const boundary = useMemo(() => resolveRemoteServicesBoundary(), []);
-  const familySyncOn =
-    shouldInitializeRemoteClients(boundary) && boundary.syncConfigured;
+  const familySyncOn = shouldInitializeRemoteClients(boundary) && boundary.syncConfigured;
   const authorship = useMemo(() => {
     if (!event) return null;
     const transfer = familySyncOn
@@ -229,7 +234,7 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
   const eventChildName =
     event == null
       ? null
-      : profiles.find((row) => row.childId === event.childId)?.displayName ?? 'Dítě';
+      : (profiles.find((row) => row.childId === event.childId)?.displayName ?? 'Dítě');
   const reassignTargets = activeProfiles.filter((row) => row.childId !== event?.childId);
 
   function confirmDelete() {
@@ -302,10 +307,23 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} testID="history-event-detail">
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.md }]} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[0]}>
+    <SafeAreaView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      testID="history-event-detail"
+    >
+      <ScrollView
+        contentContainerStyle={[styles.content, { gap: ui.space.md }]}
+        keyboardShouldPersistTaps="handled"
+        stickyHeaderIndices={[0]}
+      >
         <View style={{ backgroundColor: colors.background, paddingBottom: 8 }}>
-          <LumiButton title="Zpět" variant="ghost" onPress={onClose} fullWidth testID="history-detail-back" />
+          <LumiButton
+            title="Zpět"
+            variant="ghost"
+            onPress={onClose}
+            fullWidth
+            testID="history-detail-back"
+          />
         </View>
         <LumiText variant="h1" accessibilityRole="header">
           Detail záznamu
@@ -323,11 +341,19 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
                 <ForestIconBadge name={HISTORY_TONES[event.type]} size={50} />
                 <View style={{ flex: 1, gap: 4 }}>
                   <LumiText variant="h2">{presentation.title}</LumiText>
-                  <LumiText variant="caption" tone="muted">{eventChildName}</LumiText>
+                  <LumiText variant="caption" tone="muted">
+                    {eventChildName}
+                  </LumiText>
                 </View>
               </View>
-              <LumiText variant="caption" tone="muted">{historyDateLabel(formatIsoCalendarDate(presentation.sortAtMs, zone))} · {historyItem?.clock}</LumiText>
-              {historyItem?.detail && ['sleep', 'nursing', 'bottle', 'food'].includes(event.type) ? <LumiText>{historyItem.detail}</LumiText> : null}
+              <LumiText variant="caption" tone="muted">
+                {historyDateLabel(formatIsoCalendarDate(presentation.sortAtMs, zone))} ·{' '}
+                {historyItem?.clock}
+              </LumiText>
+              {historyItem?.detail &&
+              ['sleep', 'nursing', 'bottle', 'food'].includes(event.type) ? (
+                <LumiText>{historyItem.detail}</LumiText>
+              ) : null}
               {event.type === 'sleep' || event.type === 'nursing' ? (
                 <LumiText tone="muted">
                   {event.occurrence.kind === 'known'
@@ -340,7 +366,11 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
               ) : null}
               {event.type === 'experience' ? (
                 <>
-                  {event.area ? <LumiText tone="muted">Oblast: {DEVELOPMENT_AREA_LABELS_CS[event.area]}</LumiText> : null}
+                  {event.area ? (
+                    <LumiText tone="muted">
+                      Oblast: {DEVELOPMENT_AREA_LABELS_CS[event.area]}
+                    </LumiText>
+                  ) : null}
                   {event.note ? <LumiText>{event.note}</LumiText> : null}
                 </>
               ) : null}
@@ -412,8 +442,19 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
                     onChangeText={setNote}
                     multiline
                   />
-                  <LumiButton title={PRODUCT_COPY.actions.save} loading={feedback === 'pending'} onPress={() => void guardMutation(saveEdit)} fullWidth />
-                  <LumiButton title="Zrušit úpravy" variant="secondary" disabled={feedback === 'pending'} onPress={cancelEdit} fullWidth />
+                  <LumiButton
+                    title={PRODUCT_COPY.actions.save}
+                    loading={feedback === 'pending'}
+                    onPress={() => void guardMutation(saveEdit)}
+                    fullWidth
+                  />
+                  <LumiButton
+                    title="Zrušit úpravy"
+                    variant="secondary"
+                    disabled={feedback === 'pending'}
+                    onPress={cancelEdit}
+                    fullWidth
+                  />
                 </View>
               ) : null}
             </View>
@@ -433,7 +474,12 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
 
         {event && !editing ? (
           <View style={styles.actions}>
-            <LumiButton title={PRODUCT_COPY.actions.edit} onPress={() => setEditing(true)} disabled={feedback === 'pending'} fullWidth />
+            <LumiButton
+              title={PRODUCT_COPY.actions.edit}
+              onPress={() => setEditing(true)}
+              disabled={feedback === 'pending'}
+              fullWidth
+            />
             {reassignTargets.length > 0 ? (
               <LumiButton
                 title={reassigning ? 'Zrušit přesun' : 'Přesunout k jinému dítěti'}
@@ -454,10 +500,15 @@ export function EventDetailScreen({ eventId, onClose }: EventDetailScreenProps) 
                   />
                 ))
               : null}
-            <LumiButton title={PRODUCT_COPY.actions.delete} variant="destructive" onPress={confirmDelete} disabled={feedback === 'pending'} fullWidth />
+            <LumiButton
+              title={PRODUCT_COPY.actions.delete}
+              variant="destructive"
+              onPress={confirmDelete}
+              disabled={feedback === 'pending'}
+              fullWidth
+            />
           </View>
         ) : null}
-
       </ScrollView>
     </SafeAreaView>
   );

@@ -88,9 +88,7 @@ export function parseOperationsOwners(raw: unknown): OperationsOwnersDocument {
   const working = isRecord(raw.workingTargets) ? raw.workingTargets : {};
   const drills = isRecord(raw.liveDrillEvidence) ? raw.liveDrillEvidence : {};
   const backup = isRecord(raw.backup) ? raw.backup : {};
-  const releaseEvidence = isRecord(raw.familyReleaseEvidence)
-    ? raw.familyReleaseEvidence
-    : {};
+  const releaseEvidence = isRecord(raw.familyReleaseEvidence) ? raw.familyReleaseEvidence : {};
 
   return {
     schemaVersion: readNumber(raw.schemaVersion, 1),
@@ -136,18 +134,14 @@ export function parseOperationsOwners(raw: unknown): OperationsOwnersDocument {
       twoPhoneOfflineSync: readNullableString(releaseEvidence.twoPhoneOfflineSync),
       longDisconnectedReplica: readNullableString(releaseEvidence.longDisconnectedReplica),
       conflictMatrix: readNullableString(releaseEvidence.conflictMatrix),
-      independentSecurityReview: readNullableString(
-        releaseEvidence.independentSecurityReview,
-      ),
+      independentSecurityReview: readNullableString(releaseEvidence.independentSecurityReview),
       remoteBackupNewDeviceRestore: readNullableString(
         releaseEvidence.remoteBackupNewDeviceRestore,
       ),
       parentTransferLabels: readNullableString(releaseEvidence.parentTransferLabels),
       operatorLegalPack: readNullableString(releaseEvidence.operatorLegalPack),
       vpsHostMeasurements: readNullableString(releaseEvidence.vpsHostMeasurements),
-      managedMigrationLocalDrill: readNullableString(
-        releaseEvidence.managedMigrationLocalDrill,
-      ),
+      managedMigrationLocalDrill: readNullableString(releaseEvidence.managedMigrationLocalDrill),
       personalColdRegression: readNullableString(releaseEvidence.personalColdRegression),
     },
   };

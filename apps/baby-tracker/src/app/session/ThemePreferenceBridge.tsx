@@ -5,5 +5,9 @@ import { usePersonalPreferences } from './PreferencesContext';
 /** Recolors the whole app without remounting navigation or active care forms. */
 export function ThemePreferenceBridge({ children }: { children: ReactNode }) {
   const { preferences } = usePersonalPreferences();
-  return <LumiThemeProvider scene="home" mode="system" motif={preferences.appMotif}>{children}</LumiThemeProvider>;
+  return (
+    <LumiThemeProvider scene="home" mode="system" motif={preferences.appMotif}>
+      {children}
+    </LumiThemeProvider>
+  );
 }

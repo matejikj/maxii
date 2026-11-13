@@ -23,7 +23,11 @@ export function resolveAuthModeOrHold(input: {
   readonly version: unknown;
 }):
   | { readonly ok: true; readonly mode: LumiAuthMode }
-  | { readonly ok: false; readonly holdLocalData: true; readonly reason: 'unknown_mode' | 'unsupported_version' } {
+  | {
+      readonly ok: false;
+      readonly holdLocalData: true;
+      readonly reason: 'unknown_mode' | 'unsupported_version';
+    } {
   if (input.version !== LUMI_AUTH_MODE_VERSION) {
     return { ok: false, holdLocalData: true, reason: 'unsupported_version' };
   }

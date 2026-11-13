@@ -1,19 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import {
-  LUMI_API_PROTOCOL_VERSION,
-  type AppUserId,
-  type FamilyId,
-} from '@lumi/contracts';
+import { LUMI_API_PROTOCOL_VERSION, type AppUserId, type FamilyId } from '@lumi/contracts';
 import { loadApiConfig } from '../src/config/env.ts';
 import { createFamilyApi } from '../src/http/createServer.ts';
 import { createFamilyAttachmentQuotaLedger } from '../src/attachments/quotaLedger.ts';
 import { createMemoryAttachmentObjectStore } from '../src/attachments/objectStore.ts';
-import {
-  createFamilyAttachmentService,
-  sha256Hex,
-} from '../src/attachments/attachmentService.ts';
+import { createFamilyAttachmentService, sha256Hex } from '../src/attachments/attachmentService.ts';
 
 function tinyJpeg(marker = 1): Uint8Array {
   // Minimal JPEG SOI/EOI with a distinct marker byte for digest variety.

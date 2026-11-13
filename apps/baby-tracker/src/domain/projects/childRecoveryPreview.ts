@@ -34,13 +34,18 @@ export const CHILD_RECOVERY_SCOPE_LABELS: readonly string[] = [
  * future owner-scoped recovery would cover; it never restores, resets a
  * credential, or pulls in family history.
  */
-export function presentChildRecoveryPreview(input: {
-  readonly gates?: Partial<Record<ChildPrivateModeGate, boolean>> | undefined;
-} = {}): ChildRecoveryPreview {
+export function presentChildRecoveryPreview(
+  input: {
+    readonly gates?: Partial<Record<ChildPrivateModeGate, boolean>> | undefined;
+  } = {},
+): ChildRecoveryPreview {
   const gates = { ...CHILD_PRIVATE_MODE_GATES, ...(input.gates ?? {}) };
   const otherBlockers = canActivateChildPrivateMode(gates)
     .blockers.filter((code) => code !== 'supported_recovery')
-    .map((code) => CHILD_PRIVATE_MODE_GATE_LABELS[code as keyof typeof CHILD_PRIVATE_MODE_GATE_LABELS] ?? code);
+    .map(
+      (code) =>
+        CHILD_PRIVATE_MODE_GATE_LABELS[code as keyof typeof CHILD_PRIVATE_MODE_GATE_LABELS] ?? code,
+    );
   const common = {
     restoreAction: null,
     credentialsIncluded: false,

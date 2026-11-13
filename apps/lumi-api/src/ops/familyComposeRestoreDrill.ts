@@ -38,10 +38,7 @@ function withDatabaseName(url: string, database: string): string {
   return parsed.toString();
 }
 
-async function withClient<T>(
-  url: string,
-  work: (client: pg.Client) => Promise<T>,
-): Promise<T> {
+async function withClient<T>(url: string, work: (client: pg.Client) => Promise<T>): Promise<T> {
   const client = new pg.Client({ connectionString: url, connectionTimeoutMillis: 5_000 });
   await client.connect();
   try {
@@ -72,9 +69,7 @@ export async function runFamilyComposeRestoreDrill(input: {
     'restore-runbook.txt',
     'migration-cutover-runbook.txt',
   ];
-  const existing = new Set(
-    runbooks.filter((name) => existsSync(join(input.deployDir, name))),
-  );
+  const existing = new Set(runbooks.filter((name) => existsSync(join(input.deployDir, name))));
   const readiness = evaluateFamilyOpsReadiness({
     owners,
     requiredRunbookPaths: runbooks,
@@ -87,9 +82,7 @@ export async function runFamilyComposeRestoreDrill(input: {
     caseOf(
       'software_ready',
       readiness.softwareReady,
-      readiness.softwareReady
-        ? 'ops software artifacts present'
-        : readiness.blockers.join(','),
+      readiness.softwareReady ? 'ops software artifacts present' : readiness.blockers.join(','),
     ),
   );
   cases.push(
@@ -122,9 +115,7 @@ export async function runFamilyComposeRestoreDrill(input: {
         [markerId],
       );
     });
-    cases.push(
-      caseOf('seed_marker_user', true, `seeded marker user ${markerId.slice(0, 8)}…`),
-    );
+    cases.push(caseOf('seed_marker_user', true, `seeded marker user ${markerId.slice(0, 8)}…`));
 
     await compose([
       'exec',
@@ -138,10 +129,7 @@ export async function runFamilyComposeRestoreDrill(input: {
       '--format=custom',
       '--file=/tmp/lumi_restore_drill.dump',
     ]);
-    softwareMeasuredRpoSeconds = Math.max(
-      0,
-      Math.round((Date.now() - lastWriteAtMs) / 1000),
-    );
+    softwareMeasuredRpoSeconds = Math.max(0, Math.round((Date.now() - lastWriteAtMs) / 1000));
     cases.push(
       caseOf(
         'logical_pg_dump',
@@ -170,10 +158,7 @@ export async function runFamilyComposeRestoreDrill(input: {
       '--no-owner',
       '/tmp/lumi_restore_drill.dump',
     ]);
-    softwareMeasuredRtoSeconds = Math.max(
-      1,
-      Math.round((Date.now() - restoreStarted) / 1000),
-    );
+    softwareMeasuredRtoSeconds = Math.max(1, Math.round((Date.now() - restoreStarted) / 1000));
 
     const marker = await withClient(
       withDatabaseName(input.adminDatabaseUrl, restoreDb),
@@ -269,6 +254,5 @@ export async function runFamilyComposeRestoreDrill(input: {
 }
 
 export const LOCAL_COMPOSE_RESTORE_DRILL_DEFAULTS = {
-  adminDatabaseUrl:
-    'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
+  adminDatabaseUrl: 'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
 } as const;

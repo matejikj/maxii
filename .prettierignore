@@ -1,0 +1,28 @@
+# Dependencies and generated build / test / device output.
+**/node_modules/**
+**/.git/**
+**/.expo/**
+**/.expo-export/**
+**/.venv*/**
+**/.test-dist/**
+packages/lumi-forest/lib/**
+**/dist/**
+**/dist-*/**
+**/coverage/**
+**/exports/**
+**/previews/**
+**/reports/**
+**/test-results/**
+**/playwright-report/**
+**/tests/*/actual/**
+**/tools/device/runs/**
+**/.maestro/captures/**
+**/.maestro/screenshots/**
+**/.rnstorybook/storybook.requires.ts
+apps/*/android/**
+apps/*/ios/**
+
+# Generated lockfile, signed content and reference SVGs are maintained by tools.
+package-lock.json
+apps/baby-tracker/content/packs/**
+packages/lumi-forest/assets/**

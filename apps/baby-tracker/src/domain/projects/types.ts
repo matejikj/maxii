@@ -130,11 +130,7 @@ export type ShareSnapshot = {
 };
 
 export type ParentSuggestionStatus =
-  | 'pending'
-  | 'withdrawn'
-  | 'accepted'
-  | 'dismissed'
-  | 'startedTogether';
+  'pending' | 'withdrawn' | 'accepted' | 'dismissed' | 'startedTogether';
 
 /**
  * One adult's proposal to a specific child. Acceptance copies into the child's

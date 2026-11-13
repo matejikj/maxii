@@ -1,4 +1,9 @@
-import { LUMI_ICON_IDS, type CompileLumiIconOptions, type IconDocument, type LumiIconId } from './types';
+import {
+  LUMI_ICON_IDS,
+  type CompileLumiIconOptions,
+  type IconDocument,
+  type LumiIconId,
+} from './types';
 import { buildLumiIconNodes, ICON_SIZE } from './catalog';
 
 function isLumiIconId(value: string): value is LumiIconId {
@@ -9,7 +14,10 @@ function isLumiIconId(value: string): value is LumiIconId {
  * Compile a botanical forest UI icon. Fail closed on unknown ids.
  * Output is frozen for referential stability in React trees.
  */
-export function compileLumiIcon(id: LumiIconId | string, options: CompileLumiIconOptions): IconDocument {
+export function compileLumiIcon(
+  id: LumiIconId | string,
+  options: CompileLumiIconOptions,
+): IconDocument {
   if (!isLumiIconId(id)) {
     throw new RangeError(`Unknown Lumi icon id: ${String(id)}`);
   }
@@ -17,8 +25,10 @@ export function compileLumiIcon(id: LumiIconId | string, options: CompileLumiIco
   if (typeof color !== 'string' || color.length === 0) {
     throw new RangeError('compileLumiIcon requires a non-empty color');
   }
-  if (options.accentColor !== undefined &&
-      (typeof options.accentColor !== 'string' || options.accentColor.length === 0)) {
+  if (
+    options.accentColor !== undefined &&
+    (typeof options.accentColor !== 'string' || options.accentColor.length === 0)
+  ) {
     throw new RangeError('compileLumiIcon requires a non-empty accentColor');
   }
   const document: IconDocument = {

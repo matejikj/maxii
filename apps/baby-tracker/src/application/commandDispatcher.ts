@@ -178,10 +178,10 @@ export function createCommandDispatcher(deps: {
               return purgeExpiredTrash(uow, command, deps, faults);
             default: {
               const _exhaustive: never = command;
+              void _exhaustive;
               throw new AppError('INTERNAL', 'Unsupported application command', {
                 details: { reason: 'command_type' },
               });
-              void _exhaustive;
             }
           }
         });
@@ -1237,12 +1237,21 @@ function wrapUnknownDispatchError(error: unknown): AppError {
   let reason = 'dispatch';
   let retryable = false;
   if (lower.includes('foreign key')) reason = 'foreign_key';
-  else if (lower.includes('file is not a database') || lower.includes('notadb')) reason = 'sqlcipher';
+  else if (lower.includes('file is not a database') || lower.includes('notadb'))
+    reason = 'sqlcipher';
   else if (lower.includes('no such table')) reason = 'schema_missing';
-  else if (lower.includes('sqlite_full') || lower.includes('disk i/o') || lower.includes('database or disk is full')) {
+  else if (
+    lower.includes('sqlite_full') ||
+    lower.includes('disk i/o') ||
+    lower.includes('database or disk is full')
+  ) {
     reason = 'storage_full';
     retryable = true;
-  } else if (lower.includes('database is locked') || lower.includes('sqlite_busy') || lower.includes('locked')) {
+  } else if (
+    lower.includes('database is locked') ||
+    lower.includes('sqlite_busy') ||
+    lower.includes('locked')
+  ) {
     reason = 'storage_busy';
     retryable = true;
   }

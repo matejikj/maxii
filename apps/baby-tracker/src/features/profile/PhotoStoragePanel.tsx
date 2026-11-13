@@ -57,8 +57,8 @@ export function PhotoStoragePanel() {
     <LumiCard testID="photo-storage-panel" style={{ gap: 14, borderRadius: 24 }}>
       <LumiText variant="h3">Fotografie a místo</LumiText>
       <LumiText tone="muted">
-        Uložíme menší kopii. Originál ve vašich Fotkách zůstane. Trvalé a připnuté kopie
-        automaticky neuvolňujeme.
+        Uložíme menší kopii. Originál ve vašich Fotkách zůstane. Trvalé a připnuté kopie automaticky
+        neuvolňujeme.
       </LumiText>
       <LumiText>{protectedLabel}</LumiText>
       <LumiText>{cacheLabel}</LumiText>
@@ -95,15 +95,21 @@ export function PhotoStoragePanel() {
         }}
       />
 
-      <SettingsDisclosureButton expanded={releaseOpen} title={releaseOpen ? 'Skrýt pokročilou správu fotografií' : 'Pokročilá správa fotografií'}
+      <SettingsDisclosureButton
+        expanded={releaseOpen}
+        title={releaseOpen ? 'Skrýt pokročilou správu fotografií' : 'Pokročilá správa fotografií'}
         disabled={busy}
-        onPress={() => setReleaseOpen(!releaseOpen)} />
-      <View style={[styles.releaseBlock, { display: releaseOpen ? 'flex' : 'none' }]}
-        accessibilityElementsHidden={!releaseOpen} importantForAccessibility={releaseOpen ? 'auto' : 'no-hide-descendants'}>
+        onPress={() => setReleaseOpen(!releaseOpen)}
+      />
+      <View
+        style={[styles.releaseBlock, { display: releaseOpen ? 'flex' : 'none' }]}
+        accessibilityElementsHidden={!releaseOpen}
+        importantForAccessibility={releaseOpen ? 'auto' : 'no-hide-descendants'}
+      >
         <LumiText variant="h3">Uvolnit trvalou vlastní kopii</LumiText>
         <LumiText tone="muted">
-          Jen vědomě a jen když je ověřená vzdálená kopie a nezávislá záloha. Offline dostupnost
-          na tomto zařízení se ztratí; fotka z rodiny se nesmaže.
+          Jen vědomě a jen když je ověřená vzdálená kopie a nezávislá záloha. Offline dostupnost na
+          tomto zařízení se ztratí; fotka z rodiny se nesmaže.
         </LumiText>
         <LumiInput
           label="ID přílohy"
@@ -113,26 +119,20 @@ export function PhotoStoragePanel() {
         />
         <LumiButton
           fullWidth
-          title={
-            remoteVerified
-              ? 'Vzdálená kopie: ověřena'
-              : 'Potvrdit ověřenou vzdálenou kopii'
-          }
+          title={remoteVerified ? 'Vzdálená kopie: ověřena' : 'Potvrdit ověřenou vzdálenou kopii'}
           variant="ghost"
           onPress={() => setRemoteVerified((value) => !value)}
         />
         <LumiButton
           fullWidth
           title={
-            backupConfirmed
-              ? 'Nezávislá záloha: potvrzena'
-              : 'Potvrdit nezávislou zálohu / archiv'
+            backupConfirmed ? 'Nezávislá záloha: potvrzena' : 'Potvrdit nezávislou zálohu / archiv'
           }
           variant="ghost"
           onPress={() => setBackupConfirmed((value) => !value)}
         />
         <LumiInput
-          label='Pro uvolnění napište UVOLNIT'
+          label="Pro uvolnění napište UVOLNIT"
           value={releaseConfirm}
           onChangeText={setReleaseConfirm}
           autoCapitalize="characters"
@@ -194,7 +194,11 @@ export function PhotoStoragePanel() {
       </View>
 
       {message ? <LumiText>{message}</LumiText> : null}
-      {error ? <LumiText tone="danger" accessibilityLiveRegion="polite">{error}</LumiText> : null}
+      {error ? (
+        <LumiText tone="danger" accessibilityLiveRegion="polite">
+          {error}
+        </LumiText>
+      ) : null}
     </LumiCard>
   );
 }

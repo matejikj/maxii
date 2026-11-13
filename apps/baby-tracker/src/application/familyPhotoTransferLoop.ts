@@ -1,7 +1,4 @@
-import type {
-  AttachmentServices,
-  PhotoAttachment,
-} from '../domain/attachments';
+import type { AttachmentServices, PhotoAttachment } from '../domain/attachments';
 import { asAttachmentId } from '../domain/attachments';
 import type { FamilyPhotoUploadMetadataOutbox } from '../domain/attachments';
 import type { FamilyPhotoTransferRuntime } from './familyPhotoTransferRuntime';
@@ -65,8 +62,7 @@ export async function runFamilyPhotoTransferTickWithStore(input: {
     writeDownloadedBytes: async (job, bytes) => {
       const attachment = cache.get(job.attachmentId) ?? null;
       const existing = attachment?.renditions.find((row) => row.renditionId === job.renditionId);
-      const blobKey =
-        existing?.blobKey ?? `att/${job.attachmentId}/${job.role}.jpe.sealed`;
+      const blobKey = existing?.blobKey ?? `att/${job.attachmentId}/${job.role}.jpe.sealed`;
       await input.attachments.blobs.writeDurable({
         blobKey,
         bytes,

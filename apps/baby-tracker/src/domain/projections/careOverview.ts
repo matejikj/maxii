@@ -136,10 +136,16 @@ export function buildDailyCareOverview(input: {
   const nursingEvents = touching.filter(
     (event): event is NursingCareEvent => event.type === 'nursing',
   );
-  const bottleEvents = touching.filter((event): event is BottleCareEvent => event.type === 'bottle');
+  const bottleEvents = touching.filter(
+    (event): event is BottleCareEvent => event.type === 'bottle',
+  );
   const foodEvents = touching.filter((event): event is FoodCareEvent => event.type === 'food');
-  const diaperEvents = touching.filter((event): event is DiaperCareEvent => event.type === 'diaper');
-  const growthEvents = touching.filter((event): event is GrowthCareEvent => event.type === 'growth');
+  const diaperEvents = touching.filter(
+    (event): event is DiaperCareEvent => event.type === 'diaper',
+  );
+  const growthEvents = touching.filter(
+    (event): event is GrowthCareEvent => event.type === 'growth',
+  );
 
   return {
     period: 'day',
@@ -231,9 +237,7 @@ export function buildWeeklyCareOverview(input: {
         eventsWithKnownDuration: sleepIds.filter((id) =>
           input.events.some(
             (event) =>
-              event.eventId === id &&
-              event.type === 'sleep' &&
-              event.occurrence.kind === 'known',
+              event.eventId === id && event.type === 'sleep' && event.occurrence.kind === 'known',
           ),
         ).length,
         eventsMissingDuration: countMissingSleep(input.events, sleepIds),
@@ -306,7 +310,10 @@ function runningIndicatorsForDay(input: {
       session.status === 'running' ? input.nowEpochMs : session.pausedAt.instant.epochMs;
     const openInterval = knownInterval(
       session.startedAt,
-      zonedInstant({ epochMs: Math.max(openEndMs, session.startedAt.instant.epochMs) }, input.summaryTimeZone),
+      zonedInstant(
+        { epochMs: Math.max(openEndMs, session.startedAt.instant.epochMs) },
+        input.summaryTimeZone,
+      ),
     );
     const part = intersectInterval(toEpochInterval(openInterval), window);
     if (!part) continue;

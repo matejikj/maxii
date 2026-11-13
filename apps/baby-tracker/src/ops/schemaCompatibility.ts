@@ -1,8 +1,5 @@
 import { AppError } from '../domain';
-import {
-  NATIVE_SCHEMA_COMPATIBILITY,
-  WEB_SCHEMA_COMPATIBILITY,
-} from './releaseEvidence';
+import { NATIVE_SCHEMA_COMPATIBILITY, WEB_SCHEMA_COMPATIBILITY } from './releaseEvidence';
 
 /**
  * Refuse to open a diary written by a newer binary. Rolling back the app must
@@ -12,8 +9,7 @@ export function assertSchemaCompatibleWithBinary(input: {
   platform: 'native' | 'web';
   databaseSchemaVersion: number;
 }): void {
-  const max =
-    input.platform === 'native' ? NATIVE_SCHEMA_COMPATIBILITY : WEB_SCHEMA_COMPATIBILITY;
+  const max = input.platform === 'native' ? NATIVE_SCHEMA_COMPATIBILITY : WEB_SCHEMA_COMPATIBILITY;
   if (input.databaseSchemaVersion > max) {
     throw new AppError(
       'STORAGE',

@@ -35,9 +35,7 @@ const DEV_SK = 'd81c22f68b1b2fd46802330ba006e610f9976d82401abf7d1a4624644a1dea3d
 const DEV_KEY_ID = 'lumi-content-ed25519-dev-1';
 
 function fixturePack(generation = 1) {
-  const files = [
-    { logicalId: 'catalog/demo.json', bytes: utf8Bytes('{"ok":true}\n') },
-  ];
+  const files = [{ logicalId: 'catalog/demo.json', bytes: utf8Bytes('{"ok":true}\n') }];
   const built = buildContentPackManifest({
     packId: 'lumi.demo.base',
     kind: 'base',
@@ -77,9 +75,7 @@ test('tampered manifest or payload digest is rejected without activating', () =>
   assert.equal(getActivePack(store, 'lumi.demo.base'), null);
 
   const mutatedFiles = pack.files.map((file) =>
-    file.logicalId === 'catalog/demo.json'
-      ? { ...file, bytes: utf8Bytes('{"ok":nope}\n') }
-      : file,
+    file.logicalId === 'catalog/demo.json' ? { ...file, bytes: utf8Bytes('{"ok":nope}\n') } : file,
   );
   const digestFail = verifyContentPack(pack.manifest, pack.signature, mutatedFiles, {
     allowDevelopmentKeys: true,

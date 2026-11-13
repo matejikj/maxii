@@ -120,10 +120,7 @@ export async function pickPortableBackupFile(): Promise<PortableBackupPickResult
   }
 }
 
-function downloadPortableBackupWeb(
-  serialized: string,
-  fileName: string,
-): PortableBackupFileResult {
+function downloadPortableBackupWeb(serialized: string, fileName: string): PortableBackupFileResult {
   if (typeof document === 'undefined' || typeof URL === 'undefined') {
     return { ok: false, code: 'unavailable', message: 'Stahování souboru není dostupné.' };
   }

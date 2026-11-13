@@ -19,8 +19,7 @@ export function createPostgresFamilyAttachmentQuotaLedger(
 ): FamilyAttachmentQuotaPort {
   const budgetBytes = input?.budgetBytes ?? FAMILY_ATTACHMENT_QUOTA.familyBudgetBytes;
   const pendingBudget =
-    input?.pendingReservationBudgetBytes ??
-    FAMILY_ATTACHMENT_QUOTA.pendingReservationBudgetBytes;
+    input?.pendingReservationBudgetBytes ?? FAMILY_ATTACHMENT_QUOTA.pendingReservationBudgetBytes;
 
   async function lockRow(client: PoolClient, familyId: string): Promise<QuotaRow> {
     await client.query(

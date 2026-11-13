@@ -184,7 +184,8 @@ async function runCases(ctx: DrillContext): Promise<void> {
         displayName: `Acceptance ${label}`,
       },
     });
-    if (created.statusCode !== 201) throw new Error(`create family ${label}: ${created.statusCode}`);
+    if (created.statusCode !== 201)
+      throw new Error(`create family ${label}: ${created.statusCode}`);
     const familyId = created.json().familyId as FamilyId;
     await seedFamilyAttachmentTenant({
       adminDatabaseUrl: ctx.input.adminDatabaseUrl,
@@ -316,7 +317,13 @@ async function runCases(ctx: DrillContext): Promise<void> {
     const attempts = 6;
     const responses = await Promise.all(
       Array.from({ length: attempts }, (_, index) =>
-        createIntent(admin, familyId, randomUUID(), jpegBytes(index + 1), `par-${index}-${familyId}`),
+        createIntent(
+          admin,
+          familyId,
+          randomUUID(),
+          jpegBytes(index + 1),
+          `par-${index}-${familyId}`,
+        ),
       ),
     );
     const accepted = responses.filter((row) => row.statusCode === 201).length;
@@ -339,18 +346,12 @@ async function runCases(ctx: DrillContext): Promise<void> {
     // 3. Expired-intent GC releases those reservations in Postgres.
     const reservedBefore = (await ctx.verifyQuota.view(familyId)).reservedBytes;
     const firstIntentId = responses.find((row) => row.statusCode === 201)?.json().intentId as
-      | string
-      | undefined;
+      string | undefined;
     const cleaned = await api.attachments.cleanupExpiredIntents(afterIntentTtl());
     const reservedAfter = (await ctx.verifyQuota.view(familyId)).reservedBytes;
-    const stale = firstIntentId
-      ? await upload(admin, familyId, firstIntentId, jpegBytes(1))
-      : null;
+    const stale = firstIntentId ? await upload(admin, familyId, firstIntentId, jpegBytes(1)) : null;
     const gcOk =
-      cleaned >= maxFit &&
-      reservedBefore > 0 &&
-      reservedAfter === 0 &&
-      stale?.statusCode === 404;
+      cleaned >= maxFit && reservedBefore > 0 && reservedAfter === 0 && stale?.statusCode === 404;
     cases.push({
       name: 'expired_intent_gc',
       ok: gcOk,
@@ -437,8 +438,15 @@ async function runCases(ctx: DrillContext): Promise<void> {
     const stranger = await newPrincipal('stranger');
     const strangerFamily = await createFamily(stranger, 'stranger');
     const stolenRead = await read(stranger, familyId, attachmentId);
-    const stolenIntent = await createIntent(stranger, familyId, randomUUID(), bytes, `steal-${attachmentId}`);
-    const idorOk = stolenRead.statusCode === 403 && stolenIntent.statusCode === 403 && Boolean(strangerFamily);
+    const stolenIntent = await createIntent(
+      stranger,
+      familyId,
+      randomUUID(),
+      bytes,
+      `steal-${attachmentId}`,
+    );
+    const idorOk =
+      stolenRead.statusCode === 403 && stolenIntent.statusCode === 403 && Boolean(strangerFamily);
     cases.push({
       name: 'cross_family_idor_denied',
       ok: idorOk,
@@ -544,7 +552,10 @@ async function runCases(ctx: DrillContext): Promise<void> {
     cases.push({
       name: 'peer_read_matches_digest',
       ok: peerDigest === digest,
-      detail: peerDigest === digest ? 'peer download matches activated digest' : `status ${peerRead.statusCode}`,
+      detail:
+        peerDigest === digest
+          ? 'peer download matches activated digest'
+          : `status ${peerRead.statusCode}`,
     });
   }
 }

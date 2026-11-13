@@ -55,7 +55,10 @@ export type DiaryArchiveCompare = {
 };
 
 export function buildDiaryArchiveManifest(
-  archive: Omit<DiaryArchive, 'manifest' | 'format'> & { createdAtMs: number; schemaCompatibility: number },
+  archive: Omit<DiaryArchive, 'manifest' | 'format'> & {
+    createdAtMs: number;
+    schemaCompatibility: number;
+  },
 ): DiaryArchiveManifest {
   const primary = archive.profiles[0] ?? null;
   let newest: number | null = null;

@@ -53,9 +53,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
       };
     case 'bottle': {
       const amountLabel =
-        event.amount == null
-          ? 'množství neuvedeno'
-          : `${event.amount.value} ${event.amount.unit}`;
+        event.amount == null ? 'množství neuvedeno' : `${event.amount.value} ${event.amount.unit}`;
       return {
         eventId: event.eventId,
         kind: event.type,
@@ -135,8 +133,7 @@ export function presentCareEvent(event: CareEvent, timeZone: TimeZoneId): LastCa
         sortAtMs,
       };
     case 'nursing': {
-      const side =
-        event.side === 'left' ? 'levá' : event.side === 'right' ? 'pravá' : 'bez strany';
+      const side = event.side === 'left' ? 'levá' : event.side === 'right' ? 'pravá' : 'bez strany';
       if (event.occurrence.kind === 'known') {
         return {
           eventId: event.eventId,

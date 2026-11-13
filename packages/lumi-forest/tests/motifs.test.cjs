@@ -1,13 +1,28 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  LUMI_MOTIF_IDS, LUMI_MOTIFS, isLumiMotif, resolveLumiTheme, contrastRatio,
-  compileLumiMotifLandscape, serializeScene, readSceneDocument, countVectorNodes,
+  LUMI_MOTIF_IDS,
+  LUMI_MOTIFS,
+  isLumiMotif,
+  resolveLumiTheme,
+  contrastRatio,
+  compileLumiMotifLandscape,
+  serializeScene,
+  readSceneDocument,
+  countVectorNodes,
 } = require('../.test-dist/core/index.js');
 
-const pairs = [['text', 'background'], ['text', 'surface'], ['text', 'surfaceSubtle'],
-  ['textMuted', 'background'], ['textMuted', 'surface'], ['onPrimary', 'primary'],
-  ['onSecondary', 'secondary'], ['onDanger', 'danger'], ['onSceneAccent', 'sceneAccent']];
+const pairs = [
+  ['text', 'background'],
+  ['text', 'surface'],
+  ['text', 'surfaceSubtle'],
+  ['textMuted', 'background'],
+  ['textMuted', 'surface'],
+  ['onPrimary', 'primary'],
+  ['onSecondary', 'secondary'],
+  ['onDanger', 'danger'],
+  ['onSceneAccent', 'sceneAccent'],
+];
 
 test('environment IDs are independent from character styles and reject unknown worlds', () => {
   assert.deepEqual([...LUMI_MOTIF_IDS], ['forest', 'garden', 'playground']);
@@ -15,7 +30,8 @@ test('environment IDs are independent from character styles and reject unknown w
     assert.equal(isLumiMotif(id), true);
     assert.equal(LUMI_MOTIFS[id].id, id);
   }
-  for (const id of ['workshop', 'restrained', 'ocean', '', null]) assert.equal(isLumiMotif(id), false);
+  for (const id of ['workshop', 'restrained', 'ocean', '', null])
+    assert.equal(isLumiMotif(id), false);
   assert.throws(() => resolveLumiTheme('home', 'light', 'ocean'), /Unknown Lumi motif/);
   assert.throws(() => compileLumiMotifLandscape('ocean'), /Unknown Lumi motif/);
   assert.throws(() => compileLumiMotifLandscape('garden', { variant: 'sunset' }), /Unknown motif/);
@@ -40,7 +56,10 @@ for (const motif of LUMI_MOTIF_IDS) {
           assert.ok(ratio >= 4.5, `${scene}: ${fg}/${bg} = ${ratio.toFixed(2)}`);
         }
         for (const key of ['controlBorder', 'focus']) {
-          assert.ok(contrastRatio(theme.colors[key], theme.colors.surface) >= 3, `${scene}: ${key}`);
+          assert.ok(
+            contrastRatio(theme.colors[key], theme.colors.surface) >= 3,
+            `${scene}: ${key}`,
+          );
         }
       }
     });
@@ -61,7 +80,14 @@ for (const motif of LUMI_MOTIF_IDS) {
 }
 
 test('each environment has its own object geometry and semantic palette', () => {
-  const worlds = LUMI_MOTIF_IDS.map(id => compileLumiMotifLandscape(id));
-  assert.equal(new Set(worlds.map(doc => JSON.stringify(doc.layers.find(layer => layer.id === 'objects')))).size, 3);
-  assert.equal(new Set(LUMI_MOTIF_IDS.map(id => resolveLumiTheme('home', 'light', id).colors.primary)).size, 3);
+  const worlds = LUMI_MOTIF_IDS.map((id) => compileLumiMotifLandscape(id));
+  assert.equal(
+    new Set(worlds.map((doc) => JSON.stringify(doc.layers.find((layer) => layer.id === 'objects'))))
+      .size,
+    3,
+  );
+  assert.equal(
+    new Set(LUMI_MOTIF_IDS.map((id) => resolveLumiTheme('home', 'light', id).colors.primary)).size,
+    3,
+  );
 });

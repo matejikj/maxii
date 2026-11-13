@@ -12,12 +12,48 @@
       "osVersion": "REPLACE_ACTUAL_OS",
       "refreshHz": 60,
       "scenarios": [
-        {"name":"scene-scroll","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
-        {"name":"motion-idle","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
-        {"name":"milestone-celebration","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"},
-        {"name":"scene-transition","frames":0,"p95FrameLatencyMs":0,"overBudgetPercent":0,"memoryDeltaMB":0,"rawTrace":"traces/REPLACE.txt"}
+        {
+          "name": "scene-scroll",
+          "frames": 0,
+          "p95FrameLatencyMs": 0,
+          "overBudgetPercent": 0,
+          "memoryDeltaMB": 0,
+          "rawTrace": "traces/REPLACE.txt"
+        },
+        {
+          "name": "motion-idle",
+          "frames": 0,
+          "p95FrameLatencyMs": 0,
+          "overBudgetPercent": 0,
+          "memoryDeltaMB": 0,
+          "rawTrace": "traces/REPLACE.txt"
+        },
+        {
+          "name": "milestone-celebration",
+          "frames": 0,
+          "p95FrameLatencyMs": 0,
+          "overBudgetPercent": 0,
+          "memoryDeltaMB": 0,
+          "rawTrace": "traces/REPLACE.txt"
+        },
+        {
+          "name": "scene-transition",
+          "frames": 0,
+          "p95FrameLatencyMs": 0,
+          "overBudgetPercent": 0,
+          "memoryDeltaMB": 0,
+          "rawTrace": "traces/REPLACE.txt"
+        }
       ]
     },
-    {"platform":"ios","physical":true,"buildType":"release","model":"REPLACE_ACTUAL_MODEL","osVersion":"REPLACE_ACTUAL_OS","refreshHz":60,"scenarios":[]}
+    {
+      "platform": "ios",
+      "physical": true,
+      "buildType": "release",
+      "model": "REPLACE_ACTUAL_MODEL",
+      "osVersion": "REPLACE_ACTUAL_OS",
+      "refreshHz": 60,
+      "scenarios": []
+    }
   ]
 }

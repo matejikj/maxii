@@ -3,18 +3,10 @@ import type { DevelopmentArea } from '../entities/development';
 /** Environments mirrored from content without importing the content package. */
 export type ContentEnvironmentLike = 'home' | 'outdoor' | 'travel' | 'quiet';
 
-export type ContentDurationLike =
-  | { kind: 'moment' }
-  | { kind: 'minutes'; minutes: 5 | 10 | 15 };
+export type ContentDurationLike = { kind: 'moment' } | { kind: 'minutes'; minutes: 5 | 10 | 15 };
 
 export type ReadinessKeyLike =
-  | 'grasp'
-  | 'release'
-  | 'rollAttempt'
-  | 'floorSit'
-  | 'floorMove'
-  | 'gesture'
-  | 'safeMarkMaking';
+  'grasp' | 'release' | 'rollAttempt' | 'floorSit' | 'floorMove' | 'gesture' | 'safeMarkMaking';
 
 export type SuitabilityConditionLike =
   | {

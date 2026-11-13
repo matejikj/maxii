@@ -173,9 +173,7 @@ export function evaluateFamilyReleaseGate(input: {
   ];
   for (const [key, id] of artifactChecks) {
     const ok = input.artifacts[key];
-    findings.push(
-      finding(id, ok, ok ? `${key} present` : `${key} missing`),
-    );
+    findings.push(finding(id, ok, ok ? `${key} present` : `${key} missing`));
     if (!ok) blockers.push(`missing_${key}`);
   }
 
@@ -226,8 +224,9 @@ export function evaluateFamilyReleaseGate(input: {
   }
 
   // Role ownership for the gate itself must be a real person before release.
-  const gateOwnerAssigned = isAssigned(input.owners.roles.familyReleaseGate)
-    && input.owners.roles.familyReleaseGate !== 'task-32';
+  const gateOwnerAssigned =
+    isAssigned(input.owners.roles.familyReleaseGate) &&
+    input.owners.roles.familyReleaseGate !== 'task-32';
   findings.push(
     finding(
       'roles.family_release_owner',

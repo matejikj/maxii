@@ -40,13 +40,11 @@ export function estimateFamilyPhotoCapacityModel(input?: {
   readonly trashShare?: number;
 }): PhotoCapacityModel {
   const counts = input?.photoCounts ?? ([100, 1_000, 10_000] as const);
-  const avgDisplay =
-    input?.avgDisplayBytes ?? Math.floor(ATTACHMENT_LIMITS.displayMaxBytes * 0.45);
+  const avgDisplay = input?.avgDisplayBytes ?? Math.floor(ATTACHMENT_LIMITS.displayMaxBytes * 0.45);
   const avgThumb =
     input?.avgThumbnailBytes ?? Math.floor(ATTACHMENT_LIMITS.thumbnailMaxBytes * 0.7);
   const avgPrimary = avgDisplay + avgThumb;
-  const maxPrimary =
-    ATTACHMENT_LIMITS.displayMaxBytes + ATTACHMENT_LIMITS.thumbnailMaxBytes;
+  const maxPrimary = ATTACHMENT_LIMITS.displayMaxBytes + ATTACHMENT_LIMITS.thumbnailMaxBytes;
   const trashShare = Math.min(1, Math.max(0, input?.trashShare ?? 0.02));
 
   const rows: PhotoCapacityCountRow[] = counts.map((photoCount) => {

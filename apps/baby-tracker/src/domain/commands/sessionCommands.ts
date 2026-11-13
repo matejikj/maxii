@@ -135,14 +135,7 @@ export type SessionRevisionState = {
   fingerprint: string;
   sessionId: EntityId;
   childId: ChildId;
-  phase:
-    | 'start'
-    | 'end'
-    | 'adjustStart'
-    | 'undoEnd'
-    | 'pause'
-    | 'resume'
-    | 'switchSide';
+  phase: 'start' | 'end' | 'adjustStart' | 'undoEnd' | 'pause' | 'resume' | 'switchSide';
   careEventId?: EntityId;
 };
 

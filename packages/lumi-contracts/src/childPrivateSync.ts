@@ -19,9 +19,7 @@ export function isChildPrivateSyncKind(kind: string): kind is ChildPrivateSyncOp
 }
 
 export function isChildPrivateShareKind(kind: string): boolean {
-  return (
-    kind === 'child_private.share.publish' || kind === 'child_private.share.revoke'
-  );
+  return kind === 'child_private.share.publish' || kind === 'child_private.share.revoke';
 }
 
 export type ChildPrivateSyncPushRequest = {

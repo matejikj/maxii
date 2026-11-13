@@ -33,7 +33,11 @@ function candidate(bytes: number): PickedPhotoCandidate {
 function services(freeBytes: number | null): AttachmentServices {
   const key = randomBytes(32);
   return {
-    picker: { async pickPhotos() { return { status: 'cancelled' }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -77,7 +81,11 @@ test('space gate allows unknown free space and blocks known shortfalls', () => {
   assert.equal(denied.allow, false);
   if (denied.allow) return;
   assert.equal(denied.reason, 'insufficient_space');
-  assert.ok(denied.suggest === 'clear_cache' || denied.suggest === 'both' || denied.suggest === 'smaller_selection');
+  assert.ok(
+    denied.suggest === 'clear_cache' ||
+      denied.suggest === 'both' ||
+      denied.suggest === 'smaller_selection',
+  );
   assert.match(denied.message, /Deník/);
 });
 

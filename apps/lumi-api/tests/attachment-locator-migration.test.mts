@@ -84,7 +84,10 @@ test('complete locator migration switches write target and purges source', async
   if (!result.ok) return;
   assert.equal(result.writeTarget, 'destination');
   assert.equal(result.sourcePurged, 2);
-  assert.equal(result.migrated.every((row) => row.provider === 'supabase_eu'), true);
+  assert.equal(
+    result.migrated.every((row) => row.provider === 'supabase_eu'),
+    true,
+  );
   assert.equal((await source.readActivated(displayKey)) == null, true);
   assert.equal((await destination.readActivated(displayKey))?.sha256, displaySha);
   assert.equal((await destination.readActivated(thumbKey))?.sha256, thumbSha);

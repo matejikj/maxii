@@ -1,5 +1,10 @@
 import { compileCharacter } from '../characters/compiler';
-import type { CharacterBlueprintV2, CharacterCompileOptions, CharacterPart, Point } from '../characters/blueprint';
+import type {
+  CharacterBlueprintV2,
+  CharacterCompileOptions,
+  CharacterPart,
+  Point,
+} from '../characters/blueprint';
 import { group } from '../vector/nodes';
 import type { VectorNode, VectorProps } from '../vector/types';
 
@@ -34,19 +39,39 @@ export function prepareCharacterMotion(
   if (!inner || inner.kind !== 'group') throw new RangeError('Expected inner character group');
   const ordered = blueprint.base.parts
     .map((part, index) => ({ part, index }))
-    .sort((a,b) => a.part.order - b.part.order || a.index - b.index);
-  if (inner.children.length < ordered.length) throw new RangeError('Animated character anatomy is incomplete');
+    .sort((a, b) => a.part.order - b.part.order || a.index - b.index);
+  if (inner.children.length < ordered.length)
+    throw new RangeError('Animated character anatomy is incomplete');
   const parts: MotionPart[] = inner.children.map((node, index) => {
     const part = ordered[index]?.part;
-    if (!part) return { id: `accessory-${index - ordered.length}`, role: 'accessory', node, channel: 'static', pivot: null };
+    if (!part)
+      return {
+        id: `accessory-${index - ordered.length}`,
+        role: 'accessory',
+        node,
+        channel: 'static',
+        pivot: null,
+      };
     const channel: AnimatedPartChannel =
-      part.id === 'eye-left' ? 'leftEye' : part.id === 'eye-right' ? 'rightEye' :
-      part.role === 'ear' && part.id.includes('left') ? 'leftEar' :
-      part.role === 'ear' && part.id.includes('right') ? 'rightEar' : 'static';
-    const pivot = channel === 'leftEye' ? blueprint.rig.leftEye :
-      channel === 'rightEye' ? blueprint.rig.rightEye :
-      channel === 'leftEar' ? blueprint.rig.pivots.leftEar :
-      channel === 'rightEar' ? blueprint.rig.pivots.rightEar : null;
+      part.id === 'eye-left'
+        ? 'leftEye'
+        : part.id === 'eye-right'
+          ? 'rightEye'
+          : part.role === 'ear' && part.id.includes('left')
+            ? 'leftEar'
+            : part.role === 'ear' && part.id.includes('right')
+              ? 'rightEar'
+              : 'static';
+    const pivot =
+      channel === 'leftEye'
+        ? blueprint.rig.leftEye
+        : channel === 'rightEye'
+          ? blueprint.rig.rightEye
+          : channel === 'leftEar'
+            ? blueprint.rig.pivots.leftEar
+            : channel === 'rightEar'
+              ? blueprint.rig.pivots.rightEar
+              : null;
     return { id: part.id, role: part.role, node, channel, pivot };
   });
   return {
@@ -59,6 +84,9 @@ export function prepareCharacterMotion(
 
 /** Regression utility: motion-disabled topology must equal the compiled artwork exactly. */
 export function reconstructPreparedCharacter(prepared: PreparedMotionCharacter): VectorNode {
-  const inner = group(prepared.parts.map(part => part.node), prepared.innerProps);
+  const inner = group(
+    prepared.parts.map((part) => part.node),
+    prepared.innerProps,
+  );
   return prepared.outerProps ? group([inner], prepared.outerProps) : inner;
 }

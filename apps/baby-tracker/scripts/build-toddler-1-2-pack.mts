@@ -5,10 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  buildToddler12Files,
-  buildToddler12Manifest,
-} from '../src/content/pack/toddler12Pack.ts';
+import { buildToddler12Files, buildToddler12Manifest } from '../src/content/pack/toddler12Pack.ts';
 import { signContentPackManifest, verifyContentPack } from '../src/content/pack/index.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));

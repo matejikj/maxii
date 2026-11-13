@@ -12,7 +12,7 @@
     "export:ios": "expo export --platform ios --output-dir dist-ios",
     "export:web": "expo export --platform web --output-dir dist-web",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "test": "npm run test:domain && npm run test:storage && npm run test:components",
     "test:domain": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/domain/*.test.mts tests/config/*.test.mts tests/infrastructure/logger.test.mts tests/content/*.test.mts tests/ops/*.test.mts",
     "test:storage": "node --experimental-strip-types --import ./tests/ts-resolve-hook.mjs --test tests/portable-backup.test.mts tests/stack-compatibility.test.mts tests/native-private-database.test.mts tests/web-private-database.test.mts tests/command-dispatcher.test.mts tests/personal-bootstrap.test.mts tests/today-diaper-flow.test.mts tests/sleep-session-flow.test.mts tests/feeding-flow.test.mts tests/growth-moments-flow.test.mts tests/history-flow.test.mts tests/care-overview-flow.test.mts tests/diary-backup-flow.test.mts tests/settings-privacy-flow.test.mts tests/baby-avatar-flow.test.mts tests/milestones-flow.test.mts tests/recommendation-flow.test.mts tests/development-flow.test.mts tests/application/readiness-observations.test.mts tests/personal-platform-adapters.test.mts tests/multi-child-flow.test.mts tests/family-projects-flow.test.mts tests/parent-suggestions-flow.test.mts",
@@ -47,7 +47,11 @@
     "release:candidate": "npm run content:validate && npm run release:evidence && npm run release:gate && npm run prebuild:native && npm run release:verify-native && npm run release:web",
     "run:android:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:android",
     "run:ios:cipher": "EXPO_PUBLIC_LUMI_STORAGE_PROBE=1 expo run:ios",
-    "doctor": "expo install --check"
+    "doctor": "expo install --check",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",
@@ -86,14 +90,10 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.65.0",
     "@types/luxon": "^3.7.6",
     "@types/react": "~19.3.0",
-    "eslint": "^9.39.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.7",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript": "~6.0.3"
   }
 }

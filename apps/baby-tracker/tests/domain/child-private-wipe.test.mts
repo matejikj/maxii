@@ -113,7 +113,10 @@ function memoryWipeUow(state: {
         projects: {
           listAll: async () => [...state.projects],
           save: async (project) => {
-            state.projects = [...state.projects.filter((row) => row.projectId !== project.projectId), project];
+            state.projects = [
+              ...state.projects.filter((row) => row.projectId !== project.projectId),
+              project,
+            ];
           },
           clearAll: async () => {
             state.projects = [];

@@ -23,11 +23,9 @@ function requireOk(
   label: string,
 ): void {
   if (!result.ok) {
-    throw new AppError(
-      'INTERNAL',
-      `Failed to enqueue ${label} onto the child-private outbox`,
-      { details: { reason: result.reason } },
-    );
+    throw new AppError('INTERNAL', `Failed to enqueue ${label} onto the child-private outbox`, {
+      details: { reason: result.reason },
+    });
   }
 }
 

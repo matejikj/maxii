@@ -50,9 +50,26 @@ function DiaperSleepWalkthrough({ width }: { width: number }) {
       </LumiCard>
       <LumiBottomSheet visible={sheet} title="Zapsat plenku nyní" onClose={() => setSheet(false)}>
         <View style={{ gap: 12 }}>
-          <LumiButton title="Zapsat mokrou" loading={pending} onPress={() => void saveDirect()} fullWidth />
-          <LumiButton title="Zapsat stolici" variant="secondary" disabled={pending} onPress={() => void saveDirect()} fullWidth />
-          <LumiButton title="Zapsat obojí" variant="secondary" disabled={pending} onPress={() => void saveDirect()} fullWidth />
+          <LumiButton
+            title="Zapsat mokrou"
+            loading={pending}
+            onPress={() => void saveDirect()}
+            fullWidth
+          />
+          <LumiButton
+            title="Zapsat stolici"
+            variant="secondary"
+            disabled={pending}
+            onPress={() => void saveDirect()}
+            fullWidth
+          />
+          <LumiButton
+            title="Zapsat obojí"
+            variant="secondary"
+            disabled={pending}
+            onPress={() => void saveDirect()}
+            fullWidth
+          />
           <LumiButton
             title="Jiný čas nebo poznámka"
             variant="ghost"
@@ -64,7 +81,11 @@ function DiaperSleepWalkthrough({ width }: { width: number }) {
           />
         </View>
       </LumiBottomSheet>
-      <LumiBottomSheet visible={detailed} title="Podrobný zápis plenky" onClose={() => setDetailed(false)}>
+      <LumiBottomSheet
+        visible={detailed}
+        title="Podrobný zápis plenky"
+        onClose={() => setDetailed(false)}
+      >
         <View style={{ gap: 12 }}>
           <LumiInput label="Čas události" value="2024-06-01 10:20" onChangeText={() => {}} />
           <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -105,7 +126,7 @@ export const Width320Night: Story = {
 
 export const LargeTextFriendly: Story = {
   args: { width: 390 },
-  render: () => {
+  render: function LargeTextCarePattern() {
     const { width } = useWindowDimensions();
     return (
       <LumiThemeProvider scene="home" mode="system">

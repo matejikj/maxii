@@ -57,46 +57,97 @@ export function presentCareOverview(
     running: overview.running.map(presentRunning),
     metrics: [
       {
-        id: 'sleep', title: 'Spánek',
-        value: durationValue(sleep.eventsWithKnownDuration, sleep.eventsMissingDuration, sleep.recordedIntervalMs),
-        detail: durationDetail(sleep.eventsWithKnownDuration, sleep.eventsMissingDuration, 'Zapsané intervaly'),
+        id: 'sleep',
+        title: 'Spánek',
+        value: durationValue(
+          sleep.eventsWithKnownDuration,
+          sleep.eventsMissingDuration,
+          sleep.recordedIntervalMs,
+        ),
+        detail: durationDetail(
+          sleep.eventsWithKnownDuration,
+          sleep.eventsMissingDuration,
+          'Zapsané intervaly',
+        ),
         description: presentSleep(sleep, overview.running),
         hasRecords: sleep.eventsWithKnownDuration + sleep.eventsMissingDuration > 0,
       },
       {
-        id: 'nursing', title: 'Kojení',
-        value: durationValue(nursing.eventsWithKnownDuration, nursing.eventsMissingDuration, nursing.recordedActiveMs),
-        detail: durationDetail(nursing.eventsWithKnownDuration, nursing.eventsMissingDuration, 'Aktivní kojení ze zápisů'),
+        id: 'nursing',
+        title: 'Kojení',
+        value: durationValue(
+          nursing.eventsWithKnownDuration,
+          nursing.eventsMissingDuration,
+          nursing.recordedActiveMs,
+        ),
+        detail: durationDetail(
+          nursing.eventsWithKnownDuration,
+          nursing.eventsMissingDuration,
+          'Aktivní kojení ze zápisů',
+        ),
         description: presentNursing(nursing),
         hasRecords: nursing.eventsWithKnownDuration + nursing.eventsMissingDuration > 0,
       },
       {
-        id: 'bottle', title: 'Lahvička',
-        value: bottle.feedingsWithAmount > 0 ? formatMl(bottle.recordedMl)
-          : bottle.feedingsMissingAmount > 0 ? 'Bez množství' : '—',
-        detail: bottle.feedingsMissingAmount > 0 ? `${bottle.feedingsMissingAmount}× bez množství`
-          : bottle.feedingsWithAmount > 0 ? 'Zapsané množství' : 'Zatím bez záznamu',
+        id: 'bottle',
+        title: 'Lahvička',
+        value:
+          bottle.feedingsWithAmount > 0
+            ? formatMl(bottle.recordedMl)
+            : bottle.feedingsMissingAmount > 0
+              ? 'Bez množství'
+              : '—',
+        detail:
+          bottle.feedingsMissingAmount > 0
+            ? `${bottle.feedingsMissingAmount}× bez množství`
+            : bottle.feedingsWithAmount > 0
+              ? 'Zapsané množství'
+              : 'Zatím bez záznamu',
         description: presentBottles(bottle),
         hasRecords: bottle.feedingsWithAmount + bottle.feedingsMissingAmount > 0,
       },
       {
-        id: 'food', title: 'Jídlo',
-        value: food.events > 0 ? `${food.events} ${plural(food.events, 'jídlo', 'jídla', 'jídel')}` : '—',
-        detail: food.eventsMissingAmount > 0 ? `${food.eventsMissingAmount}× bez množství`
-          : food.events > 0 ? 'Zaznamenáno v deníku' : 'Zatím bez záznamu',
-        description: presentFood(food), hasRecords: food.events > 0,
+        id: 'food',
+        title: 'Jídlo',
+        value:
+          food.events > 0
+            ? `${food.events} ${plural(food.events, 'jídlo', 'jídla', 'jídel')}`
+            : '—',
+        detail:
+          food.eventsMissingAmount > 0
+            ? `${food.eventsMissingAmount}× bez množství`
+            : food.events > 0
+              ? 'Zaznamenáno v deníku'
+              : 'Zatím bez záznamu',
+        description: presentFood(food),
+        hasRecords: food.events > 0,
       },
       {
-        id: 'diaper', title: 'Plenky',
-        value: diapers.diapers > 0 ? `${diapers.diapers} ${plural(diapers.diapers, 'plenka', 'plenky', 'plenek')}` : '—',
-        detail: diapers.diapers > 0 ? `Mokré ${diapers.wet} · stolice ${diapers.dirty}` : 'Zatím bez záznamu',
-        description: presentDiapers(diapers), hasRecords: diapers.diapers > 0,
+        id: 'diaper',
+        title: 'Plenky',
+        value:
+          diapers.diapers > 0
+            ? `${diapers.diapers} ${plural(diapers.diapers, 'plenka', 'plenky', 'plenek')}`
+            : '—',
+        detail:
+          diapers.diapers > 0
+            ? `Mokré ${diapers.wet} · stolice ${diapers.dirty}`
+            : 'Zatím bez záznamu',
+        description: presentDiapers(diapers),
+        hasRecords: diapers.diapers > 0,
       },
       {
-        id: 'growth', title: 'Růst', value: growth > 0 ? `${growth} měření` : '—',
-        detail: growth === 1 ? 'Jedno měření, ještě ne trend'
-          : growth > 0 ? 'Vlastní měření v období' : 'Zatím bez záznamu',
-        description: presentGrowth(growth, overview.growth.series.singlePoint), hasRecords: growth > 0,
+        id: 'growth',
+        title: 'Růst',
+        value: growth > 0 ? `${growth} měření` : '—',
+        detail:
+          growth === 1
+            ? 'Jedno měření, ještě ne trend'
+            : growth > 0
+              ? 'Vlastní měření v období'
+              : 'Zatím bez záznamu',
+        description: presentGrowth(growth, overview.growth.series.singlePoint),
+        hasRecords: growth > 0,
       },
     ],
   };
@@ -112,9 +163,7 @@ function durationDetail(known: number, missing: number, label: string): string {
 }
 
 function presentSleep(stats: SleepDaySummary, running: readonly RunningCareIndicator[]): string {
-  const parts = [
-    `Zapsané intervaly spánku ${formatDuration(stats.recordedIntervalMs)}`,
-  ];
+  const parts = [`Zapsané intervaly spánku ${formatDuration(stats.recordedIntervalMs)}`];
   if (stats.eventsMissingDuration > 0) {
     parts.push(
       `další ${stats.eventsMissingDuration} ${plural(stats.eventsMissingDuration, 'záznam', 'záznamy', 'záznamů')} bez délky`,

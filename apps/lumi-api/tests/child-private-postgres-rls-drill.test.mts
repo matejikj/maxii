@@ -11,14 +11,8 @@ import {
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('child-private workspace migration and drill script exist', () => {
-  assert.equal(
-    existsSync(join(packageRoot, 'migrations/008_child_private_workspace.sql')),
-    true,
-  );
-  assert.equal(
-    existsSync(join(packageRoot, 'deploy/child-private-postgres-rls-drill.sh')),
-    true,
-  );
+  assert.equal(existsSync(join(packageRoot, 'migrations/008_child_private_workspace.sql')), true);
+  assert.equal(existsSync(join(packageRoot, 'deploy/child-private-postgres-rls-drill.sh')), true);
 });
 
 test('live child-private RLS against Compose Postgres when healthy (otherwise skip)', async (t) => {
@@ -34,16 +28,14 @@ test('live child-private RLS against Compose Postgres when healthy (otherwise sk
   const result = await runChildPrivatePostgresRlsDrill({
     ...LOCAL_CHILD_PRIVATE_POSTGRES_RLS_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.personalColdUnaffected, true);
   assert.equal(result.familyAdminIsPrivateSuperuser, false);
   assert.ok(result.cases.some((row) => row.name === 'family_admin_project_denied' && row.ok));
   assert.ok(result.cases.some((row) => row.name === 'named_recipient_share_only' && row.ok));
-  assert.ok(result.cases.some((row) => row.name === 'revoked_share_hidden_from_recipient' && row.ok));
+  assert.ok(
+    result.cases.some((row) => row.name === 'revoked_share_hidden_from_recipient' && row.ok),
+  );
   assert.ok(result.cases.some((row) => row.name === 'spoofed_owner_insert_rejected' && row.ok));
 });
 

@@ -29,10 +29,7 @@ export type SyncTransportPort = {
     }[];
     readonly epoch: number;
   }>;
-  pull: (input: {
-    readonly familyId: string;
-    readonly cursor: string | null;
-  }) => Promise<{
+  pull: (input: { readonly familyId: string; readonly cursor: string | null }) => Promise<{
     readonly entries: readonly {
       readonly changelogSeq: number;
       readonly operationId: string;
@@ -73,7 +70,7 @@ export async function runSyncTick(input: {
   };
   const pending = pendingOutbox(state).slice(0, input.batchSize ?? 25);
   let pushed = 0;
-  let pulled = 0;
+  let pulled: number;
   let maxAttempt = 0;
 
   if (pending.length > 0) {
@@ -99,10 +96,11 @@ export async function runSyncTick(input: {
       });
       state = applyPushReceipts(state, pushedResult.receipts);
       state = { ...state, epoch: pushedResult.epoch };
-      pushed = pushedResult.receipts.filter((item) =>
-        item.status === 'accepted' ||
-        item.status === 'accepted_with_conflict' ||
-        item.status === 'duplicate',
+      pushed = pushedResult.receipts.filter(
+        (item) =>
+          item.status === 'accepted' ||
+          item.status === 'accepted_with_conflict' ||
+          item.status === 'duplicate',
       ).length;
     } catch {
       return {

@@ -29,10 +29,7 @@ test('local child-private save enqueues without needing a server', () => {
   assert.equal(pendingChildPrivateOutbox(state).length, 1);
   assert.equal(state.ownerAppUserId, 'child-owner-1');
   assert.equal(pendingChildPrivateOutbox(state)[0]?.payloadHash.length, 64);
-  assert.equal(
-    pendingChildPrivateOutbox(state)[0]?.payload.reflection,
-    'jen lokálně',
-  );
+  assert.equal(pendingChildPrivateOutbox(state)[0]?.payload.reflection, 'jen lokálně');
 });
 
 test('family care outbox rejects child_private kinds', () => {
@@ -48,9 +45,7 @@ test('family care outbox rejects child_private kinds', () => {
         enqueuedAt: NOW,
       }),
     (error: unknown) =>
-      isAppError(error) &&
-      error.code === 'FORBIDDEN' &&
-      /family care outbox/i.test(error.message),
+      isAppError(error) && error.code === 'FORBIDDEN' && /family care outbox/i.test(error.message),
   );
   assert.equal(pendingOutbox(state).length, 0);
 });
@@ -74,9 +69,7 @@ test('share publish enqueue rejects live private fields in the snapshot', () => 
         enqueuedAt: NOW,
       }),
     (error: unknown) =>
-      isAppError(error) &&
-      error.code === 'VALIDATION' &&
-      /frozen snapshots/i.test(error.message),
+      isAppError(error) && error.code === 'VALIDATION' && /frozen snapshots/i.test(error.message),
   );
 });
 
@@ -96,10 +89,7 @@ test('safe share publish may enqueue on the owner-scoped outbox', () => {
     enqueuedAt: NOW,
   });
   assert.equal(pendingChildPrivateOutbox(state).length, 1);
-  assert.equal(
-    pendingChildPrivateOutbox(state)[0]?.commandType,
-    'child_private.share.publish',
-  );
+  assert.equal(pendingChildPrivateOutbox(state)[0]?.commandType, 'child_private.share.publish');
 });
 
 test('child-private tick never passes a familyId and recovers after transport loss', async () => {
@@ -120,10 +110,7 @@ test('child-private tick never passes a familyId and recovers after transport lo
     async push(input) {
       seenPushKeys.push(...Object.keys(input));
       assert.equal(input.ownerAppUserId, 'child-owner-1');
-      assert.equal(
-        (input as { familyId?: string }).familyId,
-        undefined,
-      );
+      assert.equal((input as { familyId?: string }).familyId, undefined);
       if (failPush) {
         failPush = false;
         throw new Error('network_down');
@@ -136,10 +123,7 @@ test('child-private tick never passes a familyId and recovers after transport lo
     async pull(input) {
       seenPushKeys.push(...Object.keys(input));
       assert.equal(input.ownerAppUserId, 'child-owner-1');
-      assert.equal(
-        (input as { familyId?: string }).familyId,
-        undefined,
-      );
+      assert.equal((input as { familyId?: string }).familyId, undefined);
       return {
         entries: [
           {
@@ -206,8 +190,6 @@ test('child-private outbox refuses a different owner binding', () => {
         enqueuedAt: NOW,
       }),
     (error: unknown) =>
-      isAppError(error) &&
-      error.code === 'FORBIDDEN' &&
-      /single owner/i.test(error.message),
+      isAppError(error) && error.code === 'FORBIDDEN' && /single owner/i.test(error.message),
   );
 });

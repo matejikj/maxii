@@ -188,7 +188,10 @@ test('upload tick creates intent, uploads bytes, and finalizes without diary JSO
   assert.equal(result.metadataOutbox.length, 1);
   assert.equal(result.metadataOutbox[0]!.commandType, 'attachment.upsert');
   assert.equal(result.metadataOutbox[0]!.entityId, 'a1');
-  assert.equal(result.metadataOutbox[0]!.payload.renditions[0]!.sha256, local.renditions[0]!.sha256);
+  assert.equal(
+    result.metadataOutbox[0]!.payload.renditions[0]!.sha256,
+    local.renditions[0]!.sha256,
+  );
 });
 
 test('upload tick fires onUploadSucceeded once and skips outbox on quota hold', async () => {
@@ -326,8 +329,12 @@ test('HTTP transfer client maps quota conflicts and stays disabled without API U
   if (blocked.ok) return;
   assert.equal(blocked.code, 'not_configured');
 
-  const calls: Array<{ method: string; auth?: string; csrf?: string; credentials?: RequestCredentials }> =
-    [];
+  const calls: Array<{
+    method: string;
+    auth?: string;
+    csrf?: string;
+    credentials?: RequestCredentials;
+  }> = [];
   const client = createHttpFamilyAttachmentTransferClient({
     apiBaseUrl: 'https://api.example.test',
     getAccessCredentials: async () => ({ kind: 'bearer', accessToken: 'bearer-token' }),

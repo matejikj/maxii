@@ -213,17 +213,18 @@ export async function runChildPrivateHttpPostgresSyncDrill(input: {
       name: 'http_owner_pull_reflection',
       ok:
         ownerPull.statusCode === 200 &&
-        ownerPull.json().entries?.some(
-          (row: { payload?: { reflection?: string } }) =>
-            row.payload?.reflection === secret,
-        ),
-      detail:
-        ownerPull.json().entries?.some(
-          (row: { payload?: { reflection?: string } }) =>
-            row.payload?.reflection === secret,
+        ownerPull
+          .json()
+          .entries?.some(
+            (row: { payload?: { reflection?: string } }) => row.payload?.reflection === secret,
+          ),
+      detail: ownerPull
+        .json()
+        .entries?.some(
+          (row: { payload?: { reflection?: string } }) => row.payload?.reflection === secret,
         )
-          ? 'owner HTTP pull reads durable reflection'
-          : 'owner pull missed reflection',
+        ? 'owner HTTP pull reads durable reflection'
+        : 'owner pull missed reflection',
     });
 
     const adminPull = await api.app.inject({
@@ -286,17 +287,18 @@ export async function runChildPrivateHttpPostgresSyncDrill(input: {
         name: 'second_process_reads_durable',
         ok:
           pull2.statusCode === 200 &&
-          pull2.json().entries?.some(
-            (row: { payload?: { reflection?: string } }) =>
-              row.payload?.reflection === secret,
-          ),
-        detail:
-          pull2.json().entries?.some(
-            (row: { payload?: { reflection?: string } }) =>
-              row.payload?.reflection === secret,
+          pull2
+            .json()
+            .entries?.some(
+              (row: { payload?: { reflection?: string } }) => row.payload?.reflection === secret,
+            ),
+        detail: pull2
+          .json()
+          .entries?.some(
+            (row: { payload?: { reflection?: string } }) => row.payload?.reflection === secret,
           )
-            ? 'second API boot reads the same Postgres ledger'
-            : 'second process missed durable rows',
+          ? 'second API boot reads the same Postgres ledger'
+          : 'second process missed durable rows',
       });
     } finally {
       await second.app.close();

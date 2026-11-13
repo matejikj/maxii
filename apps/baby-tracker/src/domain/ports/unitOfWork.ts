@@ -71,11 +71,7 @@ export type CareRepository = {
    * Descending care-time page with exclusive cursor. Inserts newer than the
    * cursor never displace older rows off the next page.
    */
-  listPage(
-    childId: ChildId,
-    limit: number,
-    before: TimelineCursor | null,
-  ): Promise<CarePage>;
+  listPage(childId: ChildId, limit: number, before: TimelineCursor | null): Promise<CarePage>;
 };
 
 export type SessionRepository = {

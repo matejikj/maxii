@@ -10,7 +10,7 @@ The library contains Character Engine (10 animals; expressions, poses, accessori
 - Expo SDK **58**, React Native **0.88**, React **19.3**.
 - `react-native-svg` 15.16, `react-native-reanimated` 4.7, `react-native-worklets` 0.13.
 - Node >= 22.13 for tooling and builds. Skia is **not** a runtime dependency.
-- Package name `@lumi/forest-design` is a *local placeholder*: do not attempt npm publication unless you own this namespace and have set a suitable license (currently `UNLICENSED`).
+- Package name `@lumi/forest-design` is a _local placeholder_: do not attempt npm publication unless you own this namespace and have set a suitable license (currently `UNLICENSED`).
 
 ## Install / run the showcase
 
@@ -31,8 +31,14 @@ npm run expo:start            # Expo showcase (including Scene, Character, UI, M
 
 ```ts
 import {
-  migrateSceneRecipe, encodeSceneRecipe, decodeSceneRecipe, compileSceneRecipe,
-  composeScene, compileCharacter, CHARACTER_BLUEPRINTS, serializeScene
+  migrateSceneRecipe,
+  encodeSceneRecipe,
+  decodeSceneRecipe,
+  compileSceneRecipe,
+  composeScene,
+  compileCharacter,
+  CHARACTER_BLUEPRINTS,
+  serializeScene,
 } from '@lumi/forest-design/core';
 
 // Stored presets have independent versioning from SceneDocument IR.
@@ -42,21 +48,32 @@ const document = compileSceneRecipe(decodeSceneRecipe(json));
 const xml = serializeScene(document); // OFFLINE export; no runtime XML parsing in RN
 
 const rabbit = compileCharacter(CHARACTER_BLUEPRINTS.rabbit, {
-  pose: 'standing', expression: 'happy', accessories: ['flower']
+  pose: 'standing',
+  expression: 'happy',
+  accessories: ['flower'],
 });
 ```
 
 ### React Native integration
 
 ```tsx
-import { LumiThemeProvider, LumiBackground, LumiCard, LumiText, LumiAnimatedCharacter, LumiMotionProvider } from '@lumi/forest-design';
+import {
+  LumiThemeProvider,
+  LumiBackground,
+  LumiCard,
+  LumiText,
+  LumiAnimatedCharacter,
+  LumiMotionProvider,
+} from '@lumi/forest-design';
 
 function GrowthScreen() {
   return (
     <LumiThemeProvider scene="growth" mode="system">
       <LumiMotionProvider>
         <LumiBackground scene="growth" seed="non-identifying-seed" />
-        <LumiCard><LumiText variant="h2">Růst</LumiText></LumiCard>
+        <LumiCard>
+          <LumiText variant="h2">Růst</LumiText>
+        </LumiCard>
         <LumiAnimatedCharacter species="bear" expression="happy" motion="idle" />
       </LumiMotionProvider>
     </LumiThemeProvider>

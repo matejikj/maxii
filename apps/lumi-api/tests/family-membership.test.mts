@@ -15,7 +15,10 @@ async function boot() {
   return createFamilyApi(config);
 }
 
-async function createFamilyWithAdmin(app: Awaited<ReturnType<typeof createFamilyApi>>['app'], tokens: Awaited<ReturnType<typeof createFamilyApi>>['tokens']) {
+async function createFamilyWithAdmin(
+  app: Awaited<ReturnType<typeof createFamilyApi>>['app'],
+  tokens: Awaited<ReturnType<typeof createFamilyApi>>['tokens'],
+) {
   const adminId = randomUUID() as AppUserId;
   const token = await tokens.mintTestToken({ subject: 'admin', appUserId: adminId });
   const created = await app.inject({

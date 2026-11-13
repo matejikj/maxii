@@ -75,9 +75,7 @@ export function FamilyConflictsPanel({ fixture = null, onResolved }: Props) {
     fixture != null &&
     (fixture.edit != null || fixture.dualSleep != null || fixture.deleteVsEdit != null);
 
-  const editPresentation = fixture?.edit
-    ? buildEditConflictPresentation(fixture.edit)
-    : null;
+  const editPresentation = fixture?.edit ? buildEditConflictPresentation(fixture.edit) : null;
   const dualPresentation = fixture?.dualSleep
     ? buildDualSleepPresentation(fixture.dualSleep)
     : null;
@@ -114,8 +112,7 @@ export function FamilyConflictsPanel({ fixture = null, onResolved }: Props) {
     [];
   const liveHeads = fixture?.liveHeadRevisionIds ?? draftHeads;
   const staleHeads =
-    draft != null &&
-    refreshResolutionDraftAgainstHeads(draft, liveHeads).status === 'stale_heads';
+    draft != null && refreshResolutionDraftAgainstHeads(draft, liveHeads).status === 'stale_heads';
 
   function choose(choiceId: string) {
     const next = createResolutionDraft({
@@ -147,9 +144,7 @@ export function FamilyConflictsPanel({ fixture = null, onResolved }: Props) {
           Jeden konflikt neblokuje plenku, krmení ani jiné zápisy. Poslední přenos:{' '}
           {fixture?.lastSuccessfulSyncAtLabel ?? 'zatím nepotvrzený'}
         </LumiText>
-        {!hasOpen ? (
-          <LumiText tone="muted">Teď není nic ke kontrole.</LumiText>
-        ) : null}
+        {!hasOpen ? <LumiText tone="muted">Teď není nic ke kontrole.</LumiText> : null}
       </LumiCard>
       {editPresentation ? (
         <ConflictReviewCard
@@ -172,8 +167,8 @@ export function FamilyConflictsPanel({ fixture = null, onResolved }: Props) {
       ) : null}
       {dualPresentation && unionLabel != null ? (
         <LumiText tone="muted">
-          Překryv známých spánků se sčítá jen jednou (sjednocení):{' '}
-          {Math.round(unionLabel / 60000)} min. Zdroje najdete u měření A a B výše.
+          Překryv známých spánků se sčítá jen jednou (sjednocení): {Math.round(unionLabel / 60000)}{' '}
+          min. Zdroje najdete u měření A a B výše.
         </LumiText>
       ) : null}
       {deletePresentation ? (

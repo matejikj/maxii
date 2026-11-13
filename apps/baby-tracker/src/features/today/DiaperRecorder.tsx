@@ -151,9 +151,7 @@ export function DiaperRecorder({
       occurredAt: occurred,
       intentCapturedAtMs: intentMs,
       note: noteValue,
-      ...(expectedRevisionId
-        ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-        : {}),
+      ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
     });
     retryRef.current = () =>
       commit(kind, occurred, intentMs, noteValue, intentIds, expectedRevisionId);

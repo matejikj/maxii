@@ -22,7 +22,9 @@ export type FamilyPhotoConflictKind = 'over_max_photos' | 'caption_or_order';
 export function detectFamilyPhotoCountConflict(input: {
   readonly localAttachments: readonly PhotoAttachment[];
   readonly remoteAttachments: readonly PhotoAttachment[];
-}): { readonly conflict: false } | { readonly conflict: true; readonly kind: FamilyPhotoConflictKind; readonly total: number } {
+}):
+  | { readonly conflict: false }
+  | { readonly conflict: true; readonly kind: FamilyPhotoConflictKind; readonly total: number } {
   const ids = new Set<string>();
   for (const row of input.localAttachments) {
     if (row.deletedAtMs == null) ids.add(row.attachmentId);

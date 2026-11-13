@@ -48,11 +48,7 @@ export type ApplyResult =
     }
   | {
       readonly ok: false;
-      readonly reason:
-        | 'unknown_parents'
-        | 'tombstoned'
-        | 'validation'
-        | 'cannot_auto_resurrect';
+      readonly reason: 'unknown_parents' | 'tombstoned' | 'validation' | 'cannot_auto_resurrect';
       readonly state: EntityGraphState;
     };
 
@@ -66,10 +62,7 @@ export function createEmptyEntityGraph(erasedGeneration = 1): EntityGraphState {
   };
 }
 
-export function applyRevision(
-  state: EntityGraphState,
-  revision: GraphRevision,
-): ApplyResult {
+export function applyRevision(state: EntityGraphState, revision: GraphRevision): ApplyResult {
   if (!revision.revisionId || !revision.entityId || !revision.operationId) {
     return { ok: false, reason: 'validation', state };
   }
@@ -327,9 +320,7 @@ export function isolateOutboxForResync(input: {
   return { stillEligible, blockedByTombstone, blockedCannotResurrect };
 }
 
-export function convergeByRevisions(
-  revisions: readonly GraphRevision[],
-): EntityGraphState {
+export function convergeByRevisions(revisions: readonly GraphRevision[]): EntityGraphState {
   let state = createEmptyEntityGraph();
   const pending = [...revisions];
   let guard = pending.length + 2;

@@ -94,9 +94,7 @@ export const DEV_FIXTURE_REVISIONS: ActivityRevision[] = [
 ];
 
 /** Example product-shaped revisions used only in unit tests for catalog rules. */
-export function sampleProductRevision(
-  overrides: Partial<ActivityRevision> = {},
-): ActivityRevision {
+export function sampleProductRevision(overrides: Partial<ActivityRevision> = {}): ActivityRevision {
   return {
     activityId: 'act.high-contrast-card',
     revisionId: 'act.high-contrast-card.r1',

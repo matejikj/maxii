@@ -19,11 +19,25 @@ function countNodes(nodes) {
 }
 
 test('LUMI_ICON_IDS preserves tab meanings and adds care / action glyphs', () => {
-  assert.deepEqual([...LUMI_ICON_IDS], [
-    'today', 'care', 'development', 'history',
-    'sleep', 'nursing', 'bottle', 'food', 'diaper', 'growth', 'plus', 'arrow-right',
-    'experience', 'settings',
-  ]);
+  assert.deepEqual(
+    [...LUMI_ICON_IDS],
+    [
+      'today',
+      'care',
+      'development',
+      'history',
+      'sleep',
+      'nursing',
+      'bottle',
+      'food',
+      'diaper',
+      'growth',
+      'plus',
+      'arrow-right',
+      'experience',
+      'settings',
+    ],
+  );
   assert.equal(ICON_SIZE, 24);
 });
 
@@ -51,20 +65,23 @@ test('compileLumiIcon fails closed on unknown id and empty color', () => {
   assert.equal(isKnownLumiIconId('missing'), false);
   assert.throws(() => compileLumiIcon('missing', { color: COLOR }), /Unknown Lumi icon id/);
   assert.throws(() => compileLumiIcon('today', { color: '' }), /non-empty color/);
-  assert.throws(() => compileLumiIcon('today', { color: COLOR, accentColor: '' }), /non-empty accentColor/);
+  assert.throws(
+    () => compileLumiIcon('today', { color: COLOR, accentColor: '' }),
+    /non-empty accentColor/,
+  );
 });
 
 test('optional botanical accent keeps semantic ink and uses only caller colors', () => {
   for (const id of LUMI_ICON_IDS) {
     const document = compileLumiIcon(id, { color: COLOR, accentColor: '#B09058' });
-    const props = document.nodes.flatMap(flatten).map(node => node.props);
-    assert.ok(props.some(p => p.stroke === COLOR || p.fill === COLOR));
+    const props = document.nodes.flatMap(flatten).map((node) => node.props);
+    assert.ok(props.some((p) => p.stroke === COLOR || p.fill === COLOR));
     for (const p of props) {
       if (p.fill && p.fill !== 'none') assert.ok([COLOR, '#B09058'].includes(p.fill));
       if (p.stroke) assert.ok([COLOR, '#B09058'].includes(p.stroke));
     }
     if (!['plus', 'arrow-right'].includes(id)) {
-      assert.ok(props.some(p => p.stroke === '#B09058' || p.fill === '#B09058'));
+      assert.ok(props.some((p) => p.stroke === '#B09058' || p.fill === '#B09058'));
     }
   }
 });

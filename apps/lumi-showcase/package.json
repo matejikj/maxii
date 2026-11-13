@@ -18,7 +18,12 @@
     "storybook:ios": "STORYBOOK_ENABLED=true expo start --ios",
     "storybook:web": "STORYBOOK_ENABLED=true expo start --web --clear",
     "storybook:export:web": "STORYBOOK_ENABLED=true STORYBOOK_SERVER=false expo export --platform web --output-dir dist-storybook-web",
-    "storybook:export:android": "STORYBOOK_ENABLED=true STORYBOOK_SERVER=false expo export --platform android --output-dir dist-storybook-android"
+    "storybook:export:android": "STORYBOOK_ENABLED=true STORYBOOK_SERVER=false expo export --platform android --output-dir dist-storybook-android",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",

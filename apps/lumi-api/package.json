@@ -26,9 +26,13 @@
     "child-private:rls-drill": "bash ./deploy/child-private-postgres-rls-drill.sh",
     "child-private:sync-drill": "bash ./deploy/child-private-postgres-sync-drill.sh",
     "child-private:http-sync-drill": "bash ./deploy/child-private-http-postgres-sync-drill.sh",
-
     "start": "node --experimental-strip-types ./src/main.ts",
-    "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts"
+    "start:worker": "LUMI_PROCESS_ROLE=worker node --experimental-strip-types ./src/main.ts",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "engines": {
     "node": ">=22.13.0"

@@ -1,4 +1,8 @@
-import { loadBabyAvatar, saveBabyAvatar, type BabyAvatarVariant } from '../../application/babyAvatar';
+import {
+  loadBabyAvatar,
+  saveBabyAvatar,
+  type BabyAvatarVariant,
+} from '../../application/babyAvatar';
 import React, {
   createContext,
   useCallback,
@@ -65,8 +69,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     if (!runtime) return;
     const zone = profile?.settings.summaryTimeZone ?? 'Europe/Prague';
     const childId = profile?.childId;
-    const [next, avatar] = await Promise.all([loadPersonalPreferences(runtime.unitOfWork, zone),
-      childId ? loadBabyAvatar(runtime.unitOfWork, childId) : Promise.resolve('neutral' as const)]);
+    const [next, avatar] = await Promise.all([
+      loadPersonalPreferences(runtime.unitOfWork, zone),
+      childId ? loadBabyAvatar(runtime.unitOfWork, childId) : Promise.resolve('neutral' as const),
+    ]);
     if (childId) setBaby({ childId, variant: avatar });
     setPreferences(next);
     setReady(true);
@@ -88,7 +94,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       preferences,
       ready,
       backupHintVisible,
-      babyAvatar: baby?.childId === profile?.childId ? baby?.variant ?? 'neutral' : 'neutral',
+      babyAvatar: baby?.childId === profile?.childId ? (baby?.variant ?? 'neutral') : 'neutral',
       babyAvatarReady: ready && baby?.childId === profile?.childId,
       async setBabyAvatar(variant) {
         if (!runtime || !profile) throw new Error('Profil ještě není připravený.');

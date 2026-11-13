@@ -101,8 +101,7 @@ export const PRODUCT_COPY = {
     synchronizedCaveat:
       'Jiný offline telefon může mít ještě neodeslané změny, které toto zařízení nezná.',
     backupCreated: 'Záloha vytvořena.',
-    backupDistinctFromSync:
-      'Záloha je oddělená od synchronizace mezi telefony.',
+    backupDistinctFromSync: 'Záloha je oddělená od synchronizace mezi telefony.',
     saveFailed: 'Uložení se nepovedlo. Zadané hodnoty zůstaly zachované.',
     saveFailedStorage:
       'Uložení se nepovedlo kvůli úložišti. Zadané hodnoty zůstaly zachované — zkuste znovu.',
@@ -145,8 +144,7 @@ export const PRODUCT_COPY = {
       'Zapamatujeme jen poslední typ krmení. Množství ani čas z minulého záznamu nepředvyplňujeme.',
   },
   growth: {
-    oneValueEnough:
-      'Stačí jedna skutečně zadaná hodnota. Prázdná pole zůstanou neznámá, ne nula.',
+    oneValueEnough: 'Stačí jedna skutečně zadaná hodnota. Prázdná pole zůstanou neznámá, ne nula.',
   },
   experience: {
     pickerHint: 'Vlastní činnost, milník nebo večerní poznámka — bez katalogu a bez skóre.',
@@ -194,8 +192,7 @@ export const PRODUCT_COPY = {
     startOwnIdeaWithVariants: 'Vlastní nápad se dvěma variantami',
     startOwnBrief: 'Vlastní zadání',
     cohort8to11Templates: 'Šablony 8–11 let',
-    cohort8to11Offline:
-      'Čtyři ověřené šablony jsou v instalaci. Fungují bez účtu a bez sítě.',
+    cohort8to11Offline: 'Čtyři ověřené šablony jsou v instalaci. Fungují bez účtu a bez sítě.',
     cohort12to14Templates: 'Šablony 12–14 let',
     cohort12to14Offline:
       'Čtyři ověřené šablony 12–14 let jsou v instalaci. Více vlastní volby a porovnání variant — bez změny sdílení.',

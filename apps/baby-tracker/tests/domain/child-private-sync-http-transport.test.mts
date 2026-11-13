@@ -45,10 +45,11 @@ test('personal cold resolve keeps a disabled transport without sync env', async 
     /child_private_sync_not_configured/,
   );
   await assert.rejects(
-    () => createDisabledChildPrivateSyncTransport().pull({
-      ownerAppUserId: 'x',
-      cursor: null,
-    }),
+    () =>
+      createDisabledChildPrivateSyncTransport().pull({
+        ownerAppUserId: 'x',
+        cursor: null,
+      }),
     /child_private_sync_not_configured/,
   );
 });

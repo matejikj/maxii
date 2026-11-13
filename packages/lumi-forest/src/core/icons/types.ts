@@ -2,9 +2,20 @@ import type { VectorNode } from '../vector/types';
 
 /** Stable tab / UI glyph identifiers. Additive only — do not renumber meanings. */
 export const LUMI_ICON_IDS = [
-  'today', 'care', 'development', 'history',
-  'sleep', 'nursing', 'bottle', 'food', 'diaper', 'growth', 'plus', 'arrow-right',
-  'experience', 'settings',
+  'today',
+  'care',
+  'development',
+  'history',
+  'sleep',
+  'nursing',
+  'bottle',
+  'food',
+  'diaper',
+  'growth',
+  'plus',
+  'arrow-right',
+  'experience',
+  'settings',
 ] as const;
 export type LumiIconId = (typeof LUMI_ICON_IDS)[number];
 

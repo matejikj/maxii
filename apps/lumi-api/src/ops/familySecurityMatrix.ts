@@ -71,11 +71,7 @@ export type FamilySecurityMatrixDeps = {
   readonly diaryCanary: string;
 };
 
-function check(
-  id: SecurityCheckId,
-  ok: boolean,
-  detail: string,
-): SecurityCheckResult {
+function check(id: SecurityCheckId, ok: boolean, detail: string): SecurityCheckResult {
   return { id, ok, detail };
 }
 
@@ -152,9 +148,7 @@ export async function runFamilySecurityMatrix(
     payload: { familyId: familyA, label: canary },
   });
   const objectId =
-    seeded.statusCode === 201
-      ? ((seeded.json() as { objectId: string }).objectId as string)
-      : '';
+    seeded.statusCode === 201 ? ((seeded.json() as { objectId: string }).objectId as string) : '';
   const idor = await deps.app.inject({
     method: 'GET',
     url: `/v1/families/${familyA}/objects/${objectId || 'missing'}`,
@@ -214,8 +208,7 @@ export async function runFamilySecurityMatrix(
     },
   });
   const inviteOk =
-    (accepted.statusCode === 201 || accepted.statusCode === 200) &&
-    reuse.statusCode >= 400;
+    (accepted.statusCode === 201 || accepted.statusCode === 200) && reuse.statusCode >= 400;
   checks.push(
     check(
       'invitation_token_single_use',
@@ -316,9 +309,11 @@ export async function runFamilySecurityMatrix(
       operations: [resurrect],
     },
   });
-  const receipts = (zombie.json() as {
-    receipts?: Array<{ status: string; reason?: string }>;
-  }).receipts;
+  const receipts = (
+    zombie.json() as {
+      receipts?: Array<{ status: string; reason?: string }>;
+    }
+  ).receipts;
   const tombstoneOk =
     Array.isArray(receipts) &&
     receipts.some((item) => item.status === 'rejected' && item.reason === 'tombstoned');
@@ -333,7 +328,7 @@ export async function runFamilySecurityMatrix(
   );
 
   // Rate limiter unit + API error without diary wording.
-  let now = 0;
+  const now = 0;
   const limiter = createFixedWindowRateLimiter({
     limit: 2,
     windowMs: 1_000,
@@ -421,9 +416,7 @@ export async function runFamilySecurityMatrix(
   if (allSoftwareChecksPassed) {
     findings.push('software_security_matrix_passed');
   } else {
-    findings.push(
-      ...checks.filter((item) => !item.ok).map((item) => `failed:${item.id}`),
-    );
+    findings.push(...checks.filter((item) => !item.ok).map((item) => `failed:${item.id}`));
   }
   findings.push('independent_human_review_not_claimed');
 

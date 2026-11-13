@@ -60,9 +60,9 @@ export function useDevelopmentModel() {
   const [recommendation, setRecommendation] = useState<DailyRecommendationView | null>(null);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [glance, setGlance] = useState<WeeklyDevelopmentGlance | null>(null);
-  const [todayByActivity, setTodayByActivity] = useState<Record<string, ExperienceCareEvent | null>>(
-    {},
-  );
+  const [todayByActivity, setTodayByActivity] = useState<
+    Record<string, ExperienceCareEvent | null>
+  >({});
   const [readinessByKey, setReadinessByKey] = useState<Partial<Record<string, ReadinessState>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -5,13 +5,7 @@ import type { PhotoAttachment, RenditionRole } from './types';
 export type FamilyPhotoBlobTransferKind = 'upload' | 'download';
 
 export type FamilyPhotoBlobTransferState =
-  | 'queued'
-  | 'in_flight'
-  | 'quota_waiting'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-  | 'isolated';
+  'queued' | 'in_flight' | 'quota_waiting' | 'succeeded' | 'failed' | 'cancelled' | 'isolated';
 
 /**
  * Durable blob transfer job. Metadata sync stays on the diary outbox; JPEG
@@ -41,13 +35,9 @@ export type FamilyPhotoTransferSession = {
  * Personal builds never open family photo transfers. Local durable copies stay
  * enough without an account or API URL.
  */
-export function shouldEnqueueFamilyPhotoTransfers(
-  session: FamilyPhotoTransferSession,
-): boolean {
+export function shouldEnqueueFamilyPhotoTransfers(session: FamilyPhotoTransferSession): boolean {
   return (
-    session.familySyncConfigured &&
-    session.activeFamilyId != null &&
-    session.appUserId != null
+    session.familySyncConfigured && session.activeFamilyId != null && session.appUserId != null
   );
 }
 
@@ -122,7 +112,9 @@ export function planUploadJobsForLocalAttachments(input: {
   const familyId = input.session.activeFamilyId!;
   const existingKeys = new Set(
     input.existingJobs
-      .filter((job) => job.kind === 'upload' && job.state !== 'cancelled' && job.state !== 'isolated')
+      .filter(
+        (job) => job.kind === 'upload' && job.state !== 'cancelled' && job.state !== 'isolated',
+      )
       .map((job) => `${job.attachmentId}:${job.renditionId}`),
   );
   const next: FamilyPhotoBlobTransferJob[] = [];
@@ -174,7 +166,9 @@ export function planDownloadJobsForRemoteMetadata(input: {
   const localById = new Map(input.localAttachments.map((row) => [row.attachmentId, row]));
   const existingKeys = new Set(
     input.existingJobs
-      .filter((job) => job.kind === 'download' && job.state !== 'cancelled' && job.state !== 'isolated')
+      .filter(
+        (job) => job.kind === 'download' && job.state !== 'cancelled' && job.state !== 'isolated',
+      )
       .map((job) => `${job.attachmentId}:${job.renditionId}`),
   );
   const jobs: FamilyPhotoBlobTransferJob[] = [];
@@ -198,7 +192,9 @@ export function planDownloadJobsForRemoteMetadata(input: {
 
     for (const rendition of base.renditions) {
       if (!allowedRoles.has(rendition.role)) continue;
-      const localRendition = local?.renditions.find((row) => row.renditionId === rendition.renditionId);
+      const localRendition = local?.renditions.find(
+        (row) => row.renditionId === rendition.renditionId,
+      );
       if (renditionHasLocalBytes(localRendition?.availability)) continue;
       const key = `${remote.attachmentId}:${rendition.renditionId}`;
       if (existingKeys.has(key)) continue;
@@ -224,9 +220,7 @@ export function planDownloadJobsForRemoteMetadata(input: {
  * True when the parent opened a photo that still lacks a local display copy.
  * Prefetch never fills this — only pin or an explicit download request does.
  */
-export function attachmentNeedsConsciousDisplayDownload(
-  attachment: PhotoAttachment,
-): boolean {
+export function attachmentNeedsConsciousDisplayDownload(attachment: PhotoAttachment): boolean {
   if (attachment.deletedAtMs != null) return false;
   const display = attachment.renditions.find((row) => row.role === 'display');
   if (!display) return false;
@@ -244,12 +238,7 @@ export function planConsciousDisplayDownload(input: {
   readonly createJobId: (seed: string) => string;
 }): {
   readonly jobs: readonly FamilyPhotoBlobTransferJob[];
-  readonly outcome:
-    | 'queued'
-    | 'already_local'
-    | 'personal_cold'
-    | 'deleted'
-    | 'already_queued';
+  readonly outcome: 'queued' | 'already_local' | 'personal_cold' | 'deleted' | 'already_queued';
 } {
   if (input.attachment.deletedAtMs != null) {
     return { jobs: [], outcome: 'deleted' };
@@ -299,7 +288,8 @@ export function occupiedThumbnailPrefetchBytes(input: {
   }
   for (const job of input.existingJobs ?? []) {
     if (job.kind !== 'download' || job.role !== 'thumbnail') continue;
-    if (job.state === 'cancelled' || job.state === 'isolated' || job.state === 'succeeded') continue;
+    if (job.state === 'cancelled' || job.state === 'isolated' || job.state === 'succeeded')
+      continue;
     total += job.byteLength;
   }
   return total;
@@ -308,9 +298,7 @@ export function occupiedThumbnailPrefetchBytes(input: {
 function renditionHasLocalBytes(
   availability: PhotoAttachment['renditions'][number]['availability'] | undefined,
 ): boolean {
-  return (
-    availability === 'durable' || availability === 'cache' || availability === 'pending'
-  );
+  return availability === 'durable' || availability === 'cache' || availability === 'pending';
 }
 
 /**
@@ -340,11 +328,7 @@ export function planThumbnailPrefetchJobs(input: {
   const familyId = input.session.activeFamilyId!;
   const budget = input.budgetBytes ?? ATTACHMENT_LIMITS.thumbnailPrefetchBudgetBytes;
   const windowMs =
-    (input.windowDays ?? ATTACHMENT_LIMITS.thumbnailPrefetchWindowDays) *
-    24 *
-    60 *
-    60 *
-    1000;
+    (input.windowDays ?? ATTACHMENT_LIMITS.thumbnailPrefetchWindowDays) * 24 * 60 * 60 * 1000;
   const occupied =
     input.occupiedBytes ??
     occupiedThumbnailPrefetchBytes({
@@ -356,7 +340,9 @@ export function planThumbnailPrefetchJobs(input: {
   const localById = new Map(input.localAttachments.map((row) => [row.attachmentId, row]));
   const existingKeys = new Set(
     input.existingJobs
-      .filter((job) => job.kind === 'download' && job.state !== 'cancelled' && job.state !== 'isolated')
+      .filter(
+        (job) => job.kind === 'download' && job.state !== 'cancelled' && job.state !== 'isolated',
+      )
       .map((job) => `${job.attachmentId}:${job.renditionId}`),
   );
 
@@ -370,10 +356,7 @@ export function planThumbnailPrefetchJobs(input: {
   let skippedBudget = 0;
 
   for (const candidate of sorted) {
-    if (
-      candidate.referenceAtMs > input.nowMs ||
-      input.nowMs - candidate.referenceAtMs > windowMs
-    ) {
+    if (candidate.referenceAtMs > input.nowMs || input.nowMs - candidate.referenceAtMs > windowMs) {
       skippedOutsideWindow += 1;
       continue;
     }
@@ -448,7 +431,10 @@ export function selectTransferJobsToStart(input: {
 
 export function applyTransferJobState(
   jobs: readonly FamilyPhotoBlobTransferJob[],
-  updates: ReadonlyMap<string, Partial<Pick<FamilyPhotoBlobTransferJob, 'state' | 'attemptCount' | 'lastErrorCode'>>>,
+  updates: ReadonlyMap<
+    string,
+    Partial<Pick<FamilyPhotoBlobTransferJob, 'state' | 'attemptCount' | 'lastErrorCode'>>
+  >,
 ): readonly FamilyPhotoBlobTransferJob[] {
   return jobs.map((job) => {
     const patch = updates.get(job.jobId);
@@ -500,11 +486,7 @@ export function cancelTransferJob(
 ): readonly FamilyPhotoBlobTransferJob[] {
   return jobs.map((job) => {
     if (job.jobId !== jobId) return job;
-    if (
-      job.state === 'succeeded' ||
-      job.state === 'cancelled' ||
-      job.state === 'isolated'
-    ) {
+    if (job.state === 'succeeded' || job.state === 'cancelled' || job.state === 'isolated') {
       return job;
     }
     return { ...job, state: 'cancelled' as const, lastErrorCode: 'user_cancelled' };
@@ -526,12 +508,8 @@ export function labelForAttachmentTransfer(input: {
       job.kind === 'upload' &&
       (job.state === 'queued' || job.state === 'in_flight' || job.state === 'quota_waiting'),
   );
-  const downloadMissing = input.attachment.renditions.some(
-    (row) => row.availability === 'missing',
-  );
-  const localDurable = input.attachment.renditions.some(
-    (row) => row.availability === 'durable',
-  );
+  const downloadMissing = input.attachment.renditions.some((row) => row.availability === 'missing');
+  const localDurable = input.attachment.renditions.some((row) => row.availability === 'durable');
   return presentFamilyPhotoTransferLabel({
     familySyncConfigured: shouldEnqueueFamilyPhotoTransfers(input.session),
     localDurable,

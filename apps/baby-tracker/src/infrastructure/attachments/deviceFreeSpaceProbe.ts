@@ -14,7 +14,11 @@ export function createDeviceFreeSpaceProbe(): DeviceFreeSpaceProbe {
       if (Platform.OS === 'web') {
         try {
           const storage = (
-            globalThis as { navigator?: { storage?: { estimate?: () => Promise<{ quota?: number; usage?: number }> } } }
+            globalThis as {
+              navigator?: {
+                storage?: { estimate?: () => Promise<{ quota?: number; usage?: number }> };
+              };
+            }
           ).navigator?.storage;
           if (!storage?.estimate) return null;
           const estimate = await storage.estimate();

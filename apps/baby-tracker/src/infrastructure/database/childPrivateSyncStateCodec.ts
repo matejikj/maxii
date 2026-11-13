@@ -1,8 +1,5 @@
 import type { Instant } from '../../domain/ports/clock';
-import type {
-  DurableOutboxEntry,
-  InboxEntry,
-} from '../../domain/sync/transport';
+import type { DurableOutboxEntry, InboxEntry } from '../../domain/sync/transport';
 import {
   createEmptyChildPrivateSyncState,
   type LocalChildPrivateSyncState,
@@ -103,9 +100,7 @@ export function parseChildPrivateSyncState(
     cursor: row.cursor,
     epoch: row.epoch,
     lastSuccessfulSyncAt:
-      row.lastSuccessfulSyncAtMs == null
-        ? null
-        : { epochMs: row.lastSuccessfulSyncAtMs },
+      row.lastSuccessfulSyncAtMs == null ? null : { epochMs: row.lastSuccessfulSyncAtMs },
     resyncRequired: row.resyncRequired,
     outbox: mapOutbox(JSON.parse(row.outboxJson)),
     inbox: mapInbox(JSON.parse(row.inboxJson)),

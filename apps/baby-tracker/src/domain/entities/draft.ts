@@ -38,7 +38,11 @@ export function createDraft(input: {
   };
 }
 
-export function touchDraft(draft: Draft, updatedAt: Instant, payload: Record<string, unknown>): Draft {
+export function touchDraft(
+  draft: Draft,
+  updatedAt: Instant,
+  payload: Record<string, unknown>,
+): Draft {
   if (updatedAt.epochMs < draft.updatedAt.epochMs) {
     throw new AppError('VALIDATION', 'Draft update time moved backwards', {
       details: { reason: 'draft_clock' },

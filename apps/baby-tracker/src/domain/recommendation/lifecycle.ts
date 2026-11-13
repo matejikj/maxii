@@ -20,10 +20,7 @@ export function markRecommendationHidden(set: RecommendationSet): Recommendation
   return {
     ...set,
     status: 'hidden',
-    invalidationReasonCodes: uniqueCodes([
-      ...set.invalidationReasonCodes,
-      'care_only_today',
-    ]),
+    invalidationReasonCodes: uniqueCodes([...set.invalidationReasonCodes, 'care_only_today']),
   };
 }
 
@@ -46,10 +43,7 @@ export function withInvalidation(
     ...set,
     offers: [],
     status: set.status === 'hidden' ? 'hidden' : 'prepared',
-    invalidationReasonCodes: uniqueCodes([
-      ...set.invalidationReasonCodes,
-      ...reasonCodes,
-    ]),
+    invalidationReasonCodes: uniqueCodes([...set.invalidationReasonCodes, ...reasonCodes]),
   });
 }
 

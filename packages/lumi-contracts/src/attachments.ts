@@ -129,7 +129,10 @@ export function planFamilyAttachmentReservation(input: {
   readonly requestBytes: number;
 }):
   | { readonly ok: true; readonly nextReservedBytes: number }
-  | { readonly ok: false; readonly reason: 'quota_exceeded' | 'pending_budget_exceeded' | 'invalid_size' } {
+  | {
+      readonly ok: false;
+      readonly reason: 'quota_exceeded' | 'pending_budget_exceeded' | 'invalid_size';
+    } {
   if (!Number.isFinite(input.requestBytes) || input.requestBytes <= 0) {
     return { ok: false, reason: 'invalid_size' };
   }
@@ -154,9 +157,7 @@ export function isDisposableAttachmentCopy(kind: 'own' | 'pending' | 'pinned' | 
 export function decideAttachmentMutationAgainstErasure(input: {
   readonly recordedEraseGeneration: number | null;
   readonly action: 'create_intent' | 'upload' | 'finalize' | 'read' | 'restore_publish';
-}):
-  | { readonly allow: true }
-  | { readonly allow: false; readonly reason: 'erased' } {
+}): { readonly allow: true } | { readonly allow: false; readonly reason: 'erased' } {
   if (
     input.recordedEraseGeneration != null &&
     Number.isFinite(input.recordedEraseGeneration) &&
@@ -200,7 +201,9 @@ export function authorizeFamilyAttachmentAction(input: {
   readonly membershipActive: boolean;
   readonly role: 'admin' | 'caregiver' | null;
   readonly action: 'upload' | 'read' | 'finalize' | 'tombstone';
-}): { readonly allow: true } | { readonly allow: false; readonly reason: 'not_member' | 'role_denied' } {
+}):
+  | { readonly allow: true }
+  | { readonly allow: false; readonly reason: 'not_member' | 'role_denied' } {
   if (!input.membershipActive || input.role == null) {
     return { allow: false, reason: 'not_member' };
   }

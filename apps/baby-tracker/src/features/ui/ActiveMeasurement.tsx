@@ -69,7 +69,9 @@ export function ActiveMeasurement({
         >
           <ForestIconBadge name={icon} size={44} />
           <View style={{ flex: 1, gap: 3 }}>
-            <LumiText variant="caption" tone="muted">{PRODUCT_COPY.measurement.running}</LumiText>
+            <LumiText variant="caption" tone="muted">
+              {PRODUCT_COPY.measurement.running}
+            </LumiText>
             <LumiText variant={compact ? 'label' : 'h2'}>{title}</LumiText>
           </View>
         </View>
@@ -77,7 +79,14 @@ export function ActiveMeasurement({
           accessibilityRole="button"
           accessibilityLabel={`Délka ${display}. Klepnutím zopakujete oznámení.`}
           onPress={() => setAnnounceElapsed((value) => !value)}
-          style={[styles.duration, { minHeight: compact ? 48 : 80, backgroundColor: tone.background, borderColor: colors.controlBorder }]}
+          style={[
+            styles.duration,
+            {
+              minHeight: compact ? 48 : 80,
+              backgroundColor: tone.background,
+              borderColor: colors.controlBorder,
+            },
+          ]}
         >
           <LumiText
             accessibilityLiveRegion={announceElapsed ? 'polite' : 'none'}
@@ -94,10 +103,21 @@ export function ActiveMeasurement({
         ) : null}
         <View style={{ flexDirection: stacked ? 'column' : 'row', gap: ui.space.sm }}>
           <View style={stacked ? undefined : { flex: 1 }}>
-            <LumiButton title={openLabel} variant="secondary" onPress={onOpen} fullWidth style={{ paddingHorizontal: 10 }} />
+            <LumiButton
+              title={openLabel}
+              variant="secondary"
+              onPress={onOpen}
+              fullWidth
+              style={{ paddingHorizontal: 10 }}
+            />
           </View>
           <View style={stacked ? undefined : { flex: 1 }}>
-            <LumiButton title={stopLabel} onPress={onStop} fullWidth style={{ paddingHorizontal: 10 }} />
+            <LumiButton
+              title={stopLabel}
+              onPress={onStop}
+              fullWidth
+              style={{ paddingHorizontal: 10 }}
+            />
           </View>
         </View>
       </View>

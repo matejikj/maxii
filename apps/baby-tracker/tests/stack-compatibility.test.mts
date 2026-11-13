@@ -21,9 +21,14 @@ test('random polyfill preserves getter-only browser crypto and supplies missing 
     new URL('../src/infrastructure/crypto/installRandomPolyfill.ts', import.meta.url),
     'utf8',
   );
-  const executable = stripTypeScriptTypes(source
-    .replace("import { getRandomValues as expoGetRandomValues } from 'expo-crypto';", 'const expoGetRandomValues = globalThis.testRandomValues;')
-    .replace('export function', 'function'));
+  const executable = stripTypeScriptTypes(
+    source
+      .replace(
+        "import { getRandomValues as expoGetRandomValues } from 'expo-crypto';",
+        'const expoGetRandomValues = globalThis.testRandomValues;',
+      )
+      .replace('export function', 'function'),
+  );
   let fallbackCalls = 0;
   const fallback = (array: Uint8Array) => {
     fallbackCalls++;

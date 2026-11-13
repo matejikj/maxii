@@ -3,15 +3,8 @@ export type { SealedAttachmentBlob } from './sealedBlobCodec';
 export { createMemoryPrivateAttachmentStore } from './memoryPrivateAttachmentStore';
 export { createMemoryAttachmentRepository } from './memoryAttachmentRepository';
 export { createSyntheticPhotoProcessor } from './syntheticPhotoProcessor';
-export {
-  createPhotoNormalizeProcessor,
-  decodeBase64Jpeg,
-} from './photoNormalizeCodec';
-export type {
-  ManipulatedImage,
-  PhotoManipulateFn,
-  TempJpegHandle,
-} from './photoNormalizeCodec';
+export { createPhotoNormalizeProcessor, decodeBase64Jpeg } from './photoNormalizeCodec';
+export type { ManipulatedImage, PhotoManipulateFn, TempJpegHandle } from './photoNormalizeCodec';
 export {
   createDexiePrivateAttachmentStore,
   deleteWebAttachmentBlobDatabase,

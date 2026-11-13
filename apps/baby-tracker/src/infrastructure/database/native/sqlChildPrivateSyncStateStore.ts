@@ -47,10 +47,7 @@ export function createSqlChildPrivateSyncStateStore(
     async save(state) {
       const serialized = serializeChildPrivateSyncState(state);
       // Delete-then-insert keeps the memory SQL double and expo-sqlite aligned.
-      await connection.runAsync(
-        'DELETE FROM child_private_sync_state WHERE id = ?',
-        SINGLETON_ID,
-      );
+      await connection.runAsync('DELETE FROM child_private_sync_state WHERE id = ?', SINGLETON_ID);
       await connection.runAsync(
         `INSERT INTO child_private_sync_state (
           id, owner_app_user_id, cursor, epoch, last_successful_sync_at_ms,

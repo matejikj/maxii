@@ -102,8 +102,7 @@ export function createChildPrivateSyncLoop(input: {
 }): ChildPrivateSyncLoop {
   const setIntervalFn = input.setIntervalFn ?? setInterval;
   const clearIntervalFn = input.clearIntervalFn ?? clearInterval;
-  const createAttemptId =
-    input.createAttemptId ?? (() => `cp_tick_${Date.now()}`);
+  const createAttemptId = input.createAttemptId ?? (() => `cp_tick_${Date.now()}`);
   const nowIso = input.nowIso ?? (() => new Date().toISOString());
   let timer: ReturnType<typeof setInterval> | null = null;
   let inFlight = false;

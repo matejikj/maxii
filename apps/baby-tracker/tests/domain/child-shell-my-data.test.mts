@@ -211,7 +211,11 @@ test('recovery preview with gates open lists own-workspace scopes and no restore
   assert.equal(preview.status, 'preview');
   assert.equal(preview.blockedReason, null);
   assert.ok(preview.scopeLabels.length > 0);
-  assert.ok(preview.scopeLabels.every((label) => !/rodin|pečovat|deník/i.test(label.replace('bez obnovení sdílení', ''))));
+  assert.ok(
+    preview.scopeLabels.every(
+      (label) => !/rodin|pečovat|deník/i.test(label.replace('bez obnovení sdílení', '')),
+    ),
+  );
   assert.equal(preview.restoreAction, null);
   assert.equal(preview.credentialsIncluded, false);
   assert.equal(preview.liveRestoreAvailable, false);

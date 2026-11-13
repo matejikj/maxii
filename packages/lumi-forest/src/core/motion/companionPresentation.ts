@@ -101,31 +101,25 @@ export function resolveCompanionPresentation(
   const signatureActionId =
     typeof input.signatureAction === 'string' && input.signatureAction.length > 0
       ? input.signatureAction
-      : input.recognition ?? null;
+      : (input.recognition ?? null);
 
   if (signatureActionId != null) {
     const entry = CHARACTER_COLLECTION[species];
     const action =
       entry.signatureActions.find((item) => item.id === signatureActionId) ??
-      (species === 'rabbit' &&
-      (signatureActionId === 'earPerk' || signatureActionId === 'headTilt')
+      (species === 'rabbit' && (signatureActionId === 'earPerk' || signatureActionId === 'headTilt')
         ? {
             id: signatureActionId,
             prop: null as CharacterPropId | null,
             semantic:
-              signatureActionId === 'earPerk'
-                ? ('curiosity' as const)
-                : ('listening' as const),
+              signatureActionId === 'earPerk' ? ('curiosity' as const) : ('listening' as const),
           }
         : null);
 
     if (action) {
       const semantic = resolveSemanticPresentation(action.semantic, input.animate);
       // Rabbit recognition keeps its established static standing tilt fallback.
-      if (
-        !input.animate &&
-        (signatureActionId === 'headTilt' || signatureActionId === 'earPerk')
-      ) {
+      if (!input.animate && (signatureActionId === 'headTilt' || signatureActionId === 'earPerk')) {
         const legacy = recognitionPresentation(signatureActionId);
         return withStyle({
           species,
@@ -153,7 +147,10 @@ export function resolveCompanionPresentation(
     }
   }
 
-  if (input.semantic != null && (CHARACTER_SEMANTIC_STATES as readonly string[]).includes(input.semantic)) {
+  if (
+    input.semantic != null &&
+    (CHARACTER_SEMANTIC_STATES as readonly string[]).includes(input.semantic)
+  ) {
     const semantic = resolveSemanticPresentation(input.semantic, input.animate);
     return withStyle({
       species,

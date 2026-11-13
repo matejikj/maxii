@@ -27,13 +27,7 @@ export type ApplyChildPrivateInboxResult = {
   readonly rejected: number;
 };
 
-const PROJECT_STATUSES = new Set<ProjectStatus>([
-  'idea',
-  'active',
-  'paused',
-  'closed',
-  'archived',
-]);
+const PROJECT_STATUSES = new Set<ProjectStatus>(['idea', 'active', 'paused', 'closed', 'archived']);
 const STEP_STATUSES = new Set<ProjectStepStatus>(['pending', 'tried', 'skipped']);
 
 function asInstant(value: unknown, fallback: Instant): Instant {
@@ -89,11 +83,7 @@ function parseProjectUpsert(
   const steps = parseSteps(p.steps);
   if (!steps) return null;
   const reflection =
-    p.reflection == null
-      ? null
-      : typeof p.reflection === 'string'
-        ? p.reflection
-        : null;
+    p.reflection == null ? null : typeof p.reflection === 'string' ? p.reflection : null;
   if (p.reflection != null && reflection == null) return null;
 
   return normalizeProjectRow({
@@ -137,11 +127,7 @@ function parsePortfolioUpsert(
   if (typeof p.projectId !== 'string' || typeof p.childId !== 'string') return null;
   if (typeof p.title !== 'string') return null;
   const description =
-    p.description == null
-      ? null
-      : typeof p.description === 'string'
-        ? p.description
-        : null;
+    p.description == null ? null : typeof p.description === 'string' ? p.description : null;
   if (p.description != null && description == null) return null;
   const item: PortfolioItem = {
     portfolioItemId: asEntityId(p.portfolioItemId),
@@ -268,9 +254,7 @@ export async function applyChildPrivateInboxToWorkspace(input: {
 
         if (entry.kind === 'child_private.project.delete') {
           const projectId =
-            typeof entry.payload.projectId === 'string'
-              ? entry.payload.projectId
-              : entry.entityId;
+            typeof entry.payload.projectId === 'string' ? entry.payload.projectId : entry.entityId;
           await uow.projects.delete(asEntityId(projectId));
           appliedDeletes += 1;
           appliedIds.push(entry.operationId);
@@ -334,9 +318,7 @@ export async function applyChildPrivateInboxToWorkspace(input: {
 
         if (entry.kind === 'child_private.share.revoke') {
           const shareId =
-            typeof entry.payload.shareId === 'string'
-              ? entry.payload.shareId
-              : entry.entityId;
+            typeof entry.payload.shareId === 'string' ? entry.payload.shareId : entry.entityId;
           const existing = await uow.shares.getById(asEntityId(shareId));
           const revokedAt = asInstant(entry.payload.revokedAt, input.now);
           if (!existing) {
@@ -348,7 +330,7 @@ export async function applyChildPrivateInboxToWorkspace(input: {
             const ownerRaw =
               typeof entry.payload.ownerAppUserId === 'string'
                 ? entry.payload.ownerAppUserId
-                : input.state.ownerAppUserId ?? input.sessionAppUserId;
+                : (input.state.ownerAppUserId ?? input.sessionAppUserId);
             if (!ownerRaw) {
               rejected += 1;
               appliedIds.push(entry.operationId);

@@ -190,9 +190,7 @@ export function PhotoAttachmentsField({
                     void Promise.resolve(onSoftDeleteAttachment(attachment))
                       .then(() => {
                         onChange(
-                          attachments.filter(
-                            (row) => row.attachmentId !== attachment.attachmentId,
-                          ),
+                          attachments.filter((row) => row.attachmentId !== attachment.attachmentId),
                         );
                         setLastRemovedId(attachment.attachmentId);
                         setMessage(
@@ -208,19 +206,13 @@ export function PhotoAttachmentsField({
               ) : null}
               {enableOfflinePin ? (
                 <LumiButton
-                  title={
-                    attachment.offlinePinned
-                      ? 'Zrušit uchování offline'
-                      : 'Uchovat offline'
-                  }
+                  title={attachment.offlinePinned ? 'Zrušit uchování offline' : 'Uchovat offline'}
                   variant="secondary"
                   disabled={busy || pinBusyId === attachment.attachmentId || !onToggleOfflinePin}
                   onPress={() => {
                     if (!onToggleOfflinePin) return;
                     setPinBusyId(attachment.attachmentId);
-                    void Promise.resolve(
-                      onToggleOfflinePin(attachment, !attachment.offlinePinned),
-                    )
+                    void Promise.resolve(onToggleOfflinePin(attachment, !attachment.offlinePinned))
                       .catch(() => {
                         setMessage('Uchování offline se nepodařilo změnit.');
                       })
@@ -228,8 +220,7 @@ export function PhotoAttachmentsField({
                   }}
                 />
               ) : null}
-              {onRequestDisplayDownload &&
-              transferLabelFor?.(attachment) === 'missing_download' ? (
+              {onRequestDisplayDownload && transferLabelFor?.(attachment) === 'missing_download' ? (
                 <LumiButton
                   title="Stáhnout fotku"
                   variant="secondary"

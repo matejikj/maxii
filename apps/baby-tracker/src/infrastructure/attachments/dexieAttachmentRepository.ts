@@ -30,9 +30,7 @@ export function createDexieAttachmentRepository(db: LumiWebDatabase): Attachment
     },
     async getById(attachmentId) {
       const row = await db.photoAttachments.get(attachmentId);
-      return row
-        ? withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment)
-        : null;
+      return row ? withOfflinePinDefault(JSON.parse(row.payloadJson) as PhotoAttachment) : null;
     },
     async save(attachment) {
       await db.photoAttachments.put({

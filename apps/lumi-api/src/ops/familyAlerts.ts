@@ -86,10 +86,7 @@ export function evaluateFamilyAlerts(
       requiresOffHostChannel: true,
     });
   }
-  if (
-    snapshot.queueBacklog != null &&
-    snapshot.queueBacklog > thresholds.queueBacklogMax
-  ) {
+  if (snapshot.queueBacklog != null && snapshot.queueBacklog > thresholds.queueBacklogMax) {
     alerts.push({
       id: 'queue_backlog_high',
       severity: 'warning',
@@ -112,10 +109,7 @@ export function evaluateFamilyAlerts(
       requiresOffHostChannel: false,
     });
   }
-  if (
-    snapshot.maxSyncLagMs != null &&
-    snapshot.maxSyncLagMs > thresholds.syncLagMaxMs
-  ) {
+  if (snapshot.maxSyncLagMs != null && snapshot.maxSyncLagMs > thresholds.syncLagMaxMs) {
     alerts.push({
       id: 'sync_lag_high',
       severity: 'warning',
@@ -141,8 +135,7 @@ export function evaluateFamilyAlerts(
       severity: 'critical',
       ownerRole: 'observabilityOwner',
       runbook: RUNBOOK_FAMILY_OPS,
-      summary:
-        'No off-host uptime probe is configured; a total VPS outage would be silent.',
+      summary: 'No off-host uptime probe is configured; a total VPS outage would be silent.',
       requiresOffHostChannel: true,
     });
   }

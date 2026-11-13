@@ -1,9 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type {
-  AppUserId,
-  FamilyId,
-  RemoteBackupStatusResponse,
-} from '@lumi/contracts';
+import type { AppUserId, FamilyId, RemoteBackupStatusResponse } from '@lumi/contracts';
 import {
   BACKUP_RETENTION_DAYS,
   LUMI_API_PROTOCOL_VERSION,
@@ -42,8 +38,7 @@ type BackupRouteDeps = {
 };
 
 export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps): void {
-  const { config, store, tokens, sessions, backups, erasureRegistry, backupStatusByFamily } =
-    deps;
+  const { config, store, tokens, sessions, backups, erasureRegistry, backupStatusByFamily } = deps;
 
   async function requireAppUser(
     request: {
@@ -56,8 +51,7 @@ export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps
     const usesBearer =
       typeof request.headers.authorization === 'string' &&
       String(request.headers.authorization).startsWith('Bearer ');
-    const cookieHeader =
-      typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
+    const cookieHeader = typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
 
     if (
       !verifyCsrfDoubleSubmit({

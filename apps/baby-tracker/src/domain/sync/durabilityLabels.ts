@@ -7,11 +7,7 @@ import type { SyncTransferPresentation } from './presentation.ts';
  * pretends it already knows undelivered events from another offline device.
  */
 
-export type DurabilityKind =
-  | 'saved_locally'
-  | 'awaiting_transfer'
-  | 'synchronized'
-  | 'backup';
+export type DurabilityKind = 'saved_locally' | 'awaiting_transfer' | 'synchronized' | 'backup';
 
 export type DurabilityRow = {
   readonly kind: DurabilityKind;
@@ -75,8 +71,7 @@ export function buildFamilyDurabilityPresentation(input: {
     {
       kind: 'saved_locally',
       label: DOMAIN_VOCABULARY.savedLocally.uiLabelCs,
-      explanation:
-        'Zápis je v tomto zařízení a přežije návrat do aplikace i výpadek sítě.',
+      explanation: 'Zápis je v tomto zařízení a přežije návrat do aplikace i výpadek sítě.',
       active: true,
     },
     {
@@ -109,8 +104,7 @@ export function buildFamilyDurabilityPresentation(input: {
     detailLine =
       'Je potřeba znovu načíst chronologii. Neodeslané místní změny zůstávají v zařízení.';
   } else if (transfer?.transferState === 'blocked') {
-    detailLine =
-      'Přenos je dočasně zablokovaný. Místní zápisy zůstávají uložené v tomto zařízení.';
+    detailLine = 'Přenos je dočasně zablokovaný. Místní zápisy zůstávají uložené v tomto zařízení.';
   } else if (synchronizedActive && transfer?.lastSuccessfulSyncAt) {
     detailLine = `${DOMAIN_VOCABULARY.synchronized.uiLabelCs}. Poslední potvrzený přenos z tohoto zařízení.`;
   }
@@ -121,8 +115,7 @@ export function buildFamilyDurabilityPresentation(input: {
     primaryLabel: primary.label,
     detailLine,
     rows,
-    offlinePeerCaveat:
-      'Připojený telefon nezná neodeslané události jiného offline telefonu.',
+    offlinePeerCaveat: 'Připojený telefon nezná neodeslané události jiného offline telefonu.',
     backupDistinctFromSync:
       'Záloha je oddělená od synchronizace; dokončený přenos není automaticky vzdálená záloha.',
     claimsOtherOfflineDevicesReceivedPending: false,
@@ -138,10 +131,7 @@ export function describeRecordTransferLine(input: {
   readonly transfer: SyncTransferPresentation;
   readonly lastSuccessfulSyncAtLabel: string | null;
 }): string {
-  if (
-    input.transfer.transferState === 'pending' ||
-    input.transfer.transferState === 'in_flight'
-  ) {
+  if (input.transfer.transferState === 'pending' || input.transfer.transferState === 'in_flight') {
     return `${DOMAIN_VOCABULARY.awaitingTransfer.uiLabelCs}. ${DOMAIN_VOCABULARY.savedLocally.uiLabelCs}.`;
   }
   if (input.transfer.transferState === 'resync_required') {

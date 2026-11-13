@@ -23,7 +23,11 @@ export interface Decoration {
   readonly r: number;
 }
 
-export function planDecorations(scene: string, seed: string, density: LumiDensity): readonly Decoration[] {
+export function planDecorations(
+  scene: string,
+  seed: string,
+  density: LumiDensity,
+): readonly Decoration[] {
   const random = seededRandom(`lumi:v1:${scene}:${seed}`);
   const shuffled = DECORATION_SLOTS.map((slot) => slot);
   // Fisher–Yates O(n), no rejections, stable and bounded on low-end phones.
@@ -37,7 +41,13 @@ export function planDecorations(scene: string, seed: string, density: LumiDensit
   return selected.map(([x, y]) => ({ x, y, r: 2 + Math.floor(random() * 3) }));
 }
 
-export function renderDecorations(scene: string, seed: string, density: LumiDensity, color: string): readonly VectorNode[] {
+export function renderDecorations(
+  scene: string,
+  seed: string,
+  density: LumiDensity,
+  color: string,
+): readonly VectorNode[] {
   return planDecorations(scene, seed, density).map(({ x, y, r }) =>
-    circle(x, y, r, { fill: color, opacity: 0.32 }));
+    circle(x, y, r, { fill: color, opacity: 0.32 }),
+  );
 }

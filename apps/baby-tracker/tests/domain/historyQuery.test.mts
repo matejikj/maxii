@@ -92,16 +92,7 @@ test('care subtype filter stays inside care bucket', () => {
 });
 
 test('timeline cursor is exclusive on equal sort keys', () => {
-  assert.equal(
-    isBeforeTimelineCursor(100, 'evt_a', { sortAtMs: 100, eventId: 'evt_b' }),
-    true,
-  );
-  assert.equal(
-    isBeforeTimelineCursor(100, 'evt_c', { sortAtMs: 100, eventId: 'evt_b' }),
-    false,
-  );
-  assert.equal(
-    isBeforeTimelineCursor(101, 'evt_a', { sortAtMs: 100, eventId: 'evt_b' }),
-    false,
-  );
+  assert.equal(isBeforeTimelineCursor(100, 'evt_a', { sortAtMs: 100, eventId: 'evt_b' }), true);
+  assert.equal(isBeforeTimelineCursor(100, 'evt_c', { sortAtMs: 100, eventId: 'evt_b' }), false);
+  assert.equal(isBeforeTimelineCursor(101, 'evt_a', { sortAtMs: 100, eventId: 'evt_b' }), false);
 });

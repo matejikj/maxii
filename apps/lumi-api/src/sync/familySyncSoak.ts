@@ -139,9 +139,7 @@ async function pullDevice(
   device: SoakDevice,
 ): Promise<{ statusCode: number; resyncRequired: boolean; operationIds: string[] }> {
   const query =
-    device.cursor == null
-      ? '?limit=200'
-      : `?cursor=${encodeURIComponent(device.cursor)}&limit=200`;
+    device.cursor == null ? '?limit=200' : `?cursor=${encodeURIComponent(device.cursor)}&limit=200`;
   const response = await deps.app.inject({
     method: 'GET',
     url: `/v1/families/${deps.familyId}/sync/pull${query}`,
@@ -149,7 +147,11 @@ async function pullDevice(
   });
   const body = response.json() as {
     error?: { code?: string };
-    sync?: { resyncRequired?: boolean; nextCursor?: string | null; entries?: Array<{ operationId: string }> };
+    sync?: {
+      resyncRequired?: boolean;
+      nextCursor?: string | null;
+      entries?: Array<{ operationId: string }>;
+    };
     nextCursor?: string | null;
     entries?: Array<{ operationId: string }>;
     resyncRequired?: boolean;
@@ -180,9 +182,7 @@ export async function runFamilySyncSoak(deps: FamilySyncSoakDeps): Promise<Famil
   const rounds = Math.max(3, deps.rounds ?? 6);
   const findings: string[] = [];
   const counters = { acceptedCount: 0, conflictCount: 0 };
-  let revokedPushDenied = false;
   let staleCursorResyncRequired = false;
-  let tombstoneRejectedStaleCreate = false;
 
   const sharedEntity = randomUUID();
   const root = buildOp({
@@ -301,7 +301,7 @@ export async function runFamilySyncSoak(deps: FamilySyncSoakDeps): Promise<Famil
     payload: { revisionKind: 'create', text: 'resurrect' },
   });
   const stalePush = await pushOps(deps, deps.caregiver, [staleCreate]);
-  tombstoneRejectedStaleCreate = stalePush.receipts.some(
+  const tombstoneRejectedStaleCreate = stalePush.receipts.some(
     (receipt) => receipt.status === 'rejected' && receipt.reason === 'tombstoned',
   );
   if (tombstoneRejectedStaleCreate) findings.push('tombstone_blocked_stale_create');
@@ -314,7 +314,7 @@ export async function runFamilySyncSoak(deps: FamilySyncSoakDeps): Promise<Famil
     payload: { revisionKind: 'create', text: 'should-fail' },
   });
   const denied = await pushOps(deps, deps.caregiver, [afterRevoke]);
-  revokedPushDenied = denied.statusCode === 403 || denied.statusCode === 401;
+  const revokedPushDenied = denied.statusCode === 403 || denied.statusCode === 401;
   if (revokedPushDenied) findings.push('revoked_member_push_denied');
 
   deps.admin.cursor = null;
@@ -323,10 +323,7 @@ export async function runFamilySyncSoak(deps: FamilySyncSoakDeps): Promise<Famil
   const replicaFinal = await pullDevice(deps, deps.replica);
   const seen = new Set([...adminFinal.operationIds, ...replicaFinal.operationIds]);
   let missingAccepted = 0;
-  for (const id of [
-    ...deps.admin.acceptedOperationIds,
-    ...deps.replica.acceptedOperationIds,
-  ]) {
+  for (const id of [...deps.admin.acceptedOperationIds, ...deps.replica.acceptedOperationIds]) {
     if (!seen.has(id)) missingAccepted += 1;
   }
 

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { asChildId, asEntityId, createChildProfile, isChildPrivateModeActive } from '../src/domain/index.ts';
+import {
+  asChildId,
+  asEntityId,
+  createChildProfile,
+  isChildPrivateModeActive,
+} from '../src/domain/index.ts';
 import {
   acceptSuggestionIntoChildPrivate,
   listFamilyGuidedProjectsForChild,

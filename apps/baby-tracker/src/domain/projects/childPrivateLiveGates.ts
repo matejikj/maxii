@@ -82,9 +82,7 @@ export function emptyChildPrivateLiveGateEvidence(): ChildPrivateLiveGateEvidenc
   return EMPTY_EVIDENCE;
 }
 
-function gateFrom(
-  evidence: ChildPrivateLiveGateEvidence,
-): Record<ChildPrivateModeGate, boolean> {
+function gateFrom(evidence: ChildPrivateLiveGateEvidence): Record<ChildPrivateModeGate, boolean> {
   return {
     verifiedChildIdentity:
       evidence.verifiedChildIdentity.oidcSubjectBound &&
@@ -131,9 +129,7 @@ export function evaluateChildPrivateLiveGateEvidence(
     );
   }
   if (!gatesFromEvidence.legalOperationalFrameworkReady) {
-    externalBlockers.push(
-      'Chybí vlastnické potvrzení právního/provozního rámce dětského vydání.',
-    );
+    externalBlockers.push('Chybí vlastnické potvrzení právního/provozního rámce dětského vydání.');
   }
   if (!productionClosed) {
     externalBlockers.push(

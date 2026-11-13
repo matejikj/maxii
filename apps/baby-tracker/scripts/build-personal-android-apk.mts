@@ -14,17 +14,12 @@ import { checkNativeApplicationIds } from '../src/ops/nativeApplicationId.ts';
 import { PERSONAL_APPLICATION_ID } from '../src/ops/releaseEvidence.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const signingDir =
-  process.env.LUMI_SIGNING_DIR?.trim() ||
-  path.join(os.homedir(), '.lumi-signing');
+const signingDir = process.env.LUMI_SIGNING_DIR?.trim() || path.join(os.homedir(), '.lumi-signing');
 const keystorePath =
-  process.env.LUMI_UPLOAD_STORE_FILE?.trim() ||
-  path.join(signingDir, 'personal-release.keystore');
+  process.env.LUMI_UPLOAD_STORE_FILE?.trim() || path.join(signingDir, 'personal-release.keystore');
 const keyAlias = process.env.LUMI_UPLOAD_KEY_ALIAS?.trim() || 'lumi-personal';
-const storePassword =
-  process.env.LUMI_UPLOAD_STORE_PASSWORD?.trim() || 'lumi-personal-local';
-const keyPassword =
-  process.env.LUMI_UPLOAD_KEY_PASSWORD?.trim() || storePassword;
+const storePassword = process.env.LUMI_UPLOAD_STORE_PASSWORD?.trim() || 'lumi-personal-local';
+const keyPassword = process.env.LUMI_UPLOAD_KEY_PASSWORD?.trim() || storePassword;
 const propsPath = path.join(signingDir, 'android-signing.properties');
 
 function run(
@@ -117,10 +112,7 @@ function assembleRelease(): string {
       LUMI_UPLOAD_KEY_PASSWORD: keyPassword,
     },
   });
-  const apk = path.join(
-    root,
-    'android/app/build/outputs/apk/release/app-release.apk',
-  );
+  const apk = path.join(root, 'android/app/build/outputs/apk/release/app-release.apk');
   if (!fs.existsSync(apk)) {
     throw new Error(`expected APK missing: ${apk}`);
   }
@@ -130,10 +122,7 @@ function assembleRelease(): string {
 function summarizeApk(apkPath: string): void {
   const bytes = fs.readFileSync(apkPath);
   const sha256 = createHash('sha256').update(bytes).digest('hex');
-  const aapt =
-    process.env.AAPT?.trim() ||
-    findAapt() ||
-    null;
+  const aapt = process.env.AAPT?.trim() || findAapt() || null;
   let packageName: string | null = null;
   if (aapt) {
     const dump = spawnSync(aapt, ['dump', 'badging', apkPath], {
@@ -153,9 +142,7 @@ function summarizeApk(apkPath: string): void {
   };
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
   if (packageName && packageName !== PERSONAL_APPLICATION_ID) {
-    throw new Error(
-      `APK package ${packageName} does not match ${PERSONAL_APPLICATION_ID}`,
-    );
+    throw new Error(`APK package ${packageName} does not match ${PERSONAL_APPLICATION_ID}`);
   }
 }
 

@@ -15,24 +15,10 @@ export type ChildPrivateServerPrincipalKind =
   | 'inactive_member';
 
 export type ChildPrivateServerResource =
-  | 'project'
-  | 'portfolio'
-  | 'share_snapshot'
-  | 'list'
-  | 'count'
-  | 'export'
-  | 'restore'
-  | 'wipe';
+  'project' | 'portfolio' | 'share_snapshot' | 'list' | 'count' | 'export' | 'restore' | 'wipe';
 
 export type ChildPrivateServerAction =
-  | 'read'
-  | 'write'
-  | 'delete'
-  | 'list'
-  | 'count'
-  | 'export'
-  | 'restore'
-  | 'wipe';
+  'read' | 'write' | 'delete' | 'list' | 'count' | 'export' | 'restore' | 'wipe';
 
 export type ChildPrivateServerDecision = {
   readonly allowed: boolean;

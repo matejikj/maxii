@@ -6,10 +6,7 @@ import { LumiButton, LumiCard, LumiChip, LumiText, useLumiTheme } from '@lumi/fo
 import type { ChildId, ExperienceCareEvent, TimeZoneId } from '../../domain';
 import type { ActivityRevision, ReadinessKey, ReadinessState } from '../../content';
 import { DEVELOPMENT_AREA_LABELS_CS, READINESS_LABELS_CS } from '../../content';
-import {
-  findTodaysExperienceForActivity,
-  openDailyRecommendation,
-} from '../../application';
+import { findTodaysExperienceForActivity, openDailyRecommendation } from '../../application';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { PRODUCT_COPY, SaveFeedback, type SaveFeedbackState } from '../ui';
@@ -64,12 +61,26 @@ export function ActivityDetailScreen({
   const runtime = usePersonalRuntime();
   const detailScroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [demoVisible, setDemoVisible] = useState(false);
-  const demoVisibility = useRef({ offset: 0, height: 0, sectionTop: 0, localTop: 0, demoHeight: 0, visible: false });
+  const demoVisibility = useRef({
+    offset: 0,
+    height: 0,
+    sectionTop: 0,
+    localTop: 0,
+    demoHeight: 0,
+    visible: false,
+  });
   const checkDemoVisibility = () => {
     const bounds = demoVisibility.current;
     const top = bounds.sectionTop + bounds.localTop;
-    const visible = bounds.height > 0 && bounds.demoHeight > 0 && top + bounds.demoHeight > bounds.offset && top < bounds.offset + bounds.height;
-    if (visible !== bounds.visible) { bounds.visible = visible; setDemoVisible(visible); }
+    const visible =
+      bounds.height > 0 &&
+      bounds.demoHeight > 0 &&
+      top + bounds.demoHeight > bounds.offset &&
+      top < bounds.offset + bounds.height;
+    if (visible !== bounds.visible) {
+      bounds.visible = visible;
+      setDemoVisible(visible);
+    }
   };
   const [expandedWhy, setExpandedWhy] = useState(false);
   const [expandedSources, setExpandedSources] = useState(false);
@@ -168,16 +179,43 @@ export function ActivityDetailScreen({
     : null;
 
   return (
-    <SafeAreaView edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']}
-      style={[styles.root, { backgroundColor: colors.background }]} testID="activity-detail-screen">
-      <ScrollView ref={detailScroll} onLayout={(event) => { demoVisibility.current.height = Math.max(0, event.nativeEvent.layout.height - dockInset); checkDemoVisibility(); }}
-        onScroll={(event) => { demoVisibility.current.offset = event.nativeEvent.contentOffset.y; checkDemoVisibility(); }} scrollEventThrottle={80}
-        contentContainerStyle={[styles.content, { gap: ui.space.md, paddingBottom: dockInset + 32 }]}>
-        <LumiButton title="Zpět na Rozvoj" variant="ghost" onPress={onClose} testID="activity-back" />
+    <SafeAreaView
+      edges={stripVisible ? ['left', 'right'] : ['top', 'left', 'right']}
+      style={[styles.root, { backgroundColor: colors.background }]}
+      testID="activity-detail-screen"
+    >
+      <ScrollView
+        ref={detailScroll}
+        onLayout={(event) => {
+          demoVisibility.current.height = Math.max(0, event.nativeEvent.layout.height - dockInset);
+          checkDemoVisibility();
+        }}
+        onScroll={(event) => {
+          demoVisibility.current.offset = event.nativeEvent.contentOffset.y;
+          checkDemoVisibility();
+        }}
+        scrollEventThrottle={80}
+        contentContainerStyle={[
+          styles.content,
+          { gap: ui.space.md, paddingBottom: dockInset + 32 },
+        ]}
+      >
+        <LumiButton
+          title="Zpět na Rozvoj"
+          variant="ghost"
+          onPress={onClose}
+          testID="activity-back"
+        />
         <LumiCard variant="soft" style={styles.detailHeading}>
-          <LumiText variant="overline" tone="muted">SPOLEČNÁ CHVÍLE</LumiText>
-          <LumiText variant="h1" accessibilityRole="header">{revision.title}</LumiText>
-          <LumiText variant="label" tone="accent">{DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}</LumiText>
+          <LumiText variant="overline" tone="muted">
+            SPOLEČNÁ CHVÍLE
+          </LumiText>
+          <LumiText variant="h1" accessibilityRole="header">
+            {revision.title}
+          </LumiText>
+          <LumiText variant="label" tone="accent">
+            {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
+          </LumiText>
           <ActivityMetadata revision={revision} />
         </LumiCard>
         {isDraft ? (
@@ -231,24 +269,45 @@ export function ActivityDetailScreen({
           </LumiText>
         </LumiCard>
 
-        <View style={{ gap: ui.space.xs }} testID="activity-steps" onLayout={(event) => {
-          demoVisibility.current.sectionTop = event.nativeEvent.layout.y;
-          checkDemoVisibility();
-        }}>
-          <DevelopmentHeading title={PRODUCT_COPY.development.howTo} subtitle="Krok za krokem, bez spěchu" />
-          <View onLayout={(event) => {
-            demoVisibility.current.localTop = event.nativeEvent.layout.y;
+        <View
+          style={{ gap: ui.space.xs }}
+          testID="activity-steps"
+          onLayout={(event) => {
+            demoVisibility.current.sectionTop = event.nativeEvent.layout.y;
             checkDemoVisibility();
-          }}>
-            <ActivityDemonstration revision={revision} visible={demoVisible}
-              onShowScene={() => detailScroll.current?.scrollTo({ y: Math.max(0, demoVisibility.current.sectionTop - 16), animated: false })}
-              onSceneLayout={(height) => { demoVisibility.current.demoHeight = height; checkDemoVisibility(); }}
-              />
+          }}
+        >
+          <DevelopmentHeading
+            title={PRODUCT_COPY.development.howTo}
+            subtitle="Krok za krokem, bez spěchu"
+          />
+          <View
+            onLayout={(event) => {
+              demoVisibility.current.localTop = event.nativeEvent.layout.y;
+              checkDemoVisibility();
+            }}
+          >
+            <ActivityDemonstration
+              revision={revision}
+              visible={demoVisible}
+              onShowScene={() =>
+                detailScroll.current?.scrollTo({
+                  y: Math.max(0, demoVisibility.current.sectionTop - 16),
+                  animated: false,
+                })
+              }
+              onSceneLayout={(height) => {
+                demoVisibility.current.demoHeight = height;
+                checkDemoVisibility();
+              }}
+            />
           </View>
           {revision.steps.map((step, index) => (
             <LumiCard key={`${revision.revisionId}-step-${index}`} style={styles.step} padding="md">
               <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}>
-                <LumiText variant="bodyStrong" tone="accent">{index + 1}</LumiText>
+                <LumiText variant="bodyStrong" tone="accent">
+                  {index + 1}
+                </LumiText>
               </View>
               <LumiText style={{ flex: 1 }}>{step}</LumiText>
             </LumiCard>
@@ -262,8 +321,12 @@ export function ActivityDetailScreen({
           </LumiCard>
         ) : null}
 
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded: expandedWhy }}
-          onPress={() => setExpandedWhy((value) => !value)} style={[styles.expand, { borderBottomColor: colors.border }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: expandedWhy }}
+          onPress={() => setExpandedWhy((value) => !value)}
+          style={[styles.expand, { borderBottomColor: colors.border }]}
+        >
           <LumiText>{PRODUCT_COPY.actions.showWhy}</LumiText>
         </Pressable>
         {expandedWhy ? (
@@ -273,8 +336,12 @@ export function ActivityDetailScreen({
           </LumiText>
         ) : null}
 
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded: expandedSources }}
-          onPress={() => setExpandedSources((value) => !value)} style={[styles.expand, { borderBottomColor: colors.border }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: expandedSources }}
+          onPress={() => setExpandedSources((value) => !value)}
+          style={[styles.expand, { borderBottomColor: colors.border }]}
+        >
           <LumiText>{PRODUCT_COPY.actions.showSources}</LumiText>
         </Pressable>
         {expandedSources ? (
@@ -340,7 +407,11 @@ export function ActivityDetailScreen({
           loading={mutationBusy}
           onPress={onToggleFavorite}
         />
-        {mutationError ? <LumiText tone="danger" accessibilityRole="alert">{mutationError}</LumiText> : null}
+        {mutationError ? (
+          <LumiText tone="danger" accessibilityRole="alert">
+            {mutationError}
+          </LumiText>
+        ) : null}
         <SaveFeedback state={feedback} />
         {revision.constraints.length > 0 ? (
           <LumiCard style={styles.detailHeading} testID="activity-conditions">
@@ -388,7 +459,13 @@ const styles = StyleSheet.create({
   },
   detailHeading: { gap: 12, borderRadius: 25 },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderRadius: 22 },
-  stepNumber: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  stepNumber: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   expand: { minHeight: 52, justifyContent: 'center', borderBottomWidth: 1 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 });

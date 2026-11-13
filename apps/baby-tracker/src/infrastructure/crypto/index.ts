@@ -18,4 +18,3 @@ export {
 } from './localBlobSeal';
 export type { SealedLocalBlob } from './localBlobSeal';
 export { installRandomPolyfill } from './installRandomPolyfill';
-

@@ -59,9 +59,8 @@ function countOwnerRows(input: {
     projectCount: input.projects.filter(
       (row) => row.scope === 'childPrivate' && row.ownerAppUserId === input.ownerAppUserId,
     ).length,
-    portfolioCount: input.portfolio.filter(
-      (row) => row.ownerAppUserId === input.ownerAppUserId,
-    ).length,
+    portfolioCount: input.portfolio.filter((row) => row.ownerAppUserId === input.ownerAppUserId)
+      .length,
     shareCount: input.shares.filter((row) => row.ownerAppUserId === input.ownerAppUserId).length,
   };
 }
@@ -159,20 +158,16 @@ export function applyChildPrivateArchiveToStaging(input: {
 }): ChildPrivateArchiveApplyResult {
   const preview = previewChildPrivateArchiveRestore(input);
   if (preview.status === 'blocked') {
-    const reason =
-      !input.childPrivateModeActive
-        ? 'child_mode_inactive'
-        : !input.supportedRecovery
-          ? 'recovery_gate_closed'
-          : 'owner_mismatch';
+    const reason = !input.childPrivateModeActive
+      ? 'child_mode_inactive'
+      : !input.supportedRecovery
+        ? 'recovery_gate_closed'
+        : 'owner_mismatch';
     return { ok: false, reason, staging: null };
   }
 
   for (const project of input.archive.projects) {
-    if (
-      project.scope !== 'childPrivate' ||
-      project.ownerAppUserId !== input.liveOwnerAppUserId
-    ) {
+    if (project.scope !== 'childPrivate' || project.ownerAppUserId !== input.liveOwnerAppUserId) {
       return { ok: false, reason: 'foreign_rows_in_archive', staging: null };
     }
   }
@@ -180,8 +175,7 @@ export function applyChildPrivateArchiveToStaging(input: {
   // Keep every non-owner live row; replace only this owner's private surface.
   const projects = [
     ...input.liveProjects.filter(
-      (row) =>
-        !(row.scope === 'childPrivate' && row.ownerAppUserId === input.liveOwnerAppUserId),
+      (row) => !(row.scope === 'childPrivate' && row.ownerAppUserId === input.liveOwnerAppUserId),
     ),
     ...input.archive.projects,
   ];

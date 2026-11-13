@@ -11,14 +11,8 @@ import {
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('child-private sync migration and drill script exist', () => {
-  assert.equal(
-    existsSync(join(packageRoot, 'migrations/009_child_private_sync.sql')),
-    true,
-  );
-  assert.equal(
-    existsSync(join(packageRoot, 'deploy/child-private-postgres-sync-drill.sh')),
-    true,
-  );
+  assert.equal(existsSync(join(packageRoot, 'migrations/009_child_private_sync.sql')), true);
+  assert.equal(existsSync(join(packageRoot, 'deploy/child-private-postgres-sync-drill.sh')), true);
 });
 
 test('live child-private durable sync ledger against Compose Postgres when healthy (otherwise skip)', async (t) => {
@@ -34,11 +28,7 @@ test('live child-private durable sync ledger against Compose Postgres when healt
   const result = await runChildPrivatePostgresSyncDrill({
     ...LOCAL_CHILD_PRIVATE_POSTGRES_SYNC_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.personalColdUnaffected, true);
   assert.equal(result.familyAdminIsPrivateSuperuser, false);
   assert.ok(result.cases.some((row) => row.name === 'family_admin_pull_empty' && row.ok));
@@ -72,10 +62,7 @@ async function applySyncMigrationIfMissing(): Promise<void> {
       `select to_regclass('public.child_private_sync_operation') is not null as present`,
     );
     if (exists.rows[0]?.present === true) return;
-    const sql = readFileSync(
-      join(packageRoot, 'migrations/009_child_private_sync.sql'),
-      'utf8',
-    );
+    const sql = readFileSync(join(packageRoot, 'migrations/009_child_private_sync.sql'), 'utf8');
     await client.query(sql);
   } finally {
     await client.end();

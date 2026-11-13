@@ -48,10 +48,7 @@ test('incomplete evidence never invents an open legal framework gate', () => {
   assert.equal(evaluated.gatesFromEvidence.legalOperationalFrameworkReady, false);
   assert.equal(evaluated.evidenceComplete, false);
   assert.equal(evaluated.productionGatesRemainClosed, true);
-  assert.match(
-    evaluated.externalBlockers.join(' '),
-    /právního\/provozního rámce/i,
-  );
+  assert.match(evaluated.externalBlockers.join(' '), /právního\/provozního rámce/i);
 });
 
 test('two-account walkthrough with drill evidence proves matrix without opening production', () => {
@@ -64,12 +61,8 @@ test('two-account walkthrough with drill evidence proves matrix without opening 
   assert.equal(result.liveReleaseReady, false);
   assert.equal(isChildPrivateModeActive(), false);
   assert.ok(result.cases.every((row) => row.ok));
-  assert.ok(
-    result.cases.some((row) => row.name === 'named_parent_reads_frozen_share'),
-  );
-  assert.ok(
-    result.cases.some((row) => row.name === 'family_admin_denied_private_project'),
-  );
+  assert.ok(result.cases.some((row) => row.name === 'named_parent_reads_frozen_share'));
+  assert.ok(result.cases.some((row) => row.name === 'family_admin_denied_private_project'));
 });
 
 test('two-account walkthrough with empty evidence refuses shell activation', () => {

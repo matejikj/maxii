@@ -31,11 +31,7 @@ export {
   updatePersonalProfile,
   type PersonalBootstrapResult,
 } from './personalBootstrap';
-export {
-  presentStartupPhase,
-  type StartupPhase,
-  type StartupPresentation,
-} from './startupState';
+export { presentStartupPhase, type StartupPhase, type StartupPresentation } from './startupState';
 export {
   careEventFromTrashMarker,
   loadDraftsForChild,
@@ -130,12 +126,7 @@ export {
   type RecommendationCatalogInput,
   type RecommendationFilterInput,
 } from './recommendation';
-export {
-  META_FAVORITES_PREFIX,
-  addFavorite,
-  listFavorites,
-  removeFavorite,
-} from './favorites';
+export { META_FAVORITES_PREFIX, addFavorite, listFavorites, removeFavorite } from './favorites';
 export {
   META_READINESS_PREFIX,
   clearReadinessObservation,
@@ -243,10 +234,7 @@ export {
   type SoftDeletePhotoAttachmentResult,
 } from './softDeletePhotoAttachment';
 export { guardPhotoImportSpace } from './guardPhotoImportSpace';
-export {
-  buildEditCareCommand,
-  type CareEditPatch,
-} from './careEdit';
+export { buildEditCareCommand, type CareEditPatch } from './careEdit';
 export {
   addChildProfile,
   archiveChildProfile,
@@ -365,10 +353,4 @@ export {
   type ChildShellMyDataSection,
   type ChildShellMyDataView,
 } from './childShellMyData';
-export {
-  CHILD_SHELL_FIRST_ENTRY,
-  CHILD_SHELL_TABS,
-  type ChildShellSession,
-} from '../domain';
-
-
+export { CHILD_SHELL_FIRST_ENTRY, CHILD_SHELL_TABS, type ChildShellSession } from '../domain';

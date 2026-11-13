@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createLogger, formatLogLine, sanitizeLogFields } from '../../src/infrastructure/telemetry/logger.ts';
+import {
+  createLogger,
+  formatLogLine,
+  sanitizeLogFields,
+} from '../../src/infrastructure/telemetry/logger.ts';
 
 const CANARY_NOTE = 'CANARY_CARE_NOTE_7f3a9c';
 const CANARY_DOB = 'CANARY_DOB_2019-04-01';

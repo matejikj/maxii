@@ -2,16 +2,9 @@ import { AppError } from '../../../domain/errors';
 import type { Instant } from '../../../domain/ports/clock';
 import type { FaultInjection } from '../../../domain';
 import { assertSchemaCompatibleWithBinary } from '../../../ops/schemaCompatibility';
-import {
-  LumiWebDatabase,
-  WEB_DIARY_DATABASE_NAME,
-  WEB_SCHEMA_VERSION,
-} from './lumiWebDatabase';
+import { LumiWebDatabase, WEB_DIARY_DATABASE_NAME, WEB_SCHEMA_VERSION } from './lumiWebDatabase';
 import { createTabLeaseCoordinator, type TabLeaseCoordinator } from './tabLease';
-import {
-  createMemoryWebCheckpointStore,
-  type WebCheckpointStore,
-} from './webCheckpoint';
+import { createMemoryWebCheckpointStore, type WebCheckpointStore } from './webCheckpoint';
 import { createWebChangeFeed, type WebChangeFeed } from './webChangeFeed';
 import { probeWebStorageCapabilities } from './webLimits';
 import type { WebDiaryRuntime } from './webUnitOfWork';

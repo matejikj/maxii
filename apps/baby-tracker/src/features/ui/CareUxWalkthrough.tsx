@@ -37,7 +37,10 @@ export function CareUxWalkthrough() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.content, { gap: ui.space.lg }]} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.content, { gap: ui.space.lg }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <LumiText variant="caption" tone="accent">
           LUMI · syntetický průchod
         </LumiText>
@@ -82,7 +85,10 @@ export function CareUxWalkthrough() {
           />
         )}
 
-        <FormSection title="Večerní poznámka" description="Systémová klávesnice; diktování jen pokud ho nabízí.">
+        <FormSection
+          title="Večerní poznámka"
+          description="Systémová klávesnice; diktování jen pokud ho nabízí."
+        >
           <NoteField value={note} onChangeText={setNote} />
           <FormSaveButton
             onSave={async () => {

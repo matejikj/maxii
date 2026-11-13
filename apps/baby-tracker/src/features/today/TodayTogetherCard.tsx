@@ -10,10 +10,7 @@ import {
   ensureDailyRecommendationSet,
   loadReadinessByKey,
 } from '../../application';
-import {
-  PRODUCT_PUBLISHED_CONTENT_VERSION,
-  PRODUCT_PUBLISHED_REVISIONS,
-} from '../../content';
+import { PRODUCT_PUBLISHED_CONTENT_VERSION, PRODUCT_PUBLISHED_REVISIONS } from '../../content';
 import { useCompositionRoot } from '../../app/providers';
 import { usePersonalRuntime } from '../../app/session/BootstrapContext';
 import { PRODUCT_COPY } from '../ui';
@@ -74,13 +71,25 @@ export function TodayTogetherCard({
     : null;
 
   return (
-    <LumiCard padding="none" style={{ padding: 20, borderRadius: 26, gap: 14,
-      backgroundColor: tone.background, borderColor: motif === 'forest' && mode === 'light' ? '#E9DEC5' : colors.border }}>
+    <LumiCard
+      padding="none"
+      style={{
+        padding: 20,
+        borderRadius: 26,
+        gap: 14,
+        backgroundColor: tone.background,
+        borderColor: motif === 'forest' && mode === 'light' ? '#E9DEC5' : colors.border,
+      }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <ForestIconBadge name="experience" size={44} />
         <View style={{ flex: 1, gap: 2 }}>
-          <LumiText variant="overline" tone="muted" style={{ fontSize: 10, letterSpacing: 1.5 }}>CHVILKA PRO VÁS</LumiText>
-          <LumiText variant="h2" accessibilityRole="header">{PRODUCT_COPY.today.together}</LumiText>
+          <LumiText variant="overline" tone="muted" style={{ fontSize: 10, letterSpacing: 1.5 }}>
+            CHVILKA PRO VÁS
+          </LumiText>
+          <LumiText variant="h2" accessibilityRole="header">
+            {PRODUCT_COPY.today.together}
+          </LumiText>
         </View>
         <LumiIcon name="development" color={tone.ink} accentColor={tone.accent} size={27} />
       </View>
@@ -93,7 +102,9 @@ export function TodayTogetherCard({
       {revision && primary ? (
         <View style={{ gap: ui.space.sm }}>
           <LumiText variant="bodyStrong">{revision.title}</LumiText>
-          <LumiText tone="muted" variant="caption">{PRODUCT_COPY.development.filterMoment}</LumiText>
+          <LumiText tone="muted" variant="caption">
+            {PRODUCT_COPY.development.filterMoment}
+          </LumiText>
           <LumiButton
             title={PRODUCT_COPY.today.showGame}
             fullWidth
@@ -112,9 +123,14 @@ export function TodayTogetherCard({
         </LumiText>
       )}
       {!revision ? (
-        <LumiButton title="Otevřít Rozvoj" variant="outline" fullWidth
-          onPress={onOpenDevelopment} testID="today-explore-development"
-          rightAdornment={<LumiIcon name="arrow-right" color={colors.text} size={18} />} />
+        <LumiButton
+          title="Otevřít Rozvoj"
+          variant="outline"
+          fullWidth
+          onPress={onOpenDevelopment}
+          testID="today-explore-development"
+          rightAdornment={<LumiIcon name="arrow-right" color={colors.text} size={18} />}
+        />
       ) : null}
     </LumiCard>
   );

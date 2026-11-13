@@ -82,10 +82,7 @@ test('native schema migrates to v9 and SQL store survives reopen', async () => {
   const reloaded = await store.load();
   assert.equal(reloaded.ownerAppUserId, 'child-owner-1');
   assert.equal(pendingChildPrivateOutbox(reloaded).length, 1);
-  assert.equal(
-    pendingChildPrivateOutbox(reloaded)[0]?.payload.reflection,
-    'secret-local',
-  );
+  assert.equal(pendingChildPrivateOutbox(reloaded)[0]?.payload.reflection, 'secret-local');
   await db.close();
 });
 
@@ -105,9 +102,6 @@ test('Dexie store persists child-private outbox without a remote API', async () 
   assert.equal(result.ok, true);
   const reloaded = await store.load();
   assert.equal(pendingChildPrivateOutbox(reloaded).length, 1);
-  assert.equal(
-    pendingChildPrivateOutbox(reloaded)[0]?.commandType,
-    'child_private.project.upsert',
-  );
+  assert.equal(pendingChildPrivateOutbox(reloaded)[0]?.commandType, 'child_private.project.upsert');
   await handle.close();
 });

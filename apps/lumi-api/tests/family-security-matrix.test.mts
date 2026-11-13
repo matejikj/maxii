@@ -50,10 +50,7 @@ test('security matrix report never marks independent human review as done', asyn
       diaryCanary: CANARY,
     });
     assert.equal(report.independentHumanReviewClaimed, false);
-    assert.equal(
-      JSON.stringify(report).includes('"independentHumanReviewClaimed":true'),
-      false,
-    );
+    assert.equal(JSON.stringify(report).includes('"independentHumanReviewClaimed":true'), false);
   } finally {
     await api.app.close();
   }

@@ -16,9 +16,7 @@ export function RecordProvenanceBlock({ authorship }: Props) {
       {authorship.lastEditorLabel ? (
         <LumiText tone="muted">Poslední úprava: {authorship.lastEditorLabel}</LumiText>
       ) : null}
-      {authorship.transferLine ? (
-        <LumiText tone="muted">{authorship.transferLine}</LumiText>
-      ) : null}
+      {authorship.transferLine ? <LumiText tone="muted">{authorship.transferLine}</LumiText> : null}
     </View>
   );
 }

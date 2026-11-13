@@ -360,7 +360,8 @@ export function useNursingStarter(
 
   const start = useCallback(
     async (side?: FeedingSide | null) => {
-      if (!childId || pending) return { ok: false as const, alreadyRunning: Boolean(activeNursing) };
+      if (!childId || pending)
+        return { ok: false as const, alreadyRunning: Boolean(activeNursing) };
       if (activeNursing) return { ok: false as const, alreadyRunning: true as const };
       setPending(true);
       setMessage(null);

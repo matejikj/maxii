@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { LumiButton, LumiChip, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import {
+  LumiButton,
+  LumiChip,
+  LumiInput,
+  LumiText,
+  useLumiTheme,
+} from '@lumi/forest-design/native';
 import type { BottleContents, ChildId, FeedingSide, TimeZoneId } from '../../domain';
 import {
   UNDO_WINDOW_MS,
@@ -31,11 +37,7 @@ import { createLogger } from '../../infrastructure/telemetry/logger';
 
 const log = createLogger();
 import { formatWallDateTime, parseWallDateTime } from './recordDiaperIntent';
-import {
-  loadLastFeedingKind,
-  saveLastFeedingKind,
-  type FeedingKind,
-} from './feedingTypeMemory';
+import { loadLastFeedingKind, saveLastFeedingKind, type FeedingKind } from './feedingTypeMemory';
 import {
   buildRecordBottleCommand,
   buildRecordFoodCommand,
@@ -87,9 +89,9 @@ export function FeedingRecorder({
   const runtime = usePersonalRuntime();
   const nursingStarter = useNursingStarter(childId, timeZone, activeNursing);
   const [kind, setKind] = useState<FeedingKind>('nursing');
-  const [panel, setPanel] = useState<'picker' | 'bottle' | 'food' | 'nursingManual' | 'nursingNoDuration'>(
-    'picker',
-  );
+  const [panel, setPanel] = useState<
+    'picker' | 'bottle' | 'food' | 'nursingManual' | 'nursingNoDuration'
+  >('picker');
   const [feedback, setFeedback] = useState<SaveFeedbackState>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState<string | undefined>();
   const [undoAvailable, setUndoAvailable] = useState(false);
@@ -281,9 +283,7 @@ export function FeedingRecorder({
         intentCapturedAtMs: intentMs,
         amount: parsedAmount.amount,
         note: note || null,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);
@@ -351,9 +351,7 @@ export function FeedingRecorder({
         intentCapturedAtMs: intentMs,
         amount: parsedAmount.amount,
         note: note || null,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);
@@ -497,9 +495,7 @@ export function FeedingRecorder({
           {...(feedbackMessage !== undefined ? { message: feedbackMessage } : {})}
           undoAvailable={undoAvailable}
           onUndo={() => void onUndo()}
-          {...(savedEventId && onOpenEvent
-            ? { onEdit: () => onOpenEvent(savedEventId) }
-            : {})}
+          {...(savedEventId && onOpenEvent ? { onEdit: () => onOpenEvent(savedEventId) } : {})}
         />
         <LumiText tone="muted">{PRODUCT_COPY.feeding.rememberKindOnly}</LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: ui.space.sm }}>
@@ -698,9 +694,7 @@ export function FeedingRecorder({
         visible={open && panel === 'nursingNoDuration'}
         title={PRODUCT_COPY.actions.recordNursingNoDuration}
         onClose={() => setPanel('picker')}
-        footer={
-          <FormSaveButton onSave={() => void commitNursingNoDuration()} pending={pending} />
-        }
+        footer={<FormSaveButton onSave={() => void commitNursingNoDuration()} pending={pending} />}
       >
         <FormSection
           title="Pozorování"

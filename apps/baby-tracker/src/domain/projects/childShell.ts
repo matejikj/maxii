@@ -172,8 +172,7 @@ export function planPrincipalWorkspaceHandoff(input: {
     input.nextAppUserId != null &&
     input.previousAppUserId !== input.nextAppUserId;
   const draftBelongsElsewhere =
-    input.openDraftOwnerAppUserId != null &&
-    input.openDraftOwnerAppUserId !== input.nextAppUserId;
+    input.openDraftOwnerAppUserId != null && input.openDraftOwnerAppUserId !== input.nextAppUserId;
   return {
     switched,
     clearOpenDraft: switched && draftBelongsElsewhere,

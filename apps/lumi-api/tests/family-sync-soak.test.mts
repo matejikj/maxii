@@ -5,10 +5,7 @@ import type { AppUserId, FamilyId } from '@lumi/contracts';
 import { LUMI_API_PROTOCOL_VERSION } from '@lumi/contracts';
 import { loadApiConfig } from '../src/config/env.ts';
 import { createFamilyApi } from '../src/http/createServer.ts';
-import {
-  createSoakDevice,
-  runFamilySyncSoak,
-} from '../src/sync/familySyncSoak.ts';
+import { createSoakDevice, runFamilySyncSoak } from '../src/sync/familySyncSoak.ts';
 
 async function bootFamilyWithThreeDevices() {
   const config = loadApiConfig({
@@ -175,10 +172,7 @@ test('family sync soak report never claims other offline phones already received
       rounds: 3,
     });
     assert.equal(report.physicalPhonesClaimed, false);
-    assert.equal(
-      JSON.stringify(report).toLowerCase().includes('already synced to offline'),
-      false,
-    );
+    assert.equal(JSON.stringify(report).toLowerCase().includes('already synced to offline'), false);
   } finally {
     await ctx.api.app.close();
   }

@@ -13,8 +13,7 @@ export function estimatePhotoImportReserveBytes(input: {
 } {
   const perPhotoReserveBytes = input.sourceByteLengths.map((sourceBytes) => {
     const cappedSource = Math.max(0, Math.min(sourceBytes, ATTACHMENT_LIMITS.maxSourceBytes));
-    const sealed =
-      ATTACHMENT_LIMITS.displayMaxBytes + ATTACHMENT_LIMITS.thumbnailMaxBytes;
+    const sealed = ATTACHMENT_LIMITS.displayMaxBytes + ATTACHMENT_LIMITS.thumbnailMaxBytes;
     // Convert scratch needs room for decoded pixels roughly proportional to the
     // capped source; keep it bounded by the known source budget.
     const convertScratch = cappedSource;

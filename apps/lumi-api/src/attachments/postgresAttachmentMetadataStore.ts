@@ -59,7 +59,9 @@ export type AttachmentMetadataStorePort = {
  * Durable attachment metadata under family RLS. Blob bytes stay in the object
  * store; personal boots never require this pool.
  */
-export function createPostgresAttachmentMetadataStore(pool: AppDbPool): AttachmentMetadataStorePort {
+export function createPostgresAttachmentMetadataStore(
+  pool: AppDbPool,
+): AttachmentMetadataStorePort {
   return {
     async activateObject(input: {
       readonly appUserId: AppUserId;
@@ -195,10 +197,8 @@ export function createPostgresAttachmentMetadataStore(pool: AppDbPool): Attachme
             childId: row.child_id as string,
             eventId: row.event_id as string,
             createdBy: row.created_by as string,
-            eraseGeneration:
-              row.erase_generation == null ? null : Number(row.erase_generation),
-            erasedAtMs:
-              row.erased_at == null ? null : new Date(row.erased_at as string).getTime(),
+            eraseGeneration: row.erase_generation == null ? null : Number(row.erase_generation),
+            erasedAtMs: row.erased_at == null ? null : new Date(row.erased_at as string).getTime(),
           };
         },
       );

@@ -25,17 +25,14 @@ export const FORBIDDEN_APK_PERMISSIONS = [
 ] as const;
 
 export function parseAaptBadging(dump: string): ApkBadgingSummary {
-  const packageMatch = /package: name='([^']+)'(?:.*versionCode='([^']*)')?(?:.*versionName='([^']*)')?/.exec(
-    dump,
-  );
+  const packageMatch =
+    /package: name='([^']+)'(?:.*versionCode='([^']*)')?(?:.*versionName='([^']*)')?/.exec(dump);
   // aapt prints versionCode/versionName on the same package: line in any order.
-  const versionCode =
-    /versionCode='([^']*)'/.exec(dump)?.[1] ?? packageMatch?.[2] ?? null;
-  const versionName =
-    /versionName='([^']*)'/.exec(dump)?.[1] ?? packageMatch?.[3] ?? null;
-  const usesPermissions = [
-    ...dump.matchAll(/uses-permission(?:-sdk-\d+)?: name='([^']+)'/g),
-  ].map((match) => match[1]!);
+  const versionCode = /versionCode='([^']*)'/.exec(dump)?.[1] ?? packageMatch?.[2] ?? null;
+  const versionName = /versionName='([^']*)'/.exec(dump)?.[1] ?? packageMatch?.[3] ?? null;
+  const usesPermissions = [...dump.matchAll(/uses-permission(?:-sdk-\d+)?: name='([^']+)'/g)].map(
+    (match) => match[1]!,
+  );
   return {
     packageName: packageMatch?.[1] ?? null,
     versionName,
@@ -58,9 +55,7 @@ export type ApkInspectionInput = {
   expectedVersionName?: string;
 };
 
-export function inspectApkReleaseArtifact(
-  input: ApkInspectionInput,
-): ApkInspectionFinding[] {
+export function inspectApkReleaseArtifact(input: ApkInspectionInput): ApkInspectionFinding[] {
   const findings: ApkInspectionFinding[] = [];
   if (input.badgingDump == null) {
     return findings;

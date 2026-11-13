@@ -387,6 +387,5 @@ export async function runChildPrivatePostgresRlsDrill(input: {
 
 export const LOCAL_CHILD_PRIVATE_POSTGRES_RLS_DRILL_DEFAULTS = {
   databaseUrl: 'postgres://lumi_app:lumi_app_dev_only@127.0.0.1:5433/lumi_app',
-  adminDatabaseUrl:
-    'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
+  adminDatabaseUrl: 'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
 } as const;

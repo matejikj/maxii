@@ -27,9 +27,15 @@ test('acceptance drill script, migration 007, and npm script exist', () => {
     scripts: Record<string, string>;
   };
   assert.ok(pkg.scripts['attachment:acceptance-drill']);
-  const compose = readFileSync(join(packageRoot, 'deploy/attachment-compose-stack-drill.sh'), 'utf8');
+  const compose = readFileSync(
+    join(packageRoot, 'deploy/attachment-compose-stack-drill.sh'),
+    'utf8',
+  );
   assert.match(compose, /family_attachment_quota/);
-  const migration = readFileSync(join(packageRoot, 'migrations/007_family_attachment_quota.sql'), 'utf8');
+  const migration = readFileSync(
+    join(packageRoot, 'migrations/007_family_attachment_quota.sql'),
+    'utf8',
+  );
   assert.doesNotMatch(migration, /enable row level security/i);
 });
 
@@ -60,11 +66,16 @@ function fakeQuotaPool(): { pool: AppDbPool; queries: string[] } {
             const gate = new Promise<void>((resolve) => {
               done = resolve;
             });
-            tails.set(family, previous.then(() => gate));
+            tails.set(
+              family,
+              previous.then(() => gate),
+            );
             release = done;
             await previous;
             const row = rows.get(family)!;
-            return { rows: [{ used_bytes: String(row.used), reserved_bytes: String(row.reserved) }] };
+            return {
+              rows: [{ used_bytes: String(row.used), reserved_bytes: String(row.reserved) }],
+            };
           }
           if (/^update family_attachment_quota/.test(sql.trim())) {
             rows.set(String(params[0]), { used: Number(params[1]), reserved: Number(params[2]) });
@@ -79,7 +90,9 @@ function fakeQuotaPool(): { pool: AppDbPool; queries: string[] } {
     },
     async query(_sql: string, params: unknown[] = []) {
       const row = rows.get(String(params[0]));
-      return { rows: row ? [{ used_bytes: String(row.used), reserved_bytes: String(row.reserved) }] : [] };
+      return {
+        rows: row ? [{ used_bytes: String(row.used), reserved_bytes: String(row.reserved) }] : [],
+      };
     },
   } as unknown as AppDbPool;
   return { pool, queries };
@@ -92,9 +105,7 @@ test('postgres quota ledger serializes parallel reserves with FOR UPDATE', async
     pendingReservationBudgetBytes: 20,
   });
   const familyId = randomUUID();
-  const results = await Promise.all(
-    Array.from({ length: 6 }, () => ledger.reserve(familyId, 8)),
-  );
+  const results = await Promise.all(Array.from({ length: 6 }, () => ledger.reserve(familyId, 8)));
   assert.equal(results.filter((row) => row.ok).length, 2);
   assert.equal(
     results.filter((row) => !row.ok && row.reason === 'pending_budget_exceeded').length,
@@ -150,7 +161,13 @@ test('finalize fires onRenditionActivated and expired-intent GC releases reserva
   const live = await make('33333333-3333-4333-8333-333333333333', 'k1', 1_000);
   assert.equal(live.ok, true);
   if (!live.ok) return;
-  await service.uploadBytes({ intentId: live.response.intentId, appUserId, membership, bytes, nowMs: 1_100 });
+  await service.uploadBytes({
+    intentId: live.response.intentId,
+    appUserId,
+    membership,
+    bytes,
+    nowMs: 1_100,
+  });
   const done = await service.finalize({
     intentId: live.response.intentId,
     appUserId: appUserId as AppUserId,
@@ -223,7 +240,9 @@ test('live acceptance drill on Compose PG + S3Mock when healthy (otherwise skip)
     t.skip('Compose Postgres/S3Mock not reachable; run npm run attachment:acceptance-drill');
     return;
   }
-  const result = await runAttachmentAcceptanceDrill({ ...LOCAL_ATTACHMENT_ACCEPTANCE_DRILL_DEFAULTS });
+  const result = await runAttachmentAcceptanceDrill({
+    ...LOCAL_ATTACHMENT_ACCEPTANCE_DRILL_DEFAULTS,
+  });
   assert.equal(
     result.ok,
     true,
@@ -240,7 +259,10 @@ test('live acceptance drill on Compose PG + S3Mock when healthy (otherwise skip)
     'cross_family_idor_denied',
     'finalize_emits_sync_attachment_upsert',
   ]) {
-    assert.ok(result.cases.some((row) => row.name === name && row.ok), name);
+    assert.ok(
+      result.cases.some((row) => row.name === name && row.ok),
+      name,
+    );
   }
 });
 

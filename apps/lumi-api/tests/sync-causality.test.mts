@@ -16,7 +16,10 @@ async function boot() {
   return createFamilyApi(config);
 }
 
-function op(input: Partial<SyncOperation> & Pick<SyncOperation, 'operationId' | 'actorAppUserId' | 'entityId' | 'revisionId'>): SyncOperation {
+function op(
+  input: Partial<SyncOperation> &
+    Pick<SyncOperation, 'operationId' | 'actorAppUserId' | 'entityId' | 'revisionId'>,
+): SyncOperation {
   const payload = input.payload ?? { revisionKind: 'create', note: 'n' };
   return {
     schemaVersion: LUMI_API_PROTOCOL_VERSION,

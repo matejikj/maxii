@@ -154,7 +154,12 @@ export function createPostgresJobQueue(pool: AppDbPool): JobQueue {
         [workerId, leaseMs],
       );
       const row = result.rows[0] as
-        | { job_id: string; kind: WorkerJobKind; payload_json: Record<string, unknown>; attempts: number }
+        | {
+            job_id: string;
+            kind: WorkerJobKind;
+            payload_json: Record<string, unknown>;
+            attempts: number;
+          }
         | undefined;
       if (!row) return null;
       return {

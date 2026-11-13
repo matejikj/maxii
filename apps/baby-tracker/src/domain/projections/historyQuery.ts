@@ -19,13 +19,7 @@ export function compareCareTimelineAsc(a: CareEvent, b: CareEvent): number {
 
 export type HistoryBucket = 'all' | 'care' | 'activities' | 'notes';
 
-export type CareSubtype =
-  | 'diaper'
-  | 'sleep'
-  | 'nursing'
-  | 'bottle'
-  | 'food'
-  | 'growth';
+export type CareSubtype = 'diaper' | 'sleep' | 'nursing' | 'bottle' | 'food' | 'growth';
 
 export function eventMatchesHistoryBucket(
   event: CareEvent,
@@ -83,12 +77,7 @@ export function searchableTextFromCareEvent(event: CareEvent): string {
 }
 
 export function normalizeSearchText(raw: string): string {
-  return raw
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  return raw.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 export function matchesLocalSearch(haystack: string, query: string): boolean {

@@ -106,9 +106,7 @@ test('web bootstrap mirrors single-profile personal mode', async () => {
 });
 
 test('key and corrupt failures never invent an empty ready profile', () => {
-  const keyFail = mapBootstrapOpenError(
-    new DatabaseKeyStoreError('READ_FAILED', 'missing key'),
-  );
+  const keyFail = mapBootstrapOpenError(new DatabaseKeyStoreError('READ_FAILED', 'missing key'));
   assert.equal(keyFail.phase, 'key_unavailable');
   assert.equal(keyFail.profile, null);
   assert.equal(keyFail.error?.message, 'missing key');

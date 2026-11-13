@@ -1,10 +1,7 @@
 import { LUMI_ANIMALS, type LumiAnimal } from '../types';
 import { CHARACTER_BLUEPRINTS } from '../characters/blueprint';
 import { compileCharacter, compileStudioActionStatic } from '../characters/compiler';
-import {
-  CHARACTER_SEMANTIC_STATES,
-  resolveSemanticPresentation,
-} from '../characters/collection';
+import { CHARACTER_SEMANTIC_STATES, resolveSemanticPresentation } from '../characters/collection';
 import {
   CHARACTER_APPEARANCE_STYLES,
   STUDIO_ACTION_IDS,
@@ -87,9 +84,7 @@ export function runWorkshopAcceptanceMatrix(): WorkshopAcceptanceReport {
     if (!styleMatrixOk) break;
   }
   const expectedCells =
-    LUMI_ANIMALS.length *
-    CHARACTER_APPEARANCE_STYLES.length *
-    CHARACTER_SEMANTIC_STATES.length;
+    LUMI_ANIMALS.length * CHARACTER_APPEARANCE_STYLES.length * CHARACTER_SEMANTIC_STATES.length;
   cases.push(
     caseOf(
       'style_semantic_matrix',
@@ -104,11 +99,7 @@ export function runWorkshopAcceptanceMatrix(): WorkshopAcceptanceReport {
   let studioDetail = '';
   for (const actionId of STUDIO_ACTION_IDS) {
     const def = STUDIO_ACTIONS[actionId];
-    const node = compileStudioActionStatic(
-      CHARACTER_BLUEPRINTS[def.species],
-      actionId,
-      'workshop',
-    );
+    const node = compileStudioActionStatic(CHARACTER_BLUEPRINTS[def.species], actionId, 'workshop');
     if (!node) {
       studioOk = false;
       studioDetail = `${actionId} missing static workshop pose`;

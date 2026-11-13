@@ -14,11 +14,7 @@ const {
 
 test('workshop acceptance matrix passes offline without claiming device metrics', () => {
   const report = runWorkshopAcceptanceMatrix();
-  assert.equal(
-    report.ok,
-    true,
-    report.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(report.ok, true, report.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(report.physicalDeviceMeasured, false);
   assert.equal(report.compiledStyleSemanticCells, 10 * 3 * 8);
   assert.equal(report.compiledStudioActions, 8);

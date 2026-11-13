@@ -162,15 +162,11 @@ test('PKCE pair and redirect allow-list reject forged returns', () => {
   assert.equal(pair.challenge.length > 20, true);
   assert.equal(pair.verifier === pair.challenge, false);
   assert.equal(
-    isAllowedRedirectUri('com.matejikj://oidc/callback', [
-      'com.matejikj://oidc/callback',
-    ]),
+    isAllowedRedirectUri('com.matejikj://oidc/callback', ['com.matejikj://oidc/callback']),
     true,
   );
   assert.equal(
-    isAllowedRedirectUri('https://evil.invalid/steal', [
-      'com.matejikj://oidc/callback',
-    ]),
+    isAllowedRedirectUri('https://evil.invalid/steal', ['com.matejikj://oidc/callback']),
     false,
   );
 });

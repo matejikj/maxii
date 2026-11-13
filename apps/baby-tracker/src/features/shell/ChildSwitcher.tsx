@@ -28,8 +28,7 @@ export function ChildSwitcher({ accessibilityHint, compact = false }: ChildSwitc
         accessibilityRole="button"
         accessibilityLabel={`Aktivní dítě: ${profile.displayName}`}
         accessibilityHint={
-          accessibilityHint ??
-          (multi ? 'Přepnout dítě pro zápis péče' : 'Otevřít výběr dítěte')
+          accessibilityHint ?? (multi ? 'Přepnout dítě pro zápis péče' : 'Otevřít výběr dítěte')
         }
         onPress={() => setOpen(true)}
         style={[
@@ -45,21 +44,20 @@ export function ChildSwitcher({ accessibilityHint, compact = false }: ChildSwitc
           compact ? { borderColor: colors.border } : null,
         ]}
       >
-        <LumiText variant="label" style={compact ? { flexShrink: 1 } : undefined}>{profile.displayName}</LumiText>
+        <LumiText variant="label" style={compact ? { flexShrink: 1 } : undefined}>
+          {profile.displayName}
+        </LumiText>
         {compact ? (
           <View style={{ transform: [{ rotate: '90deg' }] }}>
             <LumiIcon name="arrow-right" color={colors.textMuted} size={14} />
           </View>
         ) : (
-          <LumiText tone="muted" variant="caption">{multi ? 'Přepnout' : 'Dítě'}</LumiText>
+          <LumiText tone="muted" variant="caption">
+            {multi ? 'Přepnout' : 'Dítě'}
+          </LumiText>
         )}
       </Pressable>
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-      >
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable
           style={[styles.backdrop, { backgroundColor: 'rgba(0,0,0,0.35)' }]}
           onPress={() => setOpen(false)}
@@ -107,8 +105,15 @@ export function ChildSwitcher({ accessibilityHint, compact = false }: ChildSwitc
 }
 
 const styles = StyleSheet.create({
-  compactChip: { flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 16, paddingHorizontal: 12, maxWidth: 184, flexShrink: 1 },
+  compactChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    maxWidth: 184,
+    flexShrink: 1,
+  },
   chip: {
     borderWidth: 1,
     borderRadius: 12,

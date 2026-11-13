@@ -70,20 +70,13 @@ export function enqueueChildPrivateOutbox(
       { details: { commandType: input.commandType } },
     );
   }
-  if (
-    state.ownerAppUserId !== null &&
-    state.ownerAppUserId !== input.ownerAppUserId
-  ) {
-    throw new AppError(
-      'FORBIDDEN',
-      'Child-private outbox is bound to a single owner workspace',
-      {
-        details: {
-          boundOwner: state.ownerAppUserId,
-          attemptedOwner: input.ownerAppUserId,
-        },
+  if (state.ownerAppUserId !== null && state.ownerAppUserId !== input.ownerAppUserId) {
+    throw new AppError('FORBIDDEN', 'Child-private outbox is bound to a single owner workspace', {
+      details: {
+        boundOwner: state.ownerAppUserId,
+        attemptedOwner: input.ownerAppUserId,
       },
-    );
+    });
   }
 
   const payloadHash = hashPayload(input.payload);
@@ -121,9 +114,7 @@ export function markChildPrivateOutboxAttempt(
   return {
     ...state,
     outbox: state.outbox.map((item) =>
-      wanted.has(item.operationId)
-        ? { ...item, attemptCount: item.attemptCount + 1 }
-        : item,
+      wanted.has(item.operationId) ? { ...item, attemptCount: item.attemptCount + 1 } : item,
     ),
   };
 }
@@ -204,9 +195,7 @@ export function markChildPrivateInboxApplied(
   };
 }
 
-export function pendingChildPrivateInbox(
-  state: LocalChildPrivateSyncState,
-): readonly InboxEntry[] {
+export function pendingChildPrivateInbox(state: LocalChildPrivateSyncState): readonly InboxEntry[] {
   return state.inbox.filter((entry) => !entry.applied);
 }
 

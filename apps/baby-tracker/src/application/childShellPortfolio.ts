@@ -49,10 +49,7 @@ function toCard(item: PortfolioItem): ChildShellPortfolioCard {
   };
 }
 
-function assertOwnedItem(
-  item: PortfolioItem | null,
-  ownerAppUserId: ActorId,
-): PortfolioItem {
+function assertOwnedItem(item: PortfolioItem | null, ownerAppUserId: ActorId): PortfolioItem {
   if (!item) {
     throw new AppError('NOT_FOUND', 'Portfolio item was not found', {
       details: { reason: 'portfolio_missing' },

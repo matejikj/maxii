@@ -58,7 +58,10 @@ function main() {
     const content = fs.readFileSync(absolute, 'utf8');
     // Canaries may appear only inside dedicated logger tests as string literals
     // used for negative assertions, never in production sources.
-    if ((content.includes(CANARY_NOTE) || content.includes(CANARY_DOB)) && !rel.includes('logger.test')) {
+    if (
+      (content.includes(CANARY_NOTE) || content.includes(CANARY_DOB)) &&
+      !rel.includes('logger.test')
+    ) {
       hits.push(`${rel}: sensitive canary leaked outside logger tests`);
     }
     hits.push(...scanContent(rel, content));

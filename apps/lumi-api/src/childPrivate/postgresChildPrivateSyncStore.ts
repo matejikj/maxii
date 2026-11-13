@@ -69,10 +69,7 @@ export function createPostgresChildPrivateSyncStore(pool: AppDbPool) {
             [input.ownerAppUserId],
           );
           const writerGeneration = Number(state.rows[0]?.writer_generation ?? 1);
-          if (
-            input.writerGeneration != null &&
-            input.writerGeneration !== writerGeneration
-          ) {
+          if (input.writerGeneration != null && input.writerGeneration !== writerGeneration) {
             return {
               ownerAppUserId: input.ownerAppUserId,
               attemptId: input.attemptId,
@@ -111,10 +108,7 @@ export function createPostgresChildPrivateSyncStore(pool: AppDbPool) {
       cursor: SyncCursor | null;
       limit?: number;
     }): Promise<ChildPrivateSyncPullResponse> {
-      const limit = Math.min(
-        Math.max(1, input.limit ?? 20),
-        LUMI_API_LIMITS.maxSyncPullPage,
-      );
+      const limit = Math.min(Math.max(1, input.limit ?? 20), LUMI_API_LIMITS.maxSyncPullPage);
 
       return withTenantTransaction(
         pool,
@@ -179,9 +173,7 @@ export function createPostgresChildPrivateSyncStore(pool: AppDbPool) {
             ownerAppUserId: hasForeignShare ? null : input.sessionAppUserId,
             epoch,
             entries,
-            nextCursor: last
-              ? encodeCursor({ epoch, seq: last.changelogSeq })
-              : input.cursor,
+            nextCursor: last ? encodeCursor({ epoch, seq: last.changelogSeq }) : input.cursor,
             resyncRequired: false,
             includesLivePrivateProjects: false,
           };
@@ -192,7 +184,12 @@ export function createPostgresChildPrivateSyncStore(pool: AppDbPool) {
 }
 
 async function acceptOne(
-  client: { query: (sql: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }> },
+  client: {
+    query: (
+      sql: string,
+      params?: unknown[],
+    ) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }>;
+  },
   input: {
     ownerAppUserId: AppUserId;
     sessionAppUserId: AppUserId;
@@ -273,9 +270,7 @@ async function acceptOne(
   const audience = isChildPrivateShareKind(operation.kind)
     ? childPrivateShareAudience(operation.payload)
     : null;
-  const seqRow = await client.query(
-    `select nextval('child_private_sync_global_seq') as seq`,
-  );
+  const seqRow = await client.query(`select nextval('child_private_sync_global_seq') as seq`);
   const changelogSeq = Number(seqRow.rows[0]?.seq);
 
   await client.query(

@@ -132,12 +132,14 @@ export const SUPPORT_MATRIX = {
   },
   browsers: ['Safari (current macOS/iOS)', 'Chrome (current desktop)', 'Firefox (current desktop)'],
   referenceDevices: {
-    androidPhysical: 'Pixel 6 class mid-range Android (physical; AVD Pixel_6 for interim native builds)',
+    androidPhysical:
+      'Pixel 6 class mid-range Android (physical; AVD Pixel_6 for interim native builds)',
     iosPhysical: 'Supported iPhone 13-class or newer on current iOS',
     web: 'Safari desktop + iOS Safari for primary web matrix',
   },
   measurementMethod: {
-    coldStart: 'Release-like build, encrypted DB already provisioned, time to interactive Today shell',
+    coldStart:
+      'Release-like build, encrypted DB already provisioned, time to interactive Today shell',
     localWrite: 'p95 confirmed local save of a diaper event after commit returns',
     lumi: 'Single decorative character animation on Today; respect reduced motion',
   },
@@ -171,9 +173,7 @@ export function verifyZodBoundarySchema(): void {
  * Seals and opens a tiny envelope with reduced Argon2 cost so CI can prove the
  * codec path without spending production KDF time on every run.
  */
-export function verifyPortableBackupRoundTrip(
-  password = 'recovery-password-for-tests-only',
-): void {
+export function verifyPortableBackupRoundTrip(password = 'recovery-password-for-tests-only'): void {
   const plaintext = utf8ToBytes(JSON.stringify({ childDisplayName: 'Probe', events: 1 }));
   const envelope = sealPortableBackup(plaintext, password, {
     ...DEFAULT_ARGON2ID_PARAMS,

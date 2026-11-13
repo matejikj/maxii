@@ -6,7 +6,11 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const ts = require('typescript');
 const root = path.resolve(__dirname, '..');
-const entries = {root:'src/index.ts', core:'src/core/index.ts', native:'src/react-native/index.ts'};
+const entries = {
+  root: 'src/index.ts',
+  core: 'src/core/index.ts',
+  native: 'src/react-native/index.ts',
+};
 function exportsOf(input, visited = new Set()) {
   const file = path.resolve(root, input);
   if (visited.has(file)) return new Set();
@@ -21,15 +25,25 @@ function exportsOf(input, visited = new Set()) {
         for (const e of statement.exportClause.elements) names.add(e.name.text);
       } else if (child?.startsWith('.')) {
         const target = path.resolve(path.dirname(file), child);
-        const resolved = [target + '.ts', target + '.tsx', path.join(target, 'index.ts')].find(fs.existsSync);
+        const resolved = [target + '.ts', target + '.tsx', path.join(target, 'index.ts')].find(
+          fs.existsSync,
+        );
         if (!resolved) throw Error(`Cannot resolve ${child} in ${file}`);
         for (const name of exportsOf(path.relative(root, resolved), visited)) names.add(name);
       }
-    } else if (statement.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) &&
-        (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement) ||
-        ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement) || ts.isEnumDeclaration(statement))) {
+    } else if (
+      statement.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword) &&
+      (ts.isFunctionDeclaration(statement) ||
+        ts.isClassDeclaration(statement) ||
+        ts.isInterfaceDeclaration(statement) ||
+        ts.isTypeAliasDeclaration(statement) ||
+        ts.isEnumDeclaration(statement))
+    ) {
       if (statement.name) names.add(statement.name.text);
-    } else if (ts.isVariableStatement(statement) && statement.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword)) {
+    } else if (
+      ts.isVariableStatement(statement) &&
+      statement.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
       for (const decl of statement.declarationList.declarations) {
         if (ts.isIdentifier(decl.name)) names.add(decl.name.text);
       }
@@ -37,13 +51,24 @@ function exportsOf(input, visited = new Set()) {
   }
   return names;
 }
-const manifest = Object.fromEntries(Object.entries(entries).map(([name,file]) => [name,[...exportsOf(file)].sort()]));
-const location = path.join(root,'contracts/public-api.json');
+const manifest = Object.fromEntries(
+  Object.entries(entries).map(([name, file]) => [name, [...exportsOf(file)].sort()]),
+);
+const location = path.join(root, 'contracts/public-api.json');
 if (process.argv.includes('--approve')) {
-  fs.writeFileSync(location, JSON.stringify(manifest,null,2)+'\n');
-  console.log('Public API manifest updated (review this diff; treat removals as breaking changes).');
+  fs.writeFileSync(location, JSON.stringify(manifest, null, 2) + '\n');
+  console.log(
+    'Public API manifest updated (review this diff; treat removals as breaking changes).',
+  );
 } else {
-  assert.deepEqual(manifest, JSON.parse(fs.readFileSync(location, 'utf8')),
-    'Public API changed. Review semver and explicitly approve contract with node tools/public-api.cjs --approve');
-  console.log(`Public API stable: ${Object.entries(manifest).map(([k,v])=>`${k}=${v.length}`).join(' ')} exports`);
+  assert.deepEqual(
+    manifest,
+    JSON.parse(fs.readFileSync(location, 'utf8')),
+    'Public API changed. Review semver and explicitly approve contract with node tools/public-api.cjs --approve',
+  );
+  console.log(
+    `Public API stable: ${Object.entries(manifest)
+      .map(([k, v]) => `${k}=${v.length}`)
+      .join(' ')} exports`,
+  );
 }

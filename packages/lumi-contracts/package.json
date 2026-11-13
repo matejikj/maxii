@@ -10,7 +10,12 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.mts"
+    "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.mts",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "engines": {
     "node": ">=22.13.0"

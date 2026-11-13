@@ -9,9 +9,7 @@ import type {
 
 type Props = {
   readonly presentation:
-    | EditConflictPresentation
-    | DualSleepPresentation
-    | DeleteVsEditPresentation;
+    EditConflictPresentation | DualSleepPresentation | DeleteVsEditPresentation;
   readonly mergePreviewLabel?: string | null;
   readonly staleHeads?: boolean;
   readonly onChoose: (choiceId: string) => void;
@@ -68,8 +66,7 @@ export function ConflictReviewCard({
               <LumiText tone="muted">Náhled sloučení: {mergePreviewLabel}</LumiText>
             ) : null}
             <LumiText tone="muted">
-              Podobný čas není důkaz jedné události. Nic netvrdíme o tom, že dítě právě
-              procitlo.
+              Podobný čas není důkaz jedné události. Nic netvrdíme o tom, že dítě právě procitlo.
             </LumiText>
           </View>
         ) : null}
@@ -114,8 +111,7 @@ function SleepLine({
   return (
     <LumiText>
       {label} · {measurement.authorLabel} ({measurement.deviceLabel}) · {measurement.startLabel} ·{' '}
-      {measurement.durationLabel} ·{' '}
-      {measurement.status === 'active' ? 'běží' : 'dokončeno'} ·{' '}
+      {measurement.durationLabel} · {measurement.status === 'active' ? 'běží' : 'dokončeno'} ·{' '}
       {measurement.precisionLabel === 'exact' ? 'přesný čas' : 'přibližný čas'}
     </LumiText>
   );

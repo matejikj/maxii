@@ -122,10 +122,7 @@ test('Today and Development read the same stored daily set', async () => {
   );
   const fromToday = await readDailyRecommendationSet(unitOfWork, { childId, localDay });
   const fromDevelopment = await readDailyRecommendationSet(unitOfWork, { childId, localDay });
-  assert.equal(
-    fromToday?.set.recommendationSetId,
-    fromDevelopment?.set.recommendationSetId,
-  );
+  assert.equal(fromToday?.set.recommendationSetId, fromDevelopment?.set.recommendationSetId);
 });
 
 test('opening an offer does not invent experiences; care-only hides without reshuffle debt', async () => {

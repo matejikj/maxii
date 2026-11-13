@@ -139,7 +139,10 @@ export function validateRemoteBackupManifest(
 }
 
 export function pruneBackupIdsOlderThan(input: {
-  readonly backupIdsByCompletedAt: readonly { readonly backupId: string; readonly completedAt: string }[];
+  readonly backupIdsByCompletedAt: readonly {
+    readonly backupId: string;
+    readonly completedAt: string;
+  }[];
   readonly nowMs: number;
   readonly retentionDays?: number;
 }): readonly string[] {

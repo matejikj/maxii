@@ -45,10 +45,10 @@ test('two families cannot read each other even with a guessed familyId', () => {
     authorizeFamilyAccess({ memberships, appUserId: userB, familyId: family1 }).allow,
     false,
   );
-  assert.deepEqual(
-    authorizeFamilyAccess({ memberships, appUserId: userA, familyId: family1 }),
-    { allow: true, role: 'admin' },
-  );
+  assert.deepEqual(authorizeFamilyAccess({ memberships, appUserId: userA, familyId: family1 }), {
+    allow: true,
+    role: 'admin',
+  });
 });
 
 test('revoked membership is denied and admin-only actions reject caregivers', () => {
@@ -127,10 +127,13 @@ test('external identity binding ignores e-mail collisions and revoked links', ()
 });
 
 test('unknown auth mode holds local data instead of merging accounts', () => {
-  assert.deepEqual(resolveAuthModeOrHold({ mode: 'oidc_keycloak_v1', version: LUMI_AUTH_MODE_VERSION }), {
-    ok: true,
-    mode: 'oidc_keycloak_v1',
-  });
+  assert.deepEqual(
+    resolveAuthModeOrHold({ mode: 'oidc_keycloak_v1', version: LUMI_AUTH_MODE_VERSION }),
+    {
+      ok: true,
+      mode: 'oidc_keycloak_v1',
+    },
+  );
   assert.deepEqual(resolveAuthModeOrHold({ mode: 'future_otp', version: LUMI_AUTH_MODE_VERSION }), {
     ok: false,
     holdLocalData: true,

@@ -37,8 +37,7 @@ export function registerChildPrivateSyncRoutes(
     const usesBearer =
       typeof request.headers.authorization === 'string' &&
       String(request.headers.authorization).startsWith('Bearer ');
-    const cookieHeader =
-      typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
+    const cookieHeader = typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
     if (
       !verifyCsrfDoubleSubmit({
         method: request.method,
@@ -113,9 +112,7 @@ export function registerChildPrivateSyncRoutes(
         sessionAppUserId: appUserId,
         attemptId: body.attemptId,
         operations: body.operations ?? [],
-        ...(body.writerGeneration != null
-          ? { writerGeneration: body.writerGeneration }
-          : {}),
+        ...(body.writerGeneration != null ? { writerGeneration: body.writerGeneration } : {}),
         now: new Date().toISOString(),
       });
       reply.header('cache-control', 'no-store');
@@ -134,9 +131,7 @@ export function registerChildPrivateSyncRoutes(
       const result = await childPrivateSync.pull({
         sessionAppUserId: appUserId,
         cursor: (query.cursor as SyncCursor | undefined) ?? null,
-        ...(parsedLimit != null && Number.isFinite(parsedLimit)
-          ? { limit: parsedLimit }
-          : {}),
+        ...(parsedLimit != null && Number.isFinite(parsedLimit) ? { limit: parsedLimit } : {}),
       });
       if (result.resyncRequired) {
         const err = apiError(

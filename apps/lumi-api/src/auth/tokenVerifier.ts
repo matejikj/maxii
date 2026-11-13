@@ -29,9 +29,7 @@ export class AccessTokenVerifier {
   constructor(config: ApiConfig, store: MemoryFamilyStore) {
     this.config = config;
     this.store = store;
-    this.remoteJwks = config.oidcJwksUrl
-      ? createRemoteJWKSet(new URL(config.oidcJwksUrl))
-      : null;
+    this.remoteJwks = config.oidcJwksUrl ? createRemoteJWKSet(new URL(config.oidcJwksUrl)) : null;
   }
 
   async verifyAuthorizationHeader(header: string | undefined): Promise<TokenVerificationResult> {
@@ -84,9 +82,10 @@ export class AccessTokenVerifier {
     if (!user || user.status !== 'active') return { ok: false, reason: 'revoked_user' };
 
     const deviceClaim = asString(payload.device_id) ?? asString(payload.deviceId);
-    const expiresAt = typeof payload.exp === 'number'
-      ? new Date(payload.exp * 1000).toISOString()
-      : new Date(0).toISOString();
+    const expiresAt =
+      typeof payload.exp === 'number'
+        ? new Date(payload.exp * 1000).toISOString()
+        : new Date(0).toISOString();
 
     return {
       ok: true,

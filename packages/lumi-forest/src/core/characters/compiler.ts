@@ -3,8 +3,13 @@ import type { VectorNode, VectorProps } from '../vector/types';
 import { applyAppearanceStylePolish } from './appearanceStyles';
 import { compileAccessory, ACCESSORY_SLOTS } from './accessories';
 import type {
-  CharacterBlueprint, CharacterBlueprintV2, CharacterCompileOptions,
-  CharacterComposition, CharacterExpression, CharacterPart, CharacterAccessory,
+  CharacterBlueprint,
+  CharacterBlueprintV2,
+  CharacterCompileOptions,
+  CharacterComposition,
+  CharacterExpression,
+  CharacterPart,
+  CharacterAccessory,
   CharacterPose,
 } from './blueprint';
 import { isCharacterRole } from './blueprint';
@@ -30,18 +35,26 @@ function validateNodeBudget(node: VectorNode, remaining: { budget: number }, dep
   if (++remaining.budget > MAX_VECTOR_NODES || depth > MAX_DEPTH) {
     throw new RangeError('Character exceeds complexity or nesting budget');
   }
-  if (node.kind === 'group') node.children.forEach(child => validateNodeBudget(child, remaining, depth + 1));
+  if (node.kind === 'group')
+    node.children.forEach((child) => validateNodeBudget(child, remaining, depth + 1));
 }
 
 function checkedParts(parts: readonly CharacterPart[]): readonly CharacterPart[] {
-  if (!Array.isArray(parts) || parts.length > MAX_PARTS) throw new RangeError('Invalid character part count');
+  if (!Array.isArray(parts) || parts.length > MAX_PARTS)
+    throw new RangeError('Invalid character part count');
   const seen = new Set<string>();
   const budget = { budget: 0 };
-  parts.forEach(part => {
-    if (!part.id || seen.has(part.id)) throw new RangeError(`Duplicate/empty character part ID: ${part.id}`);
-    if (!isCharacterRole(part.role)) throw new RangeError(`Unknown character part role: ${part.role}`);
-    if (!Number.isFinite(part.order)) throw new RangeError(`Non-finite z-order in part: ${part.id}`);
-    if (part.opacity !== undefined && (!Number.isFinite(part.opacity) || part.opacity < 0 || part.opacity > 1)) {
+  parts.forEach((part) => {
+    if (!part.id || seen.has(part.id))
+      throw new RangeError(`Duplicate/empty character part ID: ${part.id}`);
+    if (!isCharacterRole(part.role))
+      throw new RangeError(`Unknown character part role: ${part.role}`);
+    if (!Number.isFinite(part.order))
+      throw new RangeError(`Non-finite z-order in part: ${part.id}`);
+    if (
+      part.opacity !== undefined &&
+      (!Number.isFinite(part.opacity) || part.opacity < 0 || part.opacity > 1)
+    ) {
       throw new RangeError(`Invalid opacity in part: ${part.id}`);
     }
     if (part.transform !== undefined && typeof part.transform !== 'string') {
@@ -50,7 +63,8 @@ function checkedParts(parts: readonly CharacterPart[]): readonly CharacterPart[]
     validateNodeBudget(part.geometry, budget);
     seen.add(part.id);
   });
-  return parts.map((part, index) => ({ part, index }))
+  return parts
+    .map((part, index) => ({ part, index }))
     .sort((a, b) => a.part.order - b.part.order || a.index - b.index)
     .map(({ part }) => part);
 }
@@ -61,15 +75,24 @@ function preparedParts(blueprint: CharacterBlueprintV2): readonly CharacterPart[
   if (previous) return previous;
   const parts = checkedParts(blueprint.base.parts);
   const roleForId: Readonly<Record<string, CharacterPart['role']>> = {
-    'eye-left': 'eye', 'eye-right': 'eye', mouth: 'mouth', body: 'body', head: 'head',
+    'eye-left': 'eye',
+    'eye-right': 'eye',
+    mouth: 'mouth',
+    body: 'body',
+    head: 'head',
   };
   for (const [id, role] of Object.entries(roleForId)) {
-    if (!parts.some(part => part.id === id && part.role === role)) {
+    if (!parts.some((part) => part.id === id && part.role === role)) {
       throw new RangeError(`Character ${blueprint.species} is missing anatomical ${id}:${role}`);
     }
   }
-  for (const point of [blueprint.rig.leftEye, blueprint.rig.rightEye, blueprint.rig.mouth,
-    ...Object.values(blueprint.rig.pivots), ...Object.values(blueprint.rig.accessoryAnchors)]) {
+  for (const point of [
+    blueprint.rig.leftEye,
+    blueprint.rig.rightEye,
+    blueprint.rig.mouth,
+    ...Object.values(blueprint.rig.pivots),
+    ...Object.values(blueprint.rig.accessoryAnchors),
+  ]) {
     if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
       throw new RangeError(`Invalid character rig landmark: ${blueprint.species}`);
     }
@@ -78,7 +101,11 @@ function preparedParts(blueprint: CharacterBlueprintV2): readonly CharacterPart[
   return parts;
 }
 
-function groupWithProps(node: VectorNode, transforms: readonly (string | undefined)[], opacity?: number): VectorNode {
+function groupWithProps(
+  node: VectorNode,
+  transforms: readonly (string | undefined)[],
+  opacity?: number,
+): VectorNode {
   const transform = transforms.filter((item): item is string => !!item).join(' ');
   if (!transform && opacity === undefined) return node;
   const props: VectorProps = {
@@ -91,7 +118,7 @@ function groupWithProps(node: VectorNode, transforms: readonly (string | undefin
 function compileV1(composition: CharacterComposition): VectorNode {
   if (composition.kind === 'legacy') return composition.geometry;
   const parts = checkedParts(composition.parts);
-  return group(parts.map(part => groupWithProps(part.geometry, [part.transform], part.opacity)));
+  return group(parts.map((part) => groupWithProps(part.geometry, [part.transform], part.opacity)));
 }
 
 function resolvePropList(options: CharacterCompileOptions): readonly CharacterPropId[] {
@@ -113,7 +140,10 @@ function resolvePropList(options: CharacterCompileOptions): readonly CharacterPr
   return list;
 }
 
-function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): {
+function validateV2(
+  blueprint: CharacterBlueprintV2,
+  options: CharacterCompileOptions,
+): {
   pose: CharacterPose;
   expression: CharacterExpression;
   accessories: readonly CharacterAccessory[];
@@ -149,8 +179,9 @@ function validateV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOp
 
 function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOptions): VectorNode {
   const { pose, expression, accessories, props, appearanceStyle } = validateV2(blueprint, options);
-  const proportional = options.proportions !== undefined &&
-    Object.values(options.proportions).some(value => value !== undefined && value !== 1);
+  const proportional =
+    options.proportions !== undefined &&
+    Object.values(options.proportions).some((value) => value !== undefined && value !== 1);
   const pristine =
     pose === 'sitting' &&
     expression === 'neutral' &&
@@ -163,21 +194,26 @@ function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOpt
     if (previous) return previous;
   }
   // Cache only low-cardinality, immutable presets, never arbitrary proportions.
-  const cacheKey = !proportional && accessories.length <= 1 && props.length <= 1
-    ? `${pose}/${expression}/${accessories[0] ?? 'none'}/${props[0] ?? 'none'}/${appearanceStyle}`
-    : undefined;
+  const cacheKey =
+    !proportional && accessories.length <= 1 && props.length <= 1
+      ? `${pose}/${expression}/${accessories[0] ?? 'none'}/${props[0] ?? 'none'}/${appearanceStyle}`
+      : undefined;
   const cached = cacheKey === undefined ? undefined : variantCache.get(blueprint)?.get(cacheKey);
   if (cached) return cached;
   const parts = applyAppearanceStylePolish(preparedParts(blueprint), appearanceStyle);
   const rig = blueprint.rig;
-  const rendered = parts.map(part => {
+  const rendered = parts.map((part) => {
     let geometry: VectorNode = part.geometry;
     if (expression !== 'neutral') {
       if (part.id === 'eye-left') geometry = expressionEye(expression, rig.leftEye, rig);
       else if (part.id === 'eye-right') geometry = expressionEye(expression, rig.rightEye, rig);
       else if (part.id === 'mouth') geometry = expressionMouth(expression, rig);
     }
-    const transforms = [poseTransform(part, pose), proportionTransform(part, rig, options.proportions), part.transform];
+    const transforms = [
+      poseTransform(part, pose),
+      proportionTransform(part, rig, options.proportions),
+      part.transform,
+    ];
     return groupWithProps(geometry, transforms, part.opacity);
   });
   for (const accessory of accessories) rendered.push(compileAccessory(accessory, rig));
@@ -188,7 +224,10 @@ function compileV2(blueprint: CharacterBlueprintV2, options: CharacterCompileOpt
   if (pristine) defaultCache.set(blueprint, result);
   if (cacheKey !== undefined) {
     let cache = variantCache.get(blueprint);
-    if (!cache) { cache = new Map(); variantCache.set(blueprint, cache); }
+    if (!cache) {
+      cache = new Map();
+      variantCache.set(blueprint, cache);
+    }
     if (cache.size >= MAX_CACHED_VARIANTS_PER_BLUEPRINT) {
       const oldest = cache.keys().next().value;
       if (oldest !== undefined) cache.delete(oldest);
@@ -233,10 +272,13 @@ export function compileCharacter(
     }
     const pose = options.pose ?? 'default';
     const expression = options.expression ?? 'neutral';
-    const composition = pose === 'default' && expression === 'neutral'
-      ? blueprint.base
-      : blueprint.variants?.find(v => v.pose === pose && v.expression === expression)?.composition;
-    if (!composition) throw new RangeError(`No authored variant for ${blueprint.species}: ${pose}/${expression}`);
+    const composition =
+      pose === 'default' && expression === 'neutral'
+        ? blueprint.base
+        : blueprint.variants?.find((v) => v.pose === pose && v.expression === expression)
+            ?.composition;
+    if (!composition)
+      throw new RangeError(`No authored variant for ${blueprint.species}: ${pose}/${expression}`);
     return compileV1(composition);
   }
   if (blueprint.schemaVersion === 2) return compileV2(blueprint, options);

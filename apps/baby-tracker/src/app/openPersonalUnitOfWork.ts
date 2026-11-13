@@ -24,7 +24,10 @@ import {
   openPlatformAppLockStore,
   type AppLockStore,
 } from '../infrastructure/security/appLockStore';
-import { resolveRemoteServicesBoundary, shouldInitializeRemoteClients } from './remoteServicesBoundary';
+import {
+  resolveRemoteServicesBoundary,
+  shouldInitializeRemoteClients,
+} from './remoteServicesBoundary';
 
 export type OpenedPersonalRuntime = {
   unitOfWork: UnitOfWorkFactory;
@@ -88,9 +91,8 @@ export async function openPersonalUnitOfWork(
         const Dexie = (await import('dexie')).default;
         await Dexie.delete(databaseName);
         await Dexie.delete(WEB_STORAGE_LIMITS.checkpointDatabaseName);
-        const { clearPersonalAttachmentStorage } = await import(
-          '../infrastructure/attachments/clearAttachmentStorage'
-        );
+        const { clearPersonalAttachmentStorage } =
+          await import('../infrastructure/attachments/clearAttachmentStorage');
         await clearPersonalAttachmentStorage();
       },
       webDb: handle.db,
@@ -134,9 +136,8 @@ export async function openPersonalUnitOfWork(
     close: () => database.close(),
     deleteDurableStore: async () => {
       await opener.delete(databaseName);
-      const { clearPersonalAttachmentStorage } = await import(
-        '../infrastructure/attachments/clearAttachmentStorage'
-      );
+      const { clearPersonalAttachmentStorage } =
+        await import('../infrastructure/attachments/clearAttachmentStorage');
       await clearPersonalAttachmentStorage();
     },
     childPrivateSyncStore,

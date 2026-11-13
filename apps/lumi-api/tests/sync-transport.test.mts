@@ -16,7 +16,9 @@ async function boot() {
   return createFamilyApi(config);
 }
 
-function op(input: Partial<SyncOperation> & Pick<SyncOperation, 'operationId' | 'actorAppUserId'>): SyncOperation {
+function op(
+  input: Partial<SyncOperation> & Pick<SyncOperation, 'operationId' | 'actorAppUserId'>,
+): SyncOperation {
   const payload = input.payload ?? { note: 'hello' };
   return {
     schemaVersion: LUMI_API_PROTOCOL_VERSION,
@@ -85,10 +87,7 @@ test('duplicate push with same hash returns original receipt; mismatched body is
     },
   });
   assert.equal(lostAckRetry.json().receipts[0].status, 'duplicate');
-  assert.equal(
-    lostAckRetry.json().receipts[0].changelogSeq,
-    first.json().receipts[0].changelogSeq,
-  );
+  assert.equal(lostAckRetry.json().receipts[0].changelogSeq, first.json().receipts[0].changelogSeq);
 
   const mismatch = await ctx.app.inject({
     method: 'POST',

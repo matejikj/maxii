@@ -117,9 +117,7 @@ function asBootstrapAppError(
     return error;
   }
   const message =
-    error instanceof Error && error.message.trim().length > 0
-      ? error.message
-      : fallbackMessage;
+    error instanceof Error && error.message.trim().length > 0 ? error.message : fallbackMessage;
   const details: Record<string, string | number | boolean | null> = { reason };
   if (error instanceof Error && typeof (error as { code?: unknown }).code === 'string') {
     details.nativeCode = (error as unknown as { code: string }).code;
@@ -135,7 +133,11 @@ function asBootstrapAppError(
 
 export function mapBootstrapOpenError(error: unknown): PersonalBootstrapResult {
   if (isAppError(error)) {
-    if (error.code === 'CRYPTO' || error.details.reason === 'keystore' || error.code === 'UNAVAILABLE') {
+    if (
+      error.code === 'CRYPTO' ||
+      error.details.reason === 'keystore' ||
+      error.code === 'UNAVAILABLE'
+    ) {
       return {
         phase: 'key_unavailable',
         profile: null,
@@ -166,12 +168,7 @@ export function mapBootstrapOpenError(error: unknown): PersonalBootstrapResult {
       phase: 'key_unavailable',
       profile: null,
       welcomePending: false,
-      error: asBootstrapAppError(
-        error,
-        'CRYPTO',
-        'Database key is unavailable',
-        'keystore',
-      ),
+      error: asBootstrapAppError(error, 'CRYPTO', 'Database key is unavailable', 'keystore'),
     };
   }
   if (/corrupt|integrity/i.test(message)) {
@@ -179,24 +176,14 @@ export function mapBootstrapOpenError(error: unknown): PersonalBootstrapResult {
       phase: 'recovery_required',
       profile: null,
       welcomePending: false,
-      error: asBootstrapAppError(
-        error,
-        'STORAGE',
-        'Database requires recovery',
-        'storage_corrupt',
-      ),
+      error: asBootstrapAppError(error, 'STORAGE', 'Database requires recovery', 'storage_corrupt'),
     };
   }
   return {
     phase: 'database_error',
     profile: null,
     welcomePending: false,
-    error: asBootstrapAppError(
-      error,
-      'STORAGE',
-      'Local database failed to open',
-      'database_open',
-    ),
+    error: asBootstrapAppError(error, 'STORAGE', 'Local database failed to open', 'database_open'),
   };
 }
 

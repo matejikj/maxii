@@ -114,13 +114,20 @@ test('app motif persists across reopening without changing guide or motion prefe
   await setGuideSpecies(native.unitOfWork, 'fox');
   await setCharacterMotionEnabled(native.unitOfWork, false);
   await setAppMotif(native.unitOfWork, 'garden');
-  assert.equal((await loadPersonalPreferences(native.unitOfWork, 'Europe/Prague')).appMotif, 'garden');
+  assert.equal(
+    (await loadPersonalPreferences(native.unitOfWork, 'Europe/Prague')).appMotif,
+    'garden',
+  );
   await setAppMotif(native.unitOfWork, 'playground');
   await assert.rejects(() => setAppMotif(native.unitOfWork, 'ocean' as AppMotif), /Neznámý motiv/);
   await native.close();
   const reopened = await openPrivateDatabase({
-    databaseName: native.databaseName, opener: native.opener, keyStore: native.keyStore,
-    presence: native.presence, checkpointStore: createMemoryCheckpointStore(), now: { epochMs: native.clock },
+    databaseName: native.databaseName,
+    opener: native.opener,
+    keyStore: native.keyStore,
+    presence: native.presence,
+    checkpointStore: createMemoryCheckpointStore(),
+    now: { epochMs: native.clock },
   });
   const unitOfWork = createNativeUnitOfWorkFactory(reopened, { nowMs: () => native.clock });
   const prefs = await loadPersonalPreferences(unitOfWork, 'Europe/Prague');

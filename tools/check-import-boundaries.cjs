@@ -23,7 +23,10 @@ const FORBIDDEN_IN_DOMAIN = [
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (['node_modules', '.expo', 'lib', 'android', 'ios'].includes(entry.name) || entry.name.startsWith('dist-')) {
+    if (
+      ['node_modules', '.expo', 'lib', 'android', 'ios'].includes(entry.name) ||
+      entry.name.startsWith('dist-')
+    ) {
       continue;
     }
     const file = path.join(dir, entry.name);
@@ -34,7 +37,9 @@ function walk(dir, out = []) {
 }
 
 function importsIn(source) {
-  return [...source.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"]([^'"]+)['"]/g)].map((m) => m[1]);
+  return [
+    ...source.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"]([^'"]+)['"]/g),
+  ].map((m) => m[1]);
 }
 
 function findDomainViolations(files) {
@@ -66,10 +71,7 @@ function findFrameworkAppViolations(files) {
 function selfTest() {
   const domainBad = findDomainViolations([]);
   assert.deepEqual(domainBad, []);
-  const syntheticDomain = findDomainViolations.call(
-    null,
-    [],
-  );
+  const syntheticDomain = findDomainViolations.call(null, []);
   // Inline synthetic scan without writing files:
   const fakeDomainSource = "import React from 'react';\nexport const x = 1;\n";
   const fakePath = path.join(root, 'apps/baby-tracker/src/domain/__synthetic__.ts');

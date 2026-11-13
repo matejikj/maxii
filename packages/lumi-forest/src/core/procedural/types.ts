@@ -1,16 +1,37 @@
 import type { LumiDensity, LumiScene, LumiAnimal } from '../types';
-import type { CharacterAccessory, CharacterExpression, CharacterPose, CharacterProportions } from '../characters/blueprint';
+import type {
+  CharacterAccessory,
+  CharacterExpression,
+  CharacterPose,
+  CharacterProportions,
+} from '../characters/blueprint';
 import type { ViewportSize } from '../layout/viewport';
 import type { SceneDocument, VectorNode } from '../vector/types';
 
 /** All measurements are in logical DP relative to the background View, not physical pixels. */
-export interface Rect { readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+export interface Rect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
 export interface SafeZone extends Rect {
   readonly id: string;
   /** Additional clearance around content, defaults to 8dp. */
   readonly padding?: number;
 }
-export type ProceduralKind = 'character' | 'cloud' | 'star' | 'sprig' | 'grass' | 'flower' | 'mushroom' | 'bush' | 'stone' | 'sun' | 'moon';
+export type ProceduralKind =
+  | 'character'
+  | 'cloud'
+  | 'star'
+  | 'sprig'
+  | 'grass'
+  | 'flower'
+  | 'mushroom'
+  | 'bush'
+  | 'stone'
+  | 'sun'
+  | 'moon';
 export type ProceduralLayerId = 'sky' | 'plants' | 'objects' | 'microdetails' | 'character';
 
 export interface ProceduralSceneConfig {

@@ -183,9 +183,7 @@ export function createChildPrivateProject(input: {
       details: { reason: 'child_mode_inactive' },
     });
   }
-  const steps = input.template
-    ? stepsFromTemplate(input.template, input.createStepId)
-    : [];
+  const steps = input.template ? stepsFromTemplate(input.template, input.createStepId) : [];
   if (steps.length > PROJECT_LIMITS.maxSteps) {
     throw new AppError('VALIDATION', 'Too many project steps', {
       details: { reason: 'step_count' },
@@ -380,9 +378,7 @@ export function markProjectStep(
   revisionId: RevisionId,
   now: Instant,
 ): Project {
-  const steps = project.steps.map((step) =>
-    step.stepId === stepId ? { ...step, status } : step,
-  );
+  const steps = project.steps.map((step) => (step.stepId === stepId ? { ...step, status } : step));
   if (!steps.some((step) => step.stepId === stepId)) {
     throw new AppError('NOT_FOUND', 'Project step was not found', {
       details: { reason: 'step_missing' },

@@ -71,8 +71,7 @@ export function selectDailyOffers(
   return {
     offers,
     rejected,
-    emptyReasonCodes:
-      offers.length === 0 ? emptyReasonsFromRejected(rejected, context) : [],
+    emptyReasonCodes: offers.length === 0 ? emptyReasonsFromRejected(rejected, context) : [],
   };
 }
 
@@ -108,10 +107,7 @@ function rankCandidate(
     reasonCodes.push('favorite_boost');
   }
 
-  if (
-    context.lastPrimaryArea != null &&
-    candidate.primaryArea !== context.lastPrimaryArea
-  ) {
+  if (context.lastPrimaryArea != null && candidate.primaryArea !== context.lastPrimaryArea) {
     score += 15;
     reasonCodes.push('diversity_area');
   }

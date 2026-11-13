@@ -1,11 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import {
-  LUMI_API_PROTOCOL_VERSION,
-  type AppUserId,
-  type FamilyId,
-} from '@lumi/contracts';
+import { LUMI_API_PROTOCOL_VERSION, type AppUserId, type FamilyId } from '@lumi/contracts';
 import { loadApiConfig } from '../src/config/env.ts';
 import { createFamilyApi } from '../src/http/createServer.ts';
 import {
@@ -14,7 +10,10 @@ import {
   buildLogicalBackupPayload,
 } from '../src/backup/logicalExport.ts';
 import { createMemoryErasureRegistry } from '../src/backup/erasureRegistry.ts';
-import { restoreOpsHostWithErasureGate, keepLiveStateOnBackupFailure } from '../src/backup/restorePipeline.ts';
+import {
+  restoreOpsHostWithErasureGate,
+  keepLiveStateOnBackupFailure,
+} from '../src/backup/restorePipeline.ts';
 import { runDailyBackupJob, runRetentionPruneJob } from '../src/backup/jobs.ts';
 import { eraseFamilyWithDurableRegistry } from '../src/backup/eraseFamilyService.ts';
 import { MemoryFamilyStore } from '../src/identity/store.ts';
@@ -126,7 +125,10 @@ test('erased family stays erased after ops restore when registry is applied firs
     registry: await registry.load(),
     now: '2026-11-09T02:00:00.000Z',
   });
-  assert.equal(restored.families.find((f) => f.familyId === 'fam-erased')?.erasedAt, '2026-11-08T00:00:00.000Z');
+  assert.equal(
+    restored.families.find((f) => f.familyId === 'fam-erased')?.erasedAt,
+    '2026-11-08T00:00:00.000Z',
+  );
   assert.equal(restored.families.find((f) => f.familyId === 'fam-live')?.erasedAt, null);
   assert.equal(restored.apiOpen, true);
 });

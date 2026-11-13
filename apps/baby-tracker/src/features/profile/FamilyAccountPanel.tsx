@@ -7,9 +7,7 @@ import {
 } from '../../app/remoteServicesBoundary';
 import { BootstrapContext } from '../../app/session/BootstrapContext';
 import { syncActiveFamilyForPhotoTransfer } from '../../application/syncActiveFamilyForPhotoTransfer';
-import {
-  createBrowserFamilyAuthPort,
-} from '../../infrastructure/family/browserFamilyAuthPort';
+import { createBrowserFamilyAuthPort } from '../../infrastructure/family/browserFamilyAuthPort';
 import {
   createDisabledFamilyAuthPort,
   credentialsFromFamilyAuthSession,
@@ -142,9 +140,7 @@ export function FamilyAccountPanel() {
           throw new Error('Systémový prohlížeč není dostupný pro přihlášení.');
         }
         await Linking.openURL(authorizationUrl);
-        setMessage(
-          `Přihlášení otevřeno. Po návratu dokončete stav ${state.slice(0, 8)}…`,
-        );
+        setMessage(`Přihlášení otevřeno. Po návratu dokončete stav ${state.slice(0, 8)}…`);
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Přihlášení selhalo');
@@ -221,9 +217,7 @@ export function FamilyAccountPanel() {
               </LumiText>
             ) : null}
             {membershipSelection?.kind === 'single' ? (
-              <LumiText>
-                Aktivní rodina: {membershipSelection.familyId.slice(0, 8)}…
-              </LumiText>
+              <LumiText>Aktivní rodina: {membershipSelection.familyId.slice(0, 8)}…</LumiText>
             ) : null}
             {membershipSelection?.kind === 'choice_required' ? (
               <View style={styles.block}>
@@ -249,7 +243,9 @@ export function FamilyAccountPanel() {
                 Přenos fotografií cílí na {activeFamilyId.slice(0, 8)}…
               </LumiText>
             ) : (
-              <LumiText tone="muted">Přenos fotografií je vypnutý, dokud není aktivní rodina.</LumiText>
+              <LumiText tone="muted">
+                Přenos fotografií je vypnutý, dokud není aktivní rodina.
+              </LumiText>
             )}
           </View>
         ) : null}

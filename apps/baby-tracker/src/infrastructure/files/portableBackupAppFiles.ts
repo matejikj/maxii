@@ -10,8 +10,7 @@ export {
 } from './portableBackupAppPaths';
 
 export type PortableBackupSidecarResult =
-  | { ok: true; uri: string }
-  | { ok: false; code: 'unavailable' | 'failed'; message: string };
+  { ok: true; uri: string } | { ok: false; code: 'unavailable' | 'failed'; message: string };
 
 /**
  * Persists the sealed envelope under the app document directory so caregivers

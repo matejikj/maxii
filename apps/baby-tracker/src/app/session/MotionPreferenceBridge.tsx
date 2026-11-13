@@ -6,8 +6,6 @@ import { usePersonalPreferences } from './PreferencesContext';
 export function MotionPreferenceBridge({ children }: { children: ReactNode }) {
   const { preferences } = usePersonalPreferences();
   return (
-    <LumiMotionProvider enabled={preferences.characterMotionEnabled}>
-      {children}
-    </LumiMotionProvider>
+    <LumiMotionProvider enabled={preferences.characterMotionEnabled}>{children}</LumiMotionProvider>
   );
 }

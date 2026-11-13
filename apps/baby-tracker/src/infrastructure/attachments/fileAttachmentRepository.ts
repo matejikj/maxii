@@ -70,7 +70,9 @@ export function createFileAttachmentRepository(): AttachmentRepository {
     },
     async save(attachment) {
       const snapshot = await load();
-      const next = snapshot.attachments.filter((row) => row.attachmentId !== attachment.attachmentId);
+      const next = snapshot.attachments.filter(
+        (row) => row.attachmentId !== attachment.attachmentId,
+      );
       next.push(attachment);
       await saveSnapshot({ ...snapshot, attachments: next });
     },

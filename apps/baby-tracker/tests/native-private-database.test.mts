@@ -135,7 +135,9 @@ test('commit fault rolls back care and receipt together', async () => {
     (error: unknown) => error instanceof AppError && error.details.reason === 'storage_commit',
   );
 
-  const loaded = await createNativeUnitOfWorkFactory(db).run((uow) => uow.care.getById(event.eventId));
+  const loaded = await createNativeUnitOfWorkFactory(db).run((uow) =>
+    uow.care.getById(event.eventId),
+  );
   const receipt = await createNativeUnitOfWorkFactory(db).run((uow) =>
     uow.revisions.findReceipt(asOperationId('op_2')),
   );
@@ -176,8 +178,7 @@ test('ciphertext stays unreadable without the key and lost keys do not reset', a
         now,
         assertCipher: async () => '4.5.0-test',
       }),
-    (error: unknown) =>
-      error instanceof EncryptedDatabaseError && error.code === 'KEY_REQUIRED',
+    (error: unknown) => error instanceof EncryptedDatabaseError && error.code === 'KEY_REQUIRED',
   );
 });
 
@@ -342,9 +343,8 @@ test('native UnitOfWork persists photo attachment metadata in SQLCipher tables',
     '{}',
   );
   const unitOfWork = createNativeUnitOfWorkFactory(db, { nowMs: () => now.epochMs });
-  const { asAttachmentId, asRenditionId, asAttachmentJobId } = await import(
-    '../src/domain/attachments/types.ts'
-  );
+  const { asAttachmentId, asRenditionId, asAttachmentJobId } =
+    await import('../src/domain/attachments/types.ts');
   const attachment = {
     attachmentId: asAttachmentId('att_1'),
     childId,

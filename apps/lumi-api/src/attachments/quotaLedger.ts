@@ -40,8 +40,7 @@ export function createFamilyAttachmentQuotaLedger(input?: {
 }) {
   const budgetBytes = input?.budgetBytes ?? FAMILY_ATTACHMENT_QUOTA.familyBudgetBytes;
   const pendingBudget =
-    input?.pendingReservationBudgetBytes ??
-    FAMILY_ATTACHMENT_QUOTA.pendingReservationBudgetBytes;
+    input?.pendingReservationBudgetBytes ?? FAMILY_ATTACHMENT_QUOTA.pendingReservationBudgetBytes;
   const byFamily = new Map<string, FamilyQuotaState>();
   const locks = new Map<string, Promise<void>>();
 

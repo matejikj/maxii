@@ -1,9 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
-import {
-  LUMI_AUTH_MODE_VERSION,
-  type AppUserId,
-} from '@lumi/contracts';
+import { LUMI_AUTH_MODE_VERSION, type AppUserId } from '@lumi/contracts';
 import type { ApiConfig } from '../config/env.ts';
 import type { MemoryFamilyStore } from '../identity/store.ts';
 import { apiError } from '../http/errors.ts';
@@ -30,9 +27,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     version: LUMI_AUTH_MODE_VERSION,
     mode: 'oidc_keycloak_v1',
     approvedOrigins: config.corsOrigins,
-    nativeRedirectSchemes: config.allowedRedirectUris.filter((item) =>
-      item.includes('://'),
-    ),
+    nativeRedirectSchemes: config.allowedRedirectUris.filter((item) => item.includes('://')),
     recoveryUrl: oidc.recoveryUrl(),
   }));
 
@@ -182,7 +177,11 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       const codeChallenge = query.code_challenge?.trim() ?? '';
       const state = query.state?.trim() ?? '';
       if (!redirectUri || !codeChallenge || !state) {
-        const err = apiError('validation', 'Mock authorize requires redirect and PKCE', String(request.id));
+        const err = apiError(
+          'validation',
+          'Mock authorize requires redirect and PKCE',
+          String(request.id),
+        );
         return reply.code(err.status).send(err.body);
       }
       const code = oidc.issueMockAuthorizationCode({

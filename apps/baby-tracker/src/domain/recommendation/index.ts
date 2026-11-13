@@ -5,10 +5,7 @@ export type {
   SuitabilityConditionLike,
 } from './candidate';
 export { evaluateEligibility } from './eligibility';
-export {
-  checkRecommendationSetValidity,
-  type InvalidationCheck,
-} from './invalidate';
+export { checkRecommendationSetValidity, type InvalidationCheck } from './invalidate';
 export {
   isActiveDailySet,
   markRecommendationHidden,
@@ -19,10 +16,7 @@ export {
   type OfferPresentation,
 } from './lifecycle';
 export { selectDailyOffers } from './ranking';
-export {
-  RECOMMENDATION_REASON_COPY_CS,
-  reasonCopyCs,
-} from './reasonCopy';
+export { RECOMMENDATION_REASON_COPY_CS, reasonCopyCs } from './reasonCopy';
 export {
   RECOMMENDATION_RULES_VERSION,
   type EligibilityDecision,

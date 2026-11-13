@@ -12,8 +12,7 @@ export function registerPublicServiceWorker(): void {
     .register('/sw.js', { scope: '/', updateViaCache: 'none' })
     .then((registration) => {
       // Expose registration outcome for offline readiness probes in tests.
-      (globalThis as { __lumiPublicSw?: ServiceWorkerRegistration }).__lumiPublicSw =
-        registration;
+      (globalThis as { __lumiPublicSw?: ServiceWorkerRegistration }).__lumiPublicSw = registration;
     })
     .catch(() => {
       // Offline-first still works from the native install path; web SW is best-effort.

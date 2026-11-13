@@ -41,7 +41,7 @@ test('optional Compose Postgres reachability does not claim live restore', async
   const adminUrl =
     process.env.LUMI_DATABASE_ADMIN_URL ??
     'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app';
-  let reachable = false;
+  let reachable: boolean;
   try {
     const pg = await import('pg');
     const client = new pg.default.Client({

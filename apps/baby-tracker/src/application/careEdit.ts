@@ -111,8 +111,7 @@ export function buildEditCareCommand(input: {
         activityRevisionId: event.activityRevisionId,
         note: patch?.note !== undefined ? patch.note : event.note,
         reaction: patch?.reaction !== undefined ? patch.reaction : (event.reaction ?? null),
-        difficulty:
-          patch?.difficulty !== undefined ? patch.difficulty : (event.difficulty ?? null),
+        difficulty: patch?.difficulty !== undefined ? patch.difficulty : (event.difficulty ?? null),
       };
     case 'milestone':
       return {

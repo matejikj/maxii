@@ -86,10 +86,7 @@ test('photo transfer runtime stays cold in personal mode and enqueues only with 
   };
   runtime.enqueueLocalUploads([attachment]);
   assert.equal(runtime.getJobs().length, 0);
-  assert.equal(
-    runtime.labelFor({ attachment }),
-    'local_only',
-  );
+  assert.equal(runtime.labelFor({ attachment }), 'local_only');
 
   runtime.setSession({
     familySyncConfigured: true,

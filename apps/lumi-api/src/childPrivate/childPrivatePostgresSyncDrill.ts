@@ -60,13 +60,7 @@ export async function runChildPrivatePostgresSyncDrill(input: {
       `select table_name from information_schema.tables
        where table_schema = 'public'
          and table_name = any($1::text[])`,
-      [
-        [
-          'child_private_sync_ledger',
-          'child_private_sync_state',
-          'child_private_sync_operation',
-        ],
-      ],
+      [['child_private_sync_ledger', 'child_private_sync_state', 'child_private_sync_operation']],
     );
     const names = new Set(tables.rows.map((row) => row.table_name as string));
     const schemaOk =
@@ -106,15 +100,7 @@ export async function runChildPrivatePostgresSyncDrill(input: {
          ($1, $2, $3, 'admin', 'active'),
          ($4, $2, $5, 'caregiver', 'active'),
          ($6, $2, $7, 'caregiver', 'active')`,
-      [
-        randomUUID(),
-        familyId,
-        parentAdmin,
-        randomUUID(),
-        namedParent,
-        randomUUID(),
-        sibling,
-      ],
+      [randomUUID(), familyId, parentAdmin, randomUUID(), namedParent, randomUUID(), sibling],
     );
     await admin.query('commit');
     cases.push({
@@ -193,13 +179,10 @@ export async function runChildPrivatePostgresSyncDrill(input: {
     });
     cases.push({
       name: 'owner_push_accepted',
-      ok:
-        push.receipts.length === 2 &&
-        push.receipts.every((row) => row.status === 'accepted'),
-      detail:
-        push.receipts.every((row) => row.status === 'accepted')
-          ? 'owner accepted project + share into durable ledger'
-          : `receipts=${push.receipts.map((row) => row.status).join(',')}`,
+      ok: push.receipts.length === 2 && push.receipts.every((row) => row.status === 'accepted'),
+      detail: push.receipts.every((row) => row.status === 'accepted')
+        ? 'owner accepted project + share into durable ledger'
+        : `receipts=${push.receipts.map((row) => row.status).join(',')}`,
     });
 
     const ownerPull = await store.pull({
@@ -211,14 +194,11 @@ export async function runChildPrivatePostgresSyncDrill(input: {
       ok:
         ownerPull.entries.length === 2 &&
         ownerPull.entries.some(
-          (row) =>
-            row.kind === 'child_private.project.upsert' &&
-            row.payload.reflection === secret,
+          (row) => row.kind === 'child_private.project.upsert' && row.payload.reflection === secret,
         ),
-      detail:
-        ownerPull.entries.some((row) => row.payload.reflection === secret)
-          ? 'owner reads durable project with reflection'
-          : 'owner pull missed reflection',
+      detail: ownerPull.entries.some((row) => row.payload.reflection === secret)
+        ? 'owner reads durable project with reflection'
+        : 'owner pull missed reflection',
     });
 
     const adminPull = await store.pull({
@@ -323,6 +303,5 @@ export async function runChildPrivatePostgresSyncDrill(input: {
 
 export const LOCAL_CHILD_PRIVATE_POSTGRES_SYNC_DRILL_DEFAULTS = {
   databaseUrl: 'postgres://lumi_app:lumi_app_dev_only@127.0.0.1:5433/lumi_app',
-  adminDatabaseUrl:
-    'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
+  adminDatabaseUrl: 'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
 } as const;

@@ -29,11 +29,7 @@ export type PhotoProcessor = {
 };
 
 export type PrivateAttachmentBlobStore = {
-  writeDurable(input: {
-    blobKey: string;
-    bytes: Uint8Array;
-    aad: string;
-  }): Promise<void>;
+  writeDurable(input: { blobKey: string; bytes: Uint8Array; aad: string }): Promise<void>;
   readDurable(input: { blobKey: string; aad: string }): Promise<Uint8Array>;
   deleteDurable(blobKey: string): Promise<void>;
   hasDurable(blobKey: string): Promise<boolean>;

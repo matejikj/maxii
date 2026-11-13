@@ -48,11 +48,19 @@ export function validateActivityRevision(raw: unknown): {
   const activityId = requireString(value.activityId, 'activityId', errors);
   const revisionId = requireString(value.revisionId, 'revisionId', errors);
   if (value.language !== 'cs') {
-    errors.push({ path: 'language', code: 'language', message: 'Only Czech (cs) content is supported in v1.' });
+    errors.push({
+      path: 'language',
+      code: 'language',
+      message: 'Only Czech (cs) content is supported in v1.',
+    });
   }
   const title = requireString(value.title, 'title', errors);
   if (title && title.length > 80) {
-    errors.push({ path: 'title', code: 'title_length', message: 'Title must be at most 80 characters.' });
+    errors.push({
+      path: 'title',
+      code: 'title_length',
+      message: 'Title must be at most 80 characters.',
+    });
   }
 
   const ageMonths = parseAge(value.ageMonths, errors);
@@ -151,8 +159,7 @@ export function validateActivityRevision(raw: unknown): {
     language: 'cs',
     title: title!,
     ageMonths: ageMonths!,
-    readinessNotes:
-      value.readinessNotes == null ? null : String(value.readinessNotes),
+    readinessNotes: value.readinessNotes == null ? null : String(value.readinessNotes),
     environments: environments!,
     materials,
     constraints,
@@ -248,17 +255,19 @@ function parseStringArray(value: unknown, path: string, errors: FieldValidationE
     errors.push({ path, code: 'array', message: `${path} must be an array.` });
     return [];
   }
-  return value.map((item, index) => {
-    if (typeof item !== 'string' || !item.trim()) {
-      errors.push({
-        path: `${path}[${index}]`,
-        code: 'array_string',
-        message: `${path} entries must be non-empty strings.`,
-      });
-      return '';
-    }
-    return item.trim();
-  }).filter(Boolean);
+  return value
+    .map((item, index) => {
+      if (typeof item !== 'string' || !item.trim()) {
+        errors.push({
+          path: `${path}[${index}]`,
+          code: 'array_string',
+          message: `${path} entries must be non-empty strings.`,
+        });
+        return '';
+      }
+      return item.trim();
+    })
+    .filter(Boolean);
 }
 
 function parseDuration(value: unknown, errors: FieldValidationError[]): ContentDuration | null {
@@ -538,9 +547,7 @@ function parseEditorial(value: unknown, errors: FieldValidationError[]) {
       typeof event.author !== 'string' ||
       typeof event.note !== 'string' ||
       typeof event.atMs !== 'number' ||
-      (event.outcome !== 'passed' &&
-        event.outcome !== 'rejected' &&
-        event.outcome !== 'withdrawn')
+      (event.outcome !== 'passed' && event.outcome !== 'rejected' && event.outcome !== 'withdrawn')
     ) {
       errors.push({
         path: `editorial.history[${index}]`,

@@ -1,10 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  evaluateFamilyReleaseGate,
-  type FamilyReleaseGateResult,
-} from './familyReleaseGate.ts';
+import { evaluateFamilyReleaseGate, type FamilyReleaseGateResult } from './familyReleaseGate.ts';
 import { parseOperationsOwners } from './owners.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -61,7 +58,6 @@ export function loadFamilyReleaseGateFromDeploy(
     offHostProbeConfigured: options.offHostProbeConfigured === true,
     metricsModuleLoaded: true,
     alertsModuleLoaded: true,
-    personalTrackerStaysColdWithoutApi:
-      options.personalTrackerStaysColdWithoutApi !== false,
+    personalTrackerStaysColdWithoutApi: options.personalTrackerStaysColdWithoutApi !== false,
   });
 }

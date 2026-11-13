@@ -18,7 +18,11 @@ export const WEB_STORAGE_LIMITS = {
   lockDatabaseName: 'lumi-web-diary-locks',
   /** Logical recovery points live outside the live diary so replace-import cannot erase them. */
   checkpointDatabaseName: 'lumi-web-logical-checkpoints',
-  supportedBrowsers: ['Safari (current macOS/iOS)', 'Chrome (current desktop)', 'Firefox (current desktop)'],
+  supportedBrowsers: [
+    'Safari (current macOS/iOS)',
+    'Chrome (current desktop)',
+    'Firefox (current desktop)',
+  ],
 } as const;
 
 export type WebStorageCapabilityReport = {
@@ -38,8 +42,7 @@ export async function probeWebStorageCapabilities(
     indexedDb?: IDBFactory | null;
   } = {},
 ): Promise<WebStorageCapabilityReport> {
-  const indexedDb =
-    options.indexedDb ?? (typeof indexedDB !== 'undefined' ? indexedDB : null);
+  const indexedDb = options.indexedDb ?? (typeof indexedDB !== 'undefined' ? indexedDB : null);
   const indexedDbAvailable = indexedDb != null;
 
   let persistenceGranted: boolean | null = null;
@@ -91,7 +94,9 @@ export async function probeWebStorageCapabilities(
 }
 
 /** Refuse to place diary secrets in URL or localStorage — those are not vaults. */
-export function assertNoSensitiveWebSideChannel(target: 'localStorage' | 'sessionStorage' | 'url'): void {
+export function assertNoSensitiveWebSideChannel(
+  target: 'localStorage' | 'sessionStorage' | 'url',
+): void {
   throw new Error(
     `Refusing to store diary secrets in ${target}; use IndexedDB diary records or an explicit encrypted export instead.`,
   );

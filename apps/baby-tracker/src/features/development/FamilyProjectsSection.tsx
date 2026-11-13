@@ -1,7 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
-import { asEntityId, type ChildId, type PortfolioItem, type ProjectTemplateRevision } from '../../domain';
+import {
+  LumiButton,
+  LumiCard,
+  LumiInput,
+  LumiText,
+  useLumiTheme,
+} from '@lumi/forest-design/native';
+import {
+  asEntityId,
+  type ChildId,
+  type PortfolioItem,
+  type ProjectTemplateRevision,
+} from '../../domain';
 import {
   addPortfolioSelection,
   createFamilyGuidedBlankIdea,
@@ -476,11 +487,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             onPress={() => setBlankStyle('ownBrief')}
           />
         </View>
-        <LumiInput
-          label="Název"
-          value={blankTitle}
-          onChangeText={setBlankTitle}
-        />
+        <LumiInput label="Název" value={blankTitle} onChangeText={setBlankTitle} />
         <LumiInput
           label="Záměr (volitelné)"
           value={blankIntent}
@@ -796,7 +803,11 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
               disabled={busy}
             />
           ) : null}
-          <LumiButton title="Zpět na seznam" variant="secondary" onPress={() => setSelectedId(null)} />
+          <LumiButton
+            title="Zpět na seznam"
+            variant="secondary"
+            onPress={() => setSelectedId(null)}
+          />
         </View>
         {error ? <LumiText tone="muted">{error}</LumiText> : null}
       </LumiCard>
@@ -820,9 +831,7 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
               testID={`family-today-${row.project.projectId}`}
             >
               <LumiText>{row.project.title}</LumiText>
-              <LumiText tone="muted">
-                {row.nextStepText ?? 'Pokračovat vlastním tempem'}
-              </LumiText>
+              <LumiText tone="muted">{row.nextStepText ?? 'Pokračovat vlastním tempem'}</LumiText>
             </Pressable>
           ))
         )}
@@ -830,7 +839,9 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
 
       <LumiCard style={{ gap: 14, borderRadius: 25 }} testID="family-projects-section">
         <DevelopmentHeading title={PRODUCT_COPY.development.familyProjects} icon="experience" />
-        <LumiText variant="caption" tone="muted">{PRODUCT_COPY.development.familyProjectsHint}</LumiText>
+        <LumiText variant="caption" tone="muted">
+          {PRODUCT_COPY.development.familyProjectsHint}
+        </LumiText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {(
             [
@@ -849,9 +860,13 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
           ))}
         </View>
         {shelfRows.length === 0 ? (
-          <LumiText tone="muted">{shelf === 'active' ? PRODUCT_COPY.empty.noFamilyProjects
-            : shelf === 'paused' ? 'Žádné odložené projekty. Až si dáte pauzu, najdete je tady.'
-              : 'Žádné uzavřené projekty. Vaše společné vzpomínky tu zůstanou.'}</LumiText>
+          <LumiText tone="muted">
+            {shelf === 'active'
+              ? PRODUCT_COPY.empty.noFamilyProjects
+              : shelf === 'paused'
+                ? 'Žádné odložené projekty. Až si dáte pauzu, najdete je tady.'
+                : 'Žádné uzavřené projekty. Vaše společné vzpomínky tu zůstanou.'}
+          </LumiText>
         ) : (
           shelfRows.map((row) => (
             <Pressable
@@ -863,7 +878,16 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
             >
               <LumiText>{row.project.title}</LumiText>
               <LumiText tone="muted">
-                {row.scopeLabel} · {{ active: 'Aktivní', paused: 'Odložený', closed: 'Uzavřený', idea: 'Nápad', archived: 'Archivovaný' }[row.project.status]}
+                {row.scopeLabel} ·{' '}
+                {
+                  {
+                    active: 'Aktivní',
+                    paused: 'Odložený',
+                    closed: 'Uzavřený',
+                    idea: 'Nápad',
+                    archived: 'Archivovaný',
+                  }[row.project.status]
+                }
                 {row.cohort !== 'blank' ? ` · ${row.cohort}` : ''}
               </LumiText>
             </Pressable>
@@ -887,27 +911,33 @@ export function FamilyProjectsSection({ childId }: FamilyProjectsSectionProps) {
           }}
           disabled={busy || !runtime?.unitOfWork}
         />
-        <LumiText variant="caption" tone="muted">U vlastního nápadu si můžete zvolit i varianty nebo vlastní zadání.</LumiText>
+        <LumiText variant="caption" tone="muted">
+          U vlastního nápadu si můžete zvolit i varianty nebo vlastní zadání.
+        </LumiText>
         {error ? <LumiText tone="muted">{error}</LumiText> : null}
       </LumiCard>
 
       <LumiCard style={{ gap: 12, borderRadius: 25 }} testID="self-management-prep">
-        <LumiButton title={PRODUCT_COPY.development.selfManagementTitle} variant="ghost"
-          accessibilityState={{ expanded: preparationOpen }} onPress={() => setPreparationOpen((value) => !value)} />
-        {preparationOpen ? <View style={{ gap: 10 }}>
-        <LumiText tone="muted">{selfManagement.headline}</LumiText>
-        <LumiText tone="muted">{selfManagement.detail}</LumiText>
-        {selfManagement.previewItems.map((item) => (
-          <LumiText key={item} tone="muted">
-            · {item}
-          </LumiText>
-        ))}
-        {!selfManagement.familyHistoryAutoTransfer ? (
-          <LumiText tone="muted">
-            Cizí rodinná historie se nepřevádí automaticky.
-          </LumiText>
+        <LumiButton
+          title={PRODUCT_COPY.development.selfManagementTitle}
+          variant="ghost"
+          accessibilityState={{ expanded: preparationOpen }}
+          onPress={() => setPreparationOpen((value) => !value)}
+        />
+        {preparationOpen ? (
+          <View style={{ gap: 10 }}>
+            <LumiText tone="muted">{selfManagement.headline}</LumiText>
+            <LumiText tone="muted">{selfManagement.detail}</LumiText>
+            {selfManagement.previewItems.map((item) => (
+              <LumiText key={item} tone="muted">
+                · {item}
+              </LumiText>
+            ))}
+            {!selfManagement.familyHistoryAutoTransfer ? (
+              <LumiText tone="muted">Cizí rodinná historie se nepřevádí automaticky.</LumiText>
+            ) : null}
+          </View>
         ) : null}
-        </View> : null}
       </LumiCard>
 
       <LumiCard style={{ gap: 14, borderRadius: 25 }} testID="parent-suggestions-section">

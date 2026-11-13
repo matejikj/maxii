@@ -92,8 +92,7 @@ export function filterPortfolioForChildPrivateExport(input: {
 }): PortfolioItem[] {
   return input.items.filter(
     (item) =>
-      item.ownerAppUserId === input.ownerAppUserId &&
-      input.exportedProjectIds.has(item.projectId),
+      item.ownerAppUserId === input.ownerAppUserId && input.exportedProjectIds.has(item.projectId),
   );
 }
 

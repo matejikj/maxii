@@ -78,8 +78,5 @@ test('migration report never claims a physical-device move', async () => {
     personalWritableWithoutApi: true,
   });
   assert.equal(report.physicalDeviceMigrationClaimed, false);
-  assert.equal(
-    JSON.stringify(report).includes('"physicalDeviceMigrationClaimed":true'),
-    false,
-  );
+  assert.equal(JSON.stringify(report).includes('"physicalDeviceMigrationClaimed":true'), false);
 });

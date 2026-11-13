@@ -86,8 +86,7 @@ export async function createFamilyApi(
 ): Promise<CreatedApi> {
   const store = new MemoryFamilyStore();
   const sync = new MemorySyncStore();
-  const childPrivateSync =
-    options.childPrivateSync ?? new MemoryChildPrivateSyncStore();
+  const childPrivateSync = options.childPrivateSync ?? new MemoryChildPrivateSyncStore();
   // Explicit provider only — never infer Postgres just because a store was injected.
   const childPrivateSyncProvider = options.childPrivateSyncProvider ?? 'memory';
   const tokens = new AccessTokenVerifier(config, store);
@@ -136,13 +135,9 @@ export async function createFamilyApi(
       done(null, body);
     },
   );
-  app.addContentTypeParser(
-    'image/jpeg',
-    { parseAs: 'buffer' },
-    (_request, body, done) => {
-      done(null, body);
-    },
-  );
+  app.addContentTypeParser('image/jpeg', { parseAs: 'buffer' }, (_request, body, done) => {
+    done(null, body);
+  });
 
   registerAuthRoutes(app, { config, store, sessions, oidc });
   registerFamilyRoutes(app, { config, store, tokens, sessions });
@@ -234,17 +229,19 @@ export async function createFamilyApi(
   });
 
   app.get('/v1/me', async (request, reply) => {
-    const usesBearer = typeof request.headers.authorization === 'string'
-      && request.headers.authorization.startsWith('Bearer ');
+    const usesBearer =
+      typeof request.headers.authorization === 'string' &&
+      request.headers.authorization.startsWith('Bearer ');
     // Cookie BFF sessions must list memberships too; bearer stays the native path.
     if (usesBearer) {
       const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
       if (!auth.ok) {
-        const code = auth.reason === 'token_expired'
-          ? 'token_expired'
-          : auth.reason === 'issuer_rejected'
-            ? 'issuer_rejected'
-            : 'unauthorized';
+        const code =
+          auth.reason === 'token_expired'
+            ? 'token_expired'
+            : auth.reason === 'issuer_rejected'
+              ? 'issuer_rejected'
+              : 'unauthorized';
         const err = apiError(code, 'Authentication required', String(request.id));
         return reply.code(err.status).send(err.body);
       }
@@ -282,22 +279,26 @@ export async function createFamilyApi(
   });
 
   app.post('/v1/families', async (request, reply) => {
-    const usesBearer = typeof request.headers.authorization === 'string'
-      && request.headers.authorization.startsWith('Bearer ');
+    const usesBearer =
+      typeof request.headers.authorization === 'string' &&
+      request.headers.authorization.startsWith('Bearer ');
     const cookieHeader = request.headers.cookie ?? '';
-    if (!verifyCsrfDoubleSubmit({
-      method: request.method,
-      cookieToken: readCookie(cookieHeader, config.csrfCookieName),
-      headerToken: typeof request.headers['x-csrf-token'] === 'string'
-        ? request.headers['x-csrf-token']
-        : undefined,
-      usesBearerAuth: usesBearer,
-    })) {
+    if (
+      !verifyCsrfDoubleSubmit({
+        method: request.method,
+        cookieToken: readCookie(cookieHeader, config.csrfCookieName),
+        headerToken:
+          typeof request.headers['x-csrf-token'] === 'string'
+            ? request.headers['x-csrf-token']
+            : undefined,
+        usesBearerAuth: usesBearer,
+      })
+    ) {
       const err = apiError('csrf_rejected', 'CSRF token mismatch', String(request.id));
       return reply.code(err.status).send(err.body);
     }
 
-    let appUserId: AppUserId | null = null;
+    let appUserId: AppUserId;
     if (usesBearer) {
       const auth = await tokens.verifyAuthorizationHeader(request.headers.authorization);
       if (!auth.ok) {
@@ -401,8 +402,7 @@ export async function createFamilyApi(
     attachments,
     attachmentObjectProvider: attachmentObjects.provider,
     attachmentMetadataProvider:
-      options.attachmentMetadataProvider ??
-      (attachmentMetadata ? 'postgres' : 'none'),
+      options.attachmentMetadataProvider ?? (attachmentMetadata ? 'postgres' : 'none'),
     metrics,
   };
 }

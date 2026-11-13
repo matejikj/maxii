@@ -7,10 +7,7 @@ import {
   LOCAL_COMPOSE_RESTORE_DRILL_DEFAULTS,
   runFamilyComposeRestoreDrill,
 } from '../src/ops/familyComposeRestoreDrill.ts';
-import {
-  evaluateOffHostProbeConfig,
-  loadOffHostProbeConfig,
-} from '../src/ops/offHostProbe.ts';
+import { evaluateOffHostProbeConfig, loadOffHostProbeConfig } from '../src/ops/offHostProbe.ts';
 import {
   DEFAULT_MONTHLY_COST_LEDGER,
   summarizeMonthlyCostLedger,
@@ -27,9 +24,7 @@ test('compose restore drill script and restore runbook exist', () => {
 });
 
 test('off-host probe stays closed without live configuration', () => {
-  const evaluation = evaluateOffHostProbeConfig(
-    loadOffHostProbeConfig({} as NodeJS.ProcessEnv),
-  );
+  const evaluation = evaluateOffHostProbeConfig(loadOffHostProbeConfig({} as NodeJS.ProcessEnv));
   assert.equal(evaluation.okForLiveGate, false);
   assert.ok(evaluation.blockers.includes('off_host_uptime_probe_not_configured'));
 });
@@ -58,11 +53,7 @@ test('live compose restore timing drill when Postgres is healthy (otherwise skip
     adminDatabaseUrl: LOCAL_COMPOSE_RESTORE_DRILL_DEFAULTS.adminDatabaseUrl,
     composeFile: join(deployDir, 'docker-compose.yml'),
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.liveReady, false);
   assert.equal(result.liveDrillEvidenceMutated, false);
   assert.ok((result.softwareMeasuredRtoSeconds ?? 0) >= 1);

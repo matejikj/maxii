@@ -22,7 +22,11 @@ import { createSyntheticPhotoProcessor } from '../../src/infrastructure/attachme
 function services(): AttachmentServices {
   const key = randomBytes(32);
   return {
-    picker: { async pickPhotos() { return { status: 'cancelled' }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -98,7 +102,10 @@ test('remote metadata upsert saves placeholders and prefetches thumbnail only', 
 
   const saved = await attachments.repository.getById(asAttachmentId('att_remote'));
   assert.ok(saved);
-  assert.equal(saved!.renditions.every((row) => row.availability === 'missing'), true);
+  assert.equal(
+    saved!.renditions.every((row) => row.availability === 'missing'),
+    true,
+  );
   assert.equal(transfer.getJobs().length, 1);
   assert.equal(transfer.getJobs()[0]?.role, 'thumbnail');
   assert.equal(transfer.getJobs()[0]?.kind, 'download');

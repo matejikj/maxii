@@ -9,7 +9,11 @@ type TabPlaceholderScreenProps = {
   headerRight?: React.ReactNode;
 };
 
-export function TabPlaceholderScreen({ title, description, headerRight }: TabPlaceholderScreenProps) {
+export function TabPlaceholderScreen({
+  title,
+  description,
+  headerRight,
+}: TabPlaceholderScreenProps) {
   const { colors } = useLumiTheme();
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -43,6 +47,11 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     alignSelf: 'center',
   },
-  heading: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' },
+  heading: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
   headingText: { flex: 1, gap: 8 },
 });

@@ -49,16 +49,24 @@ export async function loadHistoryDay(
     // Search pages span the whole diary. A busy newer day must not hide this day.
     for (;;) {
       const page = await uow.search.search(query.childId, needle, 500, before);
-      source.push(...page.events.filter((event) => {
-        const sortAt = careSortAtMs(event);
-        return sortAt >= query.fromSortAtMsInclusive && sortAt < query.toSortAtMsExclusive;
-      }));
+      source.push(
+        ...page.events.filter((event) => {
+          const sortAt = careSortAtMs(event);
+          return sortAt >= query.fromSortAtMsInclusive && sortAt < query.toSortAtMsExclusive;
+        }),
+      );
       const last = page.events[page.events.length - 1];
       if (!page.nextCursor || !last || careSortAtMs(last) < query.fromSortAtMsInclusive) break;
       before = page.nextCursor;
     }
   } else {
-    source.push(...await uow.care.listInSortRange(query.childId, query.fromSortAtMsInclusive, query.toSortAtMsExclusive));
+    source.push(
+      ...(await uow.care.listInSortRange(
+        query.childId,
+        query.fromSortAtMsInclusive,
+        query.toSortAtMsExclusive,
+      )),
+    );
   }
   return source.filter((event) =>
     eventMatchesHistoryBucket(event, query.bucket, query.careSubtype),

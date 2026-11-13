@@ -3,18 +3,25 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 test.beforeAll(() => {
-  test.skip(!fs.existsSync(fileURLToPath(new URL('../../dist-web', import.meta.url))),
-    'Run a fresh export:web before exercising the milestone screen.');
+  test.skip(
+    !fs.existsSync(fileURLToPath(new URL('../../dist-web', import.meta.url))),
+    'Run a fresh export:web before exercising the milestone screen.',
+  );
 });
 
-test('milestone atlas records, edits and restores catalog and custom memories', async ({ page }) => {
+test('milestone atlas records, edits and restores catalog and custom memories', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const runtimeErrors = [];
-  page.on('pageerror', error => runtimeErrors.push(error.message));
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
   await page.goto('/');
   const skip = page.getByRole('button', { name: 'Přeskočit úvod' });
   const development = page.getByTestId('forest-tab-development');
-  await Promise.race([skip.waitFor({ state: 'visible' }), development.waitFor({ state: 'visible' })]);
+  await Promise.race([
+    skip.waitFor({ state: 'visible' }),
+    development.waitFor({ state: 'visible' }),
+  ]);
   if (await skip.isVisible()) await skip.click();
   await development.click();
   await page.getByTestId('development-tab-milestones').click();

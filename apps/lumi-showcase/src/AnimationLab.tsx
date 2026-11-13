@@ -1,19 +1,30 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
-  CHARACTER_COLLECTION, CHARACTER_SEMANTIC_STATES, LUMI_ANIMALS,
-  LumiAnimatedCharacter, LumiAnimatedProceduralBackground, LumiCharacter,
-  LumiMotionProvider, LumiSceneTransition, composeScene, listSignatureActionIds,
-  resolveCompanionPresentation, useCompanionPlaying, useLumiMotion,
-  type CharacterSemanticState, type LumiAnimal, type LumiScene,
+  CHARACTER_COLLECTION,
+  CHARACTER_SEMANTIC_STATES,
+  LUMI_ANIMALS,
+  LumiAnimatedCharacter,
+  LumiAnimatedProceduralBackground,
+  LumiCharacter,
+  LumiMotionProvider,
+  LumiSceneTransition,
+  composeScene,
+  listSignatureActionIds,
+  resolveCompanionPresentation,
+  useCompanionPlaying,
+  useLumiMotion,
+  type CharacterSemanticState,
+  type LumiAnimal,
+  type LumiScene,
 } from '@lumi/forest-design';
 
 const MotionStateLabel = () => {
   const { canAnimate, reduceMotion, foreground, enabled } = useLumiMotion();
   return (
     <Text style={styles.note} testID="motion-accessibility-state">
-      Animace: {canAnimate ? 'aktivní' : 'vypnuté'} · Pohyb postav: {enabled ? 'ano' : 'ne'} · Reduce Motion:{' '}
-      {reduceMotion ? 'ano' : 'ne'} · App aktivní: {foreground ? 'ano' : 'ne'}
+      Animace: {canAnimate ? 'aktivní' : 'vypnuté'} · Pohyb postav: {enabled ? 'ano' : 'ne'} ·
+      Reduce Motion: {reduceMotion ? 'ano' : 'ne'} · App aktivní: {foreground ? 'ano' : 'ne'}
     </Text>
   );
 };
@@ -62,7 +73,7 @@ function Gallery({ paused }: { paused: boolean }) {
         signatureAction,
         animate: playing,
       }),
-    [species, semantic, signatureAction, playing, burstKey],
+    [species, semantic, signatureAction, playing],
   );
   const actions = listSignatureActionIds(species);
 
@@ -107,7 +118,9 @@ function Gallery({ paused }: { paused: boolean }) {
           />
         ))}
       </View>
-      <Text style={styles.subhead}>Signature akce · {CHARACTER_COLLECTION[species].displayName}</Text>
+      <Text style={styles.subhead}>
+        Signature akce · {CHARACTER_COLLECTION[species].displayName}
+      </Text>
       <View style={styles.row}>
         {actions.map((actionId) => (
           <Toggle
@@ -131,6 +144,7 @@ function Gallery({ paused }: { paused: boolean }) {
       <View style={styles.characterStage} testID="motion-character-stage">
         {presentation.animate ? (
           <LumiAnimatedCharacter
+            key={burstKey}
             species={presentation.species}
             pose={presentation.pose}
             expression={presentation.expression}
@@ -175,7 +189,12 @@ function Gallery({ paused }: { paused: boolean }) {
         ))}
       </View>
       <View style={styles.sceneStage} testID="motion-scene-stage">
-        <LumiSceneTransition document={document} mode="contain" playing={playing} testID="animated-scene" />
+        <LumiSceneTransition
+          document={document}
+          mode="contain"
+          playing={playing}
+          testID="animated-scene"
+        />
       </View>
       <Text style={styles.subhead}>Živý procedurální svět s rezervovaným prostorem</Text>
       <View style={styles.proceduralStage} testID="motion-procedural-stage">
@@ -240,7 +259,13 @@ const styles = StyleSheet.create({
   lab: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 18, paddingBottom: 60 },
-  toolbar: { paddingHorizontal: 18, paddingVertical: 5, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  toolbar: {
+    paddingHorizontal: 18,
+    paddingVertical: 5,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   overline: { color: '#73967F', fontWeight: '800', letterSpacing: 1.5, fontSize: 10 },
   title: { color: '#384C4A', fontSize: 24, fontWeight: '800', marginTop: 5 },
   subtitle: { color: '#586B64', fontSize: 12, lineHeight: 19, marginTop: 6 },
@@ -276,8 +301,27 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   primaryText: { color: '#FFFFFF', fontWeight: '700' },
-  sceneStage: { height: 290, overflow: 'hidden', borderRadius: 22, backgroundColor: '#F8F6EF', marginTop: 9 },
-  proceduralStage: { height: 370, position: 'relative', overflow: 'hidden', borderRadius: 22, marginTop: 8 },
-  safeOverlay: { position: 'absolute', top: 40, left: 20, color: '#384C4A', fontSize: 12, fontWeight: '700' },
+  sceneStage: {
+    height: 290,
+    overflow: 'hidden',
+    borderRadius: 22,
+    backgroundColor: '#F8F6EF',
+    marginTop: 9,
+  },
+  proceduralStage: {
+    height: 370,
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 22,
+    marginTop: 8,
+  },
+  safeOverlay: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    color: '#384C4A',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   note: { color: '#657C70', fontSize: 11, lineHeight: 18, marginTop: 10 },
 });

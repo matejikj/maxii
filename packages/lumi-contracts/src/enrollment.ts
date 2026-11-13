@@ -32,9 +32,7 @@ export type ChildLinkComparison = {
  * Name and birthday may look alike across unrelated children. Never treat that
  * as proof they are the same person — the caregiver must choose explicitly.
  */
-export function suggestChildLinkDecision(
-  comparison: ChildLinkComparison,
-): {
+export function suggestChildLinkDecision(comparison: ChildLinkComparison): {
   readonly autoMergeAllowed: false;
   readonly nameLooksSimilar: boolean;
   readonly birthDateLooksSimilar: boolean;
@@ -124,7 +122,9 @@ export function bindLocalActorToAccount(input: {
   readonly localActorId: string;
   readonly authenticatedAppUserId: AppUserId;
   readonly claimedAuthorAppUserId: AppUserId | null;
-}): { readonly ok: true; readonly boundAppUserId: AppUserId } | { readonly ok: false; readonly reason: string } {
+}):
+  | { readonly ok: true; readonly boundAppUserId: AppUserId }
+  | { readonly ok: false; readonly reason: string } {
   if (
     input.claimedAuthorAppUserId != null &&
     input.claimedAuthorAppUserId !== input.authenticatedAppUserId
@@ -134,9 +134,7 @@ export function bindLocalActorToAccount(input: {
   return { ok: true, boundAppUserId: input.authenticatedAppUserId };
 }
 
-export function markEnrollmentAwaitingNetwork(
-  intent: EnrollmentIntent,
-): EnrollmentIntent {
+export function markEnrollmentAwaitingNetwork(intent: EnrollmentIntent): EnrollmentIntent {
   return { ...intent, status: 'awaiting_network' };
 }
 

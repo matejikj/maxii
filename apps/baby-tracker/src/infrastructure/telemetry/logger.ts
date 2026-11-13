@@ -30,7 +30,9 @@ export type LoggerSink = (line: string) => void;
 
 const REDACTED = '[redacted]';
 
-export function sanitizeLogFields(fields: LogFields | undefined): Record<string, string | number | boolean | null> {
+export function sanitizeLogFields(
+  fields: LogFields | undefined,
+): Record<string, string | number | boolean | null> {
   if (fields == null) {
     return {};
   }
@@ -40,7 +42,12 @@ export function sanitizeLogFields(fields: LogFields | undefined): Record<string,
       out[key] = REDACTED;
       continue;
     }
-    if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    if (
+      value === null ||
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       out[key] = value;
       continue;
     }

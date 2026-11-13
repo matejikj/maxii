@@ -36,11 +36,7 @@ export {
   markActivityRevoked,
   recoverPackStore,
 } from './activate';
-export type {
-  ActivatePackInput,
-  MemoryPackStore,
-  PackActivationJournal,
-} from './activate';
+export type { ActivatePackInput, MemoryPackStore, PackActivationJournal } from './activate';
 export { evaluateContentReadiness } from './readiness';
 export type { ReadinessProbe } from './readiness';
 export { buildContentPackManifest } from './buildManifest';
@@ -51,25 +47,15 @@ export {
   EMBEDDED_COLLECTION_VERSION,
   describeEmbeddedBasePack,
 } from './embeddedBase';
-export {
-  buildFirstYearBaseFiles,
-  buildFirstYearBaseManifest,
-} from './firstYearBasePack';
+export { buildFirstYearBaseFiles, buildFirstYearBaseManifest } from './firstYearBasePack';
 export {
   EMBEDDED_FIRST_YEAR_BASE_MANIFEST,
   EMBEDDED_FIRST_YEAR_BASE_SIGNATURE,
 } from './embeddedFirstYearBase';
 export { activateEmbeddedFirstYearBase } from './loadEmbeddedBase';
 export type { EmbeddedBaseActivation } from './loadEmbeddedBase';
-export {
-  TODDLER_1_2_PACK_ID,
-  buildToddler12Files,
-  buildToddler12Manifest,
-} from './toddler12Pack';
-export {
-  EMBEDDED_TODDLER_1_2_MANIFEST,
-  EMBEDDED_TODDLER_1_2_SIGNATURE,
-} from './embeddedToddler12';
+export { TODDLER_1_2_PACK_ID, buildToddler12Files, buildToddler12Manifest } from './toddler12Pack';
+export { EMBEDDED_TODDLER_1_2_MANIFEST, EMBEDDED_TODDLER_1_2_SIGNATURE } from './embeddedToddler12';
 export {
   PRESCHOOL_2_5_PACK_ID,
   buildPreschool25Files,
@@ -79,12 +65,5 @@ export {
   EMBEDDED_PRESCHOOL_2_5_MANIFEST,
   EMBEDDED_PRESCHOOL_2_5_SIGNATURE,
 } from './embeddedPreschool25';
-export {
-  PRIMARY_5_8_PACK_ID,
-  buildPrimary58Files,
-  buildPrimary58Manifest,
-} from './primary58Pack';
-export {
-  EMBEDDED_PRIMARY_5_8_MANIFEST,
-  EMBEDDED_PRIMARY_5_8_SIGNATURE,
-} from './embeddedPrimary58';
+export { PRIMARY_5_8_PACK_ID, buildPrimary58Files, buildPrimary58Manifest } from './primary58Pack';
+export { EMBEDDED_PRIMARY_5_8_MANIFEST, EMBEDDED_PRIMARY_5_8_SIGNATURE } from './embeddedPrimary58';

@@ -4,23 +4,23 @@ appId: com.matejikj
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "LUMI"
+    visible: 'LUMI'
     timeout: 30000
 # Welcome is skippable and must never gate care.
 - tapOn:
-    text: "Přeskočit úvod"
+    text: 'Přeskočit úvod'
     optional: true
-- assertVisible: "Dnes"
+- assertVisible: 'Dnes'
 - tapOn:
-    id: "quick-diaper"
-- assertVisible: "Zapsat mokrou"
+    id: 'quick-diaper'
+- assertVisible: 'Zapsat mokrou'
 - tapOn:
-    id: "direct-wet"
-- assertVisible: "Přebalení uloženo."
-- tapOn: "Historie"
-- assertVisible: "Historie"
-- tapOn: "Rozvoj"
+    id: 'direct-wet'
+- assertVisible: 'Přebalení uloženo.'
+- tapOn: 'Historie'
+- assertVisible: 'Historie'
+- tapOn: 'Rozvoj'
 - assertVisible:
-    id: "development-screen"
-- tapOn: "Dnes"
-- assertVisible: "Dnes"
+    id: 'development-screen'
+- tapOn: 'Dnes'
+- assertVisible: 'Dnes'

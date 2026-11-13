@@ -35,11 +35,7 @@ test('live HTTP attachment path against S3Mock when healthy (otherwise skip)', a
   const result = await runAttachmentHttpS3CompatibleDrill({
     ...LOCAL_HTTP_S3_ATTACHMENT_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.provider, 'r2');
 });
 

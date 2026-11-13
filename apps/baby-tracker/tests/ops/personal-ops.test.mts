@@ -25,7 +25,10 @@ import {
   createLocalOperationMetrics,
   metricFieldNames,
 } from '../../src/ops/index.ts';
-import { LOG_FIELD_ALLOWLIST, sanitizeLogFields } from '../../src/infrastructure/telemetry/logger.ts';
+import {
+  LOG_FIELD_ALLOWLIST,
+  sanitizeLogFields,
+} from '../../src/infrastructure/telemetry/logger.ts';
 import { createMemoryCheckpointStore } from '../../src/infrastructure/database/native/checkpoint.ts';
 import { createMemoryDatabasePresence } from '../../src/infrastructure/database/native/databasePresence.ts';
 import { createMemoryDatabaseKeyStore } from '../../src/infrastructure/database/native/memoryKeyStore.ts';

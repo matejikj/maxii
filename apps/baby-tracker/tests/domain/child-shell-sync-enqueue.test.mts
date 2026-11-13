@@ -59,16 +59,14 @@ function memoryWorkspace(seed?: { project?: Project }): {
             projects.set(project.projectId, project);
           },
           listAll: async () => [...projects.values()],
-          listByChild: async (id) =>
-            [...projects.values()].filter((row) => row.childId === id),
+          listByChild: async (id) => [...projects.values()].filter((row) => row.childId === id),
         },
         portfolio: {
           getById: async (id) => portfolio.get(id) ?? null,
           save: async (item) => {
             portfolio.set(item.portfolioItemId, item);
           },
-          listByChild: async (id) =>
-            [...portfolio.values()].filter((row) => row.childId === id),
+          listByChild: async (id) => [...portfolio.values()].filter((row) => row.childId === id),
           listByOwner: async (ownerId) =>
             [...portfolio.values()].filter((row) => row.ownerAppUserId === ownerId),
           listAll: async () => [...portfolio.values()],

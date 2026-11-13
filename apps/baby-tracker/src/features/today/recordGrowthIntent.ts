@@ -90,12 +90,9 @@ export function parseGrowthFormFields(input: {
   const head = parseDecimalInput(input.headRaw);
   if (!head.ok) return head;
 
-  const weightKg =
-    weight.value == null ? null : displayToKg(weight.value, input.weightUnit);
-  const lengthCm =
-    length.value == null ? null : displayToCm(length.value, input.lengthUnit);
-  const headCm =
-    head.value == null ? null : displayToCm(head.value, input.lengthUnit);
+  const weightKg = weight.value == null ? null : displayToKg(weight.value, input.weightUnit);
+  const lengthCm = length.value == null ? null : displayToCm(length.value, input.lengthUnit);
+  const headCm = head.value == null ? null : displayToCm(head.value, input.lengthUnit);
 
   if (weightKg == null && lengthCm == null && headCm == null) {
     return { ok: false, message: 'Vyplňte alespoň jednu hodnotu měření.' };

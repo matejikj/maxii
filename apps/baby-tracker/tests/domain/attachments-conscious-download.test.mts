@@ -105,7 +105,11 @@ test('personal cold never queues a conscious display download', () => {
 test('requestAttachmentDisplayDownload queues one display job via transfer runtime', async () => {
   const key = randomBytes(32);
   const attachments = {
-    picker: { async pickPhotos() { return { status: 'cancelled' as const }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' as const };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -131,7 +135,11 @@ test('requestAttachmentDisplayDownload queues one display job via transfer runti
 test('second conscious request does not duplicate the display job', async () => {
   const key = randomBytes(32);
   const attachments = {
-    picker: { async pickPhotos() { return { status: 'cancelled' as const }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' as const };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),

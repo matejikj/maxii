@@ -48,7 +48,15 @@ export function calendarDateInZone(instant: Instant, timeZone: TimeZoneId): Cale
 /** Start of the local calendar day as a UTC instant. */
 export function startOfCalendarDay(date: CalendarDate, timeZone: TimeZoneId): Instant {
   const local = DateTime.fromObject(
-    { year: date.year, month: date.month, day: date.day, hour: 0, minute: 0, second: 0, millisecond: 0 },
+    {
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    },
     { zone: timeZone },
   );
   if (!local.isValid) {
@@ -62,7 +70,15 @@ export function startOfCalendarDay(date: CalendarDate, timeZone: TimeZoneId): In
 /** Exclusive end of the local calendar day (start of the next local day). */
 export function endOfCalendarDayExclusive(date: CalendarDate, timeZone: TimeZoneId): Instant {
   const next = DateTime.fromObject(
-    { year: date.year, month: date.month, day: date.day, hour: 0, minute: 0, second: 0, millisecond: 0 },
+    {
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    },
     { zone: timeZone },
   ).plus({ days: 1 });
   if (!next.isValid) {

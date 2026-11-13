@@ -5,15 +5,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadApiConfig } from '../src/config/env.ts';
 import { createFamilyApi } from '../src/http/createServer.ts';
-import {
-  classifyFamilyOpsPath,
-  createFamilyOpsMetrics,
-} from '../src/ops/familyMetrics.ts';
+import { classifyFamilyOpsPath, createFamilyOpsMetrics } from '../src/ops/familyMetrics.ts';
 import { evaluateFamilyAlerts } from '../src/ops/familyAlerts.ts';
-import {
-  INCIDENT_PLAYBOOKS,
-  simulateIncidentResponse,
-} from '../src/ops/incidentPlaybooks.ts';
+import { INCIDENT_PLAYBOOKS, simulateIncidentResponse } from '../src/ops/incidentPlaybooks.ts';
 import {
   evaluateGrowthDecision,
   planManagedMigrationCutover,
@@ -45,10 +39,7 @@ test('family metrics classify paths and omit diary-like fields', () => {
   assert.equal(snap.queueBacklog, 3);
   assert.equal(snap.maxSyncLagMs, 90_000);
   assert.equal(snap.backup.lastAttemptOk, false);
-  assert.equal(
-    JSON.stringify(snap).includes('CANARY_NOTE'),
-    false,
-  );
+  assert.equal(JSON.stringify(snap).includes('CANARY_NOTE'), false);
 });
 
 test('alerts require off-host probe and fire on stale backup', () => {
@@ -188,10 +179,7 @@ test('ops metrics and alerts endpoints require the ops bearer token', async () =
   });
   assert.equal(alerts.statusCode, 200);
   assert.equal(alerts.json().format, 'lumi.family-ops-alerts.v1');
-  assert.equal(
-    JSON.stringify(alerts.json()).toLowerCase().includes('diary'),
-    false,
-  );
+  assert.equal(JSON.stringify(alerts.json()).toLowerCase().includes('diary'), false);
   await app.close();
 });
 

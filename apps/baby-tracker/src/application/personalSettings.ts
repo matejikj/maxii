@@ -1,8 +1,4 @@
-import type {
-  LengthDisplayUnit,
-  UnitOfWorkFactory,
-  WeightDisplayUnit,
-} from '../domain';
+import type { LengthDisplayUnit, UnitOfWorkFactory, WeightDisplayUnit } from '../domain';
 import { asChildId, asTimeZoneId, createChildProfile } from '../domain';
 
 export const META_CHARACTER_MOTION = 'pref_character_motion_v1';
@@ -107,8 +103,10 @@ export async function loadPersonalPreferences(
     if (unitsRaw) {
       try {
         const parsed = JSON.parse(unitsRaw) as { weightUnit?: string; lengthUnit?: string };
-        if (parsed.weightUnit === 'kg' || parsed.weightUnit === 'lb') weightUnit = parsed.weightUnit;
-        if (parsed.lengthUnit === 'cm' || parsed.lengthUnit === 'in') lengthUnit = parsed.lengthUnit;
+        if (parsed.weightUnit === 'kg' || parsed.weightUnit === 'lb')
+          weightUnit = parsed.weightUnit;
+        if (parsed.lengthUnit === 'cm' || parsed.lengthUnit === 'in')
+          lengthUnit = parsed.lengthUnit;
       } catch {
         // keep defaults
       }
@@ -201,9 +199,7 @@ export async function updateSummaryTimeZone(
  * After the first real care rows, show a single calm portable-backup hint.
  * Never repeats once acknowledged.
  */
-export async function shouldShowBackupHint(
-  unitOfWork: UnitOfWorkFactory,
-): Promise<boolean> {
+export async function shouldShowBackupHint(unitOfWork: UnitOfWorkFactory): Promise<boolean> {
   return unitOfWork.run(async (uow) => {
     const shown = await uow.meta.get(META_BACKUP_HINT_SHOWN);
     if (shown === '1') return false;
@@ -228,7 +224,10 @@ function isAppMotif(value: unknown): value is AppMotif {
   return typeof value === 'string' && (LOCAL_APP_MOTIFS as readonly string[]).includes(value);
 }
 
-function normalizeReminders(raw: ReminderPreferences, fallbackTimeZone: string): ReminderPreferences {
+function normalizeReminders(
+  raw: ReminderPreferences,
+  fallbackTimeZone: string,
+): ReminderPreferences {
   const hour = clampInt(raw.dailyTogetherHour, 0, 23, 18);
   const minute = clampInt(raw.dailyTogetherMinute, 0, 59, 0);
   const weekday = clampInt(raw.weeklyGlanceWeekday, 0, 6, 0);
@@ -238,7 +237,8 @@ function normalizeReminders(raw: ReminderPreferences, fallbackTimeZone: string):
     dailyTogetherMinute: minute,
     weeklyGlanceEnabled: Boolean(raw.weeklyGlanceEnabled),
     weeklyGlanceWeekday: weekday,
-    timeZone: typeof raw.timeZone === 'string' && raw.timeZone.length > 0 ? raw.timeZone : fallbackTimeZone,
+    timeZone:
+      typeof raw.timeZone === 'string' && raw.timeZone.length > 0 ? raw.timeZone : fallbackTimeZone,
   };
 }
 

@@ -39,7 +39,11 @@ export type BackupRepositoryPort = {
     readonly manifest: RemoteBackupManifest;
   }) => Promise<{ readonly stored: true; readonly verifiedAt: string }>;
   readonly listCompleted: () => Promise<
-    readonly { readonly backupId: string; readonly completedAt: string; readonly familyId: string | null }[]
+    readonly {
+      readonly backupId: string;
+      readonly completedAt: string;
+      readonly familyId: string | null;
+    }[]
   >;
   readonly deleteBackup: (backupId: string) => Promise<void>;
   /** Cross-tenant downloads are refused even when the caller knows a backup id. */

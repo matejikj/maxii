@@ -133,9 +133,7 @@ test('nursing pause and side switch persist segments across restart-shaped reloa
       intentCapturedAtMs: ctx.nowMs(),
     }),
   );
-  const afterSwitch = await ctx.unitOfWork.run((uow) =>
-    uow.sessions.getActive(childId, 'nursing'),
-  );
+  const afterSwitch = await ctx.unitOfWork.run((uow) => uow.sessions.getActive(childId, 'nursing'));
   assert.ok(afterSwitch);
   assert.equal(afterSwitch?.status, 'running');
   assert.equal(afterSwitch?.side, 'right');

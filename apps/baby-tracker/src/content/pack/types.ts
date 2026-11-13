@@ -47,12 +47,7 @@ export type TrustedPublicKey = {
 };
 
 export type PackActivationState =
-  | 'absent'
-  | 'staging'
-  | 'verified'
-  | 'active'
-  | 'rejected'
-  | 'previous';
+  'absent' | 'staging' | 'verified' | 'active' | 'rejected' | 'previous';
 
 export type PackStoreRecord = {
   readonly packId: string;

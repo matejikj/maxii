@@ -31,10 +31,12 @@ type ChannelLike = {
  * BroadcastChannel notifies other tabs after a successful IndexedDB commit.
  * It never authorizes writes — leases and transactions remain the source of truth.
  */
-export function createWebChangeFeed(options: {
-  channelName?: string;
-  createChannel?: (name: string) => ChannelLike;
-} = {}): WebChangeFeed {
+export function createWebChangeFeed(
+  options: {
+    channelName?: string;
+    createChannel?: (name: string) => ChannelLike;
+  } = {},
+): WebChangeFeed {
   const channelName = options.channelName ?? 'lumi-web-diary-changes';
   const listeners = new Set<(message: WebDiaryChangeMessage) => void>();
   let seq = 0;

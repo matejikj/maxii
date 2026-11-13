@@ -1,17 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import type {
-  AppUserId,
-  ErasureRegistryEntry,
-  FamilyId,
-  SyncOperation,
-} from '@lumi/contracts';
+import type { AppUserId, ErasureRegistryEntry, FamilyId, SyncOperation } from '@lumi/contracts';
 import { LUMI_API_PROTOCOL_VERSION } from '@lumi/contracts';
 import type { ErasureRegistryPort } from '../backup/erasureRegistry.ts';
 import { hashSyncPayload, type MemorySyncStore } from '../sync/syncStore.ts';
-import {
-  planManagedMigrationCutover,
-  type CutoverPlan,
-} from './migrationCutover.ts';
+import { planManagedMigrationCutover, type CutoverPlan } from './migrationCutover.ts';
 
 /**
  * Local managed-hosting migration drill. Exercises portable sync receipts,
@@ -29,10 +21,7 @@ export type MigrationDrillHttp = {
 };
 
 export type MigrationDrillTokens = {
-  mintTestToken(input: {
-    subject: string;
-    appUserId: AppUserId;
-  }): Promise<string>;
+  mintTestToken(input: { subject: string; appUserId: AppUserId }): Promise<string>;
 };
 
 export type ManagedMigrationLocalDrillReport = {
@@ -254,14 +243,12 @@ export async function runManagedMigrationLocalDrill(
     }
   ).receipts?.[0];
   const staleWriterRejected =
-    staleWriterReceipt?.status === 'rejected' &&
-    staleWriterReceipt.reason === 'stale_writer';
+    staleWriterReceipt?.status === 'rejected' && staleWriterReceipt.reason === 'stale_writer';
 
   const registryAfter = await deps.erasureRegistry.load();
   const erasureRegistrySurvived = registryAfter.entries.some(
     (entry) =>
-      entry.familyId === erasedFamilyId &&
-      entry.eraseGeneration === erasureEntry.eraseGeneration,
+      entry.familyId === erasedFamilyId && entry.eraseGeneration === erasureEntry.eraseGeneration,
   );
 
   const dnsRollbackPracticeOnly =

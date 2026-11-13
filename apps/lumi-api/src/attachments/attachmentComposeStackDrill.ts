@@ -86,9 +86,7 @@ export async function runAttachmentComposeStackDrill(input: {
   cases.push({
     name: 'compose_live_ready_stays_false',
     ok: compose.liveReady === false,
-    detail: compose.liveReady
-      ? 'local compose must not claim liveReady'
-      : 'liveReady=false',
+    detail: compose.liveReady ? 'local compose must not claim liveReady' : 'liveReady=false',
   });
 
   if (!compose.ok) {

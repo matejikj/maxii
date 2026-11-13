@@ -28,8 +28,7 @@ export function FamilyDurabilityStatusCard({
   portableBackupAvailable = false,
 }: Props) {
   const boundary = useMemo(() => resolveRemoteServicesBoundary(), []);
-  const familySyncEnabled =
-    shouldInitializeRemoteClients(boundary) && boundary.syncConfigured;
+  const familySyncEnabled = shouldInitializeRemoteClients(boundary) && boundary.syncConfigured;
   const { ui } = useLumiTheme();
 
   const resolvedTransfer =

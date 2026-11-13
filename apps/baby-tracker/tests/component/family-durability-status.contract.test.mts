@@ -11,10 +11,7 @@ test('family durability card and account panel wire the four parent labels', () 
     join(root, 'src/features/family/FamilyDurabilityStatusCard.tsx'),
     'utf8',
   );
-  const panel = readFileSync(
-    join(root, 'src/features/profile/FamilyAccountPanel.tsx'),
-    'utf8',
-  );
+  const panel = readFileSync(join(root, 'src/features/profile/FamilyAccountPanel.tsx'), 'utf8');
   const copy = readFileSync(join(root, 'src/features/ui/productCopy.ts'), 'utf8');
 
   assert.match(card, /buildFamilyDurabilityPresentation/);

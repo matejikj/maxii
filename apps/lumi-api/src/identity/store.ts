@@ -21,7 +21,11 @@ import {
   authorizeFamilyAdminAction,
   wouldLeaveFamilyWithoutAdmin,
 } from '@lumi/contracts';
-import { hashInvitationToken, invitationTokenMatches, mintInvitationToken } from './invitationCrypto.ts';
+import {
+  hashInvitationToken,
+  invitationTokenMatches,
+  mintInvitationToken,
+} from './invitationCrypto.ts';
 
 export type FamilyRecord = {
   readonly familyId: FamilyId;
@@ -258,7 +262,12 @@ export class MemoryFamilyStore {
     return response;
   }
 
-  revokeInvitation(actorId: AppUserId, familyId: FamilyId, invitationId: InvitationId, now: string): boolean {
+  revokeInvitation(
+    actorId: AppUserId,
+    familyId: FamilyId,
+    invitationId: InvitationId,
+    now: string,
+  ): boolean {
     const admin = authorizeFamilyAdminAction({
       memberships: this.memberships,
       appUserId: actorId,

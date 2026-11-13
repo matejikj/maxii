@@ -49,16 +49,15 @@ export const DEFAULT_MONTHLY_COST_LEDGER: MonthlyCostLedger = {
   ],
 };
 
-export function summarizeMonthlyCostLedger(ledger: MonthlyCostLedger = DEFAULT_MONTHLY_COST_LEDGER): {
+export function summarizeMonthlyCostLedger(
+  ledger: MonthlyCostLedger = DEFAULT_MONTHLY_COST_LEDGER,
+): {
   readonly totalEurMonthly: number;
   readonly lineCount: number;
   readonly hostCandidate: string;
   readonly readyToOrderHost: false;
 } {
-  const totalEurMonthly = ledger.lines.reduce(
-    (sum, line) => sum + line.amountEurMonthly,
-    0,
-  );
+  const totalEurMonthly = ledger.lines.reduce((sum, line) => sum + line.amountEurMonthly, 0);
   return {
     totalEurMonthly: Math.round(totalEurMonthly * 100) / 100,
     lineCount: ledger.lines.length,

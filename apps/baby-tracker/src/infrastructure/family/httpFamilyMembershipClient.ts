@@ -43,7 +43,11 @@ export function createHttpFamilyMembershipClient(config: {
           return { ok: false, code: 'unauthorized', message: 'Membership lookup unauthorized' };
         }
         if (!response.ok) {
-          return { ok: false, code: 'network', message: `Membership lookup failed (${response.status})` };
+          return {
+            ok: false,
+            code: 'network',
+            message: `Membership lookup failed (${response.status})`,
+          };
         }
         const body = (await response.json()) as {
           memberships?: Array<{ familyId?: string; role?: string; status?: string }>;

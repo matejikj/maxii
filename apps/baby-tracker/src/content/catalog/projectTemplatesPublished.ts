@@ -72,9 +72,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Tři malé karty na papíře nebo tři textové záznamy v projektu.',
     optionalReflection: 'Co jsem opravdu viděl/a a co jsem si jen myslel/a?',
     privacyNote: 'Nevkládat osobní doklady, adresy, klíče nebo cizí citlivé věci.',
-    constraints: [
-      'Žádné rozebírání přístrojů, chemikálie ani hledání neznámých přírodnin.',
-    ],
+    constraints: ['Žádné rozebírání přístrojů, chemikálie ani hledání neznámých přírodnin.'],
   }),
   template({
     templateId: asProjectTemplateId('four-scene-story'),
@@ -93,9 +91,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Vlastní komiks; aplikace ukládá text/poznámku, nevyžaduje kreslicí editor.',
     optionalReflection: 'Která část mě bavila a kterou bych nechal/a jinak?',
     privacyNote: 'Příběh může zůstat celý soukromý; zveřejnění není podmínka dokončení.',
-    constraints: [
-      'Nevkládat cizí fotografie, celé převzaté knihy nebo citlivé příběhy spolužáků.',
-    ],
+    constraints: ['Nevkládat cizí fotografie, celé převzaté knihy nebo citlivé příběhy spolužáků.'],
   }),
   template({
     templateId: asProjectTemplateId('builder-instructions'),
@@ -114,9 +110,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Krátký návod a volitelná věta o změně.',
     optionalReflection: 'Co druhému pomohlo a co bych chtěl/a vysvětlit jinak?',
     privacyNote: 'Zpětná vazba při činnosti není automaticky komentář uložený rodině.',
-    constraints: [
-      'Žádné slepé následování nebezpečných pokynů; nejde o spouštění kódu.',
-    ],
+    constraints: ['Žádné slepé následování nebezpečných pokynů; nejde o spouštění kódu.'],
   }),
   template({
     templateId: asProjectTemplateId('one-variable-notebook'),
@@ -135,9 +129,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Malá tabulka nebo tři krátké odstavce.',
     optionalReflection: 'Co by bylo potřeba ověřit, než z toho udělám závěr?',
     privacyNote: 'Bez sběru osobních dat dalších lidí nebo domácího monitorování.',
-    constraints: [
-      'Pouze papírový model; žádná elektřina, chemie, oheň ani pokusy na lidech.',
-    ],
+    constraints: ['Pouze papírový model; žádná elektřina, chemie, oheň ani pokusy na lidech.'],
   }),
   template({
     templateId: asProjectTemplateId('two-possible-solutions'),
@@ -177,9 +169,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Papírový prototyp s popisem, nikoli nová aplikace generovaná za běhu.',
     optionalReflection: 'Komu by to mohlo pomoci a co jsem zatím neověřil/a?',
     privacyNote: 'Fotografie prostředí a osoby se nepřidávají automaticky.',
-    constraints: [
-      'Bez výroby elektrického zařízení a oprav skutečných bezpečnostních pomůcek.',
-    ],
+    constraints: ['Bez výroby elektrického zařízení a oprav skutečných bezpečnostních pomůcek.'],
   }),
   template({
     templateId: asProjectTemplateId('story-in-two-languages'),
@@ -187,7 +177,8 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     title: 'Příběh ve dvou jazycích',
     cohort: '12-14',
     theme: 'Jazyk a vyjadřování',
-    intent: 'Vyjádřit vlastní krátkou situaci dvěma známými jazykovými způsoby a všimnout si rozdílu.',
+    intent:
+      'Vyjádřit vlastní krátkou situaci dvěma známými jazykovými způsoby a všimnout si rozdílu.',
     materials: ['papír nebo text', 'volitelně ověřený známý slovník'],
     offeredSessions: '2–3 chvíle po 10 minutách',
     steps: [
@@ -198,9 +189,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Dvě krátké vlastní varianty; při jednom jazyce příběh pro dva čtenáře.',
     optionalReflection: 'Co jsem chtěl/a zachovat a kde si nejsem jistý/á?',
     privacyNote: 'Bez nahrávání hlasu, cloudového překladu nebo hodnocení přízvuku.',
-    constraints: [
-      'Nepřebírat cizí chráněný text ani nepředstírat správnost neověřeného překladu.',
-    ],
+    constraints: ['Nepřebírat cizí chráněný text ani nepředstírat správnost neověřeného překladu.'],
   }),
   template({
     templateId: asProjectTemplateId('my-own-project-brief'),
@@ -229,8 +218,12 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     title: 'Malá výzkumná otázka',
     cohort: '15-17',
     theme: 'Práce se zdrojem',
-    intent: 'Formulovat otázku, zaznamenat původ informací a odlišit doložené tvrzení od otevřené otázky.',
-    materials: ['text/papír', 'jedna dostupná důvěryhodná publikace nebo vlastní bezpečné pozorování'],
+    intent:
+      'Formulovat otázku, zaznamenat původ informací a odlišit doložené tvrzení od otevřené otázky.',
+    materials: [
+      'text/papír',
+      'jedna dostupná důvěryhodná publikace nebo vlastní bezpečné pozorování',
+    ],
     offeredSessions: '3 chvíle po 15 minutách',
     steps: [
       'Vyberu neosobní otázku a zapíšu, co by byla použitelná odpověď.',
@@ -250,7 +243,8 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     title: 'Vysvětlení pro druhého',
     cohort: '15-17',
     theme: 'Prezentace a spolupráce',
-    intent: 'Připravit vlastní srozumitelné vysvětlení známého tématu a upravit jej podle dobrovolné reakce.',
+    intent:
+      'Připravit vlastní srozumitelné vysvětlení známého tématu a upravit jej podle dobrovolné reakce.',
     materials: ['papír nebo textový projekt'],
     offeredSessions: '2–3 chvíle po 15 minutách',
     steps: [
@@ -261,9 +255,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Tři body, vlastní příklad a volitelná poznámka o reakci.',
     optionalReflection: 'Co bylo jasné a kde bych se příště doptal/a?',
     privacyNote: 'Bez veřejného uploadu, videonahrávky a automatického sdílení všech podkladů.',
-    constraints: [
-      'Žádná povinná prezentace před skupinou nebo oslovení neznámé osoby.',
-    ],
+    constraints: ['Žádná povinná prezentace před skupinou nebo oslovení neznámé osoby.'],
   }),
   template({
     templateId: asProjectTemplateId('my-next-possibilities'),
@@ -282,9 +274,7 @@ export const PROJECT_TEMPLATES_PUBLISHED: readonly ProjectTemplateRevision[] = [
     portfolioHint: 'Vlastní srovnání; neověřený odkaz není potvrzená nabídka ani termín.',
     optionalReflection: 'Co je pro mě důležité a čí představu chci nechat stranou?',
     privacyNote: 'Názory na školu a další směr jsou soukromé, dokud dítě samo nevybere ukázku.',
-    constraints: [
-      'Žádné automatické přihlášky, placení, scraping škol ani sliby výsledku.',
-    ],
+    constraints: ['Žádné automatické přihlášky, placení, scraping škol ani sliby výsledku.'],
   }),
 ];
 
@@ -294,9 +284,7 @@ export function listProjectTemplatesByCohort(
   return PROJECT_TEMPLATES_PUBLISHED.filter((row) => row.cohort === cohort);
 }
 
-export function findProjectTemplateRevision(
-  revisionId: string,
-): ProjectTemplateRevision | null {
+export function findProjectTemplateRevision(revisionId: string): ProjectTemplateRevision | null {
   return PROJECT_TEMPLATES_PUBLISHED.find((row) => row.revisionId === revisionId) ?? null;
 }
 

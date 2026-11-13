@@ -53,10 +53,22 @@
     "test:all": "npm run test:all --workspace @lumi/forest-design && npm run test:apps && npm run check:tsx",
     "test:baby:pr": "npm run test:domain --workspace @maxii/baby-tracker && npm run test:storage --workspace @maxii/baby-tracker && npm run test:components --workspace @maxii/baby-tracker",
     "baby:test": "npm test --workspace @maxii/baby-tracker",
-    "baby:prebuild": "npm run prebuild:native --workspace @maxii/baby-tracker"
+    "baby:prebuild": "npm run prebuild:native --workspace @maxii/baby-tracker",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path .gitignore --ignore-path .prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path .gitignore --ignore-path .prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "devDependencies": {
-    "typescript": "~6.0.3"
+    "@eslint/js": "10.0.1",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "8.72.1"
   },
   "overrides": {
     "react-native-worklets": "0.13.0"

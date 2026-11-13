@@ -74,9 +74,10 @@ export function activateContentPack(
   }
 
   const { manifest, signature } = verified;
-  const previous = [...store.records.values()].find(
-    (item) => item.packId === manifest.packId && item.state === 'active',
-  ) ?? null;
+  const previous =
+    [...store.records.values()].find(
+      (item) => item.packId === manifest.packId && item.state === 'active',
+    ) ?? null;
 
   store.journal = {
     packId: manifest.packId,
@@ -184,10 +185,7 @@ export function recoverPackStore(store: MemoryPackStore, nowMs: number): MemoryP
   return store;
 }
 
-export function getActivePack(
-  store: MemoryPackStore,
-  packId: string,
-): PackStoreRecord | null {
+export function getActivePack(store: MemoryPackStore, packId: string): PackStoreRecord | null {
   return store.records.get(activeKey(packId)) ?? null;
 }
 

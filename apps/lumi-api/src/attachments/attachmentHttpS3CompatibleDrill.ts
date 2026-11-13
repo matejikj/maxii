@@ -1,9 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import {
-  LUMI_API_PROTOCOL_VERSION,
-  type AppUserId,
-  type FamilyId,
-} from '@lumi/contracts';
+import { LUMI_API_PROTOCOL_VERSION, type AppUserId, type FamilyId } from '@lumi/contracts';
 import { loadApiConfig } from '../config/env.ts';
 import { createFamilyApi } from '../http/createServer.ts';
 import { resolveAttachmentObjectStore } from './resolveAttachmentObjectStore.ts';
@@ -149,9 +145,7 @@ export async function runAttachmentHttpS3CompatibleDrill(input: {
       name: 'upload_bytes',
       ok: uploaded.statusCode === 200,
       detail:
-        uploaded.statusCode === 200
-          ? 'staging upload accepted'
-          : `status ${uploaded.statusCode}`,
+        uploaded.statusCode === 200 ? 'staging upload accepted' : `status ${uploaded.statusCode}`,
     });
 
     const finalized = await app.inject({
@@ -165,8 +159,7 @@ export async function runAttachmentHttpS3CompatibleDrill(input: {
         byteLength: bytes.byteLength,
       },
     });
-    const finalizeOk =
-      finalized.statusCode === 200 && finalized.json().activated === true;
+    const finalizeOk = finalized.statusCode === 200 && finalized.json().activated === true;
     cases.push({
       name: 'finalize_activate',
       ok: finalizeOk,
@@ -179,9 +172,7 @@ export async function runAttachmentHttpS3CompatibleDrill(input: {
       headers: { authorization: `Bearer ${token}` },
     });
     const readDigest =
-      read.statusCode === 200
-        ? createHash('sha256').update(read.rawPayload).digest('hex')
-        : null;
+      read.statusCode === 200 ? createHash('sha256').update(read.rawPayload).digest('hex') : null;
     const readOk =
       read.statusCode === 200 &&
       read.headers['cache-control'] === 'private, no-store' &&

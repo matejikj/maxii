@@ -46,7 +46,10 @@ export async function runFamilyPhotoTransferTick(input: {
   readonly quotaBlockedAttachmentIds?: ReadonlySet<string> | undefined;
   /** Optional hook fired once per successfully finalized upload job. */
   readonly onUploadSucceeded?:
-    | ((outbox: FamilyPhotoUploadMetadataOutbox, job: FamilyPhotoBlobTransferJob) => void | Promise<void>)
+    | ((
+        outbox: FamilyPhotoUploadMetadataOutbox,
+        job: FamilyPhotoBlobTransferJob,
+      ) => void | Promise<void>)
     | undefined;
 }): Promise<FamilyPhotoTransferTickResult> {
   if (!shouldEnqueueFamilyPhotoTransfers(input.session)) {

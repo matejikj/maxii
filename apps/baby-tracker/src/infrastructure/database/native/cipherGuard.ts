@@ -1,11 +1,7 @@
 import { bytesToHex } from '@noble/hashes/utils.js';
 
 export class EncryptedDatabaseError extends Error {
-  readonly code:
-    | 'CIPHER_UNAVAILABLE'
-    | 'KEY_REQUIRED'
-    | 'OPEN_FAILED'
-    | 'INTEGRITY_FAILED';
+  readonly code: 'CIPHER_UNAVAILABLE' | 'KEY_REQUIRED' | 'OPEN_FAILED' | 'INTEGRITY_FAILED';
 
   constructor(code: EncryptedDatabaseError['code'], message: string) {
     super(message);
@@ -37,9 +33,7 @@ export function sqlCipherKeyPragma(key: Uint8Array): string {
  * cipher_version is missing, SQLite would silently ignore PRAGMA key and store
  * plaintext — that path is refused here before any private table is created.
  */
-export async function assertSqlCipherAvailable(
-  openMemory: () => CipherQueryable,
-): Promise<string> {
+export async function assertSqlCipherAvailable(openMemory: () => CipherQueryable): Promise<string> {
   const db = openMemory();
   try {
     const row = await db.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version');

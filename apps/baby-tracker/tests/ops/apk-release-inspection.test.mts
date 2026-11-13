@@ -39,6 +39,8 @@ test('personal release gate accepts clean APK badging and hash', () => {
   });
   assert.equal(result.ok, true);
   assert.ok(result.findings.some((item) => item.id === 'apk.packageName' && item.ok));
-  assert.ok(result.findings.some((item) => item.id === 'apk.permissions.noSensitiveExtras' && item.ok));
+  assert.ok(
+    result.findings.some((item) => item.id === 'apk.permissions.noSensitiveExtras' && item.ok),
+  );
   assert.ok(result.findings.some((item) => item.id === 'apk.sha256' && item.ok));
 });

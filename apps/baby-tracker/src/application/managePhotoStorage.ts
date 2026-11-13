@@ -26,9 +26,7 @@ export type ClearRecoverablePhotoCacheResult = {
 };
 
 export type ReleaseDurablePhotoCopyReason =
-  | Extract<SoleOwnReleaseDecision, { allow: false }>['reason']
-  | 'not_found'
-  | 'not_own_import';
+  Extract<SoleOwnReleaseDecision, { allow: false }>['reason'] | 'not_found' | 'not_own_import';
 
 export type ReleaseDurablePhotoCopyResult =
   | {
@@ -151,9 +149,7 @@ export async function releaseDurableOwnPhotoCopy(input: {
   readonly completePortableArchiveVerified: boolean;
   readonly userConfirmedOfflineLoss: boolean;
 }): Promise<ReleaseDurablePhotoCopyResult> {
-  const current = await input.attachments.repository.getById(
-    asAttachmentId(input.attachmentId),
-  );
+  const current = await input.attachments.repository.getById(asAttachmentId(input.attachmentId));
   if (!current || current.deletedAtMs != null) {
     return { ok: false, reason: 'not_found' };
   }

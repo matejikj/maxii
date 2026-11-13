@@ -95,8 +95,6 @@ export function confirmOfflineShareProposal(input: {
 }
 
 /** Product invariant: coming back online never publishes a pending proposal. */
-export function networkBecameOnlineMustNotAutoPublish(
-  _proposal: PendingShareProposal,
-): false {
+export function networkBecameOnlineMustNotAutoPublish(_proposal: PendingShareProposal): false {
   return false;
 }

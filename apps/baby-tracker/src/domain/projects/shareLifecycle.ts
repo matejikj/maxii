@@ -88,10 +88,7 @@ export function publishShareSnapshot(input: {
   };
 }
 
-export function revokeShareSnapshot(
-  share: ShareSnapshot,
-  now: Instant,
-): ShareSnapshot {
+export function revokeShareSnapshot(share: ShareSnapshot, now: Instant): ShareSnapshot {
   if (share.revokedAt != null) {
     return share;
   }

@@ -1,9 +1,17 @@
 /** Shared semantic tokens. Illustration hues are not automatically accessible text colors. */
 export const lumi = {
   colors: {
-    ivory: '#FAF7F1', sage: '#DDECE5', peach: '#F2CDBF', lilac: '#E1D9F2',
-    honey: '#F4E3AD', ink: '#384C4A', inkMuted: '#647672', card: '#FFFFFF',
-    border: '#E9ECE6', success: '#608A73', warning: '#B77953',
+    ivory: '#FAF7F1',
+    sage: '#DDECE5',
+    peach: '#F2CDBF',
+    lilac: '#E1D9F2',
+    honey: '#F4E3AD',
+    ink: '#384C4A',
+    inkMuted: '#647672',
+    card: '#FFFFFF',
+    border: '#E9ECE6',
+    success: '#608A73',
+    warning: '#B77953',
   },
   typography: {
     h1: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const },

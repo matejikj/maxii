@@ -16,14 +16,8 @@ test('compose attachment stack keeps personal cold on memory', () => {
     } as NodeJS.ProcessEnv),
   );
   assert.equal(resolved.provider, 'memory');
-  assert.equal(
-    LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.s3Endpoint,
-    'http://127.0.0.1:9090',
-  );
-  assert.equal(
-    LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.databaseUrl.includes('5433'),
-    true,
-  );
+  assert.equal(LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.s3Endpoint, 'http://127.0.0.1:9090');
+  assert.equal(LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.databaseUrl.includes('5433'), true);
 });
 
 test('deploy compose attachment stack drill script is present', () => {
@@ -44,11 +38,7 @@ test('live compose attachment stack against Postgres+S3Mock when healthy (otherw
     ...LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS,
     deployDir: join(process.cwd(), 'deploy'),
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.liveReady, false);
   assert.equal(result.cloudflareR2Ready, false);
   assert.equal(result.softwareReady, true);
@@ -58,10 +48,9 @@ test('live compose attachment stack against Postgres+S3Mock when healthy (otherw
 
 async function s3CompatibleHealthy(): Promise<boolean> {
   try {
-    const response = await fetch(
-      LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.s3Endpoint + '/',
-      { method: 'GET' },
-    );
+    const response = await fetch(LOCAL_ATTACHMENT_COMPOSE_STACK_DRILL_DEFAULTS.s3Endpoint + '/', {
+      method: 'GET',
+    });
     return response.ok;
   } catch {
     return false;

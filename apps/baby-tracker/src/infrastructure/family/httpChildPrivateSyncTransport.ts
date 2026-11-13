@@ -62,9 +62,7 @@ export function createHttpChildPrivateSyncTransport(
   const fetchImpl = config.fetchImpl ?? fetch;
   const base = config.apiBaseUrl.replace(/\/$/, '');
 
-  async function resolveAuth(
-    extra?: Record<string, string>,
-  ): Promise<RequestAuth> {
+  async function resolveAuth(extra?: Record<string, string>): Promise<RequestAuth> {
     const credentials = await config.getAccessCredentials();
     if (!credentials) {
       throw new Error('child_private_sync_unauthorized');
@@ -125,9 +123,7 @@ export function createHttpChildPrivateSyncTransport(
       });
       const json = (await readJson(response)) as PushJson & ErrorBody;
       if (!response.ok) {
-        throw new Error(
-          json.error?.code ?? `child_private_sync_push_${response.status}`,
-        );
+        throw new Error(json.error?.code ?? `child_private_sync_push_${response.status}`);
       }
       return {
         epoch: json.epoch ?? 0,
@@ -140,22 +136,15 @@ export function createHttpChildPrivateSyncTransport(
       const query = new URLSearchParams();
       if (input.cursor) query.set('cursor', input.cursor);
       const suffix = query.size > 0 ? `?${query.toString()}` : '';
-      const response = await fetchImpl(
-        `${base}${CHILD_PRIVATE_PULL_PATH}${suffix}`,
-        {
-          method: 'GET',
-          headers: auth.headers,
-          credentials: auth.credentials,
-        },
-      );
+      const response = await fetchImpl(`${base}${CHILD_PRIVATE_PULL_PATH}${suffix}`, {
+        method: 'GET',
+        headers: auth.headers,
+        credentials: auth.credentials,
+      });
       const json = (await readJson(response)) as PullJson & ErrorBody;
       // Server signals epoch drift as 409 + sync page; surface it as a normal
       // pull result so the worker can keep unsent private work.
-      if (
-        response.status === 409 &&
-        json.error?.code === 'resync_required' &&
-        json.sync
-      ) {
+      if (response.status === 409 && json.error?.code === 'resync_required' && json.sync) {
         return {
           entries: json.sync.entries ?? [],
           nextCursor: json.sync.nextCursor ?? null,
@@ -164,9 +153,7 @@ export function createHttpChildPrivateSyncTransport(
         };
       }
       if (!response.ok) {
-        throw new Error(
-          json.error?.code ?? `child_private_sync_pull_${response.status}`,
-        );
+        throw new Error(json.error?.code ?? `child_private_sync_pull_${response.status}`);
       }
       return {
         entries: json.entries ?? [],

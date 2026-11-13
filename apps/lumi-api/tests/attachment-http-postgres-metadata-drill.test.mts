@@ -55,7 +55,10 @@ test('finalize persists locators through optional metadata port without Postgres
     },
     async getAttachment(input) {
       const erase = erasures.get(`${input.familyId}:${input.attachmentId}`);
-      if (erase == null && ![...rows.keys()].some((key) => key.startsWith(`${input.familyId}:${input.attachmentId}:`))) {
+      if (
+        erase == null &&
+        ![...rows.keys()].some((key) => key.startsWith(`${input.familyId}:${input.attachmentId}:`))
+      ) {
         return null;
       }
       return {
@@ -110,9 +113,7 @@ test('finalize persists locators through optional metadata port without Postgres
   });
   assert.equal(finalized.ok, true);
   assert.equal(
-    rows.has(
-      '11111111-1111-4111-8111-111111111111:33333333-3333-4333-8333-333333333333:display',
-    ),
+    rows.has('11111111-1111-4111-8111-111111111111:33333333-3333-4333-8333-333333333333:display'),
     true,
   );
 
@@ -126,9 +127,7 @@ test('finalize persists locators through optional metadata port without Postgres
   });
   assert.equal(erased.ok, true);
   assert.equal(
-    erasures.get(
-      '11111111-1111-4111-8111-111111111111:33333333-3333-4333-8333-333333333333',
-    ),
+    erasures.get('11111111-1111-4111-8111-111111111111:33333333-3333-4333-8333-333333333333'),
     1,
   );
 
@@ -158,14 +157,12 @@ test('live HTTP path with Postgres metadata when Compose is healthy (otherwise s
   const result = await runAttachmentHttpPostgresMetadataDrill({
     ...LOCAL_HTTP_POSTGRES_METADATA_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.personalColdUnaffected, true);
   assert.equal(result.cloudflareR2Ready, false);
-  assert.ok(result.cases.some((row) => row.name === 'read_after_api_reboot_via_postgres' && row.ok));
+  assert.ok(
+    result.cases.some((row) => row.name === 'read_after_api_reboot_via_postgres' && row.ok),
+  );
 });
 
 async function postgresHealthy(): Promise<boolean> {

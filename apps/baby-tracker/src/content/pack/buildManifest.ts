@@ -1,9 +1,5 @@
 import { sha256Hex } from './bytes';
-import {
-  ALLOWED_CONTENT_MIME,
-  CONTENT_PACK_FORMAT,
-  CONTENT_READER_VERSION,
-} from './limits';
+import { ALLOWED_CONTENT_MIME, CONTENT_PACK_FORMAT, CONTENT_READER_VERSION } from './limits';
 import type { ContentPackFileBytes, ContentPackFileEntry, ContentPackManifest } from './types';
 
 export type BuildManifestInput = {

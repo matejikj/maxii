@@ -31,7 +31,7 @@ jobs:
       - name: Public API, TypeScript, lint, contract and source tests
         run: |
           npm run typecheck:all
-          npm run lint:baby
+          npm run check:quality
           npm run test:all
           npm run test:baby:pr
       - name: Validate contents of publication tarball

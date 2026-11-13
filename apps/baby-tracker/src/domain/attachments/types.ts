@@ -27,12 +27,7 @@ export type RenditionRole = 'display' | 'thumbnail';
 export type LocalAvailability = 'durable' | 'cache' | 'pending' | 'missing';
 
 export type AttachmentImportState =
-  | 'selected'
-  | 'normalizing'
-  | 'writing'
-  | 'linked'
-  | 'failed'
-  | 'cancelled';
+  'selected' | 'normalizing' | 'writing' | 'linked' | 'failed' | 'cancelled';
 
 export type PhotoRendition = {
   renditionId: RenditionId;
@@ -102,8 +97,4 @@ export type AttachmentImportJob = {
   updatedAtMs: number;
 };
 
-export type LocalPhotoAvailabilityLabel =
-  | 'preparing'
-  | 'local'
-  | 'missing'
-  | 'failed';
+export type LocalPhotoAvailabilityLabel = 'preparing' | 'local' | 'missing' | 'failed';

@@ -124,9 +124,7 @@ function buildVariantC(baseline: readonly CharacterPart[]): readonly CharacterPa
     if (part.id === 'head') setFill(part, '#EFE4D9');
   }
   // Keep painter orders contiguous after dropping highlight.
-  return parts.map((part, index) =>
-    part.order === index ? part : { ...part, order: index },
-  );
+  return parts.map((part, index) => (part.order === index ? part : { ...part, order: index }));
 }
 
 export function buildRabbitArtVariants(
@@ -142,7 +140,8 @@ export function buildRabbitArtVariants(
     {
       id: 'B',
       label: 'Měkký kompakt',
-      summary: 'Měkce modelované objemy, jemná srst a záhyby uší; čitelná silueta v 48 px i větší výjev.',
+      summary:
+        'Měkce modelované objemy, jemná srst a záhyby uší; čitelná silueta v 48 px i větší výjev.',
       parts: buildVariantB(baseline),
     },
     {

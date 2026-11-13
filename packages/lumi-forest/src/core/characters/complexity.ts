@@ -7,9 +7,7 @@ import type { LumiAnimal } from '../types';
 /** Count character vector IR nodes for workshop budget checks (groups included). */
 export function countCharacterVectorNodes(node: VectorNode): number {
   if (node.kind !== 'group') return 1;
-  return (
-    1 + node.children.reduce((sum, child) => sum + countCharacterVectorNodes(child), 0)
-  );
+  return 1 + node.children.reduce((sum, child) => sum + countCharacterVectorNodes(child), 0);
 }
 
 export type StudioComplexityReport = {
@@ -32,11 +30,7 @@ export function measureStudioSceneComplexity(
 ): StudioComplexityReport {
   const perAction = STUDIO_ACTION_IDS.map((actionId) => {
     const def = STUDIO_ACTIONS[actionId];
-    const node = compileStudioActionStatic(
-      CHARACTER_BLUEPRINTS[def.species],
-      actionId,
-      'workshop',
-    );
+    const node = compileStudioActionStatic(CHARACTER_BLUEPRINTS[def.species], actionId, 'workshop');
     return {
       actionId,
       species: def.species,

@@ -52,8 +52,7 @@ function decodeBase64(base64: string): Uint8Array {
     for (let i = 0; i < binary.length; i += 1) out[i] = binary.charCodeAt(i);
     return out;
   }
-  const alphabet =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   const cleaned = base64.replace(/=+$/g, '');
   const out = new Uint8Array(Math.floor((cleaned.length * 3) / 4));
   let outIndex = 0;

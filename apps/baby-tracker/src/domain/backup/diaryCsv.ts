@@ -21,14 +21,7 @@ export function escapeCsvCell(value: string): string {
  * trash markers, or device secrets. Marked private in the header comment.
  */
 export function careEventsToPrivateCsv(events: CareEvent[]): string {
-  const header = [
-    'event_id',
-    'child_id',
-    'type',
-    'sort_at_ms',
-    'revision_id',
-    'summary',
-  ];
+  const header = ['event_id', 'child_id', 'type', 'sort_at_ms', 'revision_id', 'summary'];
   const lines = [
     '# LUMI private care export — contains family diary data. Not a full recovery backup.',
     header.join(','),
@@ -56,9 +49,7 @@ function summarizeCareEvent(event: CareEvent): string {
     case 'sleep':
       return `sleep:${event.occurrence.kind}`;
     case 'bottle':
-      return event.amount
-        ? `bottle:${event.amount.value}${event.amount.unit}`
-        : 'bottle:unknown';
+      return event.amount ? `bottle:${event.amount.value}${event.amount.unit}` : 'bottle:unknown';
     case 'nursing':
       return `nursing:${event.side}`;
     case 'food':

@@ -12,10 +12,7 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('attachment postgres metadata migration and drill script exist', () => {
   assert.equal(existsSync(join(packageRoot, 'migrations/006_family_attachments.sql')), true);
-  assert.equal(
-    existsSync(join(packageRoot, 'deploy/attachment-postgres-metadata-drill.sh')),
-    true,
-  );
+  assert.equal(existsSync(join(packageRoot, 'deploy/attachment-postgres-metadata-drill.sh')), true);
 });
 
 test('live attachment metadata RLS against Compose Postgres when healthy (otherwise skip)', async (t) => {
@@ -32,11 +29,7 @@ test('live attachment metadata RLS against Compose Postgres when healthy (otherw
   const result = await runAttachmentPostgresMetadataDrill({
     ...LOCAL_ATTACHMENT_POSTGRES_METADATA_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.personalColdUnaffected, true);
   assert.ok(result.cases.some((row) => row.name === 'foreign_member_read_denied' && row.ok));
   assert.ok(result.cases.some((row) => row.name === 'tombstone_removes_objects' && row.ok));
@@ -68,10 +61,7 @@ async function applyAttachmentMigrationIfMissing(): Promise<void> {
       `select to_regclass('public.family_attachment') is not null as present`,
     );
     if (exists.rows[0]?.present === true) return;
-    const sql = readFileSync(
-      join(packageRoot, 'migrations/006_family_attachments.sql'),
-      'utf8',
-    );
+    const sql = readFileSync(join(packageRoot, 'migrations/006_family_attachments.sql'), 'utf8');
     await client.query(sql);
   } finally {
     await client.end();

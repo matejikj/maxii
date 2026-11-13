@@ -180,7 +180,8 @@ test('two tabs cannot hold the write lease or create two active sleep sessions',
           }),
         );
       }),
-    (error: unknown) => error instanceof AppError && error.details.reason === 'active_session_exists',
+    (error: unknown) =>
+      error instanceof AppError && error.details.reason === 'active_session_exists',
   );
 
   await tabA.close();
@@ -289,9 +290,8 @@ test('web UnitOfWork stores photo attachment metadata in diary IndexedDB', async
       displayName: 'Max',
       summaryTimeZone: 'Europe/Prague',
     });
-    const { asAttachmentId, asRenditionId, asAttachmentJobId } = await import(
-      '../src/domain/attachments/types.ts'
-    );
+    const { asAttachmentId, asRenditionId, asAttachmentJobId } =
+      await import('../src/domain/attachments/types.ts');
     const unitOfWork = createWebUnitOfWorkFactory(handle, { nowMs: () => now.epochMs });
     await unitOfWork.run(async (uow) => {
       await uow.attachments.save({
@@ -338,7 +338,9 @@ test('web UnitOfWork stores photo attachment metadata in diary IndexedDB', async
     const listed = await unitOfWork.run((uow) => uow.attachments.listForEvent(eventId));
     assert.equal(listed.length, 1);
     assert.equal(listed[0]?.hostEventType, 'milestone');
-    const job = await unitOfWork.run((uow) => uow.attachments.getJob(asAttachmentJobId('job_web_1')));
+    const job = await unitOfWork.run((uow) =>
+      uow.attachments.getJob(asAttachmentJobId('job_web_1')),
+    );
     assert.equal(job?.sourceMime, 'image/png');
   } finally {
     await handle.close();

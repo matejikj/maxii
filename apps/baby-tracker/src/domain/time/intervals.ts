@@ -1,11 +1,7 @@
 import { DateTime } from 'luxon';
 import { AppError } from '../errors';
 import type { Instant } from '../ports/clock';
-import {
-  calendarDateInZone,
-  endOfCalendarDayExclusive,
-  startOfCalendarDay,
-} from './calendarDate';
+import { calendarDateInZone, endOfCalendarDayExclusive, startOfCalendarDay } from './calendarDate';
 import type { CalendarDate, KnownInterval, TimeZoneId, ZonedInstant } from './types';
 
 /** Half-open millisecond interval used for projections and overlap math. */

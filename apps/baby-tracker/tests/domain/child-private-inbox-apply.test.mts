@@ -118,9 +118,7 @@ test('pulled inbox rows start unapplied and materialize into the local workspace
           intent: 'Stavím',
           status: 'active',
           reflection: 'jen pro mě',
-          steps: [
-            { stepId: 'step-1', order: 0, text: 'Začít', status: 'pending' },
-          ],
+          steps: [{ stepId: 'step-1', order: 0, text: 'Začít', status: 'pending' }],
           variantNotes: null,
           sourceNotes: null,
           templateRevisionId: null,
@@ -360,9 +358,7 @@ test('sync loop materializes pulled project into UoW after HTTP tick', async () 
                 intent: 'Sync',
                 status: 'active',
                 reflection: 'přeneseno',
-                steps: [
-                  { stepId: 's1', order: 0, text: 'Krok', status: 'tried' },
-                ],
+                steps: [{ stepId: 's1', order: 0, text: 'Krok', status: 'tried' }],
                 variantNotes: null,
                 sourceNotes: null,
                 templateRevisionId: null,

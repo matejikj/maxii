@@ -73,8 +73,7 @@ export async function runAttachmentPostgresMetadataDrill(input: {
       [['family_attachment', 'family_attachment_object']],
     );
     const names = new Set(tables.rows.map((row) => row.table_name as string));
-    const schemaOk =
-      names.has('family_attachment') && names.has('family_attachment_object');
+    const schemaOk = names.has('family_attachment') && names.has('family_attachment_object');
     cases.push({
       name: 'attachment_tables_present',
       ok: schemaOk,
@@ -212,10 +211,7 @@ export async function runAttachmentPostgresMetadataDrill(input: {
     });
     cases.push({
       name: 'tombstone_removes_objects',
-      ok:
-        erased.removedObjects >= 1 &&
-        after == null &&
-        header?.eraseGeneration === 1,
+      ok: erased.removedObjects >= 1 && after == null && header?.eraseGeneration === 1,
       detail:
         erased.removedObjects >= 1 && after == null && header?.eraseGeneration === 1
           ? 'objects deleted; erase generation recorded'
@@ -234,6 +230,5 @@ export async function runAttachmentPostgresMetadataDrill(input: {
 
 export const LOCAL_ATTACHMENT_POSTGRES_METADATA_DRILL_DEFAULTS = {
   databaseUrl: 'postgres://lumi_app:lumi_app_dev_only@127.0.0.1:5433/lumi_app',
-  adminDatabaseUrl:
-    'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
+  adminDatabaseUrl: 'postgres://postgres:postgres_dev_only@127.0.0.1:5433/lumi_app',
 } as const;

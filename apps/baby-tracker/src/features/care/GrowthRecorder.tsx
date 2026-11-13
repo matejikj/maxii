@@ -190,9 +190,7 @@ export function GrowthRecorder({
         lengthCm: parsed.lengthCm,
         headCm: parsed.headCm,
         note: note || null,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);

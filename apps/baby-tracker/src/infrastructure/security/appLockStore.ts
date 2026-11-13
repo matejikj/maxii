@@ -71,7 +71,9 @@ export function createMemoryAppLockStore(
     async disable(pin) {
       if (store.lock == null) return;
       if (!verifyPin(pin, store.lock)) {
-        throw new AppError('VALIDATION', 'PIN se neshoduje', { details: { reason: 'pin_mismatch' } });
+        throw new AppError('VALIDATION', 'PIN se neshoduje', {
+          details: { reason: 'pin_mismatch' },
+        });
       }
       store.lock = null;
       store.sessionUnlocked = true;
@@ -115,10 +117,16 @@ export function createFaultedAppLockStore(
       };
     },
     async enableWithPin() {
-      throw new AppError('STORAGE', message, { details: { reason: 'app_lock_fault' }, retryable: true });
+      throw new AppError('STORAGE', message, {
+        details: { reason: 'app_lock_fault' },
+        retryable: true,
+      });
     },
     async disable() {
-      throw new AppError('STORAGE', message, { details: { reason: 'app_lock_fault' }, retryable: true });
+      throw new AppError('STORAGE', message, {
+        details: { reason: 'app_lock_fault' },
+        retryable: true,
+      });
     },
     async unlock() {
       return false;
@@ -209,10 +217,7 @@ export async function createSecureStoreAppLockStore(
       cached = JSON.parse(raw) as StoredLock;
       return cached;
     } catch (error) {
-      fault =
-        error instanceof Error
-          ? error.message
-          : 'Úložiště zámku nelze přečíst';
+      fault = error instanceof Error ? error.message : 'Úložiště zámku nelze přečíst';
       throw new AppError('STORAGE', fault, {
         details: { reason: 'app_lock_read_failed' },
         retryable: true,
@@ -233,10 +238,7 @@ export async function createSecureStoreAppLockStore(
       });
       fault = null;
     } catch (error) {
-      fault =
-        error instanceof Error
-          ? error.message
-          : 'Úložiště zámku nelze zapsat';
+      fault = error instanceof Error ? error.message : 'Úložiště zámku nelze zapsat';
       throw new AppError('STORAGE', fault, {
         details: { reason: 'app_lock_write_failed' },
         retryable: true,
@@ -286,7 +288,9 @@ export async function createSecureStoreAppLockStore(
       const lock = await readLock();
       if (lock == null) return;
       if (!verifyPin(pin, lock)) {
-        throw new AppError('VALIDATION', 'PIN se neshoduje', { details: { reason: 'pin_mismatch' } });
+        throw new AppError('VALIDATION', 'PIN se neshoduje', {
+          details: { reason: 'pin_mismatch' },
+        });
       }
       await writeLock(null);
       sessionUnlocked = true;
@@ -332,8 +336,7 @@ export async function createSecureStoreAppLockStore(
 export async function openPlatformAppLockStore(): Promise<AppLockStore> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Platform } = require('react-native') as { Platform: { OS: string } };
-  const protection: AppLockProtection =
-    Platform.OS === 'web' ? 'origin_storage' : 'secure_store';
+  const protection: AppLockProtection = Platform.OS === 'web' ? 'origin_storage' : 'secure_store';
   try {
     return await createSecureStoreAppLockStore(protection);
   } catch (error) {
@@ -341,10 +344,7 @@ export async function openPlatformAppLockStore(): Promise<AppLockStore> {
       // Web without SecureStore keeps a same-origin session gate and says so.
       return createMemoryAppLockStore('origin_storage');
     }
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Úložiště zámku není dostupné';
+    const message = error instanceof Error ? error.message : 'Úložiště zámku není dostupné';
     return createFaultedAppLockStore(message, () => createSecureStoreAppLockStore(protection));
   }
 }

@@ -45,11 +45,7 @@ export {
   type UndoEndNursingSessionCommand,
   type UndoEndSleepSessionCommand,
 } from './sessionCommands';
-export {
-  DRAFT_AUTOSAVE_DEBOUNCE_MS,
-  TRASH_RETENTION_MS,
-  UNDO_WINDOW_MS,
-} from './retention';
+export { DRAFT_AUTOSAVE_DEBOUNCE_MS, TRASH_RETENTION_MS, UNDO_WINDOW_MS } from './retention';
 export type {
   ApplicationCommand,
   CareMutationCommand,

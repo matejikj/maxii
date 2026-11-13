@@ -39,9 +39,7 @@ export async function setAttachmentOfflinePin(input: {
   readonly attachments: AttachmentServices;
   readonly transfer?: FamilyPhotoTransferPinQueue | null;
 }): Promise<KeepAttachmentOfflineResult | null> {
-  const current = await input.attachments.repository.getById(
-    asAttachmentId(input.attachmentId),
-  );
+  const current = await input.attachments.repository.getById(asAttachmentId(input.attachmentId));
   if (!current || current.deletedAtMs != null) return null;
 
   const existingJobs = input.transfer?.getJobs() ?? [];
@@ -54,10 +52,7 @@ export async function setAttachmentOfflinePin(input: {
 
   let downloadJobsQueued = 0;
   let personalColdDownloadsSkipped = false;
-  if (
-    input.pinned &&
-    (planned.needsDisplayDownload || planned.needsThumbnailDownload)
-  ) {
+  if (input.pinned && (planned.needsDisplayDownload || planned.needsThumbnailDownload)) {
     const transfer = input.transfer;
     if (!transfer || !transfer.getSession().familySyncConfigured) {
       personalColdDownloadsSkipped = true;
@@ -75,9 +70,7 @@ export async function setAttachmentOfflinePin(input: {
     hasDurableDisplay: planned.attachment.renditions.some(
       (row) => row.role === 'display' && row.availability === 'durable',
     ),
-    downloadInFlightOrQueued:
-      downloadJobsQueued > 0 ||
-      planned.readiness.kind === 'pending',
+    downloadInFlightOrQueued: downloadJobsQueued > 0 || planned.readiness.kind === 'pending',
   });
 
   return {

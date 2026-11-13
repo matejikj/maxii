@@ -52,14 +52,8 @@ test('invalid session transition and unknown duration stay distinct states', () 
     kind: 'nursing',
     startedAt: zonedInstant({ epochMs: 1_700_000_000_000 }, zone),
   });
-  const paused = pauseNursingSession(
-    running,
-    zonedInstant({ epochMs: 1_700_000_010_000 }, zone),
-  );
-  const resumed = resumeNursingSession(
-    paused,
-    zonedInstant({ epochMs: 1_700_000_020_000 }, zone),
-  );
+  const paused = pauseNursingSession(running, zonedInstant({ epochMs: 1_700_000_010_000 }, zone));
+  const resumed = resumeNursingSession(paused, zonedInstant({ epochMs: 1_700_000_020_000 }, zone));
   const completed = completeSessionWithDuration(
     resumed,
     zonedInstant({ epochMs: 1_700_000_040_000 }, zone),
@@ -276,16 +270,16 @@ test('commands keep operationId and reject invalid boundary payloads', () => {
     now,
   );
   assert.equal(event.type, 'diaper');
-  const ok = savedLocally(intent, { epochMs: 1_700_000_100_000 }, [event.eventId], [
-    event.revisionId,
-  ]);
+  const ok = savedLocally(
+    intent,
+    { epochMs: 1_700_000_100_000 },
+    [event.eventId],
+    [event.revisionId],
+  );
   assert.equal(ok.savedLocally, true);
   assert.equal(ok.operationId, intent.operationId);
 
-  const failed = commandFailed(
-    intent,
-    new AppError('STORAGE', 'disk full', { retryable: true }),
-  );
+  const failed = commandFailed(intent, new AppError('STORAGE', 'disk full', { retryable: true }));
   assert.equal(failed.savedLocally, false);
   assert.equal(failed.error.retryable, true);
 

@@ -1,10 +1,7 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { canonicalizeJson, utf8Bytes } from './canonicalize';
 import { bytesToBase64Url, hexToUint8 } from './bytes';
-import {
-  CONTENT_PACK_SIGNATURE_ALGORITHM,
-  CONTENT_PACK_SIGNATURE_FORMAT,
-} from './limits';
+import { CONTENT_PACK_SIGNATURE_ALGORITHM, CONTENT_PACK_SIGNATURE_FORMAT } from './limits';
 import type { ContentPackManifest, ContentPackSignature } from './types';
 
 export function signContentPackManifest(

@@ -18,8 +18,14 @@ const SECTIONS: readonly { id: DevelopmentSection; label: string; icon: LumiIcon
   { id: 'milestones', label: 'Milníky', icon: 'growth' },
 ];
 const AREA_TONES: Record<DevelopmentArea, ForestTone> = {
-  relationship: 'care', speech: 'experience', movement: 'development', senses: 'today',
-  attention: 'sleep', spaceQuantity: 'bottle', creationRhythm: 'food', autonomy: 'growth',
+  relationship: 'care',
+  speech: 'experience',
+  movement: 'development',
+  senses: 'today',
+  attention: 'sleep',
+  spaceQuantity: 'bottle',
+  creationRhythm: 'food',
+  autonomy: 'growth',
 };
 
 export function DevelopmentHero() {
@@ -29,123 +35,271 @@ export function DevelopmentHero() {
   const spacious = width < 350 || fontScale > 1.25;
   const [copyHeight, setCopyHeight] = useState(0);
   return (
-    <View style={[styles.hero, { backgroundColor: colors.surfaceSubtle,
-      minHeight: Math.max(190, (Math.min(width, 620) - 40) / 2, Math.ceil((copyHeight - 20) * 4 / 3)) }]}
-      testID="development-hero">
+    <View
+      style={[
+        styles.hero,
+        {
+          backgroundColor: colors.surfaceSubtle,
+          minHeight: Math.max(
+            190,
+            (Math.min(width, 620) - 40) / 2,
+            Math.ceil(((copyHeight - 20) * 4) / 3),
+          ),
+        },
+      ]}
+      testID="development-hero"
+    >
       <ForestCardLandscape variant="day" opacity={spacious ? 0.14 : 1} />
-      <View style={[styles.heroCopy, { maxWidth: spacious ? '100%' : '69%' }]}
-        onLayout={(event) => setCopyHeight(event.nativeEvent.layout.height)}>
-        <LumiText variant="overline" tone="muted" style={styles.eyebrow}>SPOLEČNĚ ROSTEME</LumiText>
-        <LumiText accessibilityRole="header" style={styles.heroTitle}>Malé objevy.{ '\n' }Velká blízkost.</LumiText>
-        <LumiText variant="caption" tone="muted" style={styles.heroHint}>Hravě. S láskou. Vlastním tempem.</LumiText>
+      <View
+        style={[styles.heroCopy, { maxWidth: spacious ? '100%' : '69%' }]}
+        onLayout={(event) => setCopyHeight(event.nativeEvent.layout.height)}
+      >
+        <LumiText variant="overline" tone="muted" style={styles.eyebrow}>
+          SPOLEČNĚ ROSTEME
+        </LumiText>
+        <LumiText accessibilityRole="header" style={styles.heroTitle}>
+          Malé objevy.{'\n'}Velká blízkost.
+        </LumiText>
+        <LumiText variant="caption" tone="muted" style={styles.heroHint}>
+          Hravě. S láskou. Vlastním tempem.
+        </LumiText>
       </View>
-      {!spacious ? <View style={styles.character} pointerEvents="none" accessible={false}
-        importantForAccessibility="no-hide-descendants">
-        <LumiCharacter species={preferences.guideSpecies} appearanceStyle={preferences.appearanceStyle}
-          expression="curious" width={motif === 'forest' ? 150 : 130} height={motif === 'forest' ? 164 : 148} />
-      </View> : null}
+      {!spacious ? (
+        <View
+          style={styles.character}
+          pointerEvents="none"
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+        >
+          <LumiCharacter
+            species={preferences.guideSpecies}
+            appearanceStyle={preferences.appearanceStyle}
+            expression="curious"
+            width={motif === 'forest' ? 150 : 130}
+            height={motif === 'forest' ? 164 : 148}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
 
-export function DevelopmentTabs({ value, onChange }: {
-  value: DevelopmentSection; onChange: (section: DevelopmentSection) => void;
+export function DevelopmentTabs({
+  value,
+  onChange,
+}: {
+  value: DevelopmentSection;
+  onChange: (section: DevelopmentSection) => void;
 }) {
   const { colors } = useLumiTheme();
   const { width, fontScale } = useWindowDimensions();
   return (
-    <View style={[styles.tabs, { backgroundColor: colors.surfaceSubtle }]}
-      accessibilityRole="tablist" accessibilityLabel="Sekce rozvoje">
-      {SECTIONS.map((section) => <DevelopmentTab key={section.id} {...section}
-        selected={value === section.id} onPress={() => onChange(section.id)}
-        stacked={fontScale > 1.1 || width < 480} />)}
+    <View
+      style={[styles.tabs, { backgroundColor: colors.surfaceSubtle }]}
+      accessibilityRole="tablist"
+      accessibilityLabel="Sekce rozvoje"
+    >
+      {SECTIONS.map((section) => (
+        <DevelopmentTab
+          key={section.id}
+          {...section}
+          selected={value === section.id}
+          onPress={() => onChange(section.id)}
+          stacked={fontScale > 1.1 || width < 480}
+        />
+      ))}
     </View>
   );
 }
 
-function DevelopmentTab({ id, label, icon, selected, stacked, onPress }: {
-  id: DevelopmentSection; label: string; icon: LumiIconId; selected: boolean; stacked: boolean; onPress: () => void;
+function DevelopmentTab({
+  id,
+  label,
+  icon,
+  selected,
+  stacked,
+  onPress,
+}: {
+  id: DevelopmentSection;
+  label: string;
+  icon: LumiIconId;
+  selected: boolean;
+  stacked: boolean;
+  onPress: () => void;
 }) {
   const { colors } = useLumiTheme();
   const [focused, setFocused] = useState(false);
-  return <Pressable onPress={onPress} accessibilityRole="tab" accessibilityState={{ selected }}
-    aria-selected={selected}
-    accessibilityLabel={label} testID={`development-tab-${id}`}
-    onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={({ pressed }) => [styles.tab, { flexDirection: stacked ? 'column' : 'row',
-      backgroundColor: selected ? colors.primary : 'transparent', opacity: pressed ? 0.8 : 1,
-      borderColor: focused ? colors.focus : 'transparent' }]}>
-    <LumiIcon name={icon} size={19} color={selected ? colors.onPrimary : colors.textMuted} />
-    <LumiText variant="label" style={[styles.tabLabel, { color: selected ? colors.onPrimary : colors.textMuted }]}>{label}</LumiText>
-  </Pressable>;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      aria-selected={selected}
+      accessibilityLabel={label}
+      testID={`development-tab-${id}`}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={({ pressed }) => [
+        styles.tab,
+        {
+          flexDirection: stacked ? 'column' : 'row',
+          backgroundColor: selected ? colors.primary : 'transparent',
+          opacity: pressed ? 0.8 : 1,
+          borderColor: focused ? colors.focus : 'transparent',
+        },
+      ]}
+    >
+      <LumiIcon name={icon} size={19} color={selected ? colors.onPrimary : colors.textMuted} />
+      <LumiText
+        variant="label"
+        style={[styles.tabLabel, { color: selected ? colors.onPrimary : colors.textMuted }]}
+      >
+        {label}
+      </LumiText>
+    </Pressable>
+  );
 }
 
-export function DevelopmentHeading({ title, subtitle, icon = 'development' }: {
-  title: string; subtitle?: string; icon?: ForestTone;
+export function DevelopmentHeading({
+  title,
+  subtitle,
+  icon = 'development',
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: ForestTone;
 }) {
-  return <View style={styles.heading}>
-    <ForestIconBadge name={icon} size={42} />
-    <View style={styles.flexCopy}>
-      <LumiText variant="h2" accessibilityRole="header">{title}</LumiText>
-      {subtitle ? <LumiText variant="caption" tone="muted">{subtitle}</LumiText> : null}
+  return (
+    <View style={styles.heading}>
+      <ForestIconBadge name={icon} size={42} />
+      <View style={styles.flexCopy}>
+        <LumiText variant="h2" accessibilityRole="header">
+          {title}
+        </LumiText>
+        {subtitle ? (
+          <LumiText variant="caption" tone="muted">
+            {subtitle}
+          </LumiText>
+        ) : null}
+      </View>
     </View>
-  </View>;
+  );
 }
 
 export function ActivityMetadata({ revision }: { revision: ActivityRevision }) {
   const { colors } = useLumiTheme();
-  return <View style={styles.metadata}>
-    <View style={styles.metaItem}>
-      <LumiIcon name="history" size={14} color={colors.textMuted} />
-      <LumiText variant="caption" tone="muted">{activityDurationLabel(revision)}</LumiText>
+  return (
+    <View style={styles.metadata}>
+      <View style={styles.metaItem}>
+        <LumiIcon name="history" size={14} color={colors.textMuted} />
+        <LumiText variant="caption" tone="muted">
+          {activityDurationLabel(revision)}
+        </LumiText>
+      </View>
+      <LumiText variant="caption" tone="muted">
+        {activityAgeLabel(revision)}
+      </LumiText>
+      {revision.materials.length === 0 ? (
+        <LumiText variant="caption" tone="muted">
+          Bez pomůcek
+        </LumiText>
+      ) : null}
     </View>
-    <LumiText variant="caption" tone="muted">{activityAgeLabel(revision)}</LumiText>
-    {revision.materials.length === 0 ? <LumiText variant="caption" tone="muted">Bez pomůcek</LumiText> : null}
-  </View>;
+  );
 }
 
-export function DevelopmentActivityCard({ revision, featured = false, reason, tried = false, onPress, testID }: {
-  revision: ActivityRevision; featured?: boolean; reason?: string; tried?: boolean; onPress: () => void; testID?: string;
+export function DevelopmentActivityCard({
+  revision,
+  featured = false,
+  reason,
+  tried = false,
+  onPress,
+  testID,
+}: {
+  revision: ActivityRevision;
+  featured?: boolean;
+  reason?: string;
+  tried?: boolean;
+  onPress: () => void;
+  testID?: string;
 }) {
   const { colors, mode, motif } = useLumiTheme();
   const [focused, setFocused] = useState(false);
   const tone = forestTone(mode, AREA_TONES[revision.primaryArea], motif);
-  return <Pressable onPress={onPress} accessibilityRole="button"
-    accessibilityLabel={`${revision.title}. ${DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}. ${activityDurationLabel(revision)}. ${activityAgeLabel(revision)}${tried ? '. Dnes vyzkoušeno' : ''}`}
-    accessibilityHint="Otevřít postup a podmínky aktivity"
-    testID={testID} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={({ pressed }) => [styles.activity, featured ? styles.featured : null,
-      { backgroundColor: featured ? tone.background : colors.surface,
-        borderColor: focused ? colors.focus : featured ? tone.background : colors.border,
-        opacity: pressed ? 0.8 : 1 }]}>
-    <View style={styles.activityTop}>
-      <ForestIconBadge name={AREA_TONES[revision.primaryArea]} size={featured ? 48 : 40} />
-      <LumiText variant="caption" style={[styles.area, { color: tone.ink }]}>
-        {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${revision.title}. ${DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}. ${activityDurationLabel(revision)}. ${activityAgeLabel(revision)}${tried ? '. Dnes vyzkoušeno' : ''}`}
+      accessibilityHint="Otevřít postup a podmínky aktivity"
+      testID={testID}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={({ pressed }) => [
+        styles.activity,
+        featured ? styles.featured : null,
+        {
+          backgroundColor: featured ? tone.background : colors.surface,
+          borderColor: focused ? colors.focus : featured ? tone.background : colors.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+      ]}
+    >
+      <View style={styles.activityTop}>
+        <ForestIconBadge name={AREA_TONES[revision.primaryArea]} size={featured ? 48 : 40} />
+        <LumiText variant="caption" style={[styles.area, { color: tone.ink }]}>
+          {DEVELOPMENT_AREA_LABELS_CS[revision.primaryArea]}
+        </LumiText>
+        {!featured ? <LumiIcon name="arrow-right" size={19} color={colors.primary} /> : null}
+      </View>
+      <LumiText variant="bodyStrong" style={featured ? styles.featuredTitle : undefined}>
+        {revision.title}
       </LumiText>
-      {!featured ? <LumiIcon name="arrow-right" size={19} color={colors.primary} /> : null}
-    </View>
-    <LumiText variant="bodyStrong" style={featured ? styles.featuredTitle : undefined}>{revision.title}</LumiText>
-    <ActivityMetadata revision={revision} />
-    {reason ? <LumiText variant="caption" tone="muted">{reason}</LumiText> : null}
-    {tried ? <LumiText variant="caption" tone="success">Dnes už jste vyzkoušeli</LumiText> : null}
-    {featured ? <View style={[styles.openActivity, { backgroundColor: colors.primary }]}>
-      <LumiText variant="label" style={{ color: colors.onPrimary, flex: 1 }}>Objevit aktivitu</LumiText>
-      <LumiIcon name="arrow-right" size={20} color={colors.onPrimary} />
-    </View> : null}
-  </Pressable>;
+      <ActivityMetadata revision={revision} />
+      {reason ? (
+        <LumiText variant="caption" tone="muted">
+          {reason}
+        </LumiText>
+      ) : null}
+      {tried ? (
+        <LumiText variant="caption" tone="success">
+          Dnes už jste vyzkoušeli
+        </LumiText>
+      ) : null}
+      {featured ? (
+        <View style={[styles.openActivity, { backgroundColor: colors.primary }]}>
+          <LumiText variant="label" style={{ color: colors.onPrimary, flex: 1 }}>
+            Objevit aktivitu
+          </LumiText>
+          <LumiIcon name="arrow-right" size={20} color={colors.onPrimary} />
+        </View>
+      ) : null}
+    </Pressable>
+  );
 }
 
-export function DevelopmentEmpty({ title, description, icon = 'development', children }: {
-  title: string; description: string; icon?: ForestTone; children?: React.ReactNode;
+export function DevelopmentEmpty({
+  title,
+  description,
+  icon = 'development',
+  children,
+}: {
+  title: string;
+  description: string;
+  icon?: ForestTone;
+  children?: React.ReactNode;
 }) {
   const { colors } = useLumiTheme();
-  return <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-    <ForestIconBadge name={icon} size={50} />
-    <LumiText variant="bodyStrong">{title}</LumiText>
-    <LumiText variant="caption" tone="muted">{description}</LumiText>
-    {children}
-  </View>;
+  return (
+    <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <ForestIconBadge name={icon} size={50} />
+      <LumiText variant="bodyStrong">{title}</LumiText>
+      <LumiText variant="caption" tone="muted">
+        {description}
+      </LumiText>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -156,8 +310,18 @@ const styles = StyleSheet.create({
   heroHint: { fontSize: 12, lineHeight: 18 },
   character: { position: 'absolute', bottom: -8, right: -5 },
   tabs: { flexDirection: 'row', padding: 5, borderRadius: 22, gap: 4 },
-  tab: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', minHeight: 48,
-    paddingHorizontal: 4, paddingVertical: 10, borderRadius: 18, gap: 6, borderWidth: 2 },
+  tab: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+    borderRadius: 18,
+    gap: 6,
+    borderWidth: 2,
+  },
   tabLabel: { fontSize: 12, lineHeight: 18, flexShrink: 1, textAlign: 'center' },
   heading: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   flexCopy: { flex: 1, gap: 3 },
@@ -168,7 +332,14 @@ const styles = StyleSheet.create({
   activityTop: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   area: { flex: 1, fontWeight: '600' },
   featuredTitle: { fontSize: 23, lineHeight: 30, letterSpacing: -0.4 },
-  openActivity: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    gap: 12, padding: 14, minHeight: 50, borderRadius: 17 },
+  openActivity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    padding: 14,
+    minHeight: 50,
+    borderRadius: 17,
+  },
   empty: { padding: 22, borderRadius: 25, borderWidth: 1, gap: 12 },
 });

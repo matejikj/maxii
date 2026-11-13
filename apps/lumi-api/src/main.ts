@@ -16,7 +16,7 @@ async function main(): Promise<void> {
     const onStop = () => controller.abort();
     process.once('SIGINT', onStop);
     process.once('SIGTERM', onStop);
-    // eslint-disable-next-line no-console
+
     console.log(
       JSON.stringify({
         event: 'lumi_worker_starting',
@@ -31,14 +31,14 @@ async function main(): Promise<void> {
       pollMs: config.workerPollMs,
       signal: controller.signal,
     });
-    // eslint-disable-next-line no-console
+
     console.log(JSON.stringify({ event: 'lumi_worker_stopped', ...result }));
     return;
   }
 
   const { app } = await createFamilyApi(config);
   await app.listen({ host: config.host, port: config.port });
-  // eslint-disable-next-line no-console
+
   console.log(
     JSON.stringify({
       event: 'lumi_api_listening',
@@ -53,7 +53,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exitCode = 1;
 });

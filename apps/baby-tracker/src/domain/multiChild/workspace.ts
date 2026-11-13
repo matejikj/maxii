@@ -29,9 +29,7 @@ export type ActiveSessionStripItem = {
   displayName: string;
 };
 
-export type DiaryExportScope =
-  | { kind: 'all_children' }
-  | { kind: 'one_child'; childId: ChildId };
+export type DiaryExportScope = { kind: 'all_children' } | { kind: 'one_child'; childId: ChildId };
 
 /**
  * Prefer the stored active id when it still names an active profile. Otherwise
@@ -125,9 +123,7 @@ export function planArchiveChildProfile(input: {
     input.activeChildId === input.childId
       ? remainingActive[0]!
       : resolveActiveChildProfile(
-          normalized.map((profile) =>
-            profile.childId === input.childId ? archived : profile,
-          ),
+          normalized.map((profile) => (profile.childId === input.childId ? archived : profile)),
           input.activeChildId,
         );
   if (!nextActive) {
@@ -203,7 +199,10 @@ export function listActiveSessionsForStrip(input: {
         displayName: profile?.displayName ?? 'Dítě',
       };
     })
-    .sort((a, b) => a.displayName.localeCompare(b.displayName, 'cs') || a.childId.localeCompare(b.childId));
+    .sort(
+      (a, b) =>
+        a.displayName.localeCompare(b.displayName, 'cs') || a.childId.localeCompare(b.childId),
+    );
 }
 
 export function planCareEventReassignment(input: {
@@ -270,7 +269,8 @@ export function filterDiaryArchiveByScope(
   );
   const meta = archive.meta.filter((entry) => {
     if (entry.key === 'active_child_id') return entry.value === childId;
-    if (entry.key.startsWith(META_CHILD_AVATAR_PREFIX)) return entry.key === `${META_CHILD_AVATAR_PREFIX}${childId}`;
+    if (entry.key.startsWith(META_CHILD_AVATAR_PREFIX))
+      return entry.key === `${META_CHILD_AVATAR_PREFIX}${childId}`;
     return true;
   });
   return createDiaryArchive({

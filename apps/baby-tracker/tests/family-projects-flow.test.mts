@@ -184,7 +184,10 @@ test('portfolio selection persists and family export omits childPrivate rows', a
     principalKind: 'other_adult_admin',
     principalAppUserId: asActorId('admin_1'),
   });
-  assert.equal(exported.projects.every((row) => row.scope === 'familyGuided'), true);
+  assert.equal(
+    exported.projects.every((row) => row.scope === 'familyGuided'),
+    true,
+  );
   assert.equal(
     exported.projects.some((row) => row.title === 'Tajný'),
     false,

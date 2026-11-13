@@ -9,12 +9,7 @@ import type {
   TimeZoneId,
   ZonedInstant,
 } from '../../domain';
-import {
-  asEntityId,
-  asOperationId,
-  asRevisionId,
-  zonedInstant,
-} from '../../domain';
+import { asEntityId, asOperationId, asRevisionId, zonedInstant } from '../../domain';
 
 export type MomentIntentIds = {
   operationId: ReturnType<typeof asOperationId>;

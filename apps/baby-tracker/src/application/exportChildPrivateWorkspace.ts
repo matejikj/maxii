@@ -42,11 +42,7 @@ const UNAVAILABLE: ChildPrivateExportPreview = {
 };
 
 function describeManifest(manifest: ChildPrivateExportManifest): string[] {
-  if (
-    manifest.projectCount === 0 &&
-    manifest.portfolioCount === 0 &&
-    manifest.shareCount === 0
-  ) {
+  if (manifest.projectCount === 0 && manifest.portfolioCount === 0 && manifest.shareCount === 0) {
     return ['Zatím není co exportovat — vlastní prostor je prázdný.'];
   }
   return [

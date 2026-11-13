@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import {
+  LumiButton,
+  LumiCard,
+  LumiInput,
+  LumiText,
+  useLumiTheme,
+} from '@lumi/forest-design/native';
 import {
   CHILD_SHELL_FIRST_ENTRY,
   addChildShellPortfolioSelection,
@@ -36,10 +42,7 @@ import {
   type ChildShellShareCard,
 } from '../../application';
 import { useCompositionRoot } from '../../app/providers';
-import {
-  useBootstrap,
-  type PersonalRuntime,
-} from '../../app/session/BootstrapContext';
+import { useBootstrap, type PersonalRuntime } from '../../app/session/BootstrapContext';
 import { usePersonalPreferences } from '../../app/session/PreferencesContext';
 import {
   asActorId,
@@ -62,13 +65,7 @@ type ShellProps = {
   readonly childPrivateModeActive: boolean;
 };
 
-function ShellHeader({
-  alias,
-  onOpenProfile,
-}: {
-  alias: string;
-  onOpenProfile: () => void;
-}) {
+function ShellHeader({ alias, onOpenProfile }: { alias: string; onOpenProfile: () => void }) {
   return (
     <View style={styles.header} testID="child-shell-header">
       <View style={{ flex: 1 }}>
@@ -142,7 +139,10 @@ export function ChildShellTodayScreen(props: ShellProps) {
       contentContainerStyle={styles.pad}
       testID="child-shell-today"
     >
-      <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
+      <ShellHeader
+        alias={props.session.principal.displayAlias}
+        onOpenProfile={props.onOpenProfile}
+      />
       {!props.session.firstEntryCompleted ? (
         <LumiCard testID="child-shell-first-entry">
           <LumiText variant="h3">Vítej</LumiText>
@@ -218,7 +218,10 @@ export function ChildShellProjectsScreen(props: ShellProps) {
       contentContainerStyle={styles.pad}
       testID="child-shell-projects"
     >
-      <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
+      <ShellHeader
+        alias={props.session.principal.displayAlias}
+        onOpenProfile={props.onOpenProfile}
+      />
       <LumiButton
         title="Vlastní nápad"
         disabled={busy || !childId || !props.childPrivateModeActive}
@@ -352,7 +355,9 @@ export function ChildShellProjectsScreen(props: ShellProps) {
             }}
           />
           <LumiText variant="h3">Malý zápis</LumiText>
-          <LumiText tone="muted">Volitelné — Co jsem zkusil/a, Co bych změnil/a. Můžeš vynechat.</LumiText>
+          <LumiText tone="muted">
+            Volitelné — Co jsem zkusil/a, Co bych změnil/a. Můžeš vynechat.
+          </LumiText>
           <LumiInput
             label="Reflexe"
             accessibilityLabel="Reflexe"
@@ -414,11 +419,7 @@ export function ChildShellProjectsScreen(props: ShellProps) {
                 .finally(() => setBusy(false));
             }}
           />
-          <LumiButton
-            title="Zavřít detail"
-            disabled={busy}
-            onPress={() => setDetail(null)}
-          />
+          <LumiButton title="Zavřít detail" disabled={busy} onPress={() => setDetail(null)} />
         </LumiCard>
       ) : null}
       <ProjectCardList
@@ -504,13 +505,7 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
       }
       return drafts;
     });
-  }, [
-    bootstrap.runtime,
-    childId,
-    ownerAppUserId,
-    portfolioQuery,
-    props.childPrivateModeActive,
-  ]);
+  }, [bootstrap.runtime, childId, ownerAppUserId, portfolioQuery, props.childPrivateModeActive]);
 
   useEffect(() => {
     void reloadShares().catch((err) => {
@@ -530,11 +525,15 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
       contentContainerStyle={styles.pad}
       testID="child-shell-portfolio"
     >
-      <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
+      <ShellHeader
+        alias={props.session.principal.displayAlias}
+        onOpenProfile={props.onOpenProfile}
+      />
       <LumiCard testID="child-shell-portfolio-cards">
         <LumiText variant="h3">Portfolio</LumiText>
         <LumiText tone="muted">
-          Sem patří jen výtvory, které sám vybereš. Není to žebříček ani automatická historie výkonu.
+          Sem patří jen výtvory, které sám vybereš. Není to žebříček ani automatická historie
+          výkonu.
         </LumiText>
         <LumiInput
           label="Filtrovat výtvory"
@@ -623,8 +622,8 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
       <LumiCard testID="child-shell-share-panel">
         <LumiText variant="h3">Ukázat někomu</LumiText>
         <LumiText tone="muted">
-          Uvidí jen tuto ukázku. Další úpravy projektu zůstanou u tebe. Připojení samo nic
-          neodešle — musíš potvrdit.
+          Uvidí jen tuto ukázku. Další úpravy projektu zůstanou u tebe. Připojení samo nic neodešle
+          — musíš potvrdit.
         </LumiText>
         <LumiButton
           title="Připravit ukázku"
@@ -637,8 +636,7 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
               .run(async (uow) => {
                 const mine = (await uow.projects.listAll()).find(
                   (project) =>
-                    project.scope === 'childPrivate' &&
-                    project.ownerAppUserId === ownerAppUserId,
+                    project.scope === 'childPrivate' && project.ownerAppUserId === ownerAppUserId,
                 );
                 if (!mine) {
                   throw new Error('Nejdřív založ vlastní projekt v záložce Projekty.');
@@ -698,11 +696,7 @@ export function ChildShellPortfolioScreen(props: ShellProps) {
                   .finally(() => setBusy(false));
               }}
             />
-            <LumiButton
-              title="Zrušit návrh"
-              disabled={busy}
-              onPress={() => setPending(null)}
-            />
+            <LumiButton title="Zrušit návrh" disabled={busy} onPress={() => setPending(null)} />
           </View>
         ) : null}
       </LumiCard>
@@ -796,7 +790,10 @@ export function ChildShellDiscoverScreen(props: ShellProps) {
       contentContainerStyle={styles.pad}
       testID="child-shell-discover"
     >
-      <ShellHeader alias={props.session.principal.displayAlias} onOpenProfile={props.onOpenProfile} />
+      <ShellHeader
+        alias={props.session.principal.displayAlias}
+        onOpenProfile={props.onOpenProfile}
+      />
       <LumiCard testID="child-shell-discover-search">
         <LumiText variant="h3">Objevování</LumiText>
         <LumiText tone="muted">

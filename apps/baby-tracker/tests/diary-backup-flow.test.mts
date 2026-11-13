@@ -170,10 +170,7 @@ test('native portable export restores on web without duplicating on repeat', asy
 
   const after = await web.unitOfWork.run((uow) => uow.care.listRecent(childId, 20));
   assert.equal(after.length, 2);
-  assert.deepEqual(
-    after.map((row) => row.eventId).sort(),
-    ['note_a', 'note_b'],
-  );
+  assert.deepEqual(after.map((row) => row.eventId).sort(), ['note_a', 'note_b']);
 
   // Repeat import of the same archive must replace, not duplicate.
   const stagedAgain = await stagePortableImport({
@@ -210,15 +207,15 @@ test('wrong password and invalid envelope leave live diary unchanged', async () 
         serializedEnvelope: sealed.serialized,
         password: 'wrong',
       }),
-    (error: unknown) => error instanceof Error && /Wrong recovery password|CRYPTO/i.test(String(error)),
+    (error: unknown) =>
+      error instanceof Error && /Wrong recovery password|CRYPTO/i.test(String(error)),
   );
-  await assert.rejects(
-    () =>
-      stagePortableImport({
-        unitOfWork: native.unitOfWork,
-        serializedEnvelope: '{not-json',
-        password: 'correct',
-      }),
+  await assert.rejects(() =>
+    stagePortableImport({
+      unitOfWork: native.unitOfWork,
+      serializedEnvelope: '{not-json',
+      password: 'correct',
+    }),
   );
 
   const live = await native.unitOfWork.run((uow) => uow.care.listRecent(childId, 10));

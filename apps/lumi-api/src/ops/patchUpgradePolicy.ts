@@ -23,12 +23,8 @@ export function evaluatePatchUpgradePolicy(deployDir: string): PatchUpgradePolic
   const migrationRunbook = join(deployDir, 'migration-cutover-runbook.txt');
 
   const opsText = existsSync(opsRunbook) ? readFileSync(opsRunbook, 'utf8') : '';
-  const restoreText = existsSync(restoreRunbook)
-    ? readFileSync(restoreRunbook, 'utf8')
-    : '';
-  const migrationText = existsSync(migrationRunbook)
-    ? readFileSync(migrationRunbook, 'utf8')
-    : '';
+  const restoreText = existsSync(restoreRunbook) ? readFileSync(restoreRunbook, 'utf8') : '';
+  const migrationText = existsSync(migrationRunbook) ? readFileSync(migrationRunbook, 'utf8') : '';
 
   checks.push({
     name: 'ops_runbook_present',
@@ -59,8 +55,7 @@ export function evaluatePatchUpgradePolicy(deployDir: string): PatchUpgradePolic
   checks.push({
     name: 'old_clients_survive_protocol_sunset',
     ok: true,
-    detail:
-      'Personal tracker and local export remain required when the family protocol is sunset',
+    detail: 'Personal tracker and local export remain required when the family protocol is sunset',
   });
 
   return {

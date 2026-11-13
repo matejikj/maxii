@@ -23,9 +23,14 @@ export const LumiIcon = React.memo(function LumiIcon({
   style,
   accessibilityLabel,
 }: LumiIconProps) {
-  const document = useMemo(() => compileLumiIcon(name, {
-    color, ...(accentColor === undefined ? {} : { accentColor }),
-  }), [name, color, accentColor]);
+  const document = useMemo(
+    () =>
+      compileLumiIcon(name, {
+        color,
+        ...(accentColor === undefined ? {} : { accentColor }),
+      }),
+    [name, color, accentColor],
+  );
   const labeled = accessibilityLabel != null && accessibilityLabel.length > 0;
   return (
     <View

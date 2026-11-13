@@ -15,7 +15,11 @@ export type LocalPhotoCopyRecord = {
 };
 
 export type CacheEvictionPlan =
-  | { readonly ok: true; readonly evictBlobKeys: readonly string[]; readonly remainingCacheBytes: number }
+  | {
+      readonly ok: true;
+      readonly evictBlobKeys: readonly string[];
+      readonly remainingCacheBytes: number;
+    }
   | { readonly ok: false; readonly reason: 'budget_exceeds_protected_copies' };
 
 /**
@@ -53,10 +57,7 @@ export type SoleOwnReleaseDecision =
   | {
       readonly allow: false;
       readonly reason:
-        | 'not_sole_own_copy'
-        | 'remote_unverified'
-        | 'backup_unconfirmed'
-        | 'user_not_confirmed';
+        'not_sole_own_copy' | 'remote_unverified' | 'backup_unconfirmed' | 'user_not_confirmed';
     };
 
 /**

@@ -37,12 +37,8 @@ test('lost ack retry marks outbox acked once without duplicating local work', ()
     payload: { wet: true },
     enqueuedAt: '2026-11-09T00:00:00.000Z',
   });
-  state = applyPushReceipts(state, [
-    { operationId: 'op-1', status: 'accepted' },
-  ]);
-  state = applyPushReceipts(state, [
-    { operationId: 'op-1', status: 'duplicate' },
-  ]);
+  state = applyPushReceipts(state, [{ operationId: 'op-1', status: 'accepted' }]);
+  state = applyPushReceipts(state, [{ operationId: 'op-1', status: 'duplicate' }]);
   assert.equal(pendingOutbox(state).length, 0);
   assert.equal(state.outbox.length, 1);
   assert.equal(state.outbox[0]?.acked, true);

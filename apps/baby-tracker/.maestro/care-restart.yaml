@@ -3,20 +3,20 @@ appId: com.matejikj
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "LUMI"
+    visible: 'LUMI'
     timeout: 30000
 - tapOn:
-    text: "Přeskočit úvod"
+    text: 'Přeskočit úvod'
     optional: true
 - tapOn:
-    id: "quick-diaper"
+    id: 'quick-diaper'
 - tapOn:
-    id: "direct-wet"
-- assertVisible: "Přebalení uloženo."
+    id: 'direct-wet'
+- assertVisible: 'Přebalení uloženo.'
 - stopApp
 - launchApp
 - tapOn:
-    text: "Přeskočit úvod"
+    text: 'Přeskočit úvod'
     optional: true
-- tapOn: "Historie"
-- assertVisible: "Plenka"
+- tapOn: 'Historie'
+- assertVisible: 'Plenka'

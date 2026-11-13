@@ -19,11 +19,9 @@ export type NativeIdCheckResult = {
   problems: string[];
 };
 
-const ANDROID_APPLICATION_ID =
-  /(?:^|\n)\s*applicationId\s+['"]([^'"]+)['"]/;
+const ANDROID_APPLICATION_ID = /(?:^|\n)\s*applicationId\s+['"]([^'"]+)['"]/;
 const ANDROID_NAMESPACE = /(?:^|\n)\s*namespace\s+['"]([^'"]+)['"]/;
-const IOS_BUNDLE_ID =
-  /PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"?([^";\s]+)"?\s*;/g;
+const IOS_BUNDLE_ID = /PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"?([^";\s]+)"?\s*;/g;
 
 export function extractAndroidApplicationId(gradleSource: string): string | null {
   const match = ANDROID_APPLICATION_ID.exec(gradleSource);
@@ -43,9 +41,7 @@ export function extractIosBundleIdentifiers(pbxprojSource: string): string[] {
   return [...ids];
 }
 
-export function checkNativeApplicationIds(
-  input: NativeIdCheckInput,
-): NativeIdCheckResult {
+export function checkNativeApplicationIds(input: NativeIdCheckInput): NativeIdCheckResult {
   const expectedId = input.expectedId ?? PERSONAL_APPLICATION_ID;
   const problems: string[] = [];
   let androidApplicationId: string | null = null;
@@ -60,9 +56,7 @@ export function checkNativeApplicationIds(
       );
     }
     if (namespace !== expectedId) {
-      problems.push(
-        `android namespace is ${namespace ?? '<missing>'}, expected ${expectedId}`,
-      );
+      problems.push(`android namespace is ${namespace ?? '<missing>'}, expected ${expectedId}`);
     }
   }
 

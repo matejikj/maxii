@@ -152,7 +152,9 @@ export function isStudioActionId(value: unknown): value is StudioActionId {
 }
 
 export function isCharacterAppearanceStyle(value: unknown): value is CharacterAppearanceStyle {
-  return typeof value === 'string' && (CHARACTER_APPEARANCE_STYLES as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' && (CHARACTER_APPEARANCE_STYLES as readonly string[]).includes(value)
+  );
 }
 
 /** Resolve a workshop action; unknown IDs fall back without throwing. */
@@ -161,7 +163,9 @@ export function resolveStudioAction(value: unknown): StudioActionDefinition | nu
   return STUDIO_ACTIONS[value];
 }
 
-export function listStudioActionsForSpecies(species: LumiAnimal): readonly StudioActionDefinition[] {
+export function listStudioActionsForSpecies(
+  species: LumiAnimal,
+): readonly StudioActionDefinition[] {
   return STUDIO_ACTION_IDS.map((id) => STUDIO_ACTIONS[id]).filter(
     (action) => action.species === species,
   );

@@ -72,15 +72,27 @@ export function validateContentPackManifest(
   );
   const rulesVersion = requireNonEmptyString(record.rulesVersion, 'rulesVersion', errors);
   if (record.language !== 'cs') {
-    errors.push({ path: 'language', code: 'language', message: 'Only cs content packs are supported.' });
+    errors.push({
+      path: 'language',
+      code: 'language',
+      message: 'Only cs content packs are supported.',
+    });
   }
 
   let ageMonths: ContentPackManifest['ageMonths'] | null = null;
-  if (record.ageMonths == null || typeof record.ageMonths !== 'object' || Array.isArray(record.ageMonths)) {
+  if (
+    record.ageMonths == null ||
+    typeof record.ageMonths !== 'object' ||
+    Array.isArray(record.ageMonths)
+  ) {
     errors.push({ path: 'ageMonths', code: 'ageMonths', message: 'ageMonths must be an object.' });
   } else {
     const age = record.ageMonths as Record<string, unknown>;
-    const fromInclusive = requireNonNegativeInt(age.fromInclusive, 'ageMonths.fromInclusive', errors);
+    const fromInclusive = requireNonNegativeInt(
+      age.fromInclusive,
+      'ageMonths.fromInclusive',
+      errors,
+    );
     const toInclusive = requireNonNegativeInt(age.toInclusive, 'ageMonths.toInclusive', errors);
     if (fromInclusive != null && toInclusive != null) {
       if (toInclusive < fromInclusive) {
@@ -152,10 +164,7 @@ export function validateContentPackManifest(
   };
 }
 
-function parseFiles(
-  value: unknown,
-  errors: PackFieldError[],
-): ContentPackFileEntry[] | null {
+function parseFiles(value: unknown, errors: PackFieldError[]): ContentPackFileEntry[] | null {
   if (!Array.isArray(value)) {
     errors.push({ path: 'files', code: 'files', message: 'files must be an array.' });
     return null;
@@ -167,7 +176,11 @@ function parseFiles(
   const seen = new Set<string>();
   for (const [index, item] of value.entries()) {
     if (item == null || typeof item !== 'object' || Array.isArray(item)) {
-      errors.push({ path: `files[${index}]`, code: 'file_shape', message: 'File entry must be an object.' });
+      errors.push({
+        path: `files[${index}]`,
+        code: 'file_shape',
+        message: 'File entry must be an object.',
+      });
       continue;
     }
     const record = item as Record<string, unknown>;
@@ -213,7 +226,11 @@ function parseFiles(
         message: `MIME ${mime} is not allowed for kind ${kind}.`,
       });
     }
-    const byteLength = requireNonNegativeInt(record.byteLength, `files[${index}].byteLength`, errors);
+    const byteLength = requireNonNegativeInt(
+      record.byteLength,
+      `files[${index}].byteLength`,
+      errors,
+    );
     if (byteLength != null && byteLength > CONTENT_PACK_LIMITS.maxFileBytes) {
       errors.push({
         path: `files[${index}].byteLength`,
@@ -222,9 +239,7 @@ function parseFiles(
       });
     }
     const sha256 =
-      typeof record.sha256 === 'string' && SHA256_RE.test(record.sha256)
-        ? record.sha256
-        : null;
+      typeof record.sha256 === 'string' && SHA256_RE.test(record.sha256) ? record.sha256 : null;
     if (!sha256) {
       errors.push({
         path: `files[${index}].sha256`,
@@ -280,13 +295,18 @@ function requireStringArray(
   return value as string[];
 }
 
-function requirePositiveInt(
-  value: unknown,
-  path: string,
-  errors: PackFieldError[],
-): number | null {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > Number.MAX_SAFE_INTEGER) {
-    errors.push({ path, code: 'positive_int', message: `${path} must be a positive safe integer.` });
+function requirePositiveInt(value: unknown, path: string, errors: PackFieldError[]): number | null {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > Number.MAX_SAFE_INTEGER
+  ) {
+    errors.push({
+      path,
+      code: 'positive_int',
+      message: `${path} must be a positive safe integer.`,
+    });
     return null;
   }
   return value;

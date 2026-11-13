@@ -2,7 +2,15 @@
 export const LUMI_UI_TOKENS = Object.freeze({
   space: { none: 0, xxs: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 40, huge: 48 },
   radius: { xs: 8, sm: 12, md: 18, lg: 24, card: 26, pill: 999 },
-  size: { touch: 48, touchCompact: 44, buttonLarge: 56, input: 52, icon: 20, iconLarge: 24, contentMax: 560 },
+  size: {
+    touch: 48,
+    touchCompact: 44,
+    buttonLarge: 56,
+    input: 52,
+    icon: 20,
+    iconLarge: 24,
+    contentMax: 560,
+  },
   line: { hairline: 1, focus: 2 },
   opacity: { disabled: 0.48, backdrop: 0.54 },
   type: {

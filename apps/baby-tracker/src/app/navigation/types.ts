@@ -27,6 +27,4 @@ export type RootStackParamList = {
 };
 
 export type AppRouteName =
-  | keyof MainTabParamList
-  | keyof ChildShellTabParamList
-  | keyof RootStackParamList;
+  keyof MainTabParamList | keyof ChildShellTabParamList | keyof RootStackParamList;

@@ -62,8 +62,7 @@ export function photoAttachmentFromRemoteMetadata(
   payload: RemoteAttachmentMetadataPayload,
 ): PhotoAttachment {
   const attachmentId = asAttachmentId(payload.attachmentId);
-  const deletedAtMs =
-    payload.deletedAt == null ? null : Date.parse(payload.deletedAt);
+  const deletedAtMs = payload.deletedAt == null ? null : Date.parse(payload.deletedAt);
   return {
     attachmentId,
     childId: payload.childId as PhotoAttachment['childId'],
@@ -115,9 +114,7 @@ export function mergeRemoteAttachmentMetadata(input: {
       localOrigin: input.local.localOrigin ?? 'imported',
     };
   }
-  const localByRendition = new Map(
-    input.local.renditions.map((row) => [row.renditionId, row]),
-  );
+  const localByRendition = new Map(input.local.renditions.map((row) => [row.renditionId, row]));
   return {
     ...input.local,
     caption: input.remote.caption,

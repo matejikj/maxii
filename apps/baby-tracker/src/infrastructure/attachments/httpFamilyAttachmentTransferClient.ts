@@ -39,9 +39,7 @@ export function createHttpFamilyAttachmentTransferClient(
   const fetchImpl = config.fetchImpl ?? fetch;
   const base = config.apiBaseUrl.replace(/\/$/, '');
 
-  async function resolveAuth(
-    extra?: Record<string, string>,
-  ): Promise<RequestAuth | null> {
+  async function resolveAuth(extra?: Record<string, string>): Promise<RequestAuth | null> {
     const credentials = await config.getAccessCredentials();
     if (!credentials) return null;
     if (credentials.kind === 'bearer') {
@@ -237,9 +235,7 @@ export function createHttpFamilyAttachmentTransferClient(
         const buffer = new Uint8Array(await response.arrayBuffer());
         const sha256 = response.headers.get('x-lumi-attachment-sha256') ?? '';
         const byteLengthHeader = response.headers.get('x-lumi-attachment-bytes');
-        const byteLength = byteLengthHeader
-          ? Number(byteLengthHeader)
-          : buffer.byteLength;
+        const byteLength = byteLengthHeader ? Number(byteLengthHeader) : buffer.byteLength;
         return {
           ok: true,
           value: { bytes: buffer, sha256, byteLength },

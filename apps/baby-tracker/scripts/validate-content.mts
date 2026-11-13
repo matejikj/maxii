@@ -77,13 +77,19 @@ const publishedFirstYearCount = publishedFirstYear.filter((revision) =>
 ).length;
 if (publishedFirstYearCount !== 60) {
   failed += 1;
-  console.error(`first-year published recommendable count: ${publishedFirstYearCount} (expected 60)`);
+  console.error(
+    `first-year published recommendable count: ${publishedFirstYearCount} (expected 60)`,
+  );
 }
 
-const publishedToddlerCount = publishedToddler.filter((revision) => isRecommendable(revision)).length;
+const publishedToddlerCount = publishedToddler.filter((revision) =>
+  isRecommendable(revision),
+).length;
 if (publishedToddlerCount !== 24) {
   failed += 1;
-  console.error(`toddler 1–2 published recommendable count: ${publishedToddlerCount} (expected 24)`);
+  console.error(
+    `toddler 1–2 published recommendable count: ${publishedToddlerCount} (expected 24)`,
+  );
 }
 
 const publishedPreschoolCount = publishedPreschool.filter((revision) =>
@@ -96,10 +102,14 @@ if (publishedPreschoolCount !== 24) {
   );
 }
 
-const publishedPrimaryCount = publishedPrimary.filter((revision) => isRecommendable(revision)).length;
+const publishedPrimaryCount = publishedPrimary.filter((revision) =>
+  isRecommendable(revision),
+).length;
 if (publishedPrimaryCount !== 24) {
   failed += 1;
-  console.error(`primary 5–8 published recommendable count: ${publishedPrimaryCount} (expected 24)`);
+  console.error(
+    `primary 5–8 published recommendable count: ${publishedPrimaryCount} (expected 24)`,
+  );
 }
 
 const birthdayLeak = [...firstYearDrafts, ...publishedFirstYear].filter(

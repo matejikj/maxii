@@ -182,7 +182,9 @@ test('first-year draft pack validates as sixty unpublished moment activities', (
     assert.equal(revision.duration.kind, 'moment');
     assert.equal(revision.ageMonths.toInclusive <= 11, true);
     assert.equal(isRecommendable(revision), false);
-    assert.ok(revision.sources.every((source) => typeof source.url === 'string' && source.url.length > 0));
+    assert.ok(
+      revision.sources.every((source) => typeof source.url === 'string' && source.url.length > 0),
+    );
   }
 
   const readinessGated = FIRST_YEAR_DRAFT_REVISIONS.filter((revision) =>
@@ -243,7 +245,14 @@ test('real draft materials block unavailable props without excluding prop-free c
       lastPrimaryArea: null,
       sleepRunning: false,
       durationPreference: null,
-      readinessByKey: { grasp: 'yes', release: 'yes', rollAttempt: 'yes', floorSit: 'yes', floorMove: 'yes', gesture: 'yes' },
+      readinessByKey: {
+        grasp: 'yes',
+        release: 'yes',
+        rollAttempt: 'yes',
+        floorSit: 'yes',
+        floorMove: 'yes',
+        gesture: 'yes',
+      },
     };
     assert.equal(evaluateEligibility(candidate, context).eligible, true, revision.activityId);
     if (revision.materials.length > 0) {
@@ -257,10 +266,18 @@ test('real draft materials block unavailable props without excluding prop-free c
         assert.deepEqual(decision.reasonCodes, ['materials_missing']);
       }
     } else {
-      assert.equal(evaluateEligibility(candidate, { ...context, withoutMaterialsOnly: true }).eligible, true);
+      assert.equal(
+        evaluateEligibility(candidate, { ...context, withoutMaterialsOnly: true }).eligible,
+        true,
+      );
     }
   }
-  for (const activityId of ['parent-knee-rhythm', 'familiar-voices-greeting', 'self-led-floor-exploring', 'floor-play-partner']) {
+  for (const activityId of [
+    'parent-knee-rhythm',
+    'familiar-voices-greeting',
+    'self-led-floor-exploring',
+    'floor-play-partner',
+  ]) {
     const revision = FIRST_YEAR_DRAFT_REVISIONS.find((item) => item.activityId === activityId)!;
     assert.deepEqual(revision.materials, [], activityId);
   }
@@ -277,17 +294,32 @@ test('first-year published pack carries documented reviews and stays recommendab
     assert.equal(revision.ageMonths.toInclusive <= 11, true);
     for (const stage of required) {
       assert.ok(
-        revision.editorial.history.some((event) => event.stage === stage && event.outcome === 'passed'),
+        revision.editorial.history.some(
+          (event) => event.stage === stage && event.outcome === 'passed',
+        ),
         `${revision.revisionId} missing ${stage}`,
       );
     }
-    assert.equal(revision.editorial.history.find((e) => e.stage === 'expert_reviewed')?.author, 'Tomáš Holý');
-    assert.equal(revision.editorial.history.find((e) => e.stage === 'language_ux')?.author, 'Alena Světlá');
-    assert.equal(revision.editorial.history.find((e) => e.stage === 'parent_verified')?.author, 'Barbora Bílá');
+    assert.equal(
+      revision.editorial.history.find((e) => e.stage === 'expert_reviewed')?.author,
+      'Tomáš Holý',
+    );
+    assert.equal(
+      revision.editorial.history.find((e) => e.stage === 'language_ux')?.author,
+      'Alena Světlá',
+    );
+    assert.equal(
+      revision.editorial.history.find((e) => e.stage === 'parent_verified')?.author,
+      'Barbora Bílá',
+    );
   }
 
   const { catalog, rejected } = buildPublishedCatalog(
-    [...FIRST_YEAR_ARCHIVED_REVISIONS, ...FIRST_YEAR_DRAFT_REVISIONS, ...FIRST_YEAR_PUBLISHED_REVISIONS],
+    [
+      ...FIRST_YEAR_ARCHIVED_REVISIONS,
+      ...FIRST_YEAR_DRAFT_REVISIONS,
+      ...FIRST_YEAR_PUBLISHED_REVISIONS,
+    ],
     'first-year.v1',
   );
   assert.deepEqual(rejected, []);

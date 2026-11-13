@@ -13,8 +13,8 @@ export function BackupHintBanner() {
         <LumiText variant="h3">Přenosná záloha</LumiText>
         <LumiText tone="muted">
           Záznamy jsou uložené v tomto zařízení. Pro ochranu před ztrátou telefonu vytvořte v
-          profilu přenosnou šifrovanou zálohu a uložte ji mimo telefon. Místní body obnovy
-          ztrátu zařízení nepřežijí.
+          profilu přenosnou šifrovanou zálohu a uložte ji mimo telefon. Místní body obnovy ztrátu
+          zařízení nepřežijí.
         </LumiText>
         <LumiButton title="Rozumím" onPress={() => void dismissBackupHint()} />
       </View>

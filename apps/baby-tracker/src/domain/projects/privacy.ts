@@ -77,10 +77,7 @@ export function evaluateProjectAccess(
     if (ctx.principalKind === 'owner') {
       // The owner kind alone is not enough — the concrete app user must match,
       // so a sibling's private rows never open for another "owner" principal.
-      if (
-        ctx.principalAppUserId != null &&
-        ctx.principalAppUserId === ctx.project.ownerAppUserId
-      ) {
+      if (ctx.principalAppUserId != null && ctx.principalAppUserId === ctx.project.ownerAppUserId) {
         return { allowed: true, reason: 'owner' };
       }
       return { allowed: false, reason: 'denied_child_private' };
@@ -105,12 +102,7 @@ export function evaluateProjectAccess(
     return { allowed: true, reason: 'family_guided_admin' };
   }
   if (ctx.principalKind === 'other_adult_caregiver' || ctx.principalKind === 'owner') {
-    if (
-      action === 'read' ||
-      action === 'list' ||
-      action === 'count' ||
-      action === 'export'
-    ) {
+    if (action === 'read' || action === 'list' || action === 'count' || action === 'export') {
       return { allowed: true, reason: 'family_guided_caregiver_read' };
     }
     if (action === 'create') {
@@ -137,10 +129,7 @@ export function evaluateProjectAccess(
   return { allowed: false, reason: 'denied_child_private' };
 }
 
-export function assertProjectAccess(
-  action: ProjectAccessAction,
-  ctx: ProjectAccessContext,
-): void {
+export function assertProjectAccess(action: ProjectAccessAction, ctx: ProjectAccessContext): void {
   const decision = evaluateProjectAccess(action, ctx);
   if (!decision.allowed) {
     throw new AppError('FORBIDDEN', 'Project access denied by privacy matrix', {

@@ -18,14 +18,8 @@ import {
 } from '../domain';
 
 export type CareOverviewCache = {
-  getDaily(
-    key: string,
-    compute: () => Promise<DailyCareOverview>,
-  ): Promise<DailyCareOverview>;
-  getWeekly(
-    key: string,
-    compute: () => Promise<WeeklyCareOverview>,
-  ): Promise<WeeklyCareOverview>;
+  getDaily(key: string, compute: () => Promise<DailyCareOverview>): Promise<DailyCareOverview>;
+  getWeekly(key: string, compute: () => Promise<WeeklyCareOverview>): Promise<WeeklyCareOverview>;
   /** Drop derived totals only — never touches durable care rows. */
   invalidate(): void;
 };
@@ -71,7 +65,13 @@ export async function loadDailyCareOverview(
 ): Promise<DailyCareOverview> {
   const key = `day:${input.childId}:${formatCalendarDate(input.day)}:${input.summaryTimeZone}`;
   const compute = async () => {
-    const events = await loadOverviewEvents(uow, input.childId, input.day, input.day, input.summaryTimeZone);
+    const events = await loadOverviewEvents(
+      uow,
+      input.childId,
+      input.day,
+      input.day,
+      input.summaryTimeZone,
+    );
     const activeSessions = await loadActiveSessions(uow, input.childId);
     return buildDailyCareOverview({
       day: input.day,

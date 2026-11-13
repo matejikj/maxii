@@ -39,8 +39,7 @@ function memoryProjects(seed: Project[]): {
             projects.set(project.projectId, project);
           },
           listAll: async () => [...projects.values()],
-          listByChild: async (id) =>
-            [...projects.values()].filter((row) => row.childId === id),
+          listByChild: async (id) => [...projects.values()].filter((row) => row.childId === id),
           delete: async () => undefined,
           deleteByChild: async () => 0,
           clearAll: async () => {

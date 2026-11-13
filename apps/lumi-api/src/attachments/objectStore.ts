@@ -23,10 +23,7 @@ export type AttachmentObjectStorePort = {
   }): Promise<{ ok: true } | { ok: false; reason: 'digest_mismatch' | 'empty' }>;
   activate(objectKey: string): Promise<boolean>;
   readActivated(objectKey: string): Promise<StoredAttachmentObject | null>;
-  tombstoneByAttachment(input: {
-    familyId: string;
-    attachmentId: string;
-  }): Promise<number>;
+  tombstoneByAttachment(input: { familyId: string; attachmentId: string }): Promise<number>;
   deleteStaging(objectKey: string): Promise<void>;
   /**
    * Remove an activated object after a verified locator cutover. Staging-only

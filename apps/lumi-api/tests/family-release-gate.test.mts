@@ -52,9 +52,7 @@ test('current deploy keeps family release candidate closed', () => {
   assert.equal(result.releaseCandidateOk, false);
   assert.ok(result.blockers.some((b) => b.startsWith('evidence_missing:')));
   assert.ok(result.blockers.some((b) => b.includes('on_call') || b.includes('live_drill')));
-  assert.ok(
-    result.notes.some((n) => n.toLowerCase().includes('local care')),
-  );
+  assert.ok(result.notes.some((n) => n.toLowerCase().includes('local care')));
   assert.equal(
     result.findings.every((f) => typeof f.id === 'string' && typeof f.ok === 'boolean'),
     true,

@@ -9,10 +9,7 @@ import {
 import type { CheckpointStore } from './checkpoint';
 import { createMemoryCheckpointStore } from './checkpoint';
 import type { DatabasePresence } from './databasePresence';
-import {
-  DatabaseKeyStoreError,
-  type DatabaseKeyStore,
-} from './databaseKeyStoreTypes';
+import { DatabaseKeyStoreError, type DatabaseKeyStore } from './databaseKeyStoreTypes';
 import { applyPendingMigrations, assertMigrationChecksums } from './migrations';
 import type { SqlConnection, SqlDatabaseOpener } from './sqlConnection';
 import { createChangeFeed, type ChangeFeed } from './changeFeed';
@@ -48,8 +45,7 @@ export async function openPrivateDatabase(
 ): Promise<PrivateDatabase> {
   const databaseName = options.databaseName ?? PRIVATE_DATABASE_NAME;
   const keyStore =
-    options.keyStore ??
-    (await import('./databaseKeyStore')).createSecureStoreDatabaseKeyStore();
+    options.keyStore ?? (await import('./databaseKeyStore')).createSecureStoreDatabaseKeyStore();
   const presence =
     options.presence ??
     (await (await import('./databasePresence')).createSecureStoreDatabasePresence());

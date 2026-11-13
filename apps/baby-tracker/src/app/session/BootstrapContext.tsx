@@ -24,11 +24,7 @@ import {
   type PersonalBootstrapResult,
   type PersonalWipeResult,
 } from '../../application';
-import type {
-  CareOverviewCache,
-  CommandDispatcher,
-  ReadModelInvalidator,
-} from '../../application';
+import type { CareOverviewCache, CommandDispatcher, ReadModelInvalidator } from '../../application';
 import { createCareOverviewCache } from '../../application';
 import { presentStartupPhase, type StartupPhase } from '../../application/startupState';
 import type { ChildId, ChildProfile, UnitOfWorkFactory } from '../../domain';
@@ -37,10 +33,7 @@ import type { DatabaseKeyStore } from '../../infrastructure/database/native/data
 import type { DatabasePresence } from '../../infrastructure/database/native/databasePresence';
 import type { ReminderScheduler } from '../../infrastructure/notifications/reminderScheduler';
 import type { AppLockStore } from '../../infrastructure/security/appLockStore';
-import {
-  createLocalOperationMetrics,
-  type LocalOperationMetrics,
-} from '../../ops';
+import { createLocalOperationMetrics, type LocalOperationMetrics } from '../../ops';
 import { wirePersonalCommands } from '../openPersonalUnitOfWork';
 import { useCompositionRoot } from '../providers';
 
@@ -115,7 +108,10 @@ export type BootstrapContextValue = {
   skipWelcome: () => Promise<void>;
   saveProfile: (profile: ChildProfile) => Promise<void>;
   switchChild: (childId: ChildId) => Promise<void>;
-  addChild: (input: { displayName: string; birthDate?: ChildProfile['birthDate'] }) => Promise<ChildProfile>;
+  addChild: (input: {
+    displayName: string;
+    birthDate?: ChildProfile['birthDate'];
+  }) => Promise<ChildProfile>;
   archiveChild: (childId: ChildId) => Promise<void>;
   refreshChildren: () => Promise<void>;
   /** Confirmed full local wipe; restarts bootstrap for a clean first launch. */
@@ -169,19 +165,15 @@ export function BootstrapProvider({
           overviewCache.invalidate();
         }
       });
-      const attachmentModule = await import('../../infrastructure/attachments/createPersonalAttachmentServices');
-      const { createFamilyPhotoTransferSessionBinding } = await import(
-        '../../application/bindFamilyPhotoTransferSession'
-      );
-      const { createFamilyPhotoTransferLoop } = await import(
-        '../../application/familyPhotoTransferLoop'
-      );
-      const { createChildPrivateSyncSessionBinding } = await import(
-        '../../application/bindChildPrivateSyncSession'
-      );
-      const { createChildPrivateSyncLoop } = await import(
-        '../../application/childPrivateSyncLoop'
-      );
+      const attachmentModule =
+        await import('../../infrastructure/attachments/createPersonalAttachmentServices');
+      const { createFamilyPhotoTransferSessionBinding } =
+        await import('../../application/bindFamilyPhotoTransferSession');
+      const { createFamilyPhotoTransferLoop } =
+        await import('../../application/familyPhotoTransferLoop');
+      const { createChildPrivateSyncSessionBinding } =
+        await import('../../application/bindChildPrivateSyncSession');
+      const { createChildPrivateSyncLoop } = await import('../../application/childPrivateSyncLoop');
       const { resolveRemoteServicesBoundary } = await import('../remoteServicesBoundary');
       const remoteBoundary = resolveRemoteServicesBoundary();
       // Binding stays cold unless EXPO_PUBLIC_LUMI_SYNC_ENABLED and a login exist.
@@ -321,9 +313,7 @@ export function BootstrapProvider({
               ? String((error as { code: unknown }).code)
               : null,
           details:
-            mapped.error && typeof mapped.error.details === 'object'
-              ? mapped.error.details
-              : null,
+            mapped.error && typeof mapped.error.details === 'object' ? mapped.error.details : null,
         });
         setRuntime(null);
         setProfiles([]);

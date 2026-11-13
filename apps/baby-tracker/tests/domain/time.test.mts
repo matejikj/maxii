@@ -74,8 +74,7 @@ test('DST spring gap rejects or shifts explicitly', () => {
   const gapWall = { year: 2026, month: 3, day: 29, hour: 2, minute: 30, second: 0 };
   assert.throws(
     () => instantFromLocalWallTime(gapWall, prague, { policy: 'reject' }),
-    (error: unknown) =>
-      error instanceof AppError && error.details.reason === 'dst_gap',
+    (error: unknown) => error instanceof AppError && error.details.reason === 'dst_gap',
   );
   const shifted = instantFromLocalWallTime(gapWall, prague, { policy: 'shiftForwardToValid' });
   const local = DateTime.fromMillis(shifted.instant.epochMs, { zone: prague });
@@ -88,16 +87,12 @@ test('DST fall overlap requires an explicit earlier/later choice', () => {
   const overlapWall = { year: 2026, month: 10, day: 25, hour: 2, minute: 30, second: 0 };
   assert.throws(
     () => instantFromLocalWallTime(overlapWall, prague, { policy: 'reject' }),
-    (error: unknown) =>
-      error instanceof AppError && error.details.reason === 'dst_overlap',
+    (error: unknown) => error instanceof AppError && error.details.reason === 'dst_overlap',
   );
   const earlier = instantFromLocalWallTime(overlapWall, prague, { policy: 'preferEarlier' });
   const later = instantFromLocalWallTime(overlapWall, prague, { policy: 'preferLater' });
   assert.ok(earlier.instant.epochMs < later.instant.epochMs);
-  assert.equal(
-    DateTime.fromMillis(earlier.instant.epochMs, { zone: prague }).hour,
-    2,
-  );
+  assert.equal(DateTime.fromMillis(earlier.instant.epochMs, { zone: prague }).hour, 2);
   assert.equal(DateTime.fromMillis(later.instant.epochMs, { zone: prague }).hour, 2);
 });
 
@@ -135,10 +130,12 @@ test('sleep overlap unions once; nursing pauses are excluded', () => {
     { startMs: 20_000, endMs: 25_000 },
   ]);
   assert.equal(active, 15_000);
-  assert.throws(() => nursingActiveDurationMs([
-    { startMs: 0, endMs: 10_000 },
-    { startMs: 5_000, endMs: 12_000 },
-  ]));
+  assert.throws(() =>
+    nursingActiveDurationMs([
+      { startMs: 0, endMs: 10_000 },
+      { startMs: 5_000, endMs: 12_000 },
+    ]),
+  );
 });
 
 test('clock skew forward/back does not rewrite a stored zoned instant', () => {

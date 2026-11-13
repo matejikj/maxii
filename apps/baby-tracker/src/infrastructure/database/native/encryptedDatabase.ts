@@ -1,15 +1,16 @@
 import * as SQLite from 'expo-sqlite';
-import {
-  createSecureStoreDatabaseKeyStore,
-  type DatabaseKeyStore,
-} from './databaseKeyStore';
+import { createSecureStoreDatabaseKeyStore, type DatabaseKeyStore } from './databaseKeyStore';
 import {
   EncryptedDatabaseError,
   assertSqlCipherAvailable,
   sqlCipherKeyPragma,
 } from './cipherGuard';
 
-export { EncryptedDatabaseError, assertSqlCipherAvailable, sqlCipherKeyPragma } from './cipherGuard';
+export {
+  EncryptedDatabaseError,
+  assertSqlCipherAvailable,
+  sqlCipherKeyPragma,
+} from './cipherGuard';
 export { PRIVATE_DATABASE_NAME } from './databaseNames';
 import { PRIVATE_DATABASE_NAME } from './databaseNames';
 
@@ -72,16 +73,17 @@ export async function openEncryptedDatabase(options: {
  * End-to-end probe for a development build: prove cipher presence, durable write,
  * reopen with the same vault key, and rejection when the key is omitted.
  */
-export async function runEncryptedDatabaseProbe(options: {
-  keyStore?: DatabaseKeyStore;
-  databaseName?: string;
-  openDatabase?: (name: string) => Promise<SQLite.SQLiteDatabase> | SQLite.SQLiteDatabase;
-  deleteDatabase?: (name: string) => Promise<void>;
-} = {}): Promise<CipherProbeResult> {
+export async function runEncryptedDatabaseProbe(
+  options: {
+    keyStore?: DatabaseKeyStore;
+    databaseName?: string;
+    openDatabase?: (name: string) => Promise<SQLite.SQLiteDatabase> | SQLite.SQLiteDatabase;
+    deleteDatabase?: (name: string) => Promise<void>;
+  } = {},
+): Promise<CipherProbeResult> {
   const databaseName = options.databaseName ?? `lumi-cipher-probe-${Date.now()}.db`;
   const keyStore = options.keyStore ?? createSecureStoreDatabaseKeyStore();
-  const openDatabase =
-    options.openDatabase ?? ((name: string) => SQLite.openDatabaseAsync(name));
+  const openDatabase = options.openDatabase ?? ((name: string) => SQLite.openDatabaseAsync(name));
   const deleteDatabase =
     options.deleteDatabase ?? ((name: string) => SQLite.deleteDatabaseAsync(name));
 
@@ -96,11 +98,7 @@ export async function runEncryptedDatabaseProbe(options: {
     openDatabase,
   });
   try {
-    await first.runAsync(
-      'INSERT INTO lumi_storage_probe (id, marker) VALUES (?, ?)',
-      1,
-      marker,
-    );
+    await first.runAsync('INSERT INTO lumi_storage_probe (id, marker) VALUES (?, ?)', 1, marker);
   } finally {
     await first.closeAsync();
   }
@@ -121,7 +119,7 @@ export async function runEncryptedDatabaseProbe(options: {
     keyStore,
     openDatabase,
   });
-  let readMarker = '';
+  let readMarker: string;
   try {
     const row = await second.getFirstAsync<{ marker: string }>(
       'SELECT marker FROM lumi_storage_probe WHERE id = 1',

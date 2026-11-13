@@ -8,8 +8,7 @@ import {
 import type { PickedPhotoCandidate } from './types';
 
 export type PhotoInputDecision =
-  | { ok: true; mime: AttachmentSupportedInputMime }
-  | { ok: false; code: string; message: string };
+  { ok: true; mime: AttachmentSupportedInputMime } | { ok: false; code: string; message: string };
 
 function normalizeMime(raw: string): string {
   return raw.trim().toLowerCase().split(';')[0] ?? '';

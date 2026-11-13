@@ -83,9 +83,7 @@ export async function runAttachmentS3CompatibleDrill(input: {
     name: 'staging_not_readable',
     ok: beforeActivate == null,
     detail:
-      beforeActivate == null
-        ? 'staging bytes stay unpublished'
-        : 'staging leaked as activated',
+      beforeActivate == null ? 'staging bytes stay unpublished' : 'staging leaked as activated',
   });
 
   const activated = await store.activate(objectKey);

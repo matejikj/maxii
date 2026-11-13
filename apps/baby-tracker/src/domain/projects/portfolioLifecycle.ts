@@ -33,10 +33,7 @@ export function createPortfolioItem(input: {
     });
   }
   const description = input.description?.trim() || null;
-  if (
-    description != null &&
-    description.length > PROJECT_LIMITS.portfolioDescriptionMaxChars
-  ) {
+  if (description != null && description.length > PROJECT_LIMITS.portfolioDescriptionMaxChars) {
     throw new AppError('VALIDATION', 'Portfolio description is too long', {
       details: { reason: 'portfolio_description_length' },
     });
@@ -98,13 +95,8 @@ export function updatePortfolioItemDetails(
     });
   }
   const description =
-    input.description === undefined
-      ? item.description
-      : input.description?.trim() || null;
-  if (
-    description != null &&
-    description.length > PROJECT_LIMITS.portfolioDescriptionMaxChars
-  ) {
+    input.description === undefined ? item.description : input.description?.trim() || null;
+  if (description != null && description.length > PROJECT_LIMITS.portfolioDescriptionMaxChars) {
     throw new AppError('VALIDATION', 'Portfolio description is too long', {
       details: { reason: 'portfolio_description_length' },
     });

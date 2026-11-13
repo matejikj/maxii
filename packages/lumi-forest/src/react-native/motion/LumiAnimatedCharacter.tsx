@@ -3,8 +3,16 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 import Animated, {
   type SharedValue,
-  cancelAnimation, Easing, ReduceMotion, useAnimatedProps, useAnimatedStyle,
-  useSharedValue, withDelay, withRepeat, withSequence, withTiming,
+  cancelAnimation,
+  Easing,
+  ReduceMotion,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
 import { CHARACTER_BLUEPRINTS } from '../../core/characters/blueprint';
 import type { CharacterCompileOptions } from '../../core/characters/blueprint';
@@ -40,7 +48,12 @@ interface AnimatedPartProps {
 }
 
 /** Only transform props of a handful of SVG groups update per frame, on the UI runtime. */
-const AnimatedPart = React.memo(function AnimatedPart({ part, blink, ear, active }: AnimatedPartProps) {
+const AnimatedPart = React.memo(function AnimatedPart({
+  part,
+  blink,
+  ear,
+  active,
+}: AnimatedPartProps) {
   const x = part.pivot?.x ?? 0;
   const y = part.pivot?.y ?? 0;
   const channel = part.channel;
@@ -52,8 +65,12 @@ const AnimatedPart = React.memo(function AnimatedPart({ part, blink, ear, active
     return { rotation: ear.value * direction, scaleY: 1 };
   }, [channel]);
   const node = useMemo(() => [part.node], [part.node]);
-  if (!active || channel === 'static') return <VectorNodeView nodes={node}/>;
-  return <AnimatedG originX={x} originY={y} animatedProps={animatedProps}><VectorNodeView nodes={node}/></AnimatedG>;
+  if (!active || channel === 'static') return <VectorNodeView nodes={node} />;
+  return (
+    <AnimatedG originX={x} originY={y} animatedProps={animatedProps}>
+      <VectorNodeView nodes={node} />
+    </AnimatedG>
+  );
 });
 
 interface CharacterArtProps {
@@ -62,16 +79,27 @@ interface CharacterArtProps {
   readonly ear: SharedValue<number>;
   readonly active: boolean;
 }
-const CharacterArt = React.memo(function CharacterArt({ prepared, blink, ear, active }: CharacterArtProps) {
-  const inner = prepared.parts.map(part => (
-    <AnimatedPart key={part.id} part={part} blink={blink} ear={ear} active={active}/>
+const CharacterArt = React.memo(function CharacterArt({
+  prepared,
+  blink,
+  ear,
+  active,
+}: CharacterArtProps) {
+  const inner = prepared.parts.map((part) => (
+    <AnimatedPart key={part.id} part={part} blink={blink} ear={ear} active={active} />
   ));
   const drawing = <G {...prepared.innerProps}>{inner}</G>;
   return prepared.outerProps ? <G {...prepared.outerProps}>{drawing}</G> : drawing;
 });
 
 /** One small SVG burst; uses the same SVG surface and no per-frame React state. */
-function CelebrationStars({ progress, active }: { progress: SharedValue<number>; active: boolean }) {
+function CelebrationStars({
+  progress,
+  active,
+}: {
+  progress: SharedValue<number>;
+  active: boolean;
+}) {
   const animatedProps = useAnimatedProps(() => ({
     opacity: Math.max(0, Math.min(1, Math.sin(progress.value * Math.PI) * 0.95)),
     y: -20 * progress.value,
@@ -80,9 +108,9 @@ function CelebrationStars({ progress, active }: { progress: SharedValue<number>;
   if (!active) return null;
   return (
     <AnimatedG animatedProps={animatedProps}>
-      <Path d="M-115 -67 l6 15 15 6 -15 6 -6 15 -6 -15 -15 -6 15 -6Z" fill="#F4D28D"/>
-      <Path d="M103 -94 l7 16 16 7 -16 7 -7 16 -7 -16 -16 -7 16 -7Z" fill="#E9B3AC"/>
-      <Path d="M88 18 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4Z" fill="#C2C6E3"/>
+      <Path d="M-115 -67 l6 15 15 6 -15 6 -6 15 -6 -15 -15 -6 15 -6Z" fill="#F4D28D" />
+      <Path d="M103 -94 l7 16 16 7 -16 7 -7 16 -7 -16 -16 -7 16 -7Z" fill="#E9B3AC" />
+      <Path d="M88 18 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4Z" fill="#C2C6E3" />
     </AnimatedG>
   );
 }
@@ -93,20 +121,37 @@ function CelebrationStars({ progress, active }: { progress: SharedValue<number>;
  * App / screen visibility or Reduce Motion cancel every infinite animation.
  */
 export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
-  species, pose = 'sitting', expression, accessories, proportions, prop, props, appearanceStyle,
+  species,
+  pose = 'sitting',
+  expression,
+  accessories,
+  proportions,
+  prop,
+  props,
+  appearanceStyle,
   motion = 'idle',
-  playing = true, celebrationKey, width = 150, height = 162, style, testID, frame = 'standalone',
+  playing = true,
+  celebrationKey,
+  width = 150,
+  height = 162,
+  style,
+  testID,
+  frame = 'standalone',
 }: LumiAnimatedCharacterProps) {
   const blueprint = CHARACTER_BLUEPRINTS[species];
-  const prepared = useMemo(() => prepareCharacterMotion(blueprint, {
-    pose,
-    ...(expression === undefined ? {} : { expression }),
-    ...(accessories === undefined ? {} : { accessories }),
-    ...(proportions === undefined ? {} : { proportions }),
-    ...(prop == null ? {} : { prop }),
-    ...(props == null ? {} : { props }),
-    ...(appearanceStyle === undefined ? {} : { appearanceStyle }),
-  }), [blueprint, pose, expression, accessories, proportions, prop, props, appearanceStyle]);
+  const prepared = useMemo(
+    () =>
+      prepareCharacterMotion(blueprint, {
+        pose,
+        ...(expression === undefined ? {} : { expression }),
+        ...(accessories === undefined ? {} : { accessories }),
+        ...(proportions === undefined ? {} : { proportions }),
+        ...(prop == null ? {} : { prop }),
+        ...(props == null ? {} : { props }),
+        ...(appearanceStyle === undefined ? {} : { appearanceStyle }),
+      }),
+    [blueprint, pose, expression, accessories, proportions, prop, props, appearanceStyle],
+  );
   const { canAnimate } = useLumiMotion();
   const active = canAnimate && playing && motion !== 'still';
   const blinkEnabled = active && shouldBlink(motion, expression ?? 'neutral', pose);
@@ -122,32 +167,75 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
   const studioMs = Math.min(2400, Math.max(1600, timing.recognitionMs * 2));
 
   useEffect(() => {
-    cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
-    cancelAnimation(tilt); cancelAnimation(float);
-    blink.value = 1; breath.value = 1; ears.value = 0; tilt.value = 0; float.value = 0;
+    cancelAnimation(blink);
+    cancelAnimation(breath);
+    cancelAnimation(ears);
+    cancelAnimation(tilt);
+    cancelAnimation(float);
+    blink.value = 1;
+    breath.value = 1;
+    ears.value = 0;
+    tilt.value = 0;
+    float.value = 0;
     if (!active) return;
     if (blinkEnabled) {
-      blink.value = withRepeat(withSequence(
-        withDelay(timing.blinkIntervalMs + species.length * 109,
-          withTiming(0.06, { duration: timing.blinkCloseMs, easing: smooth, reduceMotion: ReduceMotion.System })),
-        withTiming(1, { duration: timing.blinkOpenMs, easing: smooth, reduceMotion: ReduceMotion.System }),
-      ), -1, false, undefined, ReduceMotion.System);
+      blink.value = withRepeat(
+        withSequence(
+          withDelay(
+            timing.blinkIntervalMs + species.length * 109,
+            withTiming(0.06, {
+              duration: timing.blinkCloseMs,
+              easing: smooth,
+              reduceMotion: ReduceMotion.System,
+            }),
+          ),
+          withTiming(1, {
+            duration: timing.blinkOpenMs,
+            easing: smooth,
+            reduceMotion: ReduceMotion.System,
+          }),
+        ),
+        -1,
+        false,
+        undefined,
+        ReduceMotion.System,
+      );
     }
-    breath.value = withRepeat(withTiming(amplitude.breatheScale, {
-      duration: timing.breatheHalfCycleMs * (motion === 'sleeping' ? 1.5 : 1), easing: smooth, reduceMotion: ReduceMotion.System,
-    }), -1, true, undefined, ReduceMotion.System);
+    breath.value = withRepeat(
+      withTiming(amplitude.breatheScale, {
+        duration: timing.breatheHalfCycleMs * (motion === 'sleeping' ? 1.5 : 1),
+        easing: smooth,
+        reduceMotion: ReduceMotion.System,
+      }),
+      -1,
+      true,
+      undefined,
+      ReduceMotion.System,
+    );
     if (motion === 'idle') {
-      ears.value = withRepeat(withTiming(amplitude.earDegrees, {
-        duration: timing.earHalfCycleMs, easing: smooth, reduceMotion: ReduceMotion.System,
-      }), -1, true, undefined, ReduceMotion.System);
+      ears.value = withRepeat(
+        withTiming(amplitude.earDegrees, {
+          duration: timing.earHalfCycleMs,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
+        }),
+        -1,
+        true,
+        undefined,
+        ReduceMotion.System,
+      );
     }
     if (motion === 'perk') {
       ears.value = withSequence(
         withTiming(amplitude.perkEarDegrees, {
-          duration: timing.recognitionMs * 0.35, easing: out, reduceMotion: ReduceMotion.System,
+          duration: timing.recognitionMs * 0.35,
+          easing: out,
+          reduceMotion: ReduceMotion.System,
         }),
         withTiming(0, {
-          duration: timing.recognitionMs * 0.65, easing: smooth, reduceMotion: ReduceMotion.System,
+          duration: timing.recognitionMs * 0.65,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
         }),
       );
     }
@@ -155,10 +243,14 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
       // Whole-figure lean keeps the SVG group budget unchanged while reading as a head tilt.
       tilt.value = withSequence(
         withTiming(amplitude.tiltHeadDegrees, {
-          duration: timing.recognitionMs * 0.4, easing: out, reduceMotion: ReduceMotion.System,
+          duration: timing.recognitionMs * 0.4,
+          easing: out,
+          reduceMotion: ReduceMotion.System,
         }),
         withTiming(0, {
-          duration: timing.recognitionMs * 0.6, easing: smooth, reduceMotion: ReduceMotion.System,
+          duration: timing.recognitionMs * 0.6,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
         }),
       );
     }
@@ -166,44 +258,71 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
       // One-shot workshop gesture: mild lean + ear perk, never an infinite loop.
       ears.value = withSequence(
         withTiming(amplitude.perkEarDegrees * 0.7, {
-          duration: studioMs * 0.35, easing: out, reduceMotion: ReduceMotion.System,
+          duration: studioMs * 0.35,
+          easing: out,
+          reduceMotion: ReduceMotion.System,
         }),
         withTiming(0, {
-          duration: studioMs * 0.65, easing: smooth, reduceMotion: ReduceMotion.System,
+          duration: studioMs * 0.65,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
         }),
       );
       tilt.value = withSequence(
         withTiming(amplitude.tiltHeadDegrees * 0.8, {
-          duration: studioMs * 0.4, easing: out, reduceMotion: ReduceMotion.System,
+          duration: studioMs * 0.4,
+          easing: out,
+          reduceMotion: ReduceMotion.System,
         }),
         withTiming(0, {
-          duration: studioMs * 0.6, easing: smooth, reduceMotion: ReduceMotion.System,
+          duration: studioMs * 0.6,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
         }),
       );
     }
     if (motion === 'sleeping') {
-      float.value = withRepeat(withTiming(-amplitude.floatPx, {
-        duration: timing.floatHalfCycleMs, easing: smooth, reduceMotion: ReduceMotion.System,
-      }), -1, true, undefined, ReduceMotion.System);
+      float.value = withRepeat(
+        withTiming(-amplitude.floatPx, {
+          duration: timing.floatHalfCycleMs,
+          easing: smooth,
+          reduceMotion: ReduceMotion.System,
+        }),
+        -1,
+        true,
+        undefined,
+        ReduceMotion.System,
+      );
     }
     return () => {
-      cancelAnimation(blink); cancelAnimation(breath); cancelAnimation(ears);
-      cancelAnimation(tilt); cancelAnimation(float);
+      cancelAnimation(blink);
+      cancelAnimation(breath);
+      cancelAnimation(ears);
+      cancelAnimation(tilt);
+      cancelAnimation(float);
     };
   }, [active, blinkEnabled, motion, species, blink, breath, ears, tilt, float, studioMs]);
 
   useEffect(() => {
     if (previousCelebration.current === celebrationKey) return;
     previousCelebration.current = celebrationKey;
-    cancelAnimation(lift); cancelAnimation(burst);
-    lift.value = 0; burst.value = 0;
+    cancelAnimation(lift);
+    cancelAnimation(burst);
+    lift.value = 0;
+    burst.value = 0;
     if (!active || celebrationKey === undefined) return;
     lift.value = withSequence(
-      withTiming(-amplitude.celebrationLiftPx, { duration: timing.celebrationMs * .34, easing: out }),
-      withTiming(0, { duration: timing.celebrationMs * .66, easing: Easing.out(Easing.bounce) }),
+      withTiming(-amplitude.celebrationLiftPx, {
+        duration: timing.celebrationMs * 0.34,
+        easing: out,
+      }),
+      withTiming(0, { duration: timing.celebrationMs * 0.66, easing: Easing.out(Easing.bounce) }),
     );
     burst.value = withTiming(1, { duration: timing.celebrationMs, easing: Easing.linear });
-    return () => { cancelAnimation(lift); cancelAnimation(burst); };
+    return () => {
+      cancelAnimation(lift);
+      cancelAnimation(burst);
+    };
   }, [celebrationKey, active, lift, burst]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -214,11 +333,20 @@ export const LumiAnimatedCharacter = React.memo(function LumiAnimatedCharacter({
     ],
   }));
   return (
-    <Animated.View testID={testID} accessible={false} pointerEvents="none"
-      style={[{ width, height }, style, animatedStyle]}>
-      <Svg width="100%" height="100%" viewBox={frame === 'procedural' ? '-155 -205 310 410' : '-176 -178 352 360'} preserveAspectRatio="xMidYMid meet">
-        <CharacterArt prepared={prepared} blink={blink} ear={ears} active={active}/>
-        <CelebrationStars progress={burst} active={active}/>
+    <Animated.View
+      testID={testID}
+      accessible={false}
+      pointerEvents="none"
+      style={[{ width, height }, style, animatedStyle]}
+    >
+      <Svg
+        width="100%"
+        height="100%"
+        viewBox={frame === 'procedural' ? '-155 -205 310 410' : '-176 -178 352 360'}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <CharacterArt prepared={prepared} blink={blink} ear={ears} active={active} />
+        <CelebrationStars progress={burst} active={active} />
       </Svg>
     </Animated.View>
   );

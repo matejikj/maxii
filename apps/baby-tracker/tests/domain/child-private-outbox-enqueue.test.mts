@@ -168,10 +168,9 @@ test('share revoke enqueue requires an applied local revoke timestamp', async ()
     pendingChildPrivateOutbox(result.state)[0]?.commandType,
     'child_private.share.revoke',
   );
-  assert.deepEqual(
-    pendingChildPrivateOutbox(result.state)[0]?.payload.revokedAt,
-    { epochMs: NOW.epochMs + 1_000 },
-  );
+  assert.deepEqual(pendingChildPrivateOutbox(result.state)[0]?.payload.revokedAt, {
+    epochMs: NOW.epochMs + 1_000,
+  });
 });
 
 test('portfolio upsert enqueues on the owner-scoped store', async () => {

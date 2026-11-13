@@ -1,8 +1,4 @@
-import {
-  activateContentPack,
-  createMemoryPackStore,
-  type MemoryPackStore,
-} from './activate';
+import { activateContentPack, createMemoryPackStore, type MemoryPackStore } from './activate';
 import { evaluateContentReadiness } from './readiness';
 import {
   EMBEDDED_FIRST_YEAR_BASE_MANIFEST,

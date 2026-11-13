@@ -46,9 +46,7 @@ export type FeedingIntentIds = ReturnType<typeof mintFeedingIds>;
 export function parseMeasuredAmount(
   raw: string,
   unit: QuantityUnitOption,
-):
-  | { ok: true; amount: MeasuredQuantity }
-  | { ok: false; message: string } {
+): { ok: true; amount: MeasuredQuantity } | { ok: false; message: string } {
   const trimmed = raw.trim();
   if (!trimmed) return { ok: true, amount: null };
   const normalized = trimmed.replace(/\s/g, '').replace(',', '.');

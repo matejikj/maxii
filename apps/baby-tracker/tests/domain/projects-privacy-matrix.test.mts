@@ -201,7 +201,11 @@ test('childPrivate grid: inactive mode denies every action for every principal t
         project: privateProject,
         share: row.share ?? null,
       });
-      assert.equal(decision.allowed, false, `${row.name} × ${action} must deny while mode is closed`);
+      assert.equal(
+        decision.allowed,
+        false,
+        `${row.name} × ${action} must deny while mode is closed`,
+      );
       const earlyDenied: Partial<Record<ProjectPrincipalKind, string>> = {
         foreign_family: 'denied_foreign',
         inactive_member: 'denied_inactive',
@@ -232,7 +236,15 @@ test('export, list, count and restore deny every non-owner principal on childPri
 });
 
 test('export and restore always deny a named recipient even with an active share', () => {
-  for (const action of ['export', 'restore', 'update', 'delete', 'share_publish', 'share_revoke', 'create'] as const) {
+  for (const action of [
+    'export',
+    'restore',
+    'update',
+    'delete',
+    'share_publish',
+    'share_revoke',
+    'create',
+  ] as const) {
     const decision = evaluateProjectAccess(action, {
       principalKind: 'named_recipient',
       principalAppUserId: RECIPIENT,

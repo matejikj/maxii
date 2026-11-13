@@ -37,11 +37,7 @@ export type SyncPushRequest = {
 
 export type SyncOperationReceipt = {
   readonly operationId: string;
-  readonly status:
-    | 'accepted'
-    | 'accepted_with_conflict'
-    | 'duplicate'
-    | 'rejected';
+  readonly status: 'accepted' | 'accepted_with_conflict' | 'duplicate' | 'rejected';
   readonly reason?:
     | 'hash_mismatch'
     | 'unknown_parents'

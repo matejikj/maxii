@@ -97,7 +97,10 @@ export function createMemoryReminderScheduler(
     },
     async peekInAppGlance(nowMs) {
       if (!state.prefs?.weeklyGlanceEnabled) return null;
-      if (state.lastGlanceAckMs != null && nowMs - state.lastGlanceAckMs < 6 * 24 * 60 * 60 * 1000) {
+      if (
+        state.lastGlanceAckMs != null &&
+        nowMs - state.lastGlanceAckMs < 6 * 24 * 60 * 60 * 1000
+      ) {
         return null;
       }
       const day = new Date(nowMs).getDay();

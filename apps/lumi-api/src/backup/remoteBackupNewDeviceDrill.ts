@@ -1,9 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { FamilyId } from '@lumi/contracts';
-import {
-  createMemoryErasureRegistry,
-  type ErasureRegistryPort,
-} from './erasureRegistry.ts';
+import { createMemoryErasureRegistry, type ErasureRegistryPort } from './erasureRegistry.ts';
 import {
   buildLogicalBackupPayload,
   createMemoryBackupRepository,
@@ -187,8 +184,7 @@ export async function runRemoteBackupNewDeviceDrill(
     });
   } catch (error) {
     const preserved = keepLiveStateOnBackupFailure(liveBeforeFail, error);
-    failedUploadLeavesLiveIntact =
-      preserved === liveBeforeFail && preserved.note === canary;
+    failedUploadLeavesLiveIntact = preserved === liveBeforeFail && preserved.note === canary;
   }
   if (failedUploadLeavesLiveIntact) findings.push('failed_upload_leaves_live_intact');
 
@@ -197,7 +193,10 @@ export async function runRemoteBackupNewDeviceDrill(
     requestingFamilyId: deps.foreignFamilyId,
   });
   const crossFamilyArchiveDenied =
-    cross != null && typeof cross === 'object' && 'denied' in cross && cross.denied === 'wrong_family';
+    cross != null &&
+    typeof cross === 'object' &&
+    'denied' in cross &&
+    cross.denied === 'wrong_family';
   if (crossFamilyArchiveDenied) findings.push('cross_family_archive_denied');
 
   findings.push('live_host_restore_not_claimed');

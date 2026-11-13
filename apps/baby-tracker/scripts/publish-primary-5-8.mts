@@ -25,24 +25,21 @@ const STEPS: EditorialEvent[] = [
     stage: 'expert_reviewed',
     author: 'Tomáš Holý',
     atMs: expertAt,
-    note:
-      'Odborná kontrola sady 60–95 měsíců: věkové meze, krátké projektové činnosti bez přesahu do delších projektů, bezpečnostní constraints a principy zdrojů. Schváleno pro vydání.',
+    note: 'Odborná kontrola sady 60–95 měsíců: věkové meze, krátké projektové činnosti bez přesahu do delších projektů, bezpečnostní constraints a principy zdrojů. Schváleno pro vydání.',
     outcome: 'passed',
   },
   {
     stage: 'language_ux',
     author: 'Alena Světlá',
     atMs: languageAt,
-    note:
-      'Jazyková a UX kontrola české copy: názvy, kroky (max. 3), nabídka řeči a stop signály. Schváleno.',
+    note: 'Jazyková a UX kontrola české copy: názvy, kroky (max. 3), nabídka řeči a stop signály. Schváleno.',
     outcome: 'passed',
   },
   {
     stage: 'parent_verified',
     author: 'Barbora Bílá',
     atMs: parentAt,
-    note:
-      'Rodičovské ověření proveditelnosti doma: délka 5/10 minut, srozumitelný postup, dobrovolný zápis zkušenosti. Schváleno.',
+    note: 'Rodičovské ověření proveditelnosti doma: délka 5/10 minut, srozumitelný postup, dobrovolný zápis zkušenosti. Schváleno.',
     outcome: 'passed',
   },
   {
@@ -78,9 +75,7 @@ function publishOne(draft: ActivityRevision): ActivityRevision {
   return validated.revision;
 }
 
-const published = PRIMARY_5_8_DRAFT_REVISIONS.map((draft) =>
-  publishOne(draft as ActivityRevision),
-);
+const published = PRIMARY_5_8_DRAFT_REVISIONS.map((draft) => publishOne(draft as ActivityRevision));
 if (published.length !== 24) {
   throw new Error(`Expected 24 published revisions, got ${published.length}`);
 }

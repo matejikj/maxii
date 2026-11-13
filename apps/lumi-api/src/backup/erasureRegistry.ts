@@ -50,11 +50,9 @@ export function createMemoryErasureRegistry(
  * A dump taken before erasure must not resurrect the family once the registry
  * is current.
  */
-export function applyErasureRegistryToFamilies<T extends { familyId: string; erasedAt: string | null }>(
-  families: readonly T[],
-  registry: ErasureRegistryDocument,
-  now: string,
-): readonly T[] {
+export function applyErasureRegistryToFamilies<
+  T extends { familyId: string; erasedAt: string | null },
+>(families: readonly T[], registry: ErasureRegistryDocument, now: string): readonly T[] {
   const byId = new Map(registry.entries.map((entry) => [entry.familyId, entry]));
   return families.map((family) => {
     const hit = byId.get(family.familyId);

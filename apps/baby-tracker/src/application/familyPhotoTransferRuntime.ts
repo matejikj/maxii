@@ -92,8 +92,7 @@ export function createFamilyPhotoTransferRuntime(input?: {
   let jobs: FamilyPhotoBlobTransferJob[] = [];
   const fixedPort = input?.port;
   const getPort =
-    input?.getPort ??
-    (() => fixedPort ?? createDisabledFamilyAttachmentTransferPort());
+    input?.getPort ?? (() => fixedPort ?? createDisabledFamilyAttachmentTransferPort());
   const createJobId = input?.createJobId ?? ((seed: string) => seed);
 
   return {

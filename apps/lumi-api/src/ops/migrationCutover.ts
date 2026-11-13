@@ -6,12 +6,7 @@
 export type CutoverMode = 'drill' | 'activation';
 
 export type CutoverPhase =
-  | 'preflight'
-  | 'checkpoint'
-  | 'single_writer'
-  | 'cutover'
-  | 'verify'
-  | 'rollback_decision';
+  'preflight' | 'checkpoint' | 'single_writer' | 'cutover' | 'verify' | 'rollback_decision';
 
 export type CutoverStep = {
   readonly phase: CutoverPhase;
@@ -25,7 +20,8 @@ export const MANAGED_MIGRATION_STEPS: readonly CutoverStep[] = [
   {
     phase: 'preflight',
     id: 'adapters_ready',
-    summary: 'Verify DB/API/identity/backup adapters against a disposable target — no production flip.',
+    summary:
+      'Verify DB/API/identity/backup adapters against a disposable target — no production flip.',
     allowedInDrill: true,
     mutatesProduction: false,
   },
@@ -98,7 +94,8 @@ export function planManagedMigrationCutover(input: {
       steps,
       firstConfirmedWriteAtMs: null,
       dnsRollbackToOldDbAllowed: true,
-      reason: 'Drill must not mutate production; DNS rollback practice uses disposable targets only.',
+      reason:
+        'Drill must not mutate production; DNS rollback practice uses disposable targets only.',
     };
   }
 
@@ -115,10 +112,7 @@ export function planManagedMigrationCutover(input: {
 }
 
 export type GrowthDecision =
-  | 'stay_on_vps'
-  | 'resize_vps_first'
-  | 'evaluate_managed_profile'
-  | 'blocked_missing_measurements';
+  'stay_on_vps' | 'resize_vps_first' | 'evaluate_managed_profile' | 'blocked_missing_measurements';
 
 export type GrowthSignal = {
   readonly sustainedRamPressure: boolean;
@@ -142,8 +136,7 @@ export function evaluateGrowthDecision(signal: GrowthSignal): {
 } {
   const hasLatency = signal.p95LatencyMs != null;
   const hasQueue = signal.queueBacklog != null;
-  const hasRecovery =
-    signal.measuredRpoHours != null && signal.measuredRtoHours != null;
+  const hasRecovery = signal.measuredRpoHours != null && signal.measuredRtoHours != null;
   if (!hasLatency && !hasQueue && !hasRecovery && !signal.sustainedRamPressure) {
     return {
       decision: 'blocked_missing_measurements',
@@ -153,10 +146,8 @@ export function evaluateGrowthDecision(signal: GrowthSignal): {
   }
 
   const recoveryMiss =
-    (signal.measuredRpoHours != null &&
-      signal.measuredRpoHours > signal.rpoTargetHours) ||
-    (signal.measuredRtoHours != null &&
-      signal.measuredRtoHours > signal.rtoTargetHours);
+    (signal.measuredRpoHours != null && signal.measuredRpoHours > signal.rpoTargetHours) ||
+    (signal.measuredRtoHours != null && signal.measuredRtoHours > signal.rtoTargetHours);
 
   if (
     signal.sustainedRamPressure ||
@@ -167,7 +158,8 @@ export function evaluateGrowthDecision(signal: GrowthSignal): {
   ) {
     return {
       decision: 'resize_vps_first',
-      rationale: 'Pressure is present — size or optimize the current VPS before paid managed cutover.',
+      rationale:
+        'Pressure is present — size or optimize the current VPS before paid managed cutover.',
       autoProvisionForbidden: true,
     };
   }

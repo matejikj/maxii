@@ -4,11 +4,7 @@ export {
   findTopic,
   topicsByArea,
 } from './model/topics';
-export {
-  isRecommendable,
-  nextStage,
-  recordEditorialEvent,
-} from './model/workflow';
+export { isRecommendable, nextStage, recordEditorialEvent } from './model/workflow';
 export type {
   ActivityRevision,
   ActivitySteps,
@@ -39,10 +35,7 @@ export {
   type CoverageReport,
 } from './reporting/coverageReport';
 export { DEV_FIXTURE_REVISIONS, sampleProductRevision } from './fixtures/devFixtureSet';
-export {
-  LOCAL_LIBRARY_CONTENT_VERSION,
-  LOCAL_LIBRARY_REVISIONS,
-} from './localLibrary';
+export { LOCAL_LIBRARY_CONTENT_VERSION, LOCAL_LIBRARY_REVISIONS } from './localLibrary';
 export {
   FIRST_YEAR_PUBLISHED_CONTENT_VERSION,
   FIRST_YEAR_PUBLISHED_REVISIONS,

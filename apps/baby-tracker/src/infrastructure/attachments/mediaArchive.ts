@@ -78,8 +78,7 @@ export function assessMediaArchiveCompleteness(
       (row) =>
         row.deletedAtMs == null &&
         row.renditions.some(
-          (rendition) =>
-            rendition.role === 'display' && rendition.availability === 'durable',
+          (rendition) => rendition.role === 'display' && rendition.availability === 'durable',
         ),
     )
     .map((row) => row.attachmentId);
@@ -174,7 +173,10 @@ export function openMediaArchiveBundle(
   }
   const opened: Record<string, Uint8Array> = {};
   for (const [path, envelope] of Object.entries(bundle.blobs)) {
-    opened[path] = openPortableBackup(parsePortableBackup(serializePortableBackup(envelope)), password);
+    opened[path] = openPortableBackup(
+      parsePortableBackup(serializePortableBackup(envelope)),
+      password,
+    );
   }
   for (const attachment of parsed.data.attachments) {
     for (const rendition of attachment.renditions) {

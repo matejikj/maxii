@@ -180,13 +180,19 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
 
     const metaLine = extractSection(body, 'Metadata');
     if (!metaLine) throw new Error(`Missing Metadata for ${activityIdFromHeading}`);
-    const metaParts = metaLine.replace(/\.$/, '').split('·').map((part) => part.trim());
+    const metaParts = metaLine
+      .replace(/\.$/, '')
+      .split('·')
+      .map((part) => part.trim());
     const activityId = metaParts[0]!.replace(/`/g, '');
     if (activityId !== activityIdFromHeading) {
       throw new Error(`Heading/meta id mismatch: ${activityIdFromHeading} vs ${activityId}`);
     }
     const age = parseAge(metaParts[1]!);
-    const areaTopic = metaParts[2]!.replace(/`/g, '').split('/').map((p) => p.trim());
+    const areaTopic = metaParts[2]!
+      .replace(/`/g, '')
+      .split('/')
+      .map((p) => p.trim());
     const primaryArea = areaTopic[0] as DevelopmentArea;
     const topicId = areaTopic[1]!;
     if (!AREA_SET.has(primaryArea)) throw new Error(`Unknown area ${primaryArea}`);
@@ -212,9 +218,7 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
       ...(materials.length === 0
         ? ([{ kind: 'materials_none' }] as SuitabilityCondition[])
         : ([{ kind: 'materials_all_of', materials }] as SuitabilityCondition[])),
-      ...readinessKeys.map(
-        (key): SuitabilityCondition => ({ kind: 'readiness_confirmed', key }),
-      ),
+      ...readinessKeys.map((key): SuitabilityCondition => ({ kind: 'readiness_confirmed', key })),
     ];
 
     revisions.push({

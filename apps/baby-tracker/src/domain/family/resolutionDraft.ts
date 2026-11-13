@@ -39,8 +39,7 @@ export function refreshResolutionDraftAgainstHeads(
   if (draft.status === 'committed') return draft;
   const current = [...currentHeadRevisionIds].sort();
   const based = draft.basedOnHeadRevisionIds;
-  const same =
-    current.length === based.length && current.every((id, index) => id === based[index]);
+  const same = current.length === based.length && current.every((id, index) => id === based[index]);
   if (same) {
     return draft.status === 'active' ? draft : { ...draft, status: 'active' };
   }

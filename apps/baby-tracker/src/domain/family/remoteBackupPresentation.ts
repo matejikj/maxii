@@ -24,8 +24,7 @@ export function presentRemoteBackupStatus(input: {
   if (input.lastAttemptStatus === 'running') {
     statusLine = 'Probíhá ukládání vzdálené kopie. Dokončení přijde až po ověření uložení.';
   } else if (input.lastAttemptStatus === 'failed') {
-    statusLine =
-      'Poslední pokus o vzdálenou zálohu selhal. Místní deník zůstává beze změny.';
+    statusLine = 'Poslední pokus o vzdálenou zálohu selhal. Místní deník zůstává beze změny.';
   } else if (input.lastCompletedAtLabel) {
     statusLine = `Poslední potvrzená vzdálená kopie: ${input.lastCompletedAtLabel}.`;
   }

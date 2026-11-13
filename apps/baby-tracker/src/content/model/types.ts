@@ -2,18 +2,11 @@ import type { DevelopmentArea } from '../../domain';
 
 /** Editorial stages; only `published` may enter the recommendation catalog. */
 export type EditorialStage =
-  | 'draft'
-  | 'expert_reviewed'
-  | 'language_ux'
-  | 'parent_verified'
-  | 'published'
-  | 'withdrawn';
+  'draft' | 'expert_reviewed' | 'language_ux' | 'parent_verified' | 'published' | 'withdrawn';
 
 export type ContentEnvironment = 'home' | 'outdoor' | 'travel' | 'quiet';
 
-export type ContentDuration =
-  | { kind: 'moment' }
-  | { kind: 'minutes'; minutes: 5 | 10 | 15 };
+export type ContentDuration = { kind: 'moment' } | { kind: 'minutes'; minutes: 5 | 10 | 15 };
 
 /**
  * Caregiver-confirmed readiness observations. Missing/unknown is never treated
@@ -79,7 +72,8 @@ export type EditorialEvent = {
   outcome: 'passed' | 'rejected' | 'withdrawn';
 };
 
-export type ActivitySteps = readonly [string] | readonly [string, string] | readonly [string, string, string];
+export type ActivitySteps =
+  readonly [string] | readonly [string, string] | readonly [string, string, string];
 
 /**
  * Immutable content revision. Corrections always mint a new revisionId; an

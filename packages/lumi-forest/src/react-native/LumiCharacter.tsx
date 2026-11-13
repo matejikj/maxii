@@ -20,25 +20,45 @@ export interface LumiCharacterProps extends CharacterCompileOptions {
  * Keep options arrays and proportion objects referentially stable in clients.
  */
 export const LumiCharacter = React.memo(function LumiCharacter({
-  species, pose = 'sitting', expression, accessories, proportions, prop, props, appearanceStyle,
-  width = 150, height = 162, style,
+  species,
+  pose = 'sitting',
+  expression,
+  accessories,
+  proportions,
+  prop,
+  props,
+  appearanceStyle,
+  width = 150,
+  height = 162,
+  style,
 }: LumiCharacterProps) {
-  const geometry = useMemo(() => compileCharacter(CHARACTER_BLUEPRINTS[species], {
-    pose,
-    ...(expression === undefined ? {} : { expression }),
-    ...(accessories === undefined ? {} : { accessories }),
-    ...(proportions === undefined ? {} : { proportions }),
-    ...(prop == null ? {} : { prop }),
-    ...(props == null ? {} : { props }),
-    ...(appearanceStyle === undefined ? {} : { appearanceStyle }),
-  }), [species, pose, expression, accessories, proportions, prop, props, appearanceStyle]);
+  const geometry = useMemo(
+    () =>
+      compileCharacter(CHARACTER_BLUEPRINTS[species], {
+        pose,
+        ...(expression === undefined ? {} : { expression }),
+        ...(accessories === undefined ? {} : { accessories }),
+        ...(proportions === undefined ? {} : { proportions }),
+        ...(prop == null ? {} : { prop }),
+        ...(props == null ? {} : { props }),
+        ...(appearanceStyle === undefined ? {} : { appearanceStyle }),
+      }),
+    [species, pose, expression, accessories, proportions, prop, props, appearanceStyle],
+  );
   const nodes = useMemo(() => [geometry], [geometry]);
   // react-native-svg forwards native accessibility props to the DOM on web.
   return (
-    <Svg {...(Platform.OS === 'web' ? { 'aria-hidden': true, focusable: false } : { accessible: false })}
-      pointerEvents="none" style={style}
-      width={width} height={height}
-      viewBox="-176 -178 352 360" preserveAspectRatio="xMidYMid meet">
+    <Svg
+      {...(Platform.OS === 'web'
+        ? { 'aria-hidden': true, focusable: false }
+        : { accessible: false })}
+      pointerEvents="none"
+      style={style}
+      width={width}
+      height={height}
+      viewBox="-176 -178 352 360"
+      preserveAspectRatio="xMidYMid meet"
+    >
       <VectorNodeView nodes={nodes} />
     </Svg>
   );

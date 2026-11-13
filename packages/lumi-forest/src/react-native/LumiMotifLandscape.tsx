@@ -15,11 +15,23 @@ export interface LumiMotifLandscapeProps {
 
 /** Decorative card-sized world, prepared only when motif or appearance changes. */
 export const LumiMotifLandscape = React.memo(function LumiMotifLandscape({
-  motif, variant = 'day', colorMode, style,
+  motif,
+  variant = 'day',
+  colorMode,
+  style,
 }: LumiMotifLandscapeProps) {
   const theme = useLumiTheme();
   const world = motif ?? theme.motif;
   const mode = colorMode ?? theme.mode;
-  const document = useMemo(() => compileLumiMotifLandscape(world, { mode, variant }), [world, mode, variant]);
-  return <LumiVectorDocument document={document} mode="cover" {...(style === undefined ? {} : { style })} />;
+  const document = useMemo(
+    () => compileLumiMotifLandscape(world, { mode, variant }),
+    [world, mode, variant],
+  );
+  return (
+    <LumiVectorDocument
+      document={document}
+      mode="cover"
+      {...(style === undefined ? {} : { style })}
+    />
+  );
 });

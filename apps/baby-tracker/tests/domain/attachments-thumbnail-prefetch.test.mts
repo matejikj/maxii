@@ -148,10 +148,7 @@ test('prefetch skips thumbnails that already have local bytes', () => {
     nowMs,
   });
   assert.equal(planned.jobs.length, 0);
-  assert.equal(
-    occupiedThumbnailPrefetchBytes({ localAttachments: [cached] }),
-    50,
-  );
+  assert.equal(occupiedThumbnailPrefetchBytes({ localAttachments: [cached] }), 50);
 });
 
 test('prefetch never invents display downloads', () => {
@@ -168,5 +165,8 @@ test('prefetch never invents display downloads', () => {
   });
   assert.equal(planned.jobs.length, 1);
   assert.equal(planned.jobs[0]?.role, 'thumbnail');
-  assert.equal(planned.jobs.some((job) => job.role === 'display'), false);
+  assert.equal(
+    planned.jobs.some((job) => job.role === 'display'),
+    false,
+  );
 });

@@ -33,9 +33,7 @@ export function attachmentHasDurableRole(
   attachment: PhotoAttachment,
   role: RenditionRole = 'display',
 ): boolean {
-  return attachment.renditions.some(
-    (row) => row.role === role && row.availability === 'durable',
-  );
+  return attachment.renditions.some((row) => row.role === role && row.availability === 'durable');
 }
 
 export function attachmentHasDownloadWork(
@@ -46,9 +44,7 @@ export function attachmentHasDownloadWork(
     (job) =>
       job.attachmentId === attachmentId &&
       job.kind === 'download' &&
-      (job.state === 'queued' ||
-        job.state === 'in_flight' ||
-        job.state === 'quota_waiting'),
+      (job.state === 'queued' || job.state === 'in_flight' || job.state === 'quota_waiting'),
   );
 }
 
@@ -95,10 +91,7 @@ export function planOfflinePinChange(input: {
   };
   const hasDisplay = attachmentHasDurableRole(next, 'display');
   const hasThumb = attachmentHasDurableRole(next, 'thumbnail');
-  const downloadBusy = attachmentHasDownloadWork(
-    next.attachmentId,
-    input.existingJobs,
-  );
+  const downloadBusy = attachmentHasDownloadWork(next.attachmentId, input.existingJobs);
   return {
     attachment: next,
     needsDisplayDownload: !hasDisplay,
@@ -132,9 +125,7 @@ export function classifyLocalPhotoCopyKind(input: {
   return 'cache';
 }
 
-export function summarizeProtectedOfflineBytes(
-  copies: readonly LocalPhotoCopyRecord[],
-): {
+export function summarizeProtectedOfflineBytes(copies: readonly LocalPhotoCopyRecord[]): {
   readonly protectedBytes: number;
   readonly cacheBytes: number;
 } {

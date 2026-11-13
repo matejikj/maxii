@@ -90,9 +90,7 @@ export function buildAuthorshipLine(input: {
 }): AuthorshipLine {
   const original = input.originalAuthorLabel?.trim() || 'Toto zařízení';
   const lastEditor =
-    input.lastEditorLabel && input.lastEditorLabel !== original
-      ? input.lastEditorLabel
-      : null;
+    input.lastEditorLabel && input.lastEditorLabel !== original ? input.lastEditorLabel : null;
   const transferLine = input.transfer
     ? describeRecordTransferLine({
         transfer: input.transfer,

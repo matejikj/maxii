@@ -1,7 +1,10 @@
 /** Pure counterpart of SVG preserveAspectRatio, for cross-device tests and QA. */
 export type AspectMode = 'cover' | 'contain' | 'auto';
 export type ResolvedAspectMode = Exclude<AspectMode, 'auto'>;
-export interface ViewportSize { readonly width: number; readonly height: number }
+export interface ViewportSize {
+  readonly width: number;
+  readonly height: number;
+}
 export interface ViewportLayout {
   readonly mode: ResolvedAspectMode;
   readonly scale: number;
@@ -12,7 +15,10 @@ export interface ViewportLayout {
 }
 
 /** Wide aspect ratios avoid cropping the character; portrait phones use immersive cover. */
-export function resolveAspectMode(viewport: ViewportSize, mode: AspectMode = 'auto'): ResolvedAspectMode {
+export function resolveAspectMode(
+  viewport: ViewportSize,
+  mode: AspectMode = 'auto',
+): ResolvedAspectMode {
   validateSize(viewport, 'viewport');
   return mode === 'auto' ? (viewport.width / viewport.height > 0.62 ? 'contain' : 'cover') : mode;
 }
@@ -35,14 +41,26 @@ export function computeViewportLayout(
   const visibleRight = Math.min(document.width, (viewport.width - offsetX) / scale);
   const visibleBottom = Math.min(document.height, (viewport.height - offsetY) / scale);
   return {
-    mode: resolved, scale, offsetX, offsetY,
-    visible: { x: visibleLeft, y: visibleTop,
-      width: Math.max(0, visibleRight - visibleLeft), height: Math.max(0, visibleBottom - visibleTop) },
+    mode: resolved,
+    scale,
+    offsetX,
+    offsetY,
+    visible: {
+      x: visibleLeft,
+      y: visibleTop,
+      width: Math.max(0, visibleRight - visibleLeft),
+      height: Math.max(0, visibleBottom - visibleTop),
+    },
   };
 }
 
 function validateSize(size: ViewportSize, label: string): void {
-  if (!Number.isFinite(size.width) || !Number.isFinite(size.height) || size.width <= 0 || size.height <= 0) {
+  if (
+    !Number.isFinite(size.width) ||
+    !Number.isFinite(size.height) ||
+    size.width <= 0 ||
+    size.height <= 0
+  ) {
     throw new RangeError(`Invalid ${label} dimensions`);
   }
 }

@@ -2,9 +2,7 @@ import { AppError } from '../errors.ts';
 import type { OperationId, RevisionId } from '../ids.ts';
 import type { Instant } from '../ports/clock.ts';
 import type { PortfolioItem, Project, ShareSnapshot } from '../projects/types.ts';
-import {
-  type ChildPrivateSyncOperationKind,
-} from './childPrivateKinds.ts';
+import { type ChildPrivateSyncOperationKind } from './childPrivateKinds.ts';
 import {
   enqueueChildPrivateOutbox,
   type LocalChildPrivateSyncState,
@@ -21,20 +19,14 @@ export type ChildPrivateOutboxPlan =
     }
   | {
       readonly ok: false;
-      readonly reason:
-        | 'not_child_private'
-        | 'missing_owner'
-        | 'already_revoked'
-        | 'not_revoked';
+      readonly reason: 'not_child_private' | 'missing_owner' | 'already_revoked' | 'not_revoked';
     };
 
 /**
  * Map a local child-private project commit onto the owner-scoped outbox.
  * Family-guided projects stay off this stream entirely.
  */
-export function planChildPrivateProjectUpsert(
-  project: Project,
-): ChildPrivateOutboxPlan {
+export function planChildPrivateProjectUpsert(project: Project): ChildPrivateOutboxPlan {
   if (project.scope !== 'childPrivate') {
     return { ok: false, reason: 'not_child_private' };
   }
@@ -87,9 +79,7 @@ export function planChildPrivateProjectDelete(input: {
   };
 }
 
-export function planChildPrivatePortfolioUpsert(
-  item: PortfolioItem,
-): ChildPrivateOutboxPlan {
+export function planChildPrivatePortfolioUpsert(item: PortfolioItem): ChildPrivateOutboxPlan {
   if (!item.ownerAppUserId) {
     return { ok: false, reason: 'missing_owner' };
   }
@@ -131,9 +121,7 @@ export function planChildPrivatePortfolioDelete(input: {
 /**
  * Frozen share only — live project reflection/intent never enter this payload.
  */
-export function planChildPrivateSharePublish(
-  share: ShareSnapshot,
-): ChildPrivateOutboxPlan {
+export function planChildPrivateSharePublish(share: ShareSnapshot): ChildPrivateOutboxPlan {
   if (share.revokedAt != null) {
     return { ok: false, reason: 'already_revoked' };
   }
@@ -157,9 +145,7 @@ export function planChildPrivateSharePublish(
   };
 }
 
-export function planChildPrivateShareRevoke(
-  share: ShareSnapshot,
-): ChildPrivateOutboxPlan {
+export function planChildPrivateShareRevoke(share: ShareSnapshot): ChildPrivateOutboxPlan {
   if (share.revokedAt == null) {
     // Caller must revoke first so the outbox carries a concrete timestamp.
     return { ok: false, reason: 'not_revoked' };
@@ -206,11 +192,9 @@ export function requireChildPrivateOutboxPlan(
   plan: ChildPrivateOutboxPlan,
 ): Extract<ChildPrivateOutboxPlan, { ok: true }> {
   if (!plan.ok) {
-    throw new AppError(
-      'FORBIDDEN',
-      'Change is not eligible for the child-private outbox',
-      { details: { reason: plan.reason } },
-    );
+    throw new AppError('FORBIDDEN', 'Change is not eligible for the child-private outbox', {
+      details: { reason: plan.reason },
+    });
   }
   return plan;
 }

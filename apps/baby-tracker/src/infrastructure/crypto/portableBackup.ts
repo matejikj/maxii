@@ -43,15 +43,24 @@ const envelopeSchema = z.object({
   format: z.literal(PORTABLE_BACKUP_FORMAT),
   kdf: z.object({
     alg: z.literal('argon2id'),
-    saltHex: z.string().regex(/^[0-9a-f]+$/i).length(SALT_BYTES * 2),
+    saltHex: z
+      .string()
+      .regex(/^[0-9a-f]+$/i)
+      .length(SALT_BYTES * 2),
     t: argonParamsSchema.shape.t,
     m: argonParamsSchema.shape.m,
     p: argonParamsSchema.shape.p,
     dkLen: argonParamsSchema.shape.dkLen,
   }),
   cipher: z.literal('xchacha20poly1305'),
-  nonceHex: z.string().regex(/^[0-9a-f]+$/i).length(NONCE_BYTES * 2),
-  ciphertextHex: z.string().regex(/^[0-9a-f]+$/i).min(32),
+  nonceHex: z
+    .string()
+    .regex(/^[0-9a-f]+$/i)
+    .length(NONCE_BYTES * 2),
+  ciphertextHex: z
+    .string()
+    .regex(/^[0-9a-f]+$/i)
+    .min(32),
 });
 
 export type Argon2idParams = z.infer<typeof argonParamsSchema>;
@@ -155,10 +164,7 @@ export function sealPortableBackup(
   }
 }
 
-export function openPortableBackup(
-  envelope: unknown,
-  password: string,
-): Uint8Array {
+export function openPortableBackup(envelope: unknown, password: string): Uint8Array {
   assertPassword(password);
   const parsed = envelopeSchema.safeParse(envelope);
   if (!parsed.success) {

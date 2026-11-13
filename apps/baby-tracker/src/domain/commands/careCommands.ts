@@ -278,10 +278,10 @@ export function buildCareEventFromCommand(
       });
     default: {
       const _exhaustive: never = command;
+      void _exhaustive;
       throw new AppError('INTERNAL', 'Unsupported care command', {
         details: { reason: 'command_type' },
       });
-      void _exhaustive;
     }
   }
 }

@@ -18,7 +18,10 @@ const {
 test('rabbit art variants stay comparable and selected B ships', () => {
   const variants = buildRabbitArtVariants(RABBIT_ANATOMY_BASELINE);
   assert.equal(variants.length, 3);
-  assert.deepEqual(variants.map((v) => v.id), ['A', 'B', 'C']);
+  assert.deepEqual(
+    variants.map((v) => v.id),
+    ['A', 'B', 'C'],
+  );
   assert.equal(SELECTED_RABBIT_ART_VARIANT, 'B');
   assert.equal(CHARACTER_BLUEPRINTS.rabbit.artworkRevision, RABBIT_ARTWORK_REVISION);
   assert.deepEqual(CHARACTER_ANATOMY.rabbit, variants.find((v) => v.id === 'B').parts);
@@ -64,7 +67,7 @@ test('recognition actions provide static fallbacks and motion topology stays in 
     expression: 'curious',
   });
   assert.ok(
-    motion.parts.filter((part) => part.channel !== 'static').length
-      <= LUMI_MOTION_BUDGETS.maxAnimatedSvgGroupsPerCharacter,
+    motion.parts.filter((part) => part.channel !== 'static').length <=
+      LUMI_MOTION_BUDGETS.maxAnimatedSvgGroupsPerCharacter,
   );
 });

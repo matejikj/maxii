@@ -29,10 +29,7 @@ export type ChildPrivateSyncTransportPort = {
     }[];
     readonly epoch: number;
   }>;
-  pull: (input: {
-    readonly ownerAppUserId: string;
-    readonly cursor: string | null;
-  }) => Promise<{
+  pull: (input: { readonly ownerAppUserId: string; readonly cursor: string | null }) => Promise<{
     readonly entries: readonly {
       readonly changelogSeq: number;
       readonly operationId: string;
@@ -71,12 +68,9 @@ export async function runChildPrivateSyncTick(input: {
     ...input.state,
     ownerAppUserId: input.ownerAppUserId,
   };
-  const pending = pendingChildPrivateOutbox(state).slice(
-    0,
-    input.batchSize ?? 25,
-  );
+  const pending = pendingChildPrivateOutbox(state).slice(0, input.batchSize ?? 25);
   let pushed = 0;
-  let pulled = 0;
+  let pulled: number;
   let maxAttempt = 0;
 
   if (pending.length > 0) {
@@ -144,9 +138,6 @@ export async function runChildPrivateSyncTick(input: {
     state,
     pushed,
     pulled,
-    nextDelayMs:
-      pendingChildPrivateOutbox(state).length > 0
-        ? syncBackoffMs(1, 0)
-        : 5_000,
+    nextDelayMs: pendingChildPrivateOutbox(state).length > 0 ? syncBackoffMs(1, 0) : 5_000,
   };
 }

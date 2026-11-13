@@ -191,5 +191,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: { flex: 1 },
-  close: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24 },
+  close: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 24,
+  },
 });

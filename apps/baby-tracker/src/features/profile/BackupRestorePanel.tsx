@@ -78,8 +78,8 @@ export function BackupRestorePanel() {
         Záloha a obnova
       </LumiText>
       <LumiText tone="muted">
-        Pro přechod na jiný telefon si vytvořte přenosnou zálohu a uložte ji mimo aplikaci.
-        Místní body obnovy pomáhají vrátit deník do dřívějšího stavu na tomto zařízení.
+        Pro přechod na jiný telefon si vytvořte přenosnou zálohu a uložte ji mimo aplikaci. Místní
+        body obnovy pomáhají vrátit deník do dřívějšího stavu na tomto zařízení.
       </LumiText>
 
       <RemoteBackupStatusCard />
@@ -87,8 +87,8 @@ export function BackupRestorePanel() {
       <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">Obnova v tomto zařízení</LumiText>
         <LumiText tone="muted">
-          Tyto body zůstávají jen v tomto zařízení. Pro případ ztráty telefonu si uložte
-          také přenosnou zálohu mimo aplikaci.
+          Tyto body zůstávají jen v tomto zařízení. Pro případ ztráty telefonu si uložte také
+          přenosnou zálohu mimo aplikaci.
         </LumiText>
         {points.length === 0 ? (
           <LumiText tone="muted">Zatím není žádný místní bod obnovy.</LumiText>
@@ -136,11 +136,13 @@ export function BackupRestorePanel() {
       <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">Přenosná záloha</LumiText>
         <LumiText tone="muted">
-          Úplný šifrovaný soubor pro jiné zařízení. Heslo si uložte sami — ztracené heslo
-          nelze obnovit. Datum exportu neznamená, že soubor stále existuje mimo telefon.
+          Úplný šifrovaný soubor pro jiné zařízení. Heslo si uložte sami — ztracené heslo nelze
+          obnovit. Datum exportu neznamená, že soubor stále existuje mimo telefon.
         </LumiText>
         {lastExportAtMs != null ? (
-          <LumiText tone="muted">Poslední export v aplikaci: {formatStamp(lastExportAtMs)}</LumiText>
+          <LumiText tone="muted">
+            Poslední export v aplikaci: {formatStamp(lastExportAtMs)}
+          </LumiText>
         ) : (
           <LumiText tone="muted">Zatím nebyl vytvořen žádný přenosný export.</LumiText>
         )}
@@ -315,13 +317,9 @@ export function BackupRestorePanel() {
               .finally(() => setBusy(false));
           }}
         />
-        {importFileName ? (
-          <LumiText tone="muted">Vybraný soubor: {importFileName}</LumiText>
-        ) : null}
+        {importFileName ? <LumiText tone="muted">Vybraný soubor: {importFileName}</LumiText> : null}
         <LumiButton
-          title={
-            showAdvancedPaste ? 'Skrýt vložení textu' : 'Nouzové vložení textu zálohy'
-          }
+          title={showAdvancedPaste ? 'Skrýt vložení textu' : 'Nouzové vložení textu zálohy'}
           variant="ghost"
           onPress={() => setShowAdvancedPaste((value) => !value)}
         />
@@ -487,8 +485,8 @@ export function BackupRestorePanel() {
       <LumiCard style={{ gap: 14, borderRadius: 24 }}>
         <LumiText variant="h3">CSV pro čtení</LumiText>
         <LumiText tone="muted">
-          Čitelný výpis péče pro tabulky. Obsahuje soukromá rodinná data.
-          K obnovení celého deníku použijte přenosnou zálohu.
+          Čitelný výpis péče pro tabulky. Obsahuje soukromá rodinná data. K obnovení celého deníku
+          použijte přenosnou zálohu.
         </LumiText>
         <LumiButton
           title="Připravit CSV"

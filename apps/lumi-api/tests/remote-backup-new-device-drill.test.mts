@@ -37,12 +37,6 @@ test('backup restore report never claims measured live-host RPO/RTO', async () =
   });
   assert.equal(report.liveHostRestoreClaimed, false);
   assert.equal(report.measuredRpoRtoClaimed, false);
-  assert.equal(
-    JSON.stringify(report).includes('"liveHostRestoreClaimed":true'),
-    false,
-  );
-  assert.equal(
-    JSON.stringify(report).includes('"measuredRpoRtoClaimed":true'),
-    false,
-  );
+  assert.equal(JSON.stringify(report).includes('"liveHostRestoreClaimed":true'), false);
+  assert.equal(JSON.stringify(report).includes('"measuredRpoRtoClaimed":true'), false);
 });

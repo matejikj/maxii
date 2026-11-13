@@ -24,9 +24,7 @@ type ModeResponse = {
  * Family login against the BFF. Bearer tokens stay in process memory only;
  * cookie transport relies on HttpOnly BFF cookies — never localStorage.
  */
-export function createBrowserFamilyAuthPort(
-  config: BrowserFamilyAuthConfig,
-): FamilyAuthPort {
+export function createBrowserFamilyAuthPort(config: BrowserFamilyAuthConfig): FamilyAuthPort {
   const fetchImpl = config.fetchImpl ?? fetch;
   let memorySession: FamilyAuthSession | null = null;
   let pendingState: string | null = null;

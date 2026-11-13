@@ -1,10 +1,6 @@
 import type { ActorId, ChildId, DeviceId } from '../ids.ts';
 
-export type ChildLinkDecision =
-  | 'founding_profile'
-  | 'same_child'
-  | 'different_child'
-  | 'defer';
+export type ChildLinkDecision = 'founding_profile' | 'same_child' | 'different_child' | 'defer';
 
 export type EnrollmentIntent = {
   readonly kind: 'create_family' | 'accept_invitation';
@@ -105,10 +101,7 @@ export function markEnrollmentAwaitingNetwork(intent: EnrollmentIntent): Enrollm
   return { ...intent, status: 'awaiting_network' };
 }
 
-export function completeEnrollment(
-  intent: EnrollmentIntent,
-  familyId: string,
-): EnrollmentIntent {
+export function completeEnrollment(intent: EnrollmentIntent, familyId: string): EnrollmentIntent {
   return {
     ...intent,
     status: intent.childLinkDecision === 'defer' ? 'deferred' : 'completed',

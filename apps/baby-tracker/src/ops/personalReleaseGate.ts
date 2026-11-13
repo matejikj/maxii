@@ -3,14 +3,8 @@ import {
   shouldInitializeRemoteClients,
 } from '../app/remoteServicesBoundary.ts';
 import { checkNativeApplicationIds } from './nativeApplicationId.ts';
-import {
-  inspectApkReleaseArtifact,
-  type ApkInspectionInput,
-} from './apkReleaseInspection.ts';
-import {
-  PERSONAL_APPLICATION_ID,
-  type ReleaseEvidenceManifest,
-} from './releaseEvidence.ts';
+import { inspectApkReleaseArtifact, type ApkInspectionInput } from './apkReleaseInspection.ts';
+import { PERSONAL_APPLICATION_ID, type ReleaseEvidenceManifest } from './releaseEvidence.ts';
 
 /**
  * Personal release candidate checks that can run without a device or store
@@ -71,11 +65,7 @@ const ALLOWED_REPO_BASENAMES = new Set(['debug.keystore']);
 
 const FORBIDDEN_REPO_SUFFIXES = ['.keystore', '.jks', '.p12', '.mobileprovision'];
 
-function finding(
-  id: string,
-  ok: boolean,
-  detail: string,
-): PersonalReleaseGateFinding {
+function finding(id: string, ok: boolean, detail: string): PersonalReleaseGateFinding {
   return { id, ok, detail };
 }
 
@@ -90,9 +80,7 @@ function evaluatePublicEnv(
       finding(
         `env.forbidden.${name}`,
         value == null || value.length === 0,
-        value
-          ? `${name} must stay out of the client bundle`
-          : `${name} unset`,
+        value ? `${name} must stay out of the client bundle` : `${name} unset`,
       ),
     );
   }
@@ -138,7 +126,7 @@ function evaluatePublicEnv(
     const familyFlagsOff =
       env.EXPO_PUBLIC_LUMI_AUTH_ENABLED !== '1' &&
       env.EXPO_PUBLIC_LUMI_SYNC_ENABLED !== '1' &&
-      !(env.EXPO_PUBLIC_LUMI_API_URL?.trim());
+      !env.EXPO_PUBLIC_LUMI_API_URL?.trim();
     findings.push(
       finding(
         'env.family.unconfigured',
@@ -165,9 +153,7 @@ function evaluateRepositoryPaths(paths: string[]): PersonalReleaseGateFinding[] 
       offenders.push(normalized);
       continue;
     }
-    if (
-      FORBIDDEN_REPO_SUFFIXES.some((suffix) => base.toLowerCase().endsWith(suffix))
-    ) {
+    if (FORBIDDEN_REPO_SUFFIXES.some((suffix) => base.toLowerCase().endsWith(suffix))) {
       offenders.push(normalized);
     }
   }
@@ -195,16 +181,12 @@ function evaluateNativeIds(input: PersonalReleaseGateInput): PersonalReleaseGate
     finding(
       'native.applicationId',
       check.ok,
-      check.ok
-        ? `native ids match ${PERSONAL_APPLICATION_ID}`
-        : check.problems.join('; '),
+      check.ok ? `native ids match ${PERSONAL_APPLICATION_ID}` : check.problems.join('; '),
     ),
   ];
 }
 
-function evaluateApkPackage(
-  packageName: string | null | undefined,
-): PersonalReleaseGateFinding[] {
+function evaluateApkPackage(packageName: string | null | undefined): PersonalReleaseGateFinding[] {
   if (packageName === undefined) {
     return [];
   }
@@ -277,9 +259,7 @@ export function evaluatePersonalReleaseGate(
   const apkArtifactFindings = evaluateApkArtifact(input);
   // Prefer full badging inspection when present; keep the simple package check otherwise.
   const apkFindings =
-    apkArtifactFindings.length > 0
-      ? apkArtifactFindings
-      : evaluateApkPackage(input.apkPackageName);
+    apkArtifactFindings.length > 0 ? apkArtifactFindings : evaluateApkPackage(input.apkPackageName);
   const findings = [
     ...evaluatePublicEnv(env, input.candidateEnvironment),
     ...evaluateNativeIds(input),
@@ -293,9 +273,7 @@ export function evaluatePersonalReleaseGate(
   };
 }
 
-export function formatPersonalReleaseGateReport(
-  result: PersonalReleaseGateResult,
-): string {
+export function formatPersonalReleaseGateReport(result: PersonalReleaseGateResult): string {
   const lines = result.findings.map(
     (item) => `${item.ok ? 'PASS' : 'FAIL'} ${item.id}: ${item.detail}`,
   );

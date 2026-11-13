@@ -20,10 +20,7 @@ import { findTopic } from '../src/content/model/topics.ts';
 import { validateActivityRevision } from '../src/content/validation/validateActivity.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const draftMd = path.resolve(
-  here,
-  '../content/first-year-drafts.txt',
-);
+const draftMd = path.resolve(here, '../content/first-year-drafts.txt');
 const outFile = path.resolve(here, '../src/content/drafts/firstYearDrafts.ts');
 
 const SHARED_CONSTRAINTS = [
@@ -56,8 +53,7 @@ const READINESS_COPY: Record<ReadinessKey, string> = {
 
 function parseSourcesAppendix(md: string): Map<string, SourceDef> {
   const map = new Map<string, SourceDef>();
-  const re =
-    /### (S\d+)\n\n\[([^\]]+)\]\(([^)]+)\):\s*([^\n]+)/g;
+  const re = /### (S\d+)\n\n\[([^\]]+)\]\(([^)]+)\):\s*([^\n]+)/g;
   for (const match of md.matchAll(re)) {
     map.set(match[1]!, {
       id: match[1]!,
@@ -171,7 +167,10 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
       .map((part) => part.trim());
     const activityId = metaParts[0]!.replace(/`/g, '');
     const age = parseAge(metaParts[1]!);
-    const areaTopic = metaParts[2]!.replace(/`/g, '').split('/').map((p) => p.trim());
+    const areaTopic = metaParts[2]!
+      .replace(/`/g, '')
+      .split('/')
+      .map((p) => p.trim());
     const primaryArea = areaTopic[0] as DevelopmentArea;
     const topicId = areaTopic[1]!;
     if (!AREA_SET.has(primaryArea)) throw new Error(`Unknown area ${primaryArea}`);
@@ -202,9 +201,7 @@ function parseActivities(md: string, sources: Map<string, SourceDef>): ActivityR
       ...(materials.length === 0
         ? ([{ kind: 'materials_none' }] as SuitabilityCondition[])
         : ([{ kind: 'materials_all_of', materials }] as SuitabilityCondition[])),
-      ...readinessKeys.map(
-        (key): SuitabilityCondition => ({ kind: 'readiness_confirmed', key }),
-      ),
+      ...readinessKeys.map((key): SuitabilityCondition => ({ kind: 'readiness_confirmed', key })),
     ];
 
     const constraints = [

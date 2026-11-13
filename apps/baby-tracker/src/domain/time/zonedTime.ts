@@ -56,11 +56,7 @@ export function instantFromLocalWallTime(
       });
     }
     if (resolution.policy === 'shiftForwardToValid') {
-      return zonedInstant(
-        { epochMs: shiftForwardAcrossGap(parts, timeZone) },
-        timeZone,
-        precision,
-      );
+      return zonedInstant({ epochMs: shiftForwardAcrossGap(parts, timeZone) }, timeZone, precision);
     }
     throw new AppError('VALIDATION', 'DST gap requires reject or shiftForwardToValid', {
       details: { timeZone, reason: 'dst_gap_policy' },
@@ -98,7 +94,14 @@ function matchingInstants(
   },
   timeZone: TimeZoneId,
 ): number[] {
-  const utcGuess = DateTime.utc(wall.year, wall.month, wall.day, wall.hour, wall.minute, wall.second);
+  const utcGuess = DateTime.utc(
+    wall.year,
+    wall.month,
+    wall.day,
+    wall.hour,
+    wall.minute,
+    wall.second,
+  );
   if (!utcGuess.isValid) return [];
   const found = new Set<number>();
   for (let deltaHours = -14; deltaHours <= 14; deltaHours += 1) {

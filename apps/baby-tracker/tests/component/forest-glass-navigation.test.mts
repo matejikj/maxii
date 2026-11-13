@@ -9,18 +9,25 @@ function rgb(hex: string): number[] {
   return [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
 }
 function luminance(channels: number[]): number {
-  const values = channels.map((value) => value / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  const values = channels
+    .map((value) => value / 255)
+    .map((value) => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
   return values[0]! * 0.2126 + values[1]! * 0.7152 + values[2]! * 0.0722;
 }
 function contrast(a: number[], b: number[]): number {
-  const first = luminance(a), second = luminance(b);
+  const first = luminance(a),
+    second = luminance(b);
   return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 }
 
 test('dock keeps four usable touch targets inside phone, tablet and landscape safe areas', () => {
   for (const width of [320, 411, 768, 1280]) {
     for (const fontScale of [1, 1.15, 1.5, 2, 3]) {
-      for (const insets of [{ left: 0, right: 0, bottom: 0 }, { left: 0, right: 0, bottom: 34 }, { left: 44, right: 0, bottom: 21 }]) {
+      for (const insets of [
+        { left: 0, right: 0, bottom: 0 },
+        { left: 0, right: 0, bottom: 34 },
+        { left: 44, right: 0, bottom: 21 },
+      ]) {
         const dock = forestDockMetrics(width, fontScale, insets);
         assert.ok(dock.left >= insets.left + 12);
         assert.ok(dock.right >= insets.right + 12);
@@ -60,15 +67,29 @@ test('active and inactive tab labels remain readable in all six motif palettes',
     for (const mode of ['light', 'dark'] as const) {
       const { colors } = resolveLumiTheme('home', mode, motif);
       const material = forestGlassColors(colors, mode, motif);
-      assert.ok(contrast(rgb(material.activeInk), rgb(material.active)) >= 4.5, `${motif}/${mode}: active`);
-      assert.ok(contrast(rgb(material.accent), rgb(material.active)) >= 3, `${motif}/${mode}: icon details`);
-      assert.ok(contrast(rgb(material.inactiveInk), rgb(material.opaque)) >= 4.5, `${motif}/${mode}: reduced transparency`);
+      assert.ok(
+        contrast(rgb(material.activeInk), rgb(material.active)) >= 4.5,
+        `${motif}/${mode}: active`,
+      );
+      assert.ok(
+        contrast(rgb(material.accent), rgb(material.active)) >= 3,
+        `${motif}/${mode}: icon details`,
+      );
+      assert.ok(
+        contrast(rgb(material.inactiveInk), rgb(material.opaque)) >= 4.5,
+        `${motif}/${mode}: reduced transparency`,
+      );
       // Conservative extremes: no credit for the native blur's own tint or sheen.
       const match = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(material.wash)!;
       const alpha = Number(match[4]);
       for (const behind of [0, 255]) {
-        const background = [match[1], match[2], match[3]].map((channel) => Number(channel) * alpha + behind * (1 - alpha));
-        assert.ok(contrast(rgb(material.inactiveInk), background) >= 4.5, `${motif}/${mode}: behind ${behind}`);
+        const background = [match[1], match[2], match[3]].map(
+          (channel) => Number(channel) * alpha + behind * (1 - alpha),
+        );
+        assert.ok(
+          contrast(rgb(material.inactiveInk), background) >= 4.5,
+          `${motif}/${mode}: behind ${behind}`,
+        );
       }
     }
   }

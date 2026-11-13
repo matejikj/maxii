@@ -99,7 +99,10 @@ test('same inputs and rules version yield a repeatable ordered selection', () =>
 
 test('unknown birth date fails closed and never invents eligibility', () => {
   const candidate = productCandidate();
-  const decision = evaluateEligibility(candidate, baseContext({ birthDateKnown: false, ageMonths: null }));
+  const decision = evaluateEligibility(
+    candidate,
+    baseContext({ birthDateKnown: false, ageMonths: null }),
+  );
   assert.equal(decision.eligible, false);
   assert.ok(decision.reasonCodes.includes('missing_birth_date'));
 });
@@ -240,7 +243,10 @@ test('opening or hiding a set never claims an experience happened', () => {
 
 test('development fixtures stay non-recommendable unless explicitly allowed', () => {
   const blocked = candidatesFromRevisions(DEV_FIXTURE_REVISIONS);
-  assert.equal(blocked.every((item) => item.recommendable === false), true);
+  assert.equal(
+    blocked.every((item) => item.recommendable === false),
+    true,
+  );
   const allowed = candidatesFromRevisions(DEV_FIXTURE_REVISIONS, {
     allowDevelopmentFixtures: true,
   });

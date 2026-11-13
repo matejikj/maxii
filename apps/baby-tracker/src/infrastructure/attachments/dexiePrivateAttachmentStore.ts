@@ -14,9 +14,7 @@ export function createDexiePrivateAttachmentStore(input: {
   databaseName?: string;
   nowMs?: () => number;
 }): PrivateAttachmentBlobStore {
-  const db = new AttachmentBlobDatabase(
-    input.databaseName ?? WEB_ATTACHMENT_BLOB_DATABASE_NAME,
-  );
+  const db = new AttachmentBlobDatabase(input.databaseName ?? WEB_ATTACHMENT_BLOB_DATABASE_NAME);
   const nowMs = input.nowMs ?? (() => Date.now());
 
   return {

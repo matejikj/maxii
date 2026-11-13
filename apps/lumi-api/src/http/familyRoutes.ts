@@ -35,18 +35,22 @@ export function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRouteDeps
     },
     reply: { code: (status: number) => { send: (body: unknown) => unknown } },
   ): Promise<AppUserId | null> {
-    const usesBearer = typeof request.headers.authorization === 'string'
-      && String(request.headers.authorization).startsWith('Bearer ');
+    const usesBearer =
+      typeof request.headers.authorization === 'string' &&
+      String(request.headers.authorization).startsWith('Bearer ');
     const cookieHeader = typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
 
-    if (!verifyCsrfDoubleSubmit({
-      method: request.method,
-      cookieToken: readCookie(cookieHeader, config.csrfCookieName),
-      headerToken: typeof request.headers['x-csrf-token'] === 'string'
-        ? request.headers['x-csrf-token']
-        : undefined,
-      usesBearerAuth: usesBearer,
-    })) {
+    if (
+      !verifyCsrfDoubleSubmit({
+        method: request.method,
+        cookieToken: readCookie(cookieHeader, config.csrfCookieName),
+        headerToken:
+          typeof request.headers['x-csrf-token'] === 'string'
+            ? request.headers['x-csrf-token']
+            : undefined,
+        usesBearerAuth: usesBearer,
+      })
+    ) {
       const err = apiError('csrf_rejected', 'CSRF token mismatch', String(request.id));
       reply.code(err.status).send(err.body);
       return null;

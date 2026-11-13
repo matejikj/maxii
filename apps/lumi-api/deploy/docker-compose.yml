@@ -32,12 +32,7 @@ services:
   # Self-hosted OIDC candidate (Keycloak). Start with: --profile oidc
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
-    command:
-      [
-        'start-dev',
-        '--http-port=8080',
-        '--import-realm',
-      ]
+    command: ['start-dev', '--http-port=8080', '--import-realm']
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin_dev_only
@@ -98,11 +93,7 @@ services:
     ports:
       - '9090:9090'
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'wget -q -O - http://127.0.0.1:9090/ >/dev/null || exit 1',
-        ]
+      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:9090/ >/dev/null || exit 1']
       interval: 3s
       timeout: 3s
       retries: 20

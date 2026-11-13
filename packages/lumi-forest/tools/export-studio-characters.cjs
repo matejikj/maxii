@@ -28,7 +28,10 @@ for (const species of LUMI_ANIMALS) {
       expression: 'happy',
       appearanceStyle: style,
     });
-    fs.writeFileSync(path.join(output, `${species}__style-${style}__sitting__happy.svg`), svg(node));
+    fs.writeFileSync(
+      path.join(output, `${species}__style-${style}__sitting__happy.svg`),
+      svg(node),
+    );
     count += 1;
   }
 }

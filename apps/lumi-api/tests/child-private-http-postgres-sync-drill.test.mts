@@ -46,11 +46,7 @@ test('live HTTP child-private sync against Compose Postgres when healthy (otherw
   const result = await runChildPrivateHttpPostgresSyncDrill({
     ...LOCAL_CHILD_PRIVATE_HTTP_POSTGRES_SYNC_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
   assert.equal(result.personalColdUnaffected, true);
   assert.equal(result.familyAdminIsPrivateSuperuser, false);
   assert.ok(result.cases.some((row) => row.name === 'http_admin_pull_empty' && row.ok));
@@ -76,8 +72,7 @@ async function postgresHealthy(url: string): Promise<boolean> {
 async function applySyncMigrationIfMissing(): Promise<void> {
   const pg = await import('pg');
   const client = new pg.default.Client({
-    connectionString:
-      LOCAL_CHILD_PRIVATE_HTTP_POSTGRES_SYNC_DRILL_DEFAULTS.adminDatabaseUrl,
+    connectionString: LOCAL_CHILD_PRIVATE_HTTP_POSTGRES_SYNC_DRILL_DEFAULTS.adminDatabaseUrl,
   });
   await client.connect();
   try {
@@ -85,10 +80,7 @@ async function applySyncMigrationIfMissing(): Promise<void> {
       `select to_regclass('public.child_private_sync_operation') is not null as present`,
     );
     if (exists.rows[0]?.present === true) return;
-    const sql = readFileSync(
-      join(packageRoot, 'migrations/009_child_private_sync.sql'),
-      'utf8',
-    );
+    const sql = readFileSync(join(packageRoot, 'migrations/009_child_private_sync.sql'), 'utf8');
     await client.query(sql);
   } finally {
     await client.end();

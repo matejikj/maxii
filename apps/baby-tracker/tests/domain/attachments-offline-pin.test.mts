@@ -22,7 +22,11 @@ import { createSyntheticPhotoProcessor } from '../../src/infrastructure/attachme
 function services(): AttachmentServices {
   const key = randomBytes(32);
   return {
-    picker: { async pickPhotos() { return { status: 'cancelled' }; } },
+    picker: {
+      async pickPhotos() {
+        return { status: 'cancelled' };
+      },
+    },
     processor: createSyntheticPhotoProcessor(),
     blobs: createMemoryPrivateAttachmentStore({ key }),
     repository: createMemoryAttachmentRepository(),
@@ -60,9 +64,7 @@ function attachment(input?: {
         sha256: 'a'.repeat(64),
         normalizationVersion: 'v1',
         blobKey:
-          availability === 'missing'
-            ? 'missing:rend_display'
-            : 'att/att_pin/display.jpe.sealed',
+          availability === 'missing' ? 'missing:rend_display' : 'att/att_pin/display.jpe.sealed',
         availability,
       },
       {
@@ -75,10 +77,7 @@ function attachment(input?: {
         byteLength: 4,
         sha256: 'b'.repeat(64),
         normalizationVersion: 'v1',
-        blobKey:
-          availability === 'missing'
-            ? 'missing:rend_thumb'
-            : 'att/att_pin/thumb.jpe.sealed',
+        blobKey: availability === 'missing' ? 'missing:rend_thumb' : 'att/att_pin/thumb.jpe.sealed',
         availability,
       },
     ],

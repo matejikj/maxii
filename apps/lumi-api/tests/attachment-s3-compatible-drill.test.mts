@@ -66,11 +66,7 @@ test('live S3Mock drill when endpoint is healthy (otherwise skip)', async (t) =>
   const result = await runAttachmentS3CompatibleDrill({
     ...LOCAL_S3_COMPATIBLE_ATTACHMENT_DRILL_DEFAULTS,
   });
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
 });
 
 async function s3CompatibleHealthy(): Promise<boolean> {

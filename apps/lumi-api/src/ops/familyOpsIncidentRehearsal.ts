@@ -62,9 +62,7 @@ export async function runFamilyOpsIncidentRehearsal(input: {
     'restore-runbook.txt',
     'migration-cutover-runbook.txt',
   ];
-  const existing = new Set(
-    runbooks.filter((name) => existsSync(join(input.deployDir, name))),
-  );
+  const existing = new Set(runbooks.filter((name) => existsSync(join(input.deployDir, name))));
   const readiness = evaluateFamilyOpsReadiness({
     owners,
     requiredRunbookPaths: runbooks,
@@ -145,8 +143,7 @@ export async function runFamilyOpsIncidentRehearsal(input: {
       cases.push({
         name: 'compose_postgres_reachable',
         ok: true,
-        detail:
-          'local Compose Postgres answers; this is not a LUKS/VPS restore drill',
+        detail: 'local Compose Postgres answers; this is not a LUKS/VPS restore drill',
       });
     } catch (error) {
       cases.push({

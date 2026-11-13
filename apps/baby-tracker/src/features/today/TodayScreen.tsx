@@ -1,14 +1,16 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { LUMI_MOTIFS } from '@lumi/forest-design/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  LumiCard,
-  LumiIcon,
-  LumiText,
-  useLumiTheme,
-} from '@lumi/forest-design/native';
+import { LumiCard, LumiIcon, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import { asTimeZoneId } from '../../domain';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 import { useHistoryTabState } from '../../app/session/HistoryTabContext';
@@ -26,7 +28,12 @@ import { NursingSessionController } from './NursingSessionController';
 import { SleepSessionController, useSleepStarter } from './SleepSessionController';
 import { TodayTogetherCard } from './TodayTogetherCard';
 import { useTodayCareModel } from './useTodayCareModel';
-import { TodayHero, TodayIdleMeasurement, TodayLastCareCard, TodayQuickAction } from './TodayVisuals';
+import {
+  TodayHero,
+  TodayIdleMeasurement,
+  TodayLastCareCard,
+  TodayQuickAction,
+} from './TodayVisuals';
 
 type TodayScreenProps = {
   onOpenProfile: () => void;
@@ -146,10 +153,16 @@ export function TodayScreen({
       testID="today-screen"
     >
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
-      <ScrollView ref={scrollRef} contentContainerStyle={[styles.content, { paddingBottom: dockInset + 28 }]} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[styles.content, { paddingBottom: dockInset + 28 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.heading}>
           <View style={{ flex: 1 }}>
-            <LumiText variant="overline" tone="muted" style={styles.brand}>{LUMI_MOTIFS[motif].brand}</LumiText>
+            <LumiText variant="overline" tone="muted" style={styles.brand}>
+              {LUMI_MOTIFS[motif].brand}
+            </LumiText>
           </View>
           <ChildSwitcher compact />
           <Pressable
@@ -157,16 +170,27 @@ export function TodayScreen({
             accessibilityLabel="Otevřít profil a nastavení"
             onPress={onOpenProfile}
             testID="today-open-profile"
-            style={({ pressed }) => [styles.profileButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [
+              styles.profileButton,
+              { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 },
+            ]}
           >
             <LumiIcon name="settings" color={colors.primary} size={23} />
           </Pressable>
         </View>
-        <TodayHero childName={childName} calendarDate={model.calendarDate}
-          celebrationKey={celebrationKey} visible={focused} />
+        <TodayHero
+          childName={childName}
+          calendarDate={model.calendarDate}
+          celebrationKey={celebrationKey}
+          visible={focused}
+        />
 
-        <View onLayout={(event) => { measurementY.current = event.nativeEvent.layout.y; }}
-          style={hasActiveMeasurement ? { gap: 12 } : undefined}>
+        <View
+          onLayout={(event) => {
+            measurementY.current = event.nativeEvent.layout.y;
+          }}
+          style={hasActiveMeasurement ? { gap: 12 } : undefined}
+        >
           {childId ? (
             <>
               <SleepSessionController
@@ -185,14 +209,14 @@ export function TodayScreen({
               />
             </>
           ) : null}
-          {!hasActiveMeasurement ? (
-            <TodayIdleMeasurement message={sleepStarter.message} />
-          ) : null}
+          {!hasActiveMeasurement ? <TodayIdleMeasurement message={sleepStarter.message} /> : null}
         </View>
 
         <View style={{ gap: ui.space.sm }}>
           <View style={styles.rowBetween}>
-            <LumiText variant="h2" accessibilityRole="header" style={{ flexShrink: 1 }}>{PRODUCT_COPY.today.quickActions}</LumiText>
+            <LumiText variant="h2" accessibilityRole="header" style={{ flexShrink: 1 }}>
+              {PRODUCT_COPY.today.quickActions}
+            </LumiText>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={PRODUCT_COPY.actions.editQuickActions}
@@ -216,7 +240,10 @@ export function TodayScreen({
                 <TodayQuickAction
                   id={id}
                   title={actionTitle(id)}
-                  running={(id === 'sleep' && Boolean(model.activeSleep)) || (id === 'feeding' && Boolean(model.activeNursing))}
+                  running={
+                    (id === 'sleep' && Boolean(model.activeSleep)) ||
+                    (id === 'feeding' && Boolean(model.activeNursing))
+                  }
                   pending={id === 'sleep' && sleepStarter.pending}
                   editing={editingActions}
                   onPress={() => void onQuickAction(id)}
@@ -224,14 +251,27 @@ export function TodayScreen({
               );
               if (id === 'diaper') {
                 return (
-                  <View key={id} ref={diaperOpenerRef} collapsable={false}
-                    style={[styles.quickSlot, width < 350 || fontScale > 1.25 ? styles.singleSlot : null]}>
+                  <View
+                    key={id}
+                    ref={diaperOpenerRef}
+                    collapsable={false}
+                    style={[
+                      styles.quickSlot,
+                      width < 350 || fontScale > 1.25 ? styles.singleSlot : null,
+                    ]}
+                  >
                     {button}
                   </View>
                 );
               }
               return (
-                <View key={id} style={[styles.quickSlot, width < 350 || fontScale > 1.25 ? styles.singleSlot : null]}>
+                <View
+                  key={id}
+                  style={[
+                    styles.quickSlot,
+                    width < 350 || fontScale > 1.25 ? styles.singleSlot : null,
+                  ]}
+                >
                   {button}
                 </View>
               );
@@ -264,9 +304,7 @@ export function TodayScreen({
               timeZone={zone}
               open={feedingOpen}
               onClose={() => setFeedingOpen(false)}
-              activeNursing={
-                formChildId === childId ? model.activeNursing : null
-              }
+              activeNursing={formChildId === childId ? model.activeNursing : null}
               onSavedLocally={celebrateLocalSave}
               {...(onOpenEvent ? { onOpenEvent } : {})}
             />
@@ -297,15 +335,23 @@ export function TodayScreen({
           </LumiCard>
         )}
 
-        <Pressable onPress={openHistoryToday} accessibilityRole="button"
-          accessibilityLabel={PRODUCT_COPY.actions.showTodayRecords} testID="today-open-history"
-          style={({ pressed }) => [styles.historyLink, { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 }]}>
+        <Pressable
+          onPress={openHistoryToday}
+          accessibilityRole="button"
+          accessibilityLabel={PRODUCT_COPY.actions.showTodayRecords}
+          testID="today-open-history"
+          style={({ pressed }) => [
+            styles.historyLink,
+            { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
           <LumiIcon name="history" color={colors.primary} size={22} />
-          <LumiText variant="label" style={{ flex: 1, color: colors.primary }}>{PRODUCT_COPY.actions.showTodayRecords}</LumiText>
+          <LumiText variant="label" style={{ flex: 1, color: colors.primary }}>
+            {PRODUCT_COPY.actions.showTodayRecords}
+          </LumiText>
           <LumiIcon name="arrow-right" color={colors.primary} size={18} />
         </Pressable>
       </ScrollView>
-
     </SafeAreaView>
   );
 }
@@ -341,5 +387,12 @@ const styles = StyleSheet.create({
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   quickSlot: { flexBasis: '47%', flexGrow: 1, minWidth: 140 },
   singleSlot: { flexBasis: '100%' },
-  historyLink: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, minHeight: 54 },
+  historyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 20,
+    minHeight: 54,
+  },
 });

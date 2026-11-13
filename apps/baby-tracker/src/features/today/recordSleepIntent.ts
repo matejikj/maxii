@@ -1,15 +1,5 @@
-import type {
-  ChildId,
-  IdGenerator,
-  TimeZoneId,
-  ZonedInstant,
-} from '../../domain';
-import {
-  asEntityId,
-  asOperationId,
-  asRevisionId,
-  zonedInstant,
-} from '../../domain';
+import type { ChildId, IdGenerator, TimeZoneId, ZonedInstant } from '../../domain';
+import { asEntityId, asOperationId, asRevisionId, zonedInstant } from '../../domain';
 import type {
   AdjustSleepSessionStartCommand,
   EndSleepSessionCommand,

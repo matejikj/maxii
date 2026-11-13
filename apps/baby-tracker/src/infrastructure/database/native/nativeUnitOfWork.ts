@@ -44,7 +44,10 @@ import type {
 import { AppError } from '../../../domain/errors';
 import { SCHEMA_VERSION_9 } from './schema/v9';
 import { assembleDiaryArchive } from '../diarySnapshotShared';
-import { nextTimelineCursor, searchDocumentFromCareEvent } from '../../../domain/projections/historyQuery';
+import {
+  nextTimelineCursor,
+  searchDocumentFromCareEvent,
+} from '../../../domain/projections/historyQuery';
 import type { ChangeTopic } from './changeFeed';
 import type { PrivateDatabase } from './privateDatabase';
 import type { SqlConnection } from './sqlConnection';
@@ -162,11 +165,17 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       const rows = await txn.getAllAsync<CareEventRow>(
         `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
          FROM care_events WHERE child_id = ? AND event_type = ?
-         ORDER BY sort_at_ms DESC, event_id DESC`, childId, type,
+         ORDER BY sort_at_ms DESC, event_id DESC`,
+        childId,
+        type,
       );
       return rows.map(careEventFromRow);
     },
-    async listInSortRange(childId: ChildId, fromSortAtMsInclusive: number, toSortAtMsExclusive: number) {
+    async listInSortRange(
+      childId: ChildId,
+      fromSortAtMsInclusive: number,
+      toSortAtMsExclusive: number,
+    ) {
       const rows = await txn.getAllAsync<CareEventRow>(
         `SELECT event_id, child_id, event_type, revision_id, sort_at_ms, payload_json
          FROM care_events
@@ -205,7 +214,9 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       topics.add('sessions');
     },
     async listAll() {
-      const rows = await txn.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM sessions');
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        'SELECT payload_json FROM sessions',
+      );
       return rows.map((row) => sessionFromRow(row) as SessionRecord);
     },
   };
@@ -244,7 +255,9 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       return rows.map(draftFromRow);
     },
     async listAll() {
-      const rows = await txn.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM drafts');
+      const rows = await txn.getAllAsync<{ payload_json: string }>(
+        'SELECT payload_json FROM drafts',
+      );
       return rows.map(draftFromRow);
     },
   };
@@ -268,7 +281,12 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
       }
       return rows.length;
     },
-    async search(childId: ChildId, normalizedQuery: string, limit: number, before: TimelineCursor | null) {
+    async search(
+      childId: ChildId,
+      normalizedQuery: string,
+      limit: number,
+      before: TimelineCursor | null,
+    ) {
       if (!normalizedQuery) {
         return listCarePage(txn, childId, limit, before);
       }
@@ -553,12 +571,13 @@ function createRepositories(txn: SqlConnection, topics: Set<ChangeTopic>): UnitO
         `SELECT payload_json FROM photo_attachments WHERE attachment_id = ?`,
         attachmentId,
       );
-      return row
-        ? withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment)
-        : null;
+      return row ? withOfflinePinDefault(JSON.parse(row.payload_json) as PhotoAttachment) : null;
     },
     async save(attachment) {
-      await txn.runAsync('DELETE FROM photo_attachments WHERE attachment_id = ?', attachment.attachmentId);
+      await txn.runAsync(
+        'DELETE FROM photo_attachments WHERE attachment_id = ?',
+        attachment.attachmentId,
+      );
       // Single-line INSERT keeps the memory SQLCipher test double's parser happy.
       await txn.runAsync(
         `INSERT INTO photo_attachments (attachment_id, child_id, event_id, host_event_type, order_index, caption, recorded_by, created_at_ms, deleted_at_ms, retain_until_ms, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

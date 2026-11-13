@@ -66,7 +66,8 @@ export function presentStartupPhase(phase: StartupPhase): StartupPresentation {
       return {
         phase,
         titleCs: 'Úložiště není dostupné',
-        bodyCs: 'Deník se nepodařilo otevřít. Zápis je pozastavený, aby nevznikla druhá prázdná databáze.',
+        bodyCs:
+          'Deník se nepodařilo otevřít. Zápis je pozastavený, aby nevznikla druhá prázdná databáze.',
         allowsCareEntry: false,
       };
   }

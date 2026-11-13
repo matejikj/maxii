@@ -4,10 +4,7 @@ import type { FamilyOpsMetrics } from '../ops/familyMetrics.ts';
 import { evaluateFamilyAlerts } from '../ops/familyAlerts.ts';
 import { apiError } from './errors.ts';
 
-function authorizeOps(
-  config: ApiConfig,
-  header: string | string[] | undefined,
-): boolean {
+function authorizeOps(config: ApiConfig, header: string | string[] | undefined): boolean {
   const token = config.opsBearerToken;
   if (!token) return false;
   const value = Array.isArray(header) ? header[0] : header;

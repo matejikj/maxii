@@ -53,11 +53,20 @@ export function LumiChartContainer({
       {table && table.length > 0 ? (
         <View
           accessibilityRole="summary"
-          style={{ marginTop: ui.space.md, gap: ui.space.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: ui.space.sm }}
+          style={{
+            marginTop: ui.space.md,
+            gap: ui.space.xs,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+            paddingTop: ui.space.sm,
+          }}
         >
           <LumiText variant="label">Hodnoty</LumiText>
           {table.map((row) => (
-            <View key={`${row.label}-${row.value}`} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+            <View
+              key={`${row.label}-${row.value}`}
+              style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
+            >
               <LumiText tone="muted" style={{ flex: 1 }}>
                 {row.label}
               </LumiText>

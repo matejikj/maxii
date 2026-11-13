@@ -47,10 +47,7 @@ function localDayKey(epochMs: number, timeZone: string): string {
   }).format(new Date(epochMs));
 }
 
-async function captureArchive(
-  unitOfWork: UnitOfWorkFactory,
-  nowMs: number,
-): Promise<DiaryArchive> {
+async function captureArchive(unitOfWork: UnitOfWorkFactory, nowMs: number): Promise<DiaryArchive> {
   return unitOfWork.run(async (uow) => {
     const archive = await uow.diary.capture({
       createdAtMs: nowMs,
@@ -209,15 +206,11 @@ export async function activatePortableImport(input: {
     });
     rollbackCheckpointId = point.checkpointId;
   } catch (error) {
-    throw new AppError(
-      'STORAGE',
-      'Could not create a rollback point; import was not started',
-      {
-        details: { reason: 'pre_import_checkpoint_failed' },
-        retryable: true,
-        cause: error,
-      },
-    );
+    throw new AppError('STORAGE', 'Could not create a rollback point; import was not started', {
+      details: { reason: 'pre_import_checkpoint_failed' },
+      retryable: true,
+      cause: error,
+    });
   }
 
   try {
@@ -226,11 +219,15 @@ export async function activatePortableImport(input: {
     });
   } catch (error) {
     // Leave the rollback point available even when activation fails mid-write.
-    throw new AppError('STORAGE', 'Import activation failed; previous diary remains available via rollback', {
-      details: { reason: 'import_activate_failed', rollbackCheckpointId },
-      retryable: true,
-      cause: error,
-    });
+    throw new AppError(
+      'STORAGE',
+      'Import activation failed; previous diary remains available via rollback',
+      {
+        details: { reason: 'import_activate_failed', rollbackCheckpointId },
+        retryable: true,
+        cause: error,
+      },
+    );
   }
 
   return {

@@ -34,9 +34,7 @@ export async function withTenantTransaction<T>(
   try {
     await client.query('begin');
     await client.query(`select set_config('lumi.app_user_id', $1, true)`, [input.appUserId]);
-    await client.query(`select set_config('lumi.family_id', $1, true)`, [
-      input.familyId ?? '',
-    ]);
+    await client.query(`select set_config('lumi.family_id', $1, true)`, [input.familyId ?? '']);
     const result = await work(client);
     await client.query('commit');
     return result;

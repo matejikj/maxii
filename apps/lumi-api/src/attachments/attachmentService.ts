@@ -80,7 +80,17 @@ export function createFamilyAttachmentService(input: {
 }) {
   const intents = new Map<string, AttachmentIntentRecord>();
   const idempotency = new Map<string, string>();
-  const activatedKeys = new Map<string, { familyId: string; attachmentId: string; role: AttachmentRenditionRole; objectKey: string; byteLength: number; sha256: string }>();
+  const activatedKeys = new Map<
+    string,
+    {
+      familyId: string;
+      attachmentId: string;
+      role: AttachmentRenditionRole;
+      objectKey: string;
+      byteLength: number;
+      sha256: string;
+    }
+  >();
   /** Newer erase generations win over late uploads, retries, and restored dumps. */
   const erasures = new Map<string, { eraseGeneration: number; erasedAtMs: number }>();
 
@@ -146,11 +156,14 @@ export function createFamilyAttachmentService(input: {
 
     recordedEraseGeneration,
 
-    async createIntent(
-      create: CreateIntentInput,
-    ): Promise<
+    async createIntent(create: CreateIntentInput): Promise<
       | { ok: true; response: FamilyAttachmentUploadIntentResponse }
-      | { ok: false; code: 'forbidden' | 'validation' | 'conflict'; message: string; details?: Record<string, string | number | boolean | null> }
+      | {
+          ok: false;
+          code: 'forbidden' | 'validation' | 'conflict';
+          message: string;
+          details?: Record<string, string | number | boolean | null>;
+        }
     > {
       const gate = authorize(create.membership, 'upload');
       if (!gate.allow) {
@@ -172,7 +185,10 @@ export function createFamilyAttachmentService(input: {
           details: { reason: againstErasure.reason },
         };
       }
-      if (create.role === 'display' && create.expectedBytes > FAMILY_ATTACHMENT_QUOTA.displayMaxBytes) {
+      if (
+        create.role === 'display' &&
+        create.expectedBytes > FAMILY_ATTACHMENT_QUOTA.displayMaxBytes
+      ) {
         return { ok: false, code: 'validation', message: 'Display rendition exceeds size limit' };
       }
       if (
@@ -280,7 +296,11 @@ export function createFamilyAttachmentService(input: {
         await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
         await input.objects.deleteStaging(intent.objectKey);
         intents.delete(intent.intentId);
-        return { ok: false, code: 'conflict', message: 'Attachment was erased before upload completed' };
+        return {
+          ok: false,
+          code: 'conflict',
+          message: 'Attachment was erased before upload completed',
+        };
       }
       if (intent.expiresAtMs <= inputUpload.nowMs) {
         await input.quota.releaseReservation(intent.familyId, intent.expectedBytes);
@@ -289,7 +309,11 @@ export function createFamilyAttachmentService(input: {
         return { ok: false, code: 'conflict', message: 'Upload intent expired' };
       }
       if (inputUpload.bytes.byteLength !== intent.expectedBytes) {
-        return { ok: false, code: 'validation', message: 'Uploaded byte length does not match intent' };
+        return {
+          ok: false,
+          code: 'validation',
+          message: 'Uploaded byte length does not match intent',
+        };
       }
       const put = await input.objects.putStaging({
         objectKey: intent.objectKey,
@@ -468,7 +492,11 @@ export function createFamilyAttachmentService(input: {
     }) {
       const gate = authorize(inputRead.membership, 'read');
       if (!gate.allow) {
-        return { ok: false as const, code: 'forbidden' as const, message: 'Attachment read is not allowed' };
+        return {
+          ok: false as const,
+          code: 'forbidden' as const,
+          message: 'Attachment read is not allowed',
+        };
       }
       const againstErasure = decideAttachmentMutationAgainstErasure({
         recordedEraseGeneration: await resolveEraseGeneration({
@@ -479,12 +507,15 @@ export function createFamilyAttachmentService(input: {
         action: 'read',
       });
       if (!againstErasure.allow) {
-        return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
+        return {
+          ok: false as const,
+          code: 'not_found' as const,
+          message: 'Attachment was not found',
+        };
       }
       let objectKey =
-        activatedKeys.get(
-          `${inputRead.familyId}:${inputRead.attachmentId}:${inputRead.role}`,
-        )?.objectKey ?? null;
+        activatedKeys.get(`${inputRead.familyId}:${inputRead.attachmentId}:${inputRead.role}`)
+          ?.objectKey ?? null;
       if (!objectKey && input.metadata) {
         const durable = await input.metadata.getObject({
           appUserId: inputRead.appUserId as never,
@@ -495,11 +526,19 @@ export function createFamilyAttachmentService(input: {
         objectKey = durable?.objectKey ?? null;
       }
       if (!objectKey) {
-        return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
+        return {
+          ok: false as const,
+          code: 'not_found' as const,
+          message: 'Attachment was not found',
+        };
       }
       const object = await input.objects.readActivated(objectKey);
       if (!object || object.familyId !== inputRead.familyId) {
-        return { ok: false as const, code: 'not_found' as const, message: 'Attachment was not found' };
+        return {
+          ok: false as const,
+          code: 'not_found' as const,
+          message: 'Attachment was not found',
+        };
       }
       return {
         ok: true as const,
@@ -525,7 +564,11 @@ export function createFamilyAttachmentService(input: {
     }) {
       const gate = authorize(inputTomb.membership, 'tombstone');
       if (!gate.allow) {
-        return { ok: false as const, code: 'forbidden' as const, message: 'Attachment erase is not allowed' };
+        return {
+          ok: false as const,
+          code: 'forbidden' as const,
+          message: 'Attachment erase is not allowed',
+        };
       }
       const planned = planAttachmentEraseGeneration({
         recordedEraseGeneration: await resolveEraseGeneration({

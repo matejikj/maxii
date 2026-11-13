@@ -18,22 +18,40 @@ export interface LumiBlueprintCharacterProps extends CharacterCompileOptions {
  * comparisons without changing the shipped species catalog entry.
  */
 export const LumiBlueprintCharacter = React.memo(function LumiBlueprintCharacter({
-  blueprint, pose = 'sitting', expression, accessories, proportions,
-  width = 150, height = 162, style, testID,
+  blueprint,
+  pose = 'sitting',
+  expression,
+  accessories,
+  proportions,
+  width = 150,
+  height = 162,
+  style,
+  testID,
 }: LumiBlueprintCharacterProps) {
-  const geometry = useMemo(() => compileCharacter(blueprint, {
-    pose,
-    ...(expression === undefined ? {} : { expression }),
-    ...(accessories === undefined ? {} : { accessories }),
-    ...(proportions === undefined ? {} : { proportions }),
-  }), [blueprint, pose, expression, accessories, proportions]);
+  const geometry = useMemo(
+    () =>
+      compileCharacter(blueprint, {
+        pose,
+        ...(expression === undefined ? {} : { expression }),
+        ...(accessories === undefined ? {} : { accessories }),
+        ...(proportions === undefined ? {} : { proportions }),
+      }),
+    [blueprint, pose, expression, accessories, proportions],
+  );
   const nodes = useMemo(() => [geometry], [geometry]);
   return (
-    <Svg {...(Platform.OS === 'web' ? { 'aria-hidden': true, focusable: false } : { accessible: false })}
-      pointerEvents="none" style={style}
+    <Svg
+      {...(Platform.OS === 'web'
+        ? { 'aria-hidden': true, focusable: false }
+        : { accessible: false })}
+      pointerEvents="none"
+      style={style}
       {...(testID === undefined ? {} : { testID })}
-      width={width} height={height}
-      viewBox="-176 -178 352 360" preserveAspectRatio="xMidYMid meet">
+      width={width}
+      height={height}
+      viewBox="-176 -178 352 360"
+      preserveAspectRatio="xMidYMid meet"
+    >
       <VectorNodeView nodes={nodes} />
     </Svg>
   );

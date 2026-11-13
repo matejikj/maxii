@@ -1,9 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import {
-  LUMI_API_PROTOCOL_VERSION,
-  type AppUserId,
-  type FamilyId,
-} from '@lumi/contracts';
+import { LUMI_API_PROTOCOL_VERSION, type AppUserId, type FamilyId } from '@lumi/contracts';
 import { loadApiConfig } from '../config/env.ts';
 import { createFamilyApi } from '../http/createServer.ts';
 import { createAppDbPool } from '../db/pool.ts';
@@ -102,9 +98,9 @@ async function runWithQuota(
   });
 
   const adminId = randomUUID() as AppUserId;
-  let familyId: FamilyId | null = null;
-  let attachmentId = '';
-  let digest = '';
+  let familyId: FamilyId;
+  let attachmentId: string;
+  let digest: string;
   const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9, 55, 4, 12]);
 
   try {
@@ -198,9 +194,7 @@ async function runWithQuota(
       name: 'upload_bytes',
       ok: uploaded.statusCode === 200,
       detail:
-        uploaded.statusCode === 200
-          ? 'staging upload accepted'
-          : `status ${uploaded.statusCode}`,
+        uploaded.statusCode === 200 ? 'staging upload accepted' : `status ${uploaded.statusCode}`,
     });
 
     const finalized = await first.app.inject({
@@ -214,14 +208,11 @@ async function runWithQuota(
         byteLength: bytes.byteLength,
       },
     });
-    const finalizeOk =
-      finalized.statusCode === 200 && finalized.json().activated === true;
+    const finalizeOk = finalized.statusCode === 200 && finalized.json().activated === true;
     cases.push({
       name: 'finalize_persists_metadata',
       ok: finalizeOk,
-      detail: finalizeOk
-        ? 'activated blob + Postgres locator'
-        : `status ${finalized.statusCode}`,
+      detail: finalizeOk ? 'activated blob + Postgres locator' : `status ${finalized.statusCode}`,
     });
 
     const durable = await metadata.getObject({
@@ -286,9 +277,7 @@ async function runWithQuota(
       headers: { authorization: `Bearer ${token}` },
     });
     const readDigest =
-      read.statusCode === 200
-        ? createHash('sha256').update(read.rawPayload).digest('hex')
-        : null;
+      read.statusCode === 200 ? createHash('sha256').update(read.rawPayload).digest('hex') : null;
     const readOk =
       read.statusCode === 200 &&
       read.headers['cache-control'] === 'private, no-store' &&
@@ -323,9 +312,7 @@ async function runWithQuota(
       headers: { authorization: `Bearer ${token}` },
     });
     const tombOk =
-      erased.statusCode === 200 &&
-      after.statusCode === 404 &&
-      header?.eraseGeneration === 1;
+      erased.statusCode === 200 && after.statusCode === 404 && header?.eraseGeneration === 1;
     cases.push({
       name: 'tombstone_writes_erase_generation',
       ok: tombOk,

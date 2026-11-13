@@ -1,17 +1,11 @@
 import type { LumiAnimal } from '../types';
 import type { CharacterExpression, CharacterPose } from '../characters/blueprint';
 import type { CharacterPropId, CharacterSemanticState } from '../characters/collection';
-import {
-  resolveCollectionSpecies,
-  resolveSemanticPresentation,
-} from '../characters/collection';
+import { resolveCollectionSpecies, resolveSemanticPresentation } from '../characters/collection';
 import type { CharacterAppearanceStyle, StudioActionId } from '../characters/studioCollection';
-import {
-  isCharacterAppearanceStyle,
-  resolveStudioAction,
-} from '../characters/studioCollection';
+import { isCharacterAppearanceStyle, resolveStudioAction } from '../characters/studioCollection';
 import type { CharacterMotion } from './types';
-import { STUDIO_MOTION, resolveStudioMotionRecipe } from './studioMotion';
+import { STUDIO_MOTION } from './studioMotion';
 
 export type StudioPresentationInput = {
   readonly species?: unknown;
@@ -66,7 +60,6 @@ export function resolveStudioPresentation(input: StudioPresentationInput): Studi
     action.species === species &&
     capabilityInstalled(action.capability, input.installedCapabilities)
   ) {
-    const recipe = resolveStudioMotionRecipe(action.id);
     const animate = input.animate;
     return {
       species,

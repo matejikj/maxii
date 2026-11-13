@@ -65,7 +65,12 @@
     "release:verify-device": "npm run typecheck:core && node tools/device/verify-release-evidence.cjs release-evidence/manifest.json",
     "release:pack": "npm run typecheck && npm run test:all && npm run api:check && npm run release:verify-package && npm run release:smoke-core && npm pack --dry-run --ignore-scripts",
     "release:verify-package": "node tools/verify-built-package.cjs",
-    "release:smoke-core": "node tools/smoke-core.mjs"
+    "release:smoke-core": "node tools/smoke-core.mjs",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier . --check --ignore-unknown --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "check:quality": "npm run lint && npm run format:check"
   },
   "peerDependencies": {
     "react": "^19.3.0",

@@ -66,7 +66,8 @@ test('diary archive compare counts newer local care without merging', () => {
 test('parseDiaryArchive rejects unsupported format and oversized payloads', () => {
   assert.throws(
     () => parseDiaryArchive({ format: 'other', manifest: {} }),
-    (error: unknown) => error instanceof Error && /Unsupported diary archive format/.test(error.message),
+    (error: unknown) =>
+      error instanceof Error && /Unsupported diary archive format/.test(error.message),
   );
   assert.throws(
     () => parseDiaryArchive('x'.repeat(21 * 1024 * 1024)),

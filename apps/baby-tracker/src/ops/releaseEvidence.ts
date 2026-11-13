@@ -88,9 +88,7 @@ export type ReleaseEvidenceInput = {
   reactNative?: string;
 };
 
-export function buildReleaseEvidenceManifest(
-  input: ReleaseEvidenceInput,
-): ReleaseEvidenceManifest {
+export function buildReleaseEvidenceManifest(input: ReleaseEvidenceInput): ReleaseEvidenceManifest {
   const pack = describeEmbeddedBasePack();
   return {
     format: RELEASE_EVIDENCE_FORMAT,

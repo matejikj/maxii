@@ -78,9 +78,7 @@ function readApkBadging(apkPath: string): string | null {
 }
 
 const androidAppGradle = readIfExists(path.join(root, 'android/app/build.gradle'));
-const iosPbxproj = readIfExists(
-  path.join(root, 'ios/LumiBabyTracker.xcodeproj/project.pbxproj'),
-);
+const iosPbxproj = readIfExists(path.join(root, 'ios/LumiBabyTracker.xcodeproj/project.pbxproj'));
 
 const repositoryPaths: string[] = [];
 collectScannedPaths(root, repositoryPaths);
@@ -91,7 +89,7 @@ const apkPath =
 const apkExists = fs.existsSync(apkPath);
 const apkBadgingDump = apkExists ? readApkBadging(apkPath) : undefined;
 const apkPackageName = apkBadgingDump
-  ? /package: name='([^']+)'/.exec(apkBadgingDump)?.[1] ?? null
+  ? (/package: name='([^']+)'/.exec(apkBadgingDump)?.[1] ?? null)
   : undefined;
 const apkSha256 = apkExists
   ? createHash('sha256').update(fs.readFileSync(apkPath)).digest('hex')

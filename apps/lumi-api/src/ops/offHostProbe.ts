@@ -25,9 +25,7 @@ export function loadOffHostProbeConfig(env: NodeJS.ProcessEnv = process.env): Of
   };
 }
 
-export function evaluateOffHostProbeConfig(
-  config: OffHostProbeConfig,
-): OffHostProbeEvaluation {
+export function evaluateOffHostProbeConfig(config: OffHostProbeConfig): OffHostProbeEvaluation {
   const blockers: string[] = [];
   const notes: string[] = [];
   if (!config.mustNotRunOnlyOnSameVps) {
@@ -65,9 +63,7 @@ export async function probeOffHostTarget(
     return {
       reachable: response.ok,
       status: response.status,
-      detail: response.ok
-        ? `probe HTTP ${response.status}`
-        : `probe HTTP ${response.status}`,
+      detail: response.ok ? `probe HTTP ${response.status}` : `probe HTTP ${response.status}`,
     };
   } catch (error) {
     return {

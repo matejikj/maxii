@@ -38,11 +38,7 @@ export type CreateInvitationResponse = {
  * Explicit child-link choice from the joining device. Name/birthday similarity
  * must never become an automatic decision on either side.
  */
-export type ChildLinkDecision =
-  | 'founding_profile'
-  | 'same_child'
-  | 'different_child'
-  | 'defer';
+export type ChildLinkDecision = 'founding_profile' | 'same_child' | 'different_child' | 'defer';
 
 export type AcceptInvitationRequest = {
   readonly protocolVersion: typeof LUMI_API_PROTOCOL_VERSION;

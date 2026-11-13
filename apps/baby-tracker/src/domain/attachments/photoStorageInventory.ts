@@ -1,7 +1,4 @@
-import {
-  classifyLocalPhotoCopyKind,
-  summarizeProtectedOfflineBytes,
-} from './offlinePin';
+import { classifyLocalPhotoCopyKind, summarizeProtectedOfflineBytes } from './offlinePin';
 import type { LocalPhotoCopyRecord } from './attachmentCachePolicy';
 import type { FamilyPhotoBlobTransferJob } from './familyPhotoTransferPlanner';
 import type { PhotoAttachment } from './types';
@@ -30,9 +27,7 @@ export function buildPhotoStorageInventory(input: {
       .filter(
         (job) =>
           job.kind === 'upload' &&
-          (job.state === 'queued' ||
-            job.state === 'in_flight' ||
-            job.state === 'quota_waiting'),
+          (job.state === 'queued' || job.state === 'in_flight' || job.state === 'quota_waiting'),
       )
       .map((job) => job.attachmentId),
   );

@@ -123,10 +123,10 @@ test('accessibility: Today exposes header and primary diaper action by role/name
   await page.goto('/');
   await skipWelcomeIfPresent(page);
   await expect(page.getByRole('heading', { name: /Dnes s / })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Plenka|diaper|quick-diaper/i }).or(
-    page.getByTestId('quick-diaper'),
-  )).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Otevřít profil a nastavení' }),
+    page
+      .getByRole('button', { name: /Plenka|diaper|quick-diaper/i })
+      .or(page.getByTestId('quick-diaper')),
   ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Otevřít profil a nastavení' })).toBeVisible();
 });

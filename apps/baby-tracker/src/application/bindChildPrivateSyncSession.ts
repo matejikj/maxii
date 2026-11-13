@@ -51,19 +51,16 @@ export function createChildPrivateSyncSessionBinding(input: {
   readonly fetchImpl?: typeof fetch | undefined;
 }): ChildPrivateSyncSessionBinding {
   let authSession: FamilyAuthSession | null = null;
-  let transport: ChildPrivateSyncTransportPort =
-    createDisabledChildPrivateSyncTransport();
+  let transport: ChildPrivateSyncTransportPort = createDisabledChildPrivateSyncTransport();
 
   function rebuild(): void {
-    const syncReady =
-      input.boundary.syncConfigured && Boolean(input.boundary.apiBaseUrl);
+    const syncReady = input.boundary.syncConfigured && Boolean(input.boundary.apiBaseUrl);
     transport = resolveChildPrivateSyncTransport({
       apiBaseUrl: input.boundary.apiBaseUrl,
       // Only open HTTP when sync is configured and a principal is present.
       childPrivateSyncConfigured: syncReady && authSession != null,
       deviceId: input.deviceId,
-      getAccessCredentials: async () =>
-        credentialsFromFamilyAuthSession(authSession),
+      getAccessCredentials: async () => credentialsFromFamilyAuthSession(authSession),
       fetchImpl: input.fetchImpl,
     });
   }
@@ -78,18 +75,10 @@ export function createChildPrivateSyncSessionBinding(input: {
     getTransport: () => transport,
     getAppUserId: () => authSession?.appUserId ?? null,
     isTransferReady: () =>
-      Boolean(
-        input.boundary.syncConfigured &&
-          input.boundary.apiBaseUrl &&
-          authSession?.appUserId,
-      ),
+      Boolean(input.boundary.syncConfigured && input.boundary.apiBaseUrl && authSession?.appUserId),
     async runTick(tickInput) {
       const ownerAppUserId = authSession?.appUserId ?? null;
-      if (
-        !ownerAppUserId ||
-        !input.boundary.syncConfigured ||
-        !input.boundary.apiBaseUrl
-      ) {
+      if (!ownerAppUserId || !input.boundary.syncConfigured || !input.boundary.apiBaseUrl) {
         // Local outbox stays durable; absence of remote config is not a failure.
         return {
           state: tickInput.state ?? createEmptyChildPrivateSyncState(),
@@ -104,9 +93,7 @@ export function createChildPrivateSyncSessionBinding(input: {
         transport,
         attemptId: tickInput.attemptId,
         now: tickInput.now,
-        ...(tickInput.batchSize != null
-          ? { batchSize: tickInput.batchSize }
-          : {}),
+        ...(tickInput.batchSize != null ? { batchSize: tickInput.batchSize } : {}),
       });
     },
   };

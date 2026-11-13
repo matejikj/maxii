@@ -212,10 +212,7 @@ export async function createFamilyGuidedProjectFromTemplate(input: {
     createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),
   });
 
-  assertProjectAccess(
-    'create',
-    caregiverAccess(project, input.creatorAppUserId ?? null),
-  );
+  assertProjectAccess('create', caregiverAccess(project, input.creatorAppUserId ?? null));
 
   await input.unitOfWork.run(async (uow) => {
     await uow.projects.save(project);
@@ -248,10 +245,7 @@ export async function createFamilyGuidedBlankIdea(input: {
     createStepId: (index) => asEntityId(input.ids.createId(`pstep${index}`)),
   });
 
-  assertProjectAccess(
-    'create',
-    caregiverAccess(project, input.creatorAppUserId ?? null),
-  );
+  assertProjectAccess('create', caregiverAccess(project, input.creatorAppUserId ?? null));
 
   await input.unitOfWork.run(async (uow) => {
     await uow.projects.save(project);

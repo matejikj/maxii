@@ -85,11 +85,7 @@ export function CareOverviewPanel({ overviewCache }: CareOverviewPanelProps) {
       if (!cancelled) void load();
     });
     const unsubscribe = runtime.readModels.subscribe((topics) => {
-      if (
-        topics.includes('care') ||
-        topics.includes('sessions') ||
-        topics.includes('revisions')
-      ) {
+      if (topics.includes('care') || topics.includes('sessions') || topics.includes('revisions')) {
         overviewCache.invalidate();
         void load();
       }
@@ -98,69 +94,122 @@ export function CareOverviewPanel({ overviewCache }: CareOverviewPanelProps) {
       cancelled = true;
       unsubscribe();
     };
-  }, [childId, overviewCache, period, runtime.readModels, runtime.unitOfWork, services.clock, zone]);
+  }, [
+    childId,
+    overviewCache,
+    period,
+    runtime.readModels,
+    runtime.unitOfWork,
+    services.clock,
+    zone,
+  ]);
 
   const presentation = overview?.period === period ? presentCareOverview(overview) : null;
 
   return (
     <View style={styles.panel} testID="care-overview">
       <View style={styles.heading}>
-        <LumiText variant="h2" accessibilityRole="header">Přehled péče</LumiText>
-        <LumiText variant="caption" tone="muted">Malé střípky vašeho dne</LumiText>
+        <LumiText variant="h2" accessibilityRole="header">
+          Přehled péče
+        </LumiText>
+        <LumiText variant="caption" tone="muted">
+          Malé střípky vašeho dne
+        </LumiText>
       </View>
       <View style={[styles.periodSwitch, { backgroundColor: colors.secondary }]}>
         {(['day', 'week'] as const).map((option) => (
-          <Pressable key={option} accessibilityRole="button"
+          <Pressable
+            key={option}
+            accessibilityRole="button"
             accessibilityState={{ selected: period === option }}
             accessibilityLabel={option === 'day' ? 'Dnes' : '7 dní'}
-            onPress={() => setPeriod(option)} testID={`care-period-${option}`}
-            style={({ pressed }) => [styles.periodOption, {
-              backgroundColor: period === option ? colors.surface : 'transparent',
-              opacity: pressed ? 0.72 : 1,
-            }]}>
-            <LumiText variant="label" numberOfLines={1} style={{ alignSelf: 'stretch', textAlign: 'center',
-              color: period === option ? colors.primary : colors.textMuted }}>
+            onPress={() => setPeriod(option)}
+            testID={`care-period-${option}`}
+            style={({ pressed }) => [
+              styles.periodOption,
+              {
+                backgroundColor: period === option ? colors.surface : 'transparent',
+                opacity: pressed ? 0.72 : 1,
+              },
+            ]}
+          >
+            <LumiText
+              variant="label"
+              numberOfLines={1}
+              style={{
+                alignSelf: 'stretch',
+                textAlign: 'center',
+                color: period === option ? colors.primary : colors.textMuted,
+              }}
+            >
               {option === 'day' ? 'Dnes' : '7\u00A0dní'}
             </LumiText>
           </Pressable>
         ))}
       </View>
-      {error ? <LumiText tone="muted" accessibilityLiveRegion="polite">{error}</LumiText> : null}
+      {error ? (
+        <LumiText tone="muted" accessibilityLiveRegion="polite">
+          {error}
+        </LumiText>
+      ) : null}
       {presentation ? (
         <View style={{ gap: 12 }}>
           <View style={styles.dateLine}>
             <LumiIcon name="today" color={colors.textMuted} size={16} />
             <LumiText variant="caption" tone="muted" style={{ flex: 1 }}>
-              {presentation.periodTitle}{overview ? ` · ${formatDate(overview.meta.focusDate)}` : ''}
+              {presentation.periodTitle}
+              {overview ? ` · ${formatDate(overview.meta.focusDate)}` : ''}
               {overview?.period === 'week' ? ` (od ${formatDate(overview.days[0]!)})` : ''}
             </LumiText>
           </View>
           <View style={styles.grid}>
             {presentation.metrics.map((metric) => (
-              <View key={metric.id} testID={`care-metric-${metric.id}`}
-                accessible accessibilityLabel={`${metric.title}. ${metric.description}`}
-                style={[styles.metric, { flexBasis: singleColumn ? '100%' : '47%',
-                  backgroundColor: colors.surface,
-                  borderColor: mode === 'dark' || motif !== 'forest' ? colors.border : '#E2E7DD' }]}>
+              <View
+                key={metric.id}
+                testID={`care-metric-${metric.id}`}
+                accessible
+                accessibilityLabel={`${metric.title}. ${metric.description}`}
+                style={[
+                  styles.metric,
+                  {
+                    flexBasis: singleColumn ? '100%' : '47%',
+                    backgroundColor: colors.surface,
+                    borderColor: mode === 'dark' || motif !== 'forest' ? colors.border : '#E2E7DD',
+                  },
+                ]}
+              >
                 <View style={styles.metricHeading}>
                   <CareIconBadge name={metric.id} size={38} />
-                  <LumiText variant="label" tone="muted" style={{ flexShrink: 1 }}>{metric.title}</LumiText>
+                  <LumiText variant="label" tone="muted" style={{ flexShrink: 1 }}>
+                    {metric.title}
+                  </LumiText>
                 </View>
-                <LumiText style={[styles.metricValue, { color: metric.hasRecords ? colors.text : colors.textMuted }]}>
+                <LumiText
+                  style={[
+                    styles.metricValue,
+                    { color: metric.hasRecords ? colors.text : colors.textMuted },
+                  ]}
+                >
                   {metric.value}
                 </LumiText>
-                <LumiText variant="caption" tone="muted" style={styles.metricDetail}>{metric.detail}</LumiText>
+                <LumiText variant="caption" tone="muted" style={styles.metricDetail}>
+                  {metric.detail}
+                </LumiText>
               </View>
             ))}
           </View>
           {presentation.running.length > 0 ? (
             <View style={[styles.running, { backgroundColor: colors.surfaceSubtle }]}>
               {presentation.running.map((line) => (
-                <LumiText key={line} variant="caption" tone="muted">{line}</LumiText>
+                <LumiText key={line} variant="caption" tone="muted">
+                  {line}
+                </LumiText>
               ))}
             </View>
           ) : null}
-          <LumiText variant="caption" tone="muted">{presentation.zoneNote}</LumiText>
+          <LumiText variant="caption" tone="muted">
+            {presentation.zoneNote}
+          </LumiText>
         </View>
       ) : !error ? (
         <LumiText tone="muted" accessibilityLiveRegion="polite">
@@ -175,16 +224,32 @@ export function CareOverviewPanel({ overviewCache }: CareOverviewPanelProps) {
 }
 
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('cs-CZ', { day: 'numeric', month: 'long', timeZone: 'UTC' })
-    .format(new Date(`${iso}T12:00:00Z`));
+  return new Intl.DateTimeFormat('cs-CZ', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${iso}T12:00:00Z`));
 }
 
 const styles = StyleSheet.create({
   panel: { gap: 16 },
   heading: { gap: 3 },
-  periodSwitch: { flexDirection: 'row', width: '100%', maxWidth: 280, padding: 4, borderRadius: 18 },
-  periodOption: { flex: 1, minHeight: 44, borderRadius: 14, paddingHorizontal: 20,
-    paddingVertical: 10, justifyContent: 'center', alignItems: 'center' },
+  periodSwitch: {
+    flexDirection: 'row',
+    width: '100%',
+    maxWidth: 280,
+    padding: 4,
+    borderRadius: 18,
+  },
+  periodOption: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   dateLine: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   metric: { flexGrow: 1, padding: 15, borderRadius: 23, borderWidth: 1, minHeight: 145, gap: 9 },

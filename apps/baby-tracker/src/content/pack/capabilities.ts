@@ -51,7 +51,9 @@ export const BASE_PACK_ART_CAPABILITIES = [
 
 /** The installed renderer may be a strict superset of the signed base pack. */
 export const INSTALLED_ART_CAPABILITIES = [
-  ...BASE_PACK_ART_CAPABILITIES, 'art.species.tiger', 'art.species.hippo',
+  ...BASE_PACK_ART_CAPABILITIES,
+  'art.species.tiger',
+  'art.species.hippo',
 ] as const;
 export function listBasePackArtCapabilities(): readonly string[] {
   return BASE_PACK_ART_CAPABILITIES;

@@ -11,10 +11,7 @@ test('compose stack drill script and defaults are present', () => {
   const deploy = join(process.cwd(), 'deploy');
   assert.equal(existsSync(join(deploy, 'family-compose-stack-drill.sh')), true);
   assert.equal(existsSync(join(deploy, 'operations-owners.json')), true);
-  assert.equal(
-    LOCAL_COMPOSE_STACK_DRILL_DEFAULTS.databaseUrl.includes('5433'),
-    true,
-  );
+  assert.equal(LOCAL_COMPOSE_STACK_DRILL_DEFAULTS.databaseUrl.includes('5433'), true);
 });
 
 test('live Compose stack drill when postgres is healthy (otherwise skip)', async (t) => {
@@ -29,11 +26,7 @@ test('live Compose stack drill when postgres is healthy (otherwise skip)', async
     deployDir: join(process.cwd(), 'deploy'),
   });
   assert.equal(result.liveReady, false);
-  assert.equal(
-    result.ok,
-    true,
-    result.cases.map((row) => `${row.name}:${row.detail}`).join('; '),
-  );
+  assert.equal(result.ok, true, result.cases.map((row) => `${row.name}:${row.detail}`).join('; '));
 });
 
 async function postgresHealthy(): Promise<boolean> {

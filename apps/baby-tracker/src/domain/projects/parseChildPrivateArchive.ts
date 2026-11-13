@@ -236,10 +236,7 @@ export function parseChildPrivateArchive(
       details: { reason: 'too_many_projects' },
     });
   }
-  if (
-    portfolioParsed.data.length + sharesParsed.data.length >
-    MAX_CHILD_PRIVATE_ARCHIVE_RELATED
-  ) {
+  if (portfolioParsed.data.length + sharesParsed.data.length > MAX_CHILD_PRIVATE_ARCHIVE_RELATED) {
     throw new AppError('VALIDATION', 'Child private archive has too many related rows', {
       details: { reason: 'too_many_related' },
     });
@@ -279,7 +276,9 @@ export function parseChildPrivateArchive(
 
   const expectedCategories = new Set(CHILD_PRIVATE_EXPORT_EXCLUDED_CATEGORIES);
   for (const category of manifestParsed.data.excludedCategories) {
-    if (!expectedCategories.has(category as (typeof CHILD_PRIVATE_EXPORT_EXCLUDED_CATEGORIES)[number])) {
+    if (
+      !expectedCategories.has(category as (typeof CHILD_PRIVATE_EXPORT_EXCLUDED_CATEGORIES)[number])
+    ) {
       throw new AppError('VALIDATION', 'Child private archive claims an unknown exclusion', {
         details: { reason: 'unknown_exclusion', category },
       });

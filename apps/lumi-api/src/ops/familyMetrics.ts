@@ -3,14 +3,7 @@
  * never notes, DOB, invitation secrets, or diary payloads.
  */
 
-export type FamilyOpsPathClass =
-  | 'health'
-  | 'auth'
-  | 'family'
-  | 'sync'
-  | 'backup'
-  | 'ops'
-  | 'other';
+export type FamilyOpsPathClass = 'health' | 'auth' | 'family' | 'sync' | 'backup' | 'ops' | 'other';
 
 export type FamilyOpsMetricEvent = {
   readonly atMs: number;
@@ -42,9 +35,7 @@ export type FamilyOpsMetricsSnapshot = {
 };
 
 export type FamilyOpsMetrics = {
-  recordRequest(
-    event: Omit<FamilyOpsMetricEvent, 'atMs'> & { readonly atMs?: number },
-  ): void;
+  recordRequest(event: Omit<FamilyOpsMetricEvent, 'atMs'> & { readonly atMs?: number }): void;
   recordSyncLagMs(lagMs: number, atMs?: number): void;
   recordBackupAttempt(input: {
     readonly ok: boolean;
@@ -165,7 +156,8 @@ export function createFamilyOpsMetrics(
     },
 
     setQueueBacklog(count) {
-      queueBacklog = count == null || !Number.isFinite(count) ? null : Math.max(0, Math.floor(count));
+      queueBacklog =
+        count == null || !Number.isFinite(count) ? null : Math.max(0, Math.floor(count));
     },
 
     snapshot() {
@@ -184,8 +176,7 @@ export function createFamilyOpsMetrics(
         },
         queueBacklog,
         syncLagSamplesMs: [...syncLagSamplesMs],
-        maxSyncLagMs:
-          syncLagSamplesMs.length === 0 ? null : Math.max(...syncLagSamplesMs),
+        maxSyncLagMs: syncLagSamplesMs.length === 0 ? null : Math.max(...syncLagSamplesMs),
         backup: {
           lastCompletedAtMs,
           lastAttemptAtMs,

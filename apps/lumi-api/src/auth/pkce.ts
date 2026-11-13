@@ -11,10 +11,7 @@ export function createOidcState(): string {
   return randomBytes(24).toString('base64url');
 }
 
-export function isAllowedRedirectUri(
-  candidate: string,
-  allowed: readonly string[],
-): boolean {
+export function isAllowedRedirectUri(candidate: string, allowed: readonly string[]): boolean {
   try {
     const url = new URL(candidate);
     if (url.hash) return false;

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { LumiButton, LumiCard, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import {
+  LumiButton,
+  LumiCard,
+  LumiInput,
+  LumiText,
+  useLumiTheme,
+} from '@lumi/forest-design/native';
 import { useBootstrap } from '../../app/session/BootstrapContext';
 
 /**
@@ -17,7 +23,9 @@ export function ChildrenPanel() {
   return (
     <LumiCard style={{ borderRadius: 24, gap: 14 }}>
       <View style={{ gap: ui.space.sm }}>
-        <LumiText variant="h3" accessibilityRole="header">Děti v tomto zařízení</LumiText>
+        <LumiText variant="h3" accessibilityRole="header">
+          Děti v tomto zařízení
+        </LumiText>
         <LumiText tone="muted">
           Každé dítě má vlastní deník. Archivace skryje dítě z přepínače a jeho vzpomínky zachová.
         </LumiText>

@@ -40,8 +40,7 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
     const usesBearer =
       typeof request.headers.authorization === 'string' &&
       String(request.headers.authorization).startsWith('Bearer ');
-    const cookieHeader =
-      typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
+    const cookieHeader = typeof request.headers.cookie === 'string' ? request.headers.cookie : '';
 
     if (
       !verifyCsrfDoubleSubmit({
@@ -110,7 +109,11 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
     const params = request.params as { familyId: string };
     const body = request.body as FamilyAttachmentUploadIntentRequest;
     if (body?.protocolVersion !== LUMI_API_PROTOCOL_VERSION) {
-      const err = apiError('unsupported_schema', 'Unsupported protocol version', String(request.id));
+      const err = apiError(
+        'unsupported_schema',
+        'Unsupported protocol version',
+        String(request.id),
+      );
       return reply.code(err.status).send(err.body);
     }
     const membership = membershipOf(appUserId, params.familyId as FamilyId);
@@ -173,64 +176,68 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
     },
   );
 
-  app.post('/v1/families/:familyId/attachments/intents/:intentId/finalize', async (request, reply) => {
-    const appUserId = await requireAppUser(request, reply);
-    if (!appUserId) return;
-    const params = request.params as { familyId: string; intentId: string };
-    const body = request.body as FamilyAttachmentFinalizeRequest;
-    if (body?.protocolVersion !== LUMI_API_PROTOCOL_VERSION) {
-      const err = apiError('unsupported_schema', 'Unsupported protocol version', String(request.id));
-      return reply.code(err.status).send(err.body);
-    }
-    const membership = membershipOf(appUserId, params.familyId as FamilyId);
-    const finalized = await attachments.finalize({
-      intentId: params.intentId,
-      appUserId,
-      membership,
-      sha256: String(body.sha256 ?? ''),
-      byteLength: Number(body.byteLength),
-      nowMs: Date.now(),
-    });
-    if (!finalized.ok) {
-      const err = apiError(finalized.code, finalized.message, String(request.id));
-      return reply.code(err.status).send(err.body);
-    }
-    return finalized.response;
-  });
-
-  app.get(
-    '/v1/families/:familyId/attachments/:attachmentId/:role',
+  app.post(
+    '/v1/families/:familyId/attachments/intents/:intentId/finalize',
     async (request, reply) => {
       const appUserId = await requireAppUser(request, reply);
       if (!appUserId) return;
-      const params = request.params as {
-        familyId: string;
-        attachmentId: string;
-        role: AttachmentRenditionRole;
-      };
-      if (params.role !== 'display' && params.role !== 'thumbnail') {
-        const err = apiError('validation', 'Unknown rendition role', String(request.id));
+      const params = request.params as { familyId: string; intentId: string };
+      const body = request.body as FamilyAttachmentFinalizeRequest;
+      if (body?.protocolVersion !== LUMI_API_PROTOCOL_VERSION) {
+        const err = apiError(
+          'unsupported_schema',
+          'Unsupported protocol version',
+          String(request.id),
+        );
         return reply.code(err.status).send(err.body);
       }
       const membership = membershipOf(appUserId, params.familyId as FamilyId);
-      const read = await attachments.read({
-        familyId: params.familyId,
-        attachmentId: params.attachmentId,
-        role: params.role,
-        membership,
+      const finalized = await attachments.finalize({
+        intentId: params.intentId,
         appUserId,
+        membership,
+        sha256: String(body.sha256 ?? ''),
+        byteLength: Number(body.byteLength),
+        nowMs: Date.now(),
       });
-      if (!read.ok) {
-        const err = apiError(read.code, read.message, String(request.id));
+      if (!finalized.ok) {
+        const err = apiError(finalized.code, finalized.message, String(request.id));
         return reply.code(err.status).send(err.body);
       }
-      reply.header('content-type', 'image/jpeg');
-      reply.header('cache-control', 'private, no-store');
-      reply.header('x-lumi-attachment-sha256', read.meta.sha256);
-      reply.header('x-lumi-attachment-bytes', String(read.meta.byteLength));
-      return reply.send(Buffer.from(read.bytes));
+      return finalized.response;
     },
   );
+
+  app.get('/v1/families/:familyId/attachments/:attachmentId/:role', async (request, reply) => {
+    const appUserId = await requireAppUser(request, reply);
+    if (!appUserId) return;
+    const params = request.params as {
+      familyId: string;
+      attachmentId: string;
+      role: AttachmentRenditionRole;
+    };
+    if (params.role !== 'display' && params.role !== 'thumbnail') {
+      const err = apiError('validation', 'Unknown rendition role', String(request.id));
+      return reply.code(err.status).send(err.body);
+    }
+    const membership = membershipOf(appUserId, params.familyId as FamilyId);
+    const read = await attachments.read({
+      familyId: params.familyId,
+      attachmentId: params.attachmentId,
+      role: params.role,
+      membership,
+      appUserId,
+    });
+    if (!read.ok) {
+      const err = apiError(read.code, read.message, String(request.id));
+      return reply.code(err.status).send(err.body);
+    }
+    reply.header('content-type', 'image/jpeg');
+    reply.header('cache-control', 'private, no-store');
+    reply.header('x-lumi-attachment-sha256', read.meta.sha256);
+    reply.header('x-lumi-attachment-bytes', String(read.meta.byteLength));
+    return reply.send(Buffer.from(read.bytes));
+  });
 
   app.post('/v1/families/:familyId/attachments/:attachmentId/tombstone', async (request, reply) => {
     const appUserId = await requireAppUser(request, reply);
@@ -238,7 +245,11 @@ export function registerAttachmentRoutes(app: FastifyInstance, deps: AttachmentR
     const params = request.params as { familyId: string; attachmentId: string };
     const body = request.body as FamilyAttachmentTombstoneRequest;
     if (body?.protocolVersion !== LUMI_API_PROTOCOL_VERSION) {
-      const err = apiError('unsupported_schema', 'Unsupported protocol version', String(request.id));
+      const err = apiError(
+        'unsupported_schema',
+        'Unsupported protocol version',
+        String(request.id),
+      );
       return reply.code(err.status).send(err.body);
     }
     const membership = membershipOf(appUserId, params.familyId as FamilyId);

@@ -21,17 +21,10 @@ export type GrowthChartProps = {
  * Own measurements only. A single point is labelled as such — never drawn as a
  * trend — and missing series stay empty instead of zero-filled.
  */
-export function GrowthChart({
-  series,
-  weightUnit,
-  lengthUnit,
-  formatDate,
-}: GrowthChartProps) {
+export function GrowthChart({ series, weightUnit, lengthUnit, formatDate }: GrowthChartProps) {
   const { colors, ui } = useLumiTheme();
   if (series.points.length === 0) {
-    return (
-      <LumiText tone="muted">Zatím není žádné uložené měření růstu.</LumiText>
-    );
+    return <LumiText tone="muted">Zatím není žádné uložené měření růstu.</LumiText>;
   }
 
   const weightValues = series.points
@@ -75,8 +68,7 @@ export function GrowthChart({
         importantForAccessibility="no-hide-descendants"
       >
         {series.points.map((point) => {
-          const ratio =
-            point.weightKg != null && maxWeight > 0 ? point.weightKg / maxWeight : 0;
+          const ratio = point.weightKg != null && maxWeight > 0 ? point.weightKg / maxWeight : 0;
           const height = point.weightKg == null ? 8 : Math.max(12, Math.round(ratio * 100));
           return (
             <View
@@ -85,8 +77,7 @@ export function GrowthChart({
                 flex: 1,
                 height,
                 borderRadius: 6,
-                backgroundColor:
-                  point.weightKg == null ? colors.controlBorder : colors.primary,
+                backgroundColor: point.weightKg == null ? colors.controlBorder : colors.primary,
                 opacity: point.weightKg == null ? 0.35 : 1,
               }}
             />

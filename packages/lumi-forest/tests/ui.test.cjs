@@ -2,12 +2,26 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { resolveLumiTheme, contrastRatio, passesTextContrast, relativeLuminance, LUMI_UI_TOKENS } = require('../.test-dist/core/ui');
+const {
+  resolveLumiTheme,
+  contrastRatio,
+  passesTextContrast,
+  relativeLuminance,
+  LUMI_UI_TOKENS,
+} = require('../.test-dist/core/ui');
 const scenes = ['home', 'growth', 'sleep', 'feeding', 'milestones'];
 const modes = ['light', 'dark'];
-const pairs = [['text', 'background'], ['text', 'surface'], ['text', 'surfaceSubtle'], ['textMuted', 'surface'],
-  ['textMuted', 'background'], ['onPrimary', 'primary'], ['onSecondary', 'secondary'], ['onDanger', 'danger'],
-  ['onSceneAccent', 'sceneAccent']];
+const pairs = [
+  ['text', 'background'],
+  ['text', 'surface'],
+  ['text', 'surfaceSubtle'],
+  ['textMuted', 'surface'],
+  ['textMuted', 'background'],
+  ['onPrimary', 'primary'],
+  ['onSecondary', 'secondary'],
+  ['onDanger', 'danger'],
+  ['onSceneAccent', 'sceneAccent'],
+];
 for (const mode of modes) {
   for (const scene of scenes) {
     test(`color tokens ${mode}/${scene} meet WCAG AA text contrast`, () => {
@@ -20,11 +34,15 @@ for (const mode of modes) {
   }
 }
 test('form control outlines meet WCAG non-text contrast', () => {
-  for (const mode of modes) for (const scene of scenes) {
-    const { colors } = resolveLumiTheme(scene, mode);
-    assert.ok(contrastRatio(colors.controlBorder, colors.surface) >= 3, `${scene}/${mode} control border`);
-    assert.ok(contrastRatio(colors.focus, colors.surface) >= 3, `${scene}/${mode} focus color`);
-  }
+  for (const mode of modes)
+    for (const scene of scenes) {
+      const { colors } = resolveLumiTheme(scene, mode);
+      assert.ok(
+        contrastRatio(colors.controlBorder, colors.surface) >= 3,
+        `${scene}/${mode} control border`,
+      );
+      assert.ok(contrastRatio(colors.focus, colors.surface) >= 3, `${scene}/${mode} focus color`);
+    }
 });
 test('theme instances are stable, immutable and maintain v0.4 compatibility', () => {
   const t = resolveLumiTheme('home', 'light');
@@ -51,15 +69,35 @@ test('contrast helper rejects bad colors and correctly compares extremes', () =>
   assert.throws(() => contrastRatio('rgb(0,0,0)', '#FFFFFF'), RangeError);
 });
 test('all 10 scene/mode combinations have semantic roles', () => {
-  const roles = ['background', 'surface', 'surfaceSubtle', 'text', 'textMuted', 'border', 'controlBorder', 'focus', 'primary',
-    'onPrimary', 'secondary', 'onSecondary', 'danger', 'onDanger', 'success', 'warning', 'sceneAccent'];
-  for (const scene of scenes) for (const mode of modes) {
-    const { colors } = resolveLumiTheme(scene, mode);
-    for (const role of roles) assert.match(colors[role], /^#[0-9a-fA-F]{6}$/);
-  }
+  const roles = [
+    'background',
+    'surface',
+    'surfaceSubtle',
+    'text',
+    'textMuted',
+    'border',
+    'controlBorder',
+    'focus',
+    'primary',
+    'onPrimary',
+    'secondary',
+    'onSecondary',
+    'danger',
+    'onDanger',
+    'success',
+    'warning',
+    'sceneAccent',
+  ];
+  for (const scene of scenes)
+    for (const mode of modes) {
+      const { colors } = resolveLumiTheme(scene, mode);
+      for (const role of roles) assert.match(colors[role], /^#[0-9a-fA-F]{6}$/);
+    }
 });
 test('native ui components source visual color only from theme tokens, not local hex colors', () => {
-  const files = fs.readdirSync(path.join(__dirname, '../src/react-native/ui')).filter(n => n.endsWith('.tsx'));
+  const files = fs
+    .readdirSync(path.join(__dirname, '../src/react-native/ui'))
+    .filter((n) => n.endsWith('.tsx'));
   assert.ok(files.length >= 10);
   for (const file of files) {
     const code = fs.readFileSync(path.join(__dirname, '../src/react-native/ui', file), 'utf8');
@@ -68,9 +106,16 @@ test('native ui components source visual color only from theme tokens, not local
 });
 test('screen reader semantics are present for progress, chart, buttons, and modal', () => {
   const root = path.join(__dirname, '../src/react-native/ui');
-  for (const [file, marker] of [['LumiButton.tsx', 'accessibilityRole="button"'],
-    ['LumiProgress.tsx', 'accessibilityRole="progressbar"'], ['LumiChartContainer.tsx', 'accessibilityRole="image"'],
-    ['LumiInput.tsx', 'accessibilityLabel'], ['LumiBottomSheet.tsx', 'onRequestClose={onClose}']]) {
-    assert.ok(fs.readFileSync(path.join(root, file), 'utf8').includes(marker), `${file} missing semantic marker`);
+  for (const [file, marker] of [
+    ['LumiButton.tsx', 'accessibilityRole="button"'],
+    ['LumiProgress.tsx', 'accessibilityRole="progressbar"'],
+    ['LumiChartContainer.tsx', 'accessibilityRole="image"'],
+    ['LumiInput.tsx', 'accessibilityLabel'],
+    ['LumiBottomSheet.tsx', 'onRequestClose={onClose}'],
+  ]) {
+    assert.ok(
+      fs.readFileSync(path.join(root, file), 'utf8').includes(marker),
+      `${file} missing semantic marker`,
+    );
   }
 });

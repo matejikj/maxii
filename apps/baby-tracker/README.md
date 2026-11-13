@@ -49,11 +49,11 @@ Zkopíruj `.env.example` podle potřeby. Povolené jsou jen `EXPO_PUBLIC_*` hodn
 
 Rozlišení:
 
-| Režim | Význam |
-| --- | --- |
-| development | Metro / development build, volitelná storage sonda |
-| staging | Připravováno pro pozdější rodinnou službu; osobní app ji nevyžaduje |
-| production | Release-like klient bez testovacích fixture a Storybooku |
+| Režim       | Význam                                                              |
+| ----------- | ------------------------------------------------------------------- |
+| development | Metro / development build, volitelná storage sonda                  |
+| staging     | Připravováno pro pozdější rodinnou službu; osobní app ji nevyžaduje |
+| production  | Release-like klient bez testovacích fixture a Storybooku            |
 
 ## Nativní nástroje
 

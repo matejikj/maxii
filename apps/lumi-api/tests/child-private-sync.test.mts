@@ -328,8 +328,5 @@ test('revoked share becomes visible as revoke and publish alone is not enough af
     headers: { authorization: `Bearer ${ctx.parentToken}` },
   });
   const kinds = parentPull.json().entries.map((row: { kind: string }) => row.kind);
-  assert.deepEqual(kinds, [
-    'child_private.share.publish',
-    'child_private.share.revoke',
-  ]);
+  assert.deepEqual(kinds, ['child_private.share.publish', 'child_private.share.revoke']);
 });

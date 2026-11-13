@@ -43,9 +43,7 @@ export function resolveActiveFamilySelection(input: {
   };
 }
 
-export function familyIdFromActiveFamilySelection(
-  selection: ActiveFamilySelection,
-): string | null {
+export function familyIdFromActiveFamilySelection(selection: ActiveFamilySelection): string | null {
   if (selection.kind === 'single') return selection.familyId;
   if (selection.kind === 'choice_required') return selection.preferredFamilyId;
   return null;

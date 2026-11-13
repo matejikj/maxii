@@ -28,7 +28,11 @@ test.describe('web diary multitab coordination', () => {
       }
       const ext = path.extname(filePath);
       const type =
-        ext === '.html' ? 'text/html' : ext === '.js' ? 'text/javascript' : 'application/octet-stream';
+        ext === '.html'
+          ? 'text/html'
+          : ext === '.js'
+            ? 'text/javascript'
+            : 'application/octet-stream';
       res.writeHead(200, { 'content-type': type });
       res.end(fs.readFileSync(filePath));
     });
@@ -102,14 +106,12 @@ test.describe('web diary multitab coordination', () => {
 
     // Crashed tab leaves an expired lease; the other tab recovers.
     await pageA.evaluate(async () => window.__tab.acquireWrite());
-    await pageB.evaluate(
-      ({ lockName }) => window.LumiMultitabHarness.bumpClock(lockName, 5000),
-      { lockName },
-    );
-    await pageA.evaluate(
-      ({ lockName }) => window.LumiMultitabHarness.bumpClock(lockName, 5000),
-      { lockName },
-    );
+    await pageB.evaluate(({ lockName }) => window.LumiMultitabHarness.bumpClock(lockName, 5000), {
+      lockName,
+    });
+    await pageA.evaluate(({ lockName }) => window.LumiMultitabHarness.bumpClock(lockName, 5000), {
+      lockName,
+    });
     const recovered = await pageB.evaluate(async () => {
       await window.__tab.acquireWrite();
       await window.__tab.releaseWrite();

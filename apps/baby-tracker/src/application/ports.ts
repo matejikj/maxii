@@ -1,10 +1,4 @@
-import type {
-  Clock,
-  FaultInjection,
-  IdGenerator,
-  OutboxPort,
-  UnitOfWorkFactory,
-} from '../domain';
+import type { Clock, FaultInjection, IdGenerator, OutboxPort, UnitOfWorkFactory } from '../domain';
 import type { CommandDispatcher } from './commandDispatcher';
 import type { ReadModelInvalidator } from './readModelInvalidation';
 

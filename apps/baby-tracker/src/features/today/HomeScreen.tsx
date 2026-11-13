@@ -1,9 +1,7 @@
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  LumiCard, LumiEmptyState, LumiText, useLumiTheme,
-} from '@lumi/forest-design/native';
+import { LumiCard, LumiEmptyState, LumiText, useLumiTheme } from '@lumi/forest-design/native';
 import type { StorageProbeReport } from '../../infrastructure/verification/runStorageProbe';
 import { GuideCompanion } from '../shell/GuideCompanion';
 
@@ -24,8 +22,12 @@ export function HomeScreen({ probeReport = null, probeError = null }: HomeScreen
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.heading}>
-          <LumiText variant="caption" tone="accent">LUMI</LumiText>
-          <LumiText variant="h1" accessibilityRole="header">Deník miminka</LumiText>
+          <LumiText variant="caption" tone="accent">
+            LUMI
+          </LumiText>
+          <LumiText variant="h1" accessibilityRole="header">
+            Deník miminka
+          </LumiText>
           <LumiText tone="muted">Malé chvíle, které tvoří váš den.</LumiText>
         </View>
         <LumiCard>
@@ -53,9 +55,7 @@ export function HomeScreen({ probeReport = null, probeError = null }: HomeScreen
               </LumiText>
             ) : null}
             {probeReport.webIndexedDb ? (
-              <LumiText tone="muted">
-                IndexedDB zápis přežil druhé spojení.
-              </LumiText>
+              <LumiText tone="muted">IndexedDB zápis přežil druhé spojení.</LumiText>
             ) : null}
           </LumiCard>
         ) : null}

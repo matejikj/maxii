@@ -1,11 +1,7 @@
 import { AppError } from '../errors';
 import type { ActorId, ChildId, EntityId } from '../ids';
 import type { Instant } from '../ports/clock';
-import {
-  PROJECT_LIMITS,
-  type ParentSuggestion,
-  type ProjectTemplateRevisionId,
-} from './types';
+import { PROJECT_LIMITS, type ParentSuggestion, type ProjectTemplateRevisionId } from './types';
 
 /**
  * Create a pending parent suggestion. Visibility is limited to author and the
@@ -139,11 +135,7 @@ export function presentSuggestionToAuthor(suggestion: ParentSuggestion): {
   suggestionId: EntityId;
   title: string;
   note: string | null;
-  delivery:
-    | 'pending'
-    | 'withdrawn'
-    | 'delivered'
-    | 'started_together';
+  delivery: 'pending' | 'withdrawn' | 'delivered' | 'started_together';
   resultingProjectId: EntityId | null;
 } {
   if (suggestion.status === 'pending') {

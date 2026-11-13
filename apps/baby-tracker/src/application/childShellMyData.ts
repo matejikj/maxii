@@ -11,14 +11,7 @@ import type { ChildPrivateExportPreview } from './exportChildPrivateWorkspace';
 export type ChildShellMyDataSectionStatus = 'available' | 'unavailable' | 'summary';
 
 export type ChildShellMyDataSection = {
-  readonly id:
-    | 'identity'
-    | 'recovery'
-    | 'membership'
-    | 'shares'
-    | 'export'
-    | 'appearance'
-    | 'wipe';
+  readonly id: 'identity' | 'recovery' | 'membership' | 'shares' | 'export' | 'appearance' | 'wipe';
   readonly title: string;
   readonly status: ChildShellMyDataSectionStatus;
   readonly statusLabel: string;
@@ -86,8 +79,8 @@ export function presentChildShellMyData(input: {
       : null;
 
   const recoveryDetail = !(active && recoveryReady)
-    ? recoveryPreview.blockedReason ??
-      'Obnova je ověřená, ale vlastní dětský prostor ještě není aktivní.'
+    ? (recoveryPreview.blockedReason ??
+      'Obnova je ověřená, ale vlastní dětský prostor ještě není aktivní.')
     : `${recoveryPreview.detail} Rozsah: ${recoveryPreview.scopeLabels.join('; ')}. Nečekej falešné tlačítko Obnovit.`;
 
   const sealedName =
@@ -114,9 +107,10 @@ export function presentChildShellMyData(input: {
       title: 'Vlastní přihlášení',
       status: active && identityReady ? 'available' : 'unavailable',
       statusLabel: statusLabel(active && identityReady ? 'available' : 'unavailable'),
-      detail: active && identityReady
-        ? `Aktivní alias „${input.session.principal.displayAlias}“. Živý credential reset zůstává oddělený provozní postup.`
-        : 'Bez ověřené dětské identity se nepřihlašuj jako do hotového soukromého účtu.',
+      detail:
+        active && identityReady
+          ? `Aktivní alias „${input.session.principal.displayAlias}“. Živý credential reset zůstává oddělený provozní postup.`
+          : 'Bez ověřené dětské identity se nepřihlašuj jako do hotového soukromého účtu.',
     },
     {
       id: 'recovery',

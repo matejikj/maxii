@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { LumiButton, LumiChip, LumiInput, LumiText, useLumiTheme } from '@lumi/forest-design/native';
+import {
+  LumiButton,
+  LumiChip,
+  LumiInput,
+  LumiText,
+  useLumiTheme,
+} from '@lumi/forest-design/native';
 import type { ChildId, DevelopmentArea, TimeZoneId } from '../../domain';
 import {
   UNDO_WINDOW_MS,
@@ -101,10 +107,7 @@ export function ExperienceRecorder({
 
   useUndoWindow(undoAvailable, UNDO_WINDOW_MS, () => setUndoAvailable(false));
 
-  const offlinePinEnabled = useMemo(
-    () => resolveRemoteServicesBoundary().syncConfigured,
-    [],
-  );
+  const offlinePinEnabled = useMemo(() => resolveRemoteServicesBoundary().syncConfigured, []);
   const onToggleOfflinePin = useCallback(
     async (attachment: PhotoAttachment, pinned: boolean) => {
       if (!runtime.attachments) return;
@@ -170,9 +173,7 @@ export function ExperienceRecorder({
       setAttachments((prev) => {
         if (prev.some((row) => row.attachmentId === restored.attachment.attachmentId)) {
           return prev.map((row) =>
-            row.attachmentId === restored.attachment.attachmentId
-              ? restored.attachment
-              : row,
+            row.attachmentId === restored.attachment.attachmentId ? restored.attachment : row,
           );
         }
         return [...prev, restored.attachment].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -306,9 +307,7 @@ export function ExperienceRecorder({
         occurredAt: parsedTime.occurredAt,
         body,
         intentCapturedAtMs: intentMs,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);
@@ -350,9 +349,7 @@ export function ExperienceRecorder({
         occurredAt: parsedTime.occurredAt,
         body,
         intentCapturedAtMs: intentMs,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);
@@ -396,9 +393,7 @@ export function ExperienceRecorder({
         title: title || null,
         area,
         note: note || null,
-        ...(expectedRevisionId
-          ? { expectedRevisionId: asRevisionId(expectedRevisionId) }
-          : {}),
+        ...(expectedRevisionId ? { expectedRevisionId: asRevisionId(expectedRevisionId) } : {}),
       }),
     );
     setPending(false);
@@ -550,9 +545,7 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
-          onRequestDisplayDownload={
-            offlinePinEnabled ? onRequestDisplayDownload : undefined
-          }
+          onRequestDisplayDownload={offlinePinEnabled ? onRequestDisplayDownload : undefined}
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
@@ -608,9 +601,7 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
-          onRequestDisplayDownload={
-            offlinePinEnabled ? onRequestDisplayDownload : undefined
-          }
+          onRequestDisplayDownload={offlinePinEnabled ? onRequestDisplayDownload : undefined}
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />
@@ -666,9 +657,7 @@ export function ExperienceRecorder({
           enableOfflinePin={offlinePinEnabled}
           transferJobs={runtime.photoTransfer.getJobs()}
           onToggleOfflinePin={onToggleOfflinePin}
-          onRequestDisplayDownload={
-            offlinePinEnabled ? onRequestDisplayDownload : undefined
-          }
+          onRequestDisplayDownload={offlinePinEnabled ? onRequestDisplayDownload : undefined}
           onSoftDeleteAttachment={onSoftDeleteAttachment}
           onUndoSoftDeleteAttachment={onUndoSoftDeleteAttachment}
         />

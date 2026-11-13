@@ -24,10 +24,13 @@ export function PerfLab() {
   const [running, setRunning] = useState(false);
   const frameRef = useRef<number | null>(null);
   const cancelled = useRef(false);
-  useEffect(() => () => {
-    cancelled.current = true;
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      cancelled.current = true;
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    },
+    [],
+  );
 
   const run = useCallback(() => {
     if (running) return;
@@ -54,10 +57,12 @@ export function PerfLab() {
       frameIntervals.sort((a, b) => a - b);
       const result: PerformanceReading = {
         kind: 'lumi-js-device-sample',
-        composeP50Ms: round(percentile(compileSamples, 0.50)),
+        composeP50Ms: round(percentile(compileSamples, 0.5)),
         composeP95Ms: round(percentile(compileSamples, 0.95)),
         frameIntervalP95Ms: round(percentile(frameIntervals, 0.95)),
-        frameIntervalsOver16_7Percent: round(100 * frameIntervals.filter(t => t > 16.7).length / frameIntervals.length),
+        frameIntervalsOver16_7Percent: round(
+          (100 * frameIntervals.filter((t) => t > 16.7).length) / frameIntervals.length,
+        ),
         sampleCount: frameIntervals.length,
         note: 'JS only. Native UI FPS and GPU compositing MUST be profiled separately.',
       };
@@ -72,13 +77,22 @@ export function PerfLab() {
   return (
     <ScrollView testID="perf-lab" contentContainerStyle={styles.body}>
       <Text style={styles.title}>Performance Lab</Text>
-      <Text style={styles.info}>JS kompozice a intervaly requestAnimationFrame. Měř v release buildu na telefonu; tohle není nativní FPS.</Text>
+      <Text style={styles.info}>
+        JS kompozice a intervaly requestAnimationFrame. Měř v release buildu na telefonu; tohle není
+        nativní FPS.
+      </Text>
       <Pressable testID="run-js-benchmark" onPress={run} disabled={running} style={styles.button}>
-        <Text style={styles.buttonText}>{running ? 'Měřím 180 snímků…' : 'Změřit na zařízení'}</Text>
+        <Text style={styles.buttonText}>
+          {running ? 'Měřím 180 snímků…' : 'Změřit na zařízení'}
+        </Text>
       </Pressable>
-      {reading && <View style={styles.result}>
-        <Text testID="perf-results" selectable style={styles.monospace}>{JSON.stringify(reading, null, 2)}</Text>
-      </View>}
+      {reading && (
+        <View style={styles.result}>
+          <Text testID="perf-results" selectable style={styles.monospace}>
+            {JSON.stringify(reading, null, 2)}
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }

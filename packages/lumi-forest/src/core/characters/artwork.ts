@@ -9,5 +9,8 @@ import { CHARACTER_ANATOMY } from './anatomy';
 import { LUMI_ANIMALS } from '../types';
 
 export const CHARACTER_ARTWORK: Readonly<Record<LumiAnimal, VectorNode>> = Object.fromEntries(
-  LUMI_ANIMALS.map((species) => [species, group(CHARACTER_ANATOMY[species].map((p) => p.geometry))]),
+  LUMI_ANIMALS.map((species) => [
+    species,
+    group(CHARACTER_ANATOMY[species].map((p) => p.geometry)),
+  ]),
 ) as Readonly<Record<LumiAnimal, VectorNode>>;
